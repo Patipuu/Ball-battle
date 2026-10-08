@@ -1,0 +1,134 @@
+diff --git a/FishyEOS/Core/ServerPeer.cs b/FishyEOS/Core/ServerPeer.cs
+index 96dee92a6da1dee6cb8a047da6315bfcce2471d7..3d47f69983be5f20b676d0c91ea91519ab729d73 100644
+--- a/FishyEOS/Core/ServerPeer.cs
++++ b/FishyEOS/Core/ServerPeer.cs
+@@ -60,6 +60,15 @@ private Dictionary<Connection, ulong>
+         /// </summary>
+         private List<Connection> _clients = new List<Connection>();
+ 
++        /// <summary>
++        /// Remote ProductUserIds whose connection is actually ESTABLISHED (past
++        /// OnPeerConnectionEstablished). The live-PUID guard protects only these — an entry that is
++        /// in <see cref="_clients"/> but not here is a zombie (accepted, never established, e.g. a
++        /// peer that dropped mid-handshake with no Closed callback) and may be evicted so a genuine
++        /// reconnect is not blocked forever.
++        /// </summary>
++        private readonly HashSet<string> _establishedRemoteUsers = new HashSet<string>();
++
+         /// <summary>
+         /// Stable FishNet connection id per remote ProductUserId. A peer keeps the same id across
+         /// reconnects so its owned NetworkObjects are not orphaned by a fresh id (the persistent-peer
+@@ -140,8 +149,28 @@ private void OnPeerConnectionRequest(ref OnIncomingConnectionRequestInfo data)
+             // objects ("client sees no character"). The peer only truly leaves via OnPeerConnectionClosed.
+             for (int i = 0; i < _clients.Count; i++)
+             {
+-                if (_clients[i].RemoteUserId == data.RemoteUserId)
++                if (_clients[i].RemoteUserId != data.RemoteUserId)
++                    continue;
++
++                // Live established peer: a duplicate request is a relay<->direct renegotiation.
++                // Keep it untouched — minting a new id / tearing it down here despawns its owned
++                // objects ("client sees no character"). It truly leaves via OnPeerConnectionClosed.
++                if (_establishedRemoteUsers.Contains(remoteUserId))
++                {
++                    Debug.Log($"[ServerPeer] IGNORED duplicate from {remoteUserId} — live established peer");
+                     return;
++                }
++
++                // Zombie: accepted before but never established (peer dropped mid-handshake and we
++                // never got a Closed callback). Evict it so this genuine reconnect isn't blocked
++                // forever by the live-guard, then fall through to accept the fresh request.
++                // NOTE: the pre-establishment window is intentionally NOT protected — a peer here
++                // owns no NetworkObjects yet, so evicting it cannot cause "client sees no character";
++                // worst case a relay<->direct renegotiation mid-handshake re-dials (observable via
++                // the EVICT/ACCEPT logs). Only ESTABLISHED peers get the D4 protection above.
++                Debug.Log($"[ServerPeer] EVICT zombie (accepted, never established) for {remoteUserId} — allowing reconnect");
++                EvictClientConnection(_clients[i]);
++                break;
+             }
+ 
+             // New or rejoining peer. Reuse the stable id for this PUID if we've seen it before so a
+@@ -154,6 +183,7 @@ private void OnPeerConnectionRequest(ref OnIncomingConnectionRequestInfo data)
+ 
+             var clientConnection = new Connection(nextId, data.LocalUserId, data.RemoteUserId, data.SocketId);
+             _clients.Add(clientConnection);
++            Debug.Log($"[ServerPeer] ACCEPT {remoteUserId} id={nextId} (_clients count={_clients.Count})");
+ 
+             var addNotifyPeerConnectionEstablishedOptions = new AddNotifyPeerConnectionEstablishedOptions
+             {
+@@ -174,6 +204,13 @@ private void OnPeerConnectionRequest(ref OnIncomingConnectionRequestInfo data)
+ 
+             if (acceptConnectionResult != Result.Success)
+             {
++                // Roll back the establish-notify handle registered just above, else a failed-accept
++                // PUID that later reconnects orphans this EOS notification (leak over flaky retries).
++                if (_establishPeerConnectionEventHandles.TryGetValue(clientConnection, out ulong staleHandle))
++                {
++                    EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionEstablished(staleHandle);
++                    _establishPeerConnectionEventHandles.Remove(clientConnection);
++                }
+                 _clients.Remove(clientConnection);
+                 _transport.NetworkManager.LogError($"[ServerPeer] Failed to accept connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {nextId}. {acceptConnectionResult}");
+             }
+@@ -224,6 +261,7 @@ private void OnPeerConnectionEstablished(ref OnPeerConnectionEstablishedInfo dat
+                 }
+             }
+ 
++            _establishedRemoteUsers.Add(remoteUserId);
+             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Started,
+                 clientConnection.Id, _transport.Index));
+             _transport.NetworkManager.Log($"[ServerPeer.OnPeerConnectionEstablished] Established connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Id}.");
+@@ -234,6 +272,7 @@ private void OnPeerConnectionEstablished(ref OnPeerConnectionEstablishedInfo dat
+         /// </summary>
+         private void OnPeerConnectionClosed(ref OnRemoteConnectionClosedInfo data)
+         {
++            Debug.Log($"[ServerPeer] CLOSED callback for {data.RemoteUserId} reason={data.Reason}");
+             Connection? clientConnection = null;
+             for (int i = _clients.Count - 1; i >= 0; i--)
+             {
+@@ -270,9 +309,37 @@ private void OnPeerConnectionClosed(ref OnRemoteConnectionClosedInfo data)
+                 clientConnection.Value.Id, _transport.Index));
+             _transport.NetworkManager.Log($"[ServerPeer.OnPeerConnectionClosed] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Value.Id}.");
+ 
++            _establishedRemoteUsers.Remove(data.RemoteUserId.ToString());
+             _clients.Remove(clientConnection.Value);
+         }
+ 
++        // Tear down a half-open (accepted but never established) connection so its PUID no longer
++        // blocks a reconnect. Mirrors OnPeerConnectionClosed's cleanup; a zombie has no close handle
++        // (that is registered only once establishment completes).
++        private void EvictClientConnection(Connection clientConnection)
++        {
++            string remoteUserId = clientConnection.RemoteUserId.ToString();
++
++            if (_establishPeerConnectionEventHandles.TryGetValue(clientConnection, out ulong establishHandle))
++            {
++                EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionEstablished(establishHandle);
++                _establishPeerConnectionEventHandles.Remove(clientConnection);
++            }
++            if (_closePeerConnectionEventHandles.TryGetValue(remoteUserId, out ulong closeHandle))
++                RemoveClosePeerConnectionHandle(remoteUserId, closeHandle);
++
++            var closeConnectionOptions = new CloseConnectionOptions
++            {
++                LocalUserId = _localUserId,
++                RemoteUserId = clientConnection.RemoteUserId,
++                SocketId = _socketId,
++            };
++            EOS.GetCachedP2PInterface()?.CloseConnection(ref closeConnectionOptions);
++
++            _establishedRemoteUsers.Remove(remoteUserId);
++            _clients.Remove(clientConnection);
++        }
++
+         private void RemoveClosePeerConnectionHandle(string remoteUserId, ulong notificationId)
+         {
+             EOS.GetCachedP2PInterface().RemoveNotifyPeerConnectionClosed(notificationId);
+@@ -293,6 +360,7 @@ internal bool StopConnection()
+             try
+             {
+                 _clients.Clear();
++                _establishedRemoteUsers.Clear();
+                 _clientIdByRemoteUser.Clear();
+                 _clientHostIncoming.Clear();
+                 _clientHost?.StopConnection();

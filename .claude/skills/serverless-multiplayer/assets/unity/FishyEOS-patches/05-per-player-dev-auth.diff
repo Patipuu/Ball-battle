@@ -1,0 +1,23 @@
+diff --git a/FishyEOS/Util/Coroutines/ConnectLogin.cs b/FishyEOS/Util/Coroutines/ConnectLogin.cs
+index f45f36569124b11ce77b10d7560e637c3a259eb3..649ce504ecbb0136b56b392351e7ca2b9ffa7a31 100644
+--- a/FishyEOS/Util/Coroutines/ConnectLogin.cs
++++ b/FishyEOS/Util/Coroutines/ConnectLogin.cs
+@@ -27,7 +27,10 @@ internal static Coroutine Login(string token, ExternalCredentialType externalCre
+                 },
+             };
+ 			
+-            //if (!string.IsNullOrEmpty(displayName))
++            // Epic supplies its own profile. EOS rejects UserLoginInfo for Epic credentials.
++            // Preserve the existing display-name payload for DeviceID and other providers.
++            if (externalCredentialType != ExternalCredentialType.Epic &&
++                externalCredentialType != ExternalCredentialType.EpicIdToken)
+                 loginOptions.UserLoginInfo = new UserLoginInfo { DisplayName = displayName };
+             
+             EOS.GetCachedConnectInterface().Login(ref loginOptions, null,
+@@ -81,4 +84,4 @@ internal static Coroutine Login(Token? token, ExternalCredentialType externalCre
+                 out connectLogin);
+         }
+     }
+-}
+\ No newline at end of file
++}

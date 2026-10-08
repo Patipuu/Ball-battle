@@ -1,0 +1,8 @@
+﻿.claude/.env
+.claude/settings.local.json
+.claude/session-state/
+.claude/agent-memory/
+.claude/skills/.venv/
+node_modules/
+*.log
+.secrets/

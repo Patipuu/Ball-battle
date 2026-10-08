@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Runs the pure-logic Core tests outside Unity with plain `dotnet test`.
+    Core is compiled in by relative path, so there is no Unity dependency.
+    Target the newest SDK/runtime you have (net8.0 also works if the 8.0 runtime is installed).
+    Keep build output out of the skill tree:  dotnet test with the artifacts-path option pointing at a scratch dir
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>TeamNet.Multiplayer.Core.Tests</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../Core/**/*.cs" Link="Core/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="NUnit" Version="3.*" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.*" />
+  </ItemGroup>
+
+</Project>

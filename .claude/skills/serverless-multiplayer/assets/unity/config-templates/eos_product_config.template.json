@@ -1,0 +1,38 @@
+{
+  "ProductName": "<PRODUCT_NAME>",
+  "ProductId": "<PRODUCT_ID>",
+  "ProductVersion": "1.0",
+  "imported": true,
+  "Clients": [
+    {
+      "Value": {
+        "ClientId": "<CLIENT_ID>",
+        "ClientSecret": "<CLIENT_SECRET>",
+        "EncryptionKey": "<ENCRYPTION_KEY_64_HEX>"
+      },
+      "Name": "<CLIENT_NAME>"
+    }
+  ],
+  "Environments": {
+    "Deployments": [
+      {
+        "Value": {
+          "SandboxId": {
+            "Value": "<SANDBOX_ID>"
+          },
+          "DeploymentId": "<DEPLOYMENT_ID>"
+        },
+        "Name": "<DEPLOYMENT_NAME>"
+      }
+    ],
+    "Sandboxes": [
+      {
+        "Value": {
+          "Value": "<SANDBOX_ID>"
+        },
+        "Name": "<SANDBOX_NAME>"
+      }
+    ]
+  },
+  "schemaVersion": "1.0"
+}

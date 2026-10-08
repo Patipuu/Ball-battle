@@ -1,0 +1,18 @@
+diff --git a/FishyEOS/Core/ServerPeer.cs b/FishyEOS/Core/ServerPeer.cs
+index 97a8c5c9acb672ff93601f76db37d8d285eb7473..680236e2a73e9f08dbe666782d7448b5c74c8373 100644
+--- a/FishyEOS/Core/ServerPeer.cs
++++ b/FishyEOS/Core/ServerPeer.cs
+@@ -684,7 +684,12 @@ internal void HandleClientHostConnectionStateChange(LocalConnectionState state,
+         internal string GetConnectionAddress(int connectionId)
+         {
+             var client = _clients.FirstOrDefault(x => x.Id == connectionId);
+-            return client.RemoteUserId.ToString();
++            // Connection is a struct: FirstOrDefault yields a default (RemoteUserId == null) when no
++            // remote client owns this id — e.g. the host's own clientHost connection, or an id routed
++            // in when this transport is wrapped by Multipass. Guard the null so the lookup returns an
++            // empty address instead of throwing (an unhandled throw here aborts the caller, e.g. the
++            // player-spawn loop during a host's own spawn).
++            return client.RemoteUserId != null ? client.RemoteUserId.ToString() : string.Empty;
+         }
+     }
+ }

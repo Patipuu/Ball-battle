@@ -1,0 +1,175 @@
+diff --git a/FishyEOS/Core/ServerPeer.cs b/FishyEOS/Core/ServerPeer.cs
+index 3d47f69983be5f20b676d0c91ea91519ab729d73..97a8c5c9acb672ff93601f76db37d8d285eb7473 100644
+--- a/FishyEOS/Core/ServerPeer.cs
++++ b/FishyEOS/Core/ServerPeer.cs
+@@ -69,6 +69,27 @@ private Dictionary<Connection, ulong>
+         /// </summary>
+         private readonly HashSet<string> _establishedRemoteUsers = new HashSet<string>();
+ 
++        /// <summary>
++        /// EOS Handle for Peer Connection Interruptions, per remote ProductUserId. EOS raises an
++        /// interrupt ~6s after a peer stops responding (vs the ~30s reestablish-timeout before a
++        /// Closed callback), letting the host free a dropped slot early so a reconnect is accepted
++        /// fast instead of being blocked by the stale session.
++        /// </summary>
++        private readonly Dictionary<string, ulong> _interruptedPeerConnectionEventHandles = new Dictionary<string, ulong>();
++
++        /// <summary>
++        /// In-flight grace coroutines per remote ProductUserId: on interrupt we wait a short grace
++        /// then UNCONDITIONALLY proactively close the peer (EOS self-recovery is NOT detected). This
++        /// is intentional: the client's own liveness watchdog already reconnects on any interrupt
++        /// this long, so freeing the slot early just lets that in-flight reconnect complete instead
++        /// of waiting out EOS's ~30s reestablish-timeout. A normal Closed during the grace removes
++        /// the peer from <see cref="_clients"/> first, making the proactive close a no-op.
++        /// </summary>
++        private readonly Dictionary<string, Coroutine> _pendingProactiveClose = new Dictionary<string, Coroutine>();
++
++        /// <summary>Grace after an interrupt before the host proactively closes a dropped peer.</summary>
++        private const float ProactiveCloseGraceSeconds = 3f;
++
+         /// <summary>
+         /// Stable FishNet connection id per remote ProductUserId. A peer keeps the same id across
+         /// reconnects so its owned NetworkObjects are not orphaned by a fresh id (the persistent-peer
+@@ -261,6 +282,20 @@ private void OnPeerConnectionEstablished(ref OnPeerConnectionEstablishedInfo dat
+                 }
+             }
+ 
++            // Watch for an interruption so the host can free the slot early (Step 10). Only one
++            // interrupt handle per PUID; a reconnect re-establishes and re-subscribes.
++            if (!_interruptedPeerConnectionEventHandles.ContainsKey(remoteUserId))
++            {
++                var addNotifyInterruptedOptions = new AddNotifyPeerConnectionInterruptedOptions
++                {
++                    SocketId = clientConnection.SocketId,
++                    LocalUserId = clientConnection.LocalUserId,
++                };
++                ulong interruptedHandle = EOS.GetCachedP2PInterface().AddNotifyPeerConnectionInterrupted(
++                    ref addNotifyInterruptedOptions, clientConnection, OnPeerConnectionInterrupted);
++                _interruptedPeerConnectionEventHandles.Add(remoteUserId, interruptedHandle);
++            }
++
+             _establishedRemoteUsers.Add(remoteUserId);
+             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Started,
+                 clientConnection.Id, _transport.Index));
+@@ -278,7 +313,7 @@ private void OnPeerConnectionClosed(ref OnRemoteConnectionClosedInfo data)
+             {
+                 if(data.RemoteUserId != _clients[i].RemoteUserId)
+                     continue;
+-                
++
+                 clientConnection = _clients[i];
+             }
+ 
+@@ -287,30 +322,84 @@ private void OnPeerConnectionClosed(ref OnRemoteConnectionClosedInfo data)
+                 Debug.LogWarningFormat("[ServerPeer.OnPeerConnectionClosed] Failed to find connection for remote user id {0}.", data.RemoteUserId);
+                 return;
+             }
+-            
+-            if (_closePeerConnectionEventHandles.TryGetValue(data.RemoteUserId.ToString(), out ulong notificationId))
++
++            TearDownEstablishedClient(clientConnection.Value);
++            _transport.NetworkManager.Log($"[ServerPeer.OnPeerConnectionClosed] Closed connection from {data.RemoteUserId} with connection id {clientConnection.Value.Id}.");
++        }
++
++        // Step 10: EOS raises an interrupt ~6s after a peer stops responding (vs the ~30s Closed
++        // timeout). After a short grace, proactively close the peer so its reconnect is accepted
++        // immediately instead of waiting out the stale session. The close is unconditional — EOS
++        // self-recovery is not detected — which is fine because by ~6s the client's liveness
++        // watchdog has already begun reconnecting; this just frees the slot for it.
++        private void OnPeerConnectionInterrupted(ref OnPeerConnectionInterruptedInfo data)
++        {
++            string remoteUserId = data.RemoteUserId.ToString();
++            if (_pendingProactiveClose.ContainsKey(remoteUserId))
++                return; // a grace is already running for this peer
++            Debug.Log($"[ServerPeer] INTERRUPTED {remoteUserId} — {ProactiveCloseGraceSeconds:F0}s grace then proactive close");
++            _pendingProactiveClose[remoteUserId] =
++                _transport.StartCoroutine(ProactiveCloseAfterGrace(data.RemoteUserId));
++        }
++
++        private IEnumerator ProactiveCloseAfterGrace(ProductUserId remoteUserId)
++        {
++            // Realtime (not WaitForSeconds) so a paused (timeScale 0) or backgrounded host still
++            // frees the slot on schedule instead of stalling exactly when a reconnect is arriving.
++            yield return new WaitForSecondsRealtime(ProactiveCloseGraceSeconds);
++            string key = remoteUserId.ToString();
++            _pendingProactiveClose.Remove(key); // consumed first so TearDown won't try to stop us
++
++            // A normal Closed during the grace already removed the peer — nothing to do.
++            Connection? clientConnection = null;
++            for (int i = _clients.Count - 1; i >= 0; i--)
++                if (remoteUserId == _clients[i].RemoteUserId)
++                    clientConnection = _clients[i];
++            if (!clientConnection.HasValue)
++                yield break;
++
++            Debug.Log($"[ServerPeer] PROACTIVE CLOSE {key} — interrupted past grace, freeing slot for fast reconnect");
++            TearDownEstablishedClient(clientConnection.Value);
++        }
++
++        // Full teardown of an established (or interrupted) peer — shared by the normal Closed
++        // callback and the Step-10 proactive close. Removes every EOS notify handle, cancels any
++        // pending grace, closes the EOS session (so the same PUID can reconnect cleanly), notifies
++        // FishNet, and drops the peer from the tracking collections.
++        private void TearDownEstablishedClient(Connection clientConnection)
++        {
++            string remoteUserId = clientConnection.RemoteUserId.ToString();
++
++            if (_pendingProactiveClose.TryGetValue(remoteUserId, out Coroutine pending))
+             {
+-                RemoveClosePeerConnectionHandle(data.RemoteUserId.ToString(), notificationId);
++                if (pending != null)
++                    _transport.StopCoroutine(pending);
++                _pendingProactiveClose.Remove(remoteUserId);
++            }
++            if (_closePeerConnectionEventHandles.TryGetValue(remoteUserId, out ulong closeHandle))
++                RemoveClosePeerConnectionHandle(remoteUserId, closeHandle);
++            if (_interruptedPeerConnectionEventHandles.TryGetValue(remoteUserId, out ulong interruptedHandle))
++            {
++                EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionInterrupted(interruptedHandle);
++                _interruptedPeerConnectionEventHandles.Remove(remoteUserId);
+             }
+ 
+-            // Fully close the EOS-internal P2P session for this peer. Without this, EOS keeps the
+-            // session alive and, when the same ProductUserId reconnects, "ignores incoming invitation
+-            // and resends existing session" — the rejoin never establishes. Closing it here lets a
+-            // dropped (incl. hard-killed) peer reconnect cleanly.
++            // Fully close the EOS-internal P2P session — without this EOS keeps it alive and, when
++            // the same ProductUserId reconnects, "ignores incoming invitation and resends existing
++            // session" so the rejoin never establishes.
+             var closeConnectionOptions = new CloseConnectionOptions
+             {
+                 LocalUserId = _localUserId,
+-                RemoteUserId = data.RemoteUserId,
++                RemoteUserId = clientConnection.RemoteUserId,
+                 SocketId = _socketId,
+             };
+             EOS.GetCachedP2PInterface()?.CloseConnection(ref closeConnectionOptions);
+ 
+             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Stopped,
+-                clientConnection.Value.Id, _transport.Index));
+-            _transport.NetworkManager.Log($"[ServerPeer.OnPeerConnectionClosed] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Value.Id}.");
++                clientConnection.Id, _transport.Index));
+ 
+-            _establishedRemoteUsers.Remove(data.RemoteUserId.ToString());
+-            _clients.Remove(clientConnection.Value);
++            _establishedRemoteUsers.Remove(remoteUserId);
++            _clients.Remove(clientConnection);
+         }
+ 
+         // Tear down a half-open (accepted but never established) connection so its PUID no longer
+@@ -373,6 +462,15 @@ internal bool StopConnection()
+                     EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionEstablished(entry.Value);
+                 _establishPeerConnectionEventHandles.Clear();
+ 
++                foreach (var entry in _interruptedPeerConnectionEventHandles)
++                    EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionInterrupted(entry.Value);
++                _interruptedPeerConnectionEventHandles.Clear();
++
++                foreach (var entry in _pendingProactiveClose)
++                    if (entry.Value != null)
++                        _transport.StopCoroutine(entry.Value);
++                _pendingProactiveClose.Clear();
++
+                 if (_acceptPeerConnectionsEventHandle.HasValue)
+                 {
+                     EOS.GetCachedP2PInterface()?

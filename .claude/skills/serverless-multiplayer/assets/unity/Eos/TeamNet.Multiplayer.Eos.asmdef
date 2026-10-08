@@ -1,0 +1,20 @@
+{
+    "name": "TeamNet.Multiplayer.Eos",
+    "rootNamespace": "TeamNet.Multiplayer.Eos",
+    "references": [
+        "TeamNet.Multiplayer.Core",
+        "Fishnet.Plugins.FishyEOS",
+        "com.Epic.OnlineServices",
+        "com.playeveryware.eos",
+        "com.playeveryware.eos.core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

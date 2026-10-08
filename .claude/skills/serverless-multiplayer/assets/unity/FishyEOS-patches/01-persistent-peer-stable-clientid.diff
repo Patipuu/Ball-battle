@@ -1,0 +1,104 @@
+diff --git a/FishyEOS/Core/ServerPeer.cs b/FishyEOS/Core/ServerPeer.cs
+index 333fc747626098a40621f9c3aafd26471af10fa6..96dee92a6da1dee6cb8a047da6315bfcce2471d7 100644
+--- a/FishyEOS/Core/ServerPeer.cs
++++ b/FishyEOS/Core/ServerPeer.cs
+@@ -60,6 +60,13 @@ private Dictionary<Connection, ulong>
+         /// </summary>
+         private List<Connection> _clients = new List<Connection>();
+ 
++        /// <summary>
++        /// Stable FishNet connection id per remote ProductUserId. A peer keeps the same id across
++        /// reconnects so its owned NetworkObjects are not orphaned by a fresh id (the persistent-peer
++        /// intent, mirroring Godot NetworkManager.gd:1127/:1174).
++        /// </summary>
++        private readonly Dictionary<string, int> _clientIdByRemoteUser = new Dictionary<string, int>();
++
+         /// <summary>
+         /// Maximum number of connections allowed.
+         /// </summary>
+@@ -125,13 +132,26 @@ private IEnumerator AuthenticateAndStartListeningForConnections()
+         /// </summary>
+         private void OnPeerConnectionRequest(ref OnIncomingConnectionRequestInfo data)
+         {
+-            // A peer that was ungracefully killed (crash / force-stop / bg-timeout) leaves a stale
+-            // connection here for its ProductUserId. When the same PUID reconnects, EOS reports the
+-            // new session as a "Socket ID we already know about" and the fresh session is dropped.
+-            // Evict any prior connection for this PUID first so the rejoin re-establishes cleanly.
+-            EvictStaleConnections(data.RemoteUserId);
++            string remoteUserId = data.RemoteUserId.ToString();
++
++            // If this PUID already has a LIVE connection, the request is a duplicate/renegotiation
++            // (e.g. EOS switching relay<->direct). Keep the existing FishNet connection untouched —
++            // minting a new id or tearing down the old one here would despawn a mid-match peer's owned
++            // objects ("client sees no character"). The peer only truly leaves via OnPeerConnectionClosed.
++            for (int i = 0; i < _clients.Count; i++)
++            {
++                if (_clients[i].RemoteUserId == data.RemoteUserId)
++                    return;
++            }
++
++            // New or rejoining peer. Reuse the stable id for this PUID if we've seen it before so a
++            // genuine reconnect keeps its identity; otherwise mint a fresh one.
++            if (!_clientIdByRemoteUser.TryGetValue(remoteUserId, out int nextId))
++            {
++                nextId = _latestId++;
++                _clientIdByRemoteUser[remoteUserId] = nextId;
++            }
+ 
+-            var nextId = _latestId++;
+             var clientConnection = new Connection(nextId, data.LocalUserId, data.RemoteUserId, data.SocketId);
+             _clients.Add(clientConnection);
+ 
+@@ -259,44 +279,6 @@ private void RemoveClosePeerConnectionHandle(string remoteUserId, ulong notifica
+             _closePeerConnectionEventHandles.Remove(remoteUserId);
+         }
+ 
+-        /// <summary>
+-        /// Removes any existing connection(s) for a remote user id before a fresh reconnect.
+-        /// Closes the stale EOS P2P session, clears its notify handles, and tells FishNet the old
+-        /// connection stopped so a hard-killed peer can rejoin without colliding on the same socket.
+-        /// </summary>
+-        private void EvictStaleConnections(ProductUserId remoteUserId)
+-        {
+-            for (int i = _clients.Count - 1; i >= 0; i--)
+-            {
+-                var stale = _clients[i];
+-                if (stale.RemoteUserId != remoteUserId)
+-                    continue;
+-
+-                var closeConnectionOptions = new CloseConnectionOptions
+-                {
+-                    LocalUserId = _localUserId,
+-                    RemoteUserId = stale.RemoteUserId,
+-                    SocketId = _socketId,
+-                };
+-                EOS.GetCachedP2PInterface()?.CloseConnection(ref closeConnectionOptions);
+-
+-                if (_establishPeerConnectionEventHandles.TryGetValue(stale, out var establishHandle))
+-                {
+-                    EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionEstablished(establishHandle);
+-                    _establishPeerConnectionEventHandles.Remove(stale);
+-                }
+-
+-                string staleRemoteId = stale.RemoteUserId.ToString();
+-                if (_closePeerConnectionEventHandles.TryGetValue(staleRemoteId, out var closeHandle))
+-                    RemoveClosePeerConnectionHandle(staleRemoteId, closeHandle);
+-
+-                _clients.RemoveAt(i);
+-                _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Stopped,
+-                    stale.Id, _transport.Index));
+-                _transport.NetworkManager.Log($"[ServerPeer] Evicted stale connection id {stale.Id} for reconnecting peer {remoteUserId}.");
+-            }
+-        }
+-
+         /// <summary>
+         /// Stops the server.
+         /// </summary>
+@@ -311,6 +293,7 @@ internal bool StopConnection()
+             try
+             {
+                 _clients.Clear();
++                _clientIdByRemoteUser.Clear();
+                 _clientHostIncoming.Clear();
+                 _clientHost?.StopConnection();
+ 

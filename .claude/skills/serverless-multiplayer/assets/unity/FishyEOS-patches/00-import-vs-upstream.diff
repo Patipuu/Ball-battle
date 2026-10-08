@@ -1,0 +1,110 @@
+diff --git a/FishyEOS/Core/ServerPeer.cs b/FishyEOS/Core/ServerPeer.cs
+index f9462ae..333fc74 100644
+--- a/FishyEOS/Core/ServerPeer.cs
++++ b/FishyEOS/Core/ServerPeer.cs
+@@ -125,6 +125,12 @@ namespace FishNet.Transporting.FishyEOSPlugin
+         /// </summary>
+         private void OnPeerConnectionRequest(ref OnIncomingConnectionRequestInfo data)
+         {
++            // A peer that was ungracefully killed (crash / force-stop / bg-timeout) leaves a stale
++            // connection here for its ProductUserId. When the same PUID reconnects, EOS reports the
++            // new session as a "Socket ID we already know about" and the fresh session is dropped.
++            // Evict any prior connection for this PUID first so the rejoin re-establishes cleanly.
++            EvictStaleConnections(data.RemoteUserId);
++
+             var nextId = _latestId++;
+             var clientConnection = new Connection(nextId, data.LocalUserId, data.RemoteUserId, data.SocketId);
+             _clients.Add(clientConnection);
+@@ -228,10 +234,22 @@ namespace FishNet.Transporting.FishyEOSPlugin
+                 RemoveClosePeerConnectionHandle(data.RemoteUserId.ToString(), notificationId);
+             }
+ 
++            // Fully close the EOS-internal P2P session for this peer. Without this, EOS keeps the
++            // session alive and, when the same ProductUserId reconnects, "ignores incoming invitation
++            // and resends existing session" — the rejoin never establishes. Closing it here lets a
++            // dropped (incl. hard-killed) peer reconnect cleanly.
++            var closeConnectionOptions = new CloseConnectionOptions
++            {
++                LocalUserId = _localUserId,
++                RemoteUserId = data.RemoteUserId,
++                SocketId = _socketId,
++            };
++            EOS.GetCachedP2PInterface()?.CloseConnection(ref closeConnectionOptions);
++
+             _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Stopped,
+                 clientConnection.Value.Id, _transport.Index));
+             _transport.NetworkManager.Log($"[ServerPeer.OnPeerConnectionClosed] Closed connection from {data.RemoteUserId} with handle #{data.SocketId} and connection id {clientConnection.Value.Id}.");
+-            
++
+             _clients.Remove(clientConnection.Value);
+         }
+ 
+@@ -241,6 +259,44 @@ namespace FishNet.Transporting.FishyEOSPlugin
+             _closePeerConnectionEventHandles.Remove(remoteUserId);
+         }
+ 
++        /// <summary>
++        /// Removes any existing connection(s) for a remote user id before a fresh reconnect.
++        /// Closes the stale EOS P2P session, clears its notify handles, and tells FishNet the old
++        /// connection stopped so a hard-killed peer can rejoin without colliding on the same socket.
++        /// </summary>
++        private void EvictStaleConnections(ProductUserId remoteUserId)
++        {
++            for (int i = _clients.Count - 1; i >= 0; i--)
++            {
++                var stale = _clients[i];
++                if (stale.RemoteUserId != remoteUserId)
++                    continue;
++
++                var closeConnectionOptions = new CloseConnectionOptions
++                {
++                    LocalUserId = _localUserId,
++                    RemoteUserId = stale.RemoteUserId,
++                    SocketId = _socketId,
++                };
++                EOS.GetCachedP2PInterface()?.CloseConnection(ref closeConnectionOptions);
++
++                if (_establishPeerConnectionEventHandles.TryGetValue(stale, out var establishHandle))
++                {
++                    EOS.GetCachedP2PInterface()?.RemoveNotifyPeerConnectionEstablished(establishHandle);
++                    _establishPeerConnectionEventHandles.Remove(stale);
++                }
++
++                string staleRemoteId = stale.RemoteUserId.ToString();
++                if (_closePeerConnectionEventHandles.TryGetValue(staleRemoteId, out var closeHandle))
++                    RemoveClosePeerConnectionHandle(staleRemoteId, closeHandle);
++
++                _clients.RemoveAt(i);
++                _transport.HandleRemoteConnectionState(new RemoteConnectionStateArgs(RemoteConnectionState.Stopped,
++                    stale.Id, _transport.Index));
++                _transport.NetworkManager.Log($"[ServerPeer] Evicted stale connection id {stale.Id} for reconnecting peer {remoteUserId}.");
++            }
++        }
++
+         /// <summary>
+         /// Stops the server.
+         /// </summary>
+diff --git a/FishyEOS/Util/EOS.cs b/FishyEOS/Util/EOS.cs
+index 592be05..41c5773 100644
+--- a/FishyEOS/Util/EOS.cs
++++ b/FishyEOS/Util/EOS.cs
+@@ -42,7 +42,8 @@ namespace FishNet.Plugins.FishyEOS.Util
+             UnityEngine.Object.DontDestroyOnLoad(gameObject);
+             _eosManager = gameObject.AddComponent<EOSManager>();
+ #if !UNITY_EDITOR && !(UNITY_STANDALONE_WIN)
+-            EOSManager.Instance?.Init(_eosManager, EOSPackageInfo.ConfigFileName);
++            // Plugin 6.x removed EOSPackageInfo.ConfigFileName; Init() resolves the config file itself.
++            EOSManager.Instance?.Init(_eosManager);
+ #endif
+             return PlatformInterface;
+         }
+@@ -58,7 +59,8 @@ namespace FishNet.Plugins.FishyEOS.Util
+             UnityEngine.Object.DontDestroyOnLoad(gameObject);
+             _eosManager = gameObject.AddComponent<EOSManager>();
+ #if !UNITY_EDITOR && !(UNITY_STANDALONE_WIN)
+-            EOSManager.Instance?.Init(_eosManager, EOSPackageInfo.ConfigFileName);
++            // Plugin 6.x removed EOSPackageInfo.ConfigFileName; Init() resolves the config file itself.
++            EOSManager.Instance?.Init(_eosManager);
+ #endif
+             return _eosManager;
+         }

@@ -1,0 +1,31 @@
+_source/*
+# our own art (made with Grok, docs/original-art-with-grok.md) is source, not extracted data
+!_source/original-art/
+Library/
+Temp/
+Logs/
+UserSettings/
+obj/
+bin/
+__pycache__/
+*.pyc
+_tools/roslyn/out/
+.vscode/
+DbBench/out/
+Server/.env
+Server/backups/
+
+# Player builds and the data zip packed during a build
+/Builds/
+/Assets/StreamingAssets/gamedata.zip*
+/Assets/StreamingAssets/gamedata.version*
+
+# EOS product credentials (team skill serverless-multiplayer 05 �3): real values stay out of git
+Assets/StreamingAssets/EOS/*.json
+Assets/StreamingAssets/EOS/*.json.meta
+
+# PlayEveryWare EOS copies these into Assets on every Android build (AndroidBuilder.PreBuild)
+Assets/Plugins/Android/EOS/
+Assets/Plugins/Android/EOS.meta
+Assets/Plugins/Android/aar/
+Assets/Plugins/Android/aar.meta
