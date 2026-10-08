@@ -1,4 +1,4 @@
-﻿---
+---
 phase: 7
 title: "Tests and balance"
 status: pending
@@ -42,3 +42,8 @@ Chốt cân bằng bằng mô phỏng hàng loạt không hình, chạy toàn b�
 ## Risk Assessment
 - Không đạt ngưỡng bằng chỉnh số → báo user, đề xuất đổi cơ chế 1 vũ khí (không tự đổi thiết kế).
 - 6 cặp × 1000 trận × tới 180 s chạy lâu → chạy song song theo cặp, trần thời gian.
+
+## Tiến độ sớm (2026-10-09)
+- Cân bằng lượt 1 đã làm trước theo yêu cầu: `reports/balance-261009-first-pass.md`. Mọi ngưỡng đạt (500 seed/bên).
+- `BalanceRunner` = `SimTests/MatchupReport.cs` (song song) + `BalanceSweep.cs`; test ngưỡng `BalanceThresholdTests.cs` đã có trong bộ test thường.
+- Còn lại ở Phase 7: chỉnh lại sau playtest, build Windows + APK, review cuối.

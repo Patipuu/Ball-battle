@@ -18,6 +18,8 @@ namespace BallBattle.Sim
         readonly SimRandom rng;
         readonly BallState[] balls;
         readonly int[,] parryCooldown;
+        /// <summary>WeaponTuning values at match start (tuning is static; this pins it into the hash).</summary>
+        readonly ulong tuningFingerprint;
 
         public IReadOnlyList<BallState> Balls => balls;
         /// <summary>Events produced by the last Step() only.</summary>
@@ -45,11 +47,12 @@ namespace BallBattle.Sim
             balls = new BallState[weapons.Count];
             parryCooldown = new int[weapons.Count, weapons.Count];
             Arena = config.ArenaAt(0);
+            tuningFingerprint = Weapons.WeaponTuning.Fingerprint();
 
             for (var i = 0; i < weapons.Count; i++)
             {
                 if (weapons[i] == null) throw new ArgumentException($"Weapon {i} is null", nameof(weapons));
-                weapons[i].Bind();
+                weapons[i].Bind(config);
                 balls[i] = Spawn(i, weapons.Count, weapons[i]);
             }
         }
@@ -238,6 +241,7 @@ namespace BallBattle.Sim
         {
             var h = SimHash.Seed;
             h = SimHash.Mix(h, SimVersion.Rules);
+            h = SimHash.Mix(SimHash.Mix(h, (uint)tuningFingerprint), (uint)(tuningFingerprint >> 32));
             h = SimHash.Mix(h, Tick);
             h = SimHash.Mix(h, ActiveTick);
             h = SimHash.Mix(h, HitstopRemaining);

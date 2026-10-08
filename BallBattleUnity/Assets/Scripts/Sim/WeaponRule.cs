@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace BallBattle.Sim
 {
@@ -40,13 +41,35 @@ namespace BallBattle.Sim
         /// <summary>Added to MatchConfig.MaxSpeed for this ball.</summary>
         public float MaxSpeedBonus;
 
+        /// <summary>Ticks before this weapon may hit the same target again; -1 = MatchConfig.HitCooldownTicks.</summary>
+        public int HitCooldownTicks = -1;
+
+        /// <summary>Fraction of speed gained on every real wall bounce (0 = none). The speed cap still applies.</summary>
+        public float WallSpeedBoost;
+
+        /// <summary>Multiplier on MatchConfig.HitKnockback for this weapon's hits (low = target stays close for combos).</summary>
+        public float KnockbackScale = 1f;
+
+        /// <summary>HUD label of the stat that grows (e.g. "DMG"). Real weapons must override.</summary>
+        public virtual string StatLabel => "";
+
+        /// <summary>Current value of that stat.</summary>
+        public virtual float StatValue => 0f;
+
+        /// <summary>Stat formatted for the HUD (weapon decides precision), so the HUD needs no per-weapon code.</summary>
+        public virtual string StatText => StatValue.ToString("0.#", CultureInfo.InvariantCulture);
+
+        /// <summary>Config of the match this weapon is bound to (null before Bind).</summary>
+        protected MatchConfig Config { get; private set; }
+
         bool bound;
 
         /// <summary>Called by MatchSim. Throws if this instance already belongs to a ball.</summary>
-        internal void Bind()
+        internal void Bind(MatchConfig config)
         {
             if (bound) throw new InvalidOperationException($"Weapon '{Id}' instance is already used by a ball; create a new instance per ball and per match.");
             bound = true;
+            Config = config;
         }
 
         public abstract float Damage(in HitContext ctx);
@@ -66,6 +89,9 @@ namespace BallBattle.Sim
             h = SimHash.Mix(h, BladeThickness);
             h = SimHash.Mix(h, SpinDegPerTick);
             h = SimHash.Mix(h, MaxSpeedBonus);
+            h = SimHash.Mix(h, HitCooldownTicks);
+            h = SimHash.Mix(h, WallSpeedBoost);
+            h = SimHash.Mix(h, KnockbackScale);
             return HashState(h);
         }
     }

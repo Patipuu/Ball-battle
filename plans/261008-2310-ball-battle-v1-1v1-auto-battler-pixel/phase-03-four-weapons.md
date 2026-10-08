@@ -1,10 +1,11 @@
 ---
 phase: 3
-title: "Four weapons"
-status: pending
+title: Four weapons
+status: completed
 priority: P1
-dependencies: [2]
-effort: "1 ngày"
+dependencies:
+  - 2
+effort: 1 ngày
 ---
 
 # Phase 3: Four weapons
@@ -36,10 +37,22 @@ effort: "1 ngày"
 4. Chạy thử 100 trận mỗi cặp, ghi tỉ lệ thắng thô vào report (chưa chỉnh).
 
 ## Success Criteria
-- [ ] 4 rule đúng công thức, test xanh.
-- [ ] Brawler không bị parry; Fang parry được Blade/Pike.
-- [ ] Báo cáo tỉ lệ thắng thô ở `plans/.../reports/`.
+- [x] 4 rule đúng công thức, test xanh.
+- [x] Brawler không bị parry; Fang parry được Blade/Pike.
+- [x] Báo cáo tỉ lệ thắng thô ở `plans/.../reports/`.
 
 ## Risk Assessment
 - Fang xoay nhanh xuyên qua (tunneling) → kiểm va chạm theo cung quét giữa 2 tick, không chỉ vị trí cuối.
 - Brawler quá mạnh/yếu do phụ thuộc vật lý → để phase 7 chỉnh hệ số.
+
+## Kết quả (2026-10-09)
+- 43 SimTests xanh; netstandard2.1 + C# 9 sạch.
+- Thêm vào WeaponRule: `HitCooldownTicks` riêng (Fang 6), `WallSpeedBoost` (Brawler), `StatLabel/StatValue/StatText` cho HUD, `Config` sau Bind.
+- HUD: Brawler hiện tốc trần thật (không âm), Fang nhãn "SPIN", Pike độ dài số nguyên.
+- Tỉ lệ thắng thô: `reports/phase-03-raw-matchups.md` — Brawler ~99% thắng, Fang ~0%, Brawler gương 33% hòa. Chưa chỉnh (Phase 7).
+
+## Chuyển sang Phase 7
+- Cân bằng theo báo cáo thô (Brawler mạnh, Fang yếu, Brawler gương hòa nhiều).
+- `WeaponTuning` đang là `const` → đổi sang dạng chỉnh được lúc chạy nếu cần quét tham số tự động.
+- Brawler tính sát thương theo tốc độ của chính nó (bị đánh từ sau vẫn gây sát thương đủ) → cân nhắc tốc độ tương đối.
+- Chạy cân bằng song song theo seed (một luồng: ~38 ms/trận).

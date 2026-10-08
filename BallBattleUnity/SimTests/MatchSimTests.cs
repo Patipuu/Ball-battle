@@ -332,5 +332,24 @@ namespace BallBattle.SimTests
             m.Balls[1].Pos = new Vec2(45, 0); m.Balls[1].Vel = Vec2.Zero; m.Balls[1].WeaponAngleDeg = 80f; m.Balls[1].SpinDir = 1;
             return m;
         }
+
+        [Test, NonParallelizable]
+        public void TuningChangeChangesHash()
+        {
+            ulong Run()
+            {
+                var m = NewMatch(5, new BallBattle.Sim.Weapons.FangRule(), new BallBattle.Sim.Weapons.BladeRule());
+                return m.ComputeHash();
+            }
+            var before = Run();
+            var old = BallBattle.Sim.Weapons.WeaponTuning.FangSpinGainDecay;
+            try
+            {
+                BallBattle.Sim.Weapons.WeaponTuning.FangSpinGainDecay = 0.5f;
+                Assert.That(Run(), Is.Not.EqualTo(before), "a live-read tuning value must still change the hash");
+            }
+            finally { BallBattle.Sim.Weapons.WeaponTuning.FangSpinGainDecay = old; }
+            Assert.That(Run(), Is.EqualTo(before));
+        }
     }
 }

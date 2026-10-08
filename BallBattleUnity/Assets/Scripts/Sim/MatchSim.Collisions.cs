@@ -27,6 +27,15 @@ namespace BallBattle.Sim
                     var baHit = DetectHit(b, a, out var baContact);
                     if (!abHit && !baHit) continue;
 
+                    // Body vs body: only the faster ball lands the blow (equal speed: both), so mirror brawls are not mostly draws.
+                    if (abHit && baHit && a.Weapon.BodyAttacks && b.Weapon.BodyAttacks && !a.Weapon.HasBlade && !b.Weapon.HasBlade)
+                    {
+                        var sa = a.Vel.LengthSq;
+                        var sb = b.Vel.LengthSq;
+                        if (sa > sb) baHit = false;
+                        else if (sb > sa) abHit = false;
+                    }
+
                     float abDamage = 0f, baDamage = 0f;
                     HitContext abCtx = default, baCtx = default;
                     if (abHit) { abCtx = MakeContext(a, b); abDamage = SafeDamage(a.Weapon, abCtx); }
@@ -111,14 +120,15 @@ namespace BallBattle.Sim
         {
             target.Hp -= damage;
             attacker.HitCount++;
-            attacker.HitCooldown[target.Index] = Config.HitCooldownTicks;
+            var cooldown = attacker.Weapon.HitCooldownTicks >= 0 ? attacker.Weapon.HitCooldownTicks : Config.HitCooldownTicks;
+            attacker.HitCooldown[target.Index] = cooldown;
             attacker.Weapon.OnHit(ctx);
             HitstopRemaining = Math.Max(HitstopRemaining, Config.HitHitstopTicks);
 
             // Push away from the contact point (a long blade tip pushes along the swing, not center-to-center).
             var centerDir = (target.Pos - attacker.Pos).NormalizedOr(FallbackNormal);
             var knock = (target.Pos - contact).NormalizedOr(centerDir);
-            target.Vel += knock * Config.HitKnockback;
+            target.Vel += knock * (Config.HitKnockback * attacker.Weapon.KnockbackScale);
 
             Emit(SimEventType.Hit, attacker.Index, target.Index, damage, contact);
             Emit(SimEventType.StatChanged, attacker.Index, -1, 0f, attacker.Pos);
@@ -201,6 +211,7 @@ namespace BallBattle.Sim
 
                 if (bounced)
                 {
+                    if (b.Weapon.WallSpeedBoost > 0f) b.Vel = b.Vel * (1f + b.Weapon.WallSpeedBoost);
                     b.Weapon.OnWall();
                     Emit(SimEventType.WallBounce, b.Index, -1, 0f, b.Pos);
                 }

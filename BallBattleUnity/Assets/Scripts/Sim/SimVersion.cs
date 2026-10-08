@@ -7,6 +7,6 @@ namespace BallBattle.Sim
     /// </summary>
     public static class SimVersion
     {
-        public const int Rules = 1;
+        public const int Rules = 2;
     }
 }
