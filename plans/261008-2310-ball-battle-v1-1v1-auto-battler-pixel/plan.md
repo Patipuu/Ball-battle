@@ -54,7 +54,7 @@ Input người chơi, chế độ khác (BR, team, raid), art/âm thanh thật, 
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | [Project setup](./phase-01-project-setup.md) | Completed |
-| 2 | [Deterministic sim core](./phase-02-deterministic-sim-core.md) | Pending |
+| 2 | [Deterministic sim core](./phase-02-deterministic-sim-core.md) | Completed |
 | 3 | [Four weapons](./phase-03-four-weapons.md) | Pending |
 | 4 | [Pixel view](./phase-04-pixel-view.md) | Pending |
 | 5 | [Juice and audio](./phase-05-juice-and-audio.md) | Pending |

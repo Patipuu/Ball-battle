@@ -15,12 +15,13 @@ effort: "1 ngày"
 ## Requirements
 | Tên tạm | Hình | Bắt đầu | Mỗi lần trúng | Khắc / bị khắc |
 |---|---|---|---|---|
-| Blade (kiếm) | đoạn dài 22 | dmg 1, xoay 6°/tick | dmg +1 | ổn định; thua parry dày (Fang) |
+| Blade (kiếm) | đoạn dài 24 (từ r-4=12) | dmg 1, xoay 6°/tick | dmg +1 | ổn định; thua parry dày (Fang) |
 | Fang (dao găm) | đoạn dài 12 | dmg 1, xoay 8°/tick | xoay +k, k giảm 2%/lần; dmg giữ 1 | parry giỏi, khắc Pike; thua Brawler |
 | Pike (giáo) | đoạn dài 26 | dmg 1, xoay 4°/tick | dài +0.5, dmg +0.5 | tầm xa, khắc Brawler; dài → dễ bị parry |
 | Brawler (tay không) | không vũ khí | tốc tối đa 3 | dmg = hệ số × |v|; tốc tối đa +0.5 khi trúng hoặc chạm tường | không bị parry, khắc Fang; không đỡ được → thua Pike/Blade |
 
-- Trần: Pike dài ≤ 120; Fang xoay ≤ 40°/tick; Brawler tốc ≤ 12 (giữ ổn định vật lý).
+- Inner mặc định 12 (bóng r=16). Thử nghiệm Phase 2: lưỡi dài hơn → trận nhanh hơn (24→30: trung vị 54→47 s). <!-- Updated: Phase 2 pacing sweep (reports/phase-02-pacing-sweep.md) -->
+- Trần: Pike dài ≤ 90 (arena tối thiểu 110x110); Fang xoay ≤ 40°/tick; Brawler tốc ≤ 12 (giữ ổn định vật lý).
 - Màu nhận diện mỗi bóng; chỉ số hiện trên HUD (phase 4).
 - Thêm vũ khí mới = 1 class `IWeaponRule` + 1 dòng đăng ký.
 

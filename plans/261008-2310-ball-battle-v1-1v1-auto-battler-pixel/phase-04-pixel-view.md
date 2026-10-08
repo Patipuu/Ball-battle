@@ -1,4 +1,4 @@
-﻿---
+---
 phase: 4
 title: "Pixel view"
 status: pending
@@ -14,7 +14,7 @@ Hiển thị trận ở 270x480 pixel, phóng nguyên x4, art placeholder sinh b
 
 ## Requirements
 - Pixel Perfect Camera: dùng component của URP `UnityEngine.Rendering.Universal.PixelPerfectCamera` (không dùng `UnityEngine.U2D` của package — dành cho Built-in); kiểm asmdef View resolve đủ reference khi có script đầu tiên. <!-- Updated: Phase 1 review --> Assets PPU 1, reference 270x480, Grid Snapping = Upscale Render Texture, crop X/Y; point filter, không nén.
-- Sprite placeholder do Editor tool sinh PNG: bóng r=12 (viền 1px + bóng đổ 1px), mỗi vũ khí 1 sprite hướng phải, Pike vẽ thân lặp được (dài ra không méo), nền arena + tường, ô HP.
+- Sprite placeholder do Editor tool sinh PNG: bóng r=16 → 32x32 (viền 1px + bóng đổ 1px), arena vuông 230x230 giữa màn, HUD ~125px trên/dưới, <!-- Updated: Phase 2 pacing sweep (reports/phase-02-pacing-sweep.md) --> mỗi vũ khí 1 sprite hướng phải, Pike vẽ thân lặp được (dài ra không méo), nền arena + tường, ô HP.
 - Font pixel: atlas chữ số + chữ hoa 3x5 hoặc 4x6 sinh bằng code.
 - View nội suy giữa 2 snapshot (60 Hz sim, render theo màn).
 - Tường arena vẽ theo vị trí co hiện tại (cảnh báo nhấp nháy 3 s trước khi co, sọc nguy hiểm). <!-- Updated: Validation Session 1 - hiển thị arena co -->
