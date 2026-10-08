@@ -3,7 +3,6 @@
   "rootNamespace": "BallBattle.View",
   "references": [
     "BallBattle.Sim",
-    "Unity.2D.PixelPerfect",
     "Unity.RenderPipelines.Universal.Runtime",
     "Unity.RenderPipelines.Universal.2D.Runtime",
     "UnityEngine.UI"

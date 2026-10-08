@@ -1,10 +1,11 @@
 ---
 phase: 5
-title: "Juice and audio"
-status: pending
+title: Juice and audio
+status: in-progress
 priority: P2
-dependencies: [4]
-effort: "0.5–1 ngày"
+dependencies:
+  - 4
+effort: 0.5–1 ngày
 ---
 
 # Phase 5: Juice and audio

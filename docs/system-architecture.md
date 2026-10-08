@@ -35,3 +35,16 @@ Same build + same seed + same weapons → identical `ComputeHash()`. Float math;
 
 ## Tests
 `BallBattleUnity/SimTests` (dotnet, NUnit) links Sim sources. `Category=Diagnostic` = pacing report (not a gate).
+
+## View (`Assets/Scripts/View/`)
+| File | Role |
+|---|---|
+| `ArenaView.cs` | Owns MatchSim; fixed 60 Hz step in Update, interpolated draw; `SimEventRaised`, `MatchEnded`; deferred `StartMatch`; `SimToWorld` |
+| `BallView.cs` | Body sprite + 9-sliced blade on rotating pivot; pixel-snapped position/length; heat tint |
+| `ArenaFrameView.cs` | Floor, walls (shrink warning), background mask above blades = clipping at arena edge |
+| `HudView.cs` | Names, HP (lagging lost bar), weapon stat; strings rebuilt only on change |
+| `PixelText.cs`, `PixelFontData.cs` | 3x5 pixel font (atlas generated in Editor, glyph sprites sliced at runtime) |
+| `Palette.cs`, `ArtLibrary.cs` | Colors / per-weapon look; sprite references (swap art here) |
+
+Rendering: 270x480 native, PPU 1, URP `PixelPerfectCamera` UpscaleRenderTexture + Windowbox; world units = native pixels = sim units; arena centred at origin. Sorting: floor 0, bodies 10+, blades 20+, (FX 25–29), mask 30, walls 31, HUD 40+.
+Editor tools: `BallBattle/Generate Placeholder Art`, `BallBattle/Build Scenes`, `BallBattle/Apply Project Settings`.

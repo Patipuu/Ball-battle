@@ -1,10 +1,11 @@
 ---
 phase: 4
-title: "Pixel view"
-status: pending
+title: Pixel view
+status: completed
 priority: P1
-dependencies: [3]
-effort: "1 ngày"
+dependencies:
+  - 3
+effort: 1 ngày
 ---
 
 # Phase 4: Pixel view
@@ -42,9 +43,18 @@ Editor/SceneBuilder.cs   menu "BallBattle/Build Scenes" + batch (-executeMethod)
 5. Chụp màn bằng Unity MCP, kiểm không mờ.
 
 ## Success Criteria
-- [ ] Play Arena với cặp cố định: thấy 2 bóng nảy, vũ khí xoay, HP giảm, chỉ số tăng.
-- [ ] Ảnh chụp 1080x1920: mỗi pixel gốc đúng khối 4x4 (không mờ, không lệch lưới).
-- [ ] 60 fps trên Editor.
+- [x] Play Arena với cặp cố định: thấy 2 bóng nảy, vũ khí xoay, HP giảm, chỉ số tăng.
+- [x] Ảnh chụp 1080x1920: mỗi pixel gốc đúng khối 4x4 (không mờ, không lệch lưới).
+- [x] 60 fps trên Editor.
 
 ## Risk Assessment
 - Upscale RT làm UI uGUI cũng bị pixel hóa không đều → HUD vẽ bằng sprite trong world space cùng camera, không dùng Canvas Overlay cho HUD trận.
+
+## Kết quả (2026-10-09)
+- Scene `Assets/Scenes/Arena.unity` dựng bằng `BallBattle/Build Scenes` (sinh art + ArtLibrary + scene + Build Settings).
+- Pixel-perfect: render Main Camera ra 1080x1920 → 0/129.600 khối 4x4 không đồng màu. Ảnh: `reports/phase-04-capture-1080x1920.png`.
+- Editor ~565 fps; HUD không tạo chuỗi mỗi khung (1 GC/30 s, do Editor).
+- EditMode 7/7 (font, palette, art library, heat).
+- Theo review: StartMatch hoãn khi gọi trong vòng tick; EnsureInit; event MatchEnded; không chớp khung khi đổi trận; Global Light 2D; blade pivot y=0.4 + làm tròn vị trí/độ dài; lưỡi luôn trên thân; cache font reset khi Play; Run In Background.
+- Ghi chú: Editor chỉ chạy khung hình khi cửa sổ Unity được focus (giới hạn của Editor, không phải game).
+- Còn mở cho Phase 5: hiệu ứng nên đặt theo `ArenaView.SimToWorld`; sự kiện phát ở vị trí tick, bóng vẽ nội suy (lệch ≤1 tick).

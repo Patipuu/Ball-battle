@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cdbb86df00a535429fa42ad46dc5385, type: 3}
+  m_Name: ArtLibrary
+  m_EditorClassIdentifier: BallBattle.View::BallBattle.View.ArtLibrary
+  Pixel: {fileID: 21300000, guid: 1cc48acb8b0a94c43b8a64dd757b1f71, type: 3}
+  Font: {fileID: 2800000, guid: 9f0157771693c6343ad5b4541adca432, type: 3}
+  Weapons:
+  - Id: blade
+    Ball: {fileID: 21300000, guid: 5803b3c9346b79f499285ae24e05f427, type: 3}
+    Blade: {fileID: 21300000, guid: e238c293564b7994094eb611236e5592, type: 3}
+  - Id: fang
+    Ball: {fileID: 21300000, guid: 00e62968f831133498735e28ac27ff0e, type: 3}
+    Blade: {fileID: 21300000, guid: 815a926940847284d8b0422162baf5a8, type: 3}
+  - Id: pike
+    Ball: {fileID: 21300000, guid: b6d3d54954d993449a76383cc21a66e3, type: 3}
+    Blade: {fileID: 21300000, guid: 3385500a7effead4989164a8f5ea2554, type: 3}
+  - Id: brawler
+    Ball: {fileID: 21300000, guid: be3653d6417b34244b8490eae01021a5, type: 3}
+    Blade: {fileID: 0}

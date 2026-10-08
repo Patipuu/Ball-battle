@@ -59,6 +59,8 @@ namespace BallBattle.EditorTools
             PlayerSettings.defaultScreenWidth = 540;
             PlayerSettings.defaultScreenHeight = 960;
             PlayerSettings.resizableWindow = true;
+            // Keep simulating when unfocused (screen recorders, Editor previews driven over MCP).
+            PlayerSettings.runInBackground = true;
 
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, AndroidAppId);
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);

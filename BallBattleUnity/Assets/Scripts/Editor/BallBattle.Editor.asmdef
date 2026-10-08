@@ -4,7 +4,6 @@
   "references": [
     "BallBattle.Sim",
     "BallBattle.View",
-    "Unity.2D.PixelPerfect",
     "Unity.RenderPipelines.Universal.Runtime",
     "Unity.RenderPipelines.Universal.2D.Runtime"
   ],

@@ -33,3 +33,7 @@ Assets/Plugins/Android/aar.meta
 # dotnet SimTests build output
 SimTests/[Bb]in/
 SimTests/[Oo]bj/
+
+# MCP / editor captures
+/Assets/Screenshots/
+/Assets/Screenshots.meta
