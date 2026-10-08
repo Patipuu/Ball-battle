@@ -4,6 +4,7 @@
   "references": [
     "BallBattle.Sim",
     "BallBattle.View",
+    "BallBattle.Editor",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"
   ],

@@ -17,6 +17,8 @@ namespace BallBattle.View
         }
 
         public Sprite Pixel;
+        /// <summary>White ball silhouette drawn over a ball for the hit flash.</summary>
+        public Sprite BallFlash;
         public Texture2D Font;
         public WeaponArt[] Weapons;
 

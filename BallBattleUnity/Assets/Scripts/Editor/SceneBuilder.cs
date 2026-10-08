@@ -22,6 +22,7 @@ namespace BallBattle.EditorTools
         public static void BuildAll()
         {
             PlaceholderArtGenerator.Run();
+            PlaceholderSfxGenerator.Run();
             BuildArena();
             RegisterScenes(ArenaScenePath);
             Debug.Log("[BallBattle] Scenes built");
@@ -39,6 +40,7 @@ namespace BallBattle.EditorTools
             cam.backgroundColor = Palette.Background;
             cam.transform.position = new Vector3(0f, 0f, -10f);
             camGo.AddComponent<UniversalAdditionalCameraData>();
+            camGo.AddComponent<AudioListener>();
 
             var ppc = camGo.AddComponent<PixelPerfectCamera>();
             ppc.assetsPPU = 1;
@@ -55,6 +57,8 @@ namespace BallBattle.EditorTools
 
             var arena = new GameObject("Arena").AddComponent<ArenaView>();
             arena.Art = AssetDatabase.LoadAssetAtPath<ArtLibrary>(PlaceholderArtGenerator.LibraryPath);
+            var fx = arena.gameObject.AddComponent<FxView>();
+            fx.Sfx = AssetDatabase.LoadAssetAtPath<SfxLibrary>(PlaceholderSfxGenerator.LibraryPath);
 
             EditorSceneManager.SaveScene(scene, ArenaScenePath);
         }

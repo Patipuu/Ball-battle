@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 882f65262d65c104394483a077e8b0a6, type: 3}
+  m_Name: SfxLibrary
+  m_EditorClassIdentifier: BallBattle.View::BallBattle.View.SfxLibrary
+  Hit: {fileID: 8300000, guid: bdb101c82cec9dd4aa553a5e76e98ea1, type: 3}
+  Parry: {fileID: 8300000, guid: 7005a09e76b49c74fba875608af4cf70, type: 3}
+  Wall: {fileID: 8300000, guid: 86f30e71d7fc392438559230ad867ad4, type: 3}
+  Death: {fileID: 8300000, guid: e3c070f909853134d9b1ec01907b78c8, type: 3}
+  Win: {fileID: 8300000, guid: 1bd33d8b137e7a44ba2556f73e192197, type: 3}

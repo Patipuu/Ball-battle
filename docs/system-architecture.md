@@ -48,3 +48,6 @@ Same build + same seed + same weapons → identical `ComputeHash()`. Float math;
 
 Rendering: 270x480 native, PPU 1, URP `PixelPerfectCamera` UpscaleRenderTexture + Windowbox; world units = native pixels = sim units; arena centred at origin. Sorting: floor 0, bodies 10+, blades 20+, (FX 25–29), mask 30, walls 31, HUD 40+.
 Editor tools: `BallBattle/Generate Placeholder Art`, `BallBattle/Build Scenes`, `BallBattle/Apply Project Settings`.
+
+### Effects & audio
+`FxView` (same GameObject as ArenaView) maps SimEvents to: `BallView.Flash`, `PixelParticles` (pooled, whole-pixel), `DamagePopups` (pooled PixelText, cached strings), `ScreenShake` (integer px, re-captures base when idle), `SfxPlayer` (8 voices, same-clip 30 ms gap). Placeholder WAVs from `PlaceholderSfxSynth` via `BallBattle/Generate Placeholder Sfx`; clips referenced by `SfxLibrary`. Zero GC allocation per frame mid-match (Profiler Recorder).

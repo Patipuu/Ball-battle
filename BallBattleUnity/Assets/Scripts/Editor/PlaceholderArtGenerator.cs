@@ -22,6 +22,7 @@ namespace BallBattle.EditorTools
 
             Write("pixel.png", PlaceholderArtPainter.Pixel());
             Write("font_3x5.png", PlaceholderArtPainter.Font());
+            Write("ball_flash.png", PlaceholderArtPainter.BallFlash());
             foreach (var look in Palette.Weapons)
             {
                 Write($"ball_{look.Id}.png", PlaceholderArtPainter.Ball(look));
@@ -32,6 +33,7 @@ namespace BallBattle.EditorTools
 
             ConfigureSprite($"{Folder}/pixel.png", new Vector2(0.5f, 0.5f), Vector4.zero);
             ConfigureSprite($"{Folder}/font_3x5.png", Vector2.zero, Vector4.zero);
+            ConfigureSprite($"{Folder}/ball_flash.png", new Vector2(0.5f, 0.5f), Vector4.zero);
             foreach (var look in Palette.Weapons)
             {
                 ConfigureSprite($"{Folder}/ball_{look.Id}.png", new Vector2(0.5f, 0.5f), Vector4.zero);
@@ -86,6 +88,7 @@ namespace BallBattle.EditorTools
 
             lib.Pixel = AssetDatabase.LoadAssetAtPath<Sprite>($"{Folder}/pixel.png");
             lib.Font = AssetDatabase.LoadAssetAtPath<Texture2D>($"{Folder}/font_3x5.png");
+            lib.BallFlash = AssetDatabase.LoadAssetAtPath<Sprite>($"{Folder}/ball_flash.png");
             lib.Weapons = new ArtLibrary.WeaponArt[Palette.Weapons.Length];
             for (var i = 0; i < Palette.Weapons.Length; i++)
             {

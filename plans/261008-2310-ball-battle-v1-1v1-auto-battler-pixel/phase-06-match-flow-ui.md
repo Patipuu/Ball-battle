@@ -1,10 +1,11 @@
 ---
 phase: 6
-title: "Match flow UI"
-status: pending
+title: Match flow UI
+status: in-progress
 priority: P1
-dependencies: [4]
-effort: "0.5 ngày"
+dependencies:
+  - 4
+effort: 0.5 ngày
 ---
 
 # Phase 6: Match flow UI

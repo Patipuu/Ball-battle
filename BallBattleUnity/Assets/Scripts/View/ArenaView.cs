@@ -29,6 +29,10 @@ namespace BallBattle.View
         public event Action<SimEvent> SimEventRaised;
         /// <summary>Raised once when the current match ends: winner ball index, -1 on draw.</summary>
         public event Action<int> MatchEnded;
+        /// <summary>Raised after a new match (and its ball views) has been created.</summary>
+        public event Action MatchStarted;
+
+        public BallView GetBallView(int index) => index >= 0 && index < ballViews.Length ? ballViews[index] : null;
 
         public MatchSim Sim { get; private set; }
 
@@ -89,7 +93,7 @@ namespace BallBattle.View
             for (var i = 0; i < n; i++)
             {
                 var id = Sim.Balls[i].Weapon.Id;
-                ballViews[i] = BallView.Create(transform, i, id, Art.Get(id), BodyOrderBase + i, BladeOrderBase + i);
+                ballViews[i] = BallView.Create(transform, i, id, Art.Get(id), Art.BallFlash, BodyOrderBase + i * 2, BladeOrderBase + i);
                 hud.Bind(i, id);
             }
             SnapshotPrevious();
@@ -97,6 +101,7 @@ namespace BallBattle.View
             endTimer = 0f;
             endReported = false;
             Draw(0f, 0f);   // new views show their real pose this frame, not the origin
+            MatchStarted?.Invoke();
         }
 
         void Update()
@@ -161,7 +166,7 @@ namespace BallBattle.View
                 var b = Sim.Balls[i];
                 var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X, b.Pos.Y), alpha);
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg, alpha);
-                ballViews[i].Render(pos, angle, b.Weapon.BladeInner, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive);
+                ballViews[i].Render(pos, angle, b.Weapon.BladeInner, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt);
             }
             hud.Render(Sim, dt);
         }

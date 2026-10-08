@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: Juice and audio
-status: in-progress
+status: completed
 priority: P2
 dependencies:
   - 4
@@ -31,9 +31,21 @@ Phần làm clip "đã": hitstop thấy rõ, rung màn, nháy trắng, hạt pix
 4. Death slow-mo.
 
 ## Success Criteria
-- [ ] Mỗi loại sự kiện có hiệu ứng + âm.
-- [ ] Không GC alloc mỗi frame trong trận (Profiler).
-- [ ] Rung màn không làm mờ pixel.
+- [x] Mỗi loại sự kiện có hiệu ứng + âm.
+- [x] Không GC alloc mỗi frame trong trận (Profiler).
+- [x] Rung màn không làm mờ pixel.
 
 ## Risk Assessment
 - Âm dồn dập khi Fang combo → giới hạn số voice, gộp âm trong 1 tick.
+
+## Kết quả (2026-10-09)
+- FxView (cùng GameObject với ArenaView): nháy trắng 0.06 s, số sát thương bay (2 cỡ, chuỗi được cache), hạt pixel 1–2 px (pool 96), rung màn theo pixel nguyên (≤3 px), slow-mo hiệu ứng 0.5 s khi hạ gục, nhạc thắng sau slow-mo.
+- Âm thanh synth (WAV 16-bit, tất định, fade 2/4 ms): hit "clack", parry kim loại, wall, death, win. SfxPlayer 8 kênh, cùng clip tối đa 1 lần/30 ms.
+- Kiểm: Profiler Recorder GC.Alloc = 0 trong khung giữa trận; render 1080x1920 ngay lúc trúng đòn: 0 khối lệch; ~450 fps; EditMode 12/12; console sạch từ khung đầu.
+- Ảnh: `reports/phase-05-hit-capture.png`.
+
+## Ghi chú cho Phase 6 (từ review)
+- Tạm dừng: dùng một đồng hồ chung (sim, FX, âm thanh); tạm dừng AudioSource/AudioListener.pause.
+- Sang ván mới sau khi slow-mo 0.5 s kết thúc (không cắt hiệu ứng hạ gục); phân biệt nhạc thắng ván / thắng trận.
+- Chỉ một AudioListener (đang ở camera Arena).
+- Tuỳ chọn: PixelText.SetColor chỉ đổi màu (tránh dựng lại glyph khi popup mờ dần).

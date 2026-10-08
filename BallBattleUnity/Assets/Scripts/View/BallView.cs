@@ -13,11 +13,13 @@ namespace BallBattle.View
 
         SpriteRenderer body;
         SpriteRenderer blade;
+        SpriteRenderer flash;
+        float flashRemaining;
         Transform pivot;
         string weaponId;
         float shownHeat = -1f;
 
-        public static BallView Create(Transform parent, int index, string weaponId, ArtLibrary.WeaponArt art, int bodyOrder, int bladeOrder)
+        public static BallView Create(Transform parent, int index, string weaponId, ArtLibrary.WeaponArt art, Sprite flashSprite, int bodyOrder, int bladeOrder)
         {
             var go = new GameObject($"Ball{index}_{weaponId}");
             go.transform.SetParent(parent, false);
@@ -27,6 +29,13 @@ namespace BallBattle.View
             v.body = go.AddComponent<SpriteRenderer>();
             v.body.sprite = art.Ball;
             v.body.sortingOrder = bodyOrder;
+
+            var f = new GameObject("Flash");
+            f.transform.SetParent(go.transform, false);
+            v.flash = f.AddComponent<SpriteRenderer>();
+            v.flash.sprite = flashSprite;
+            v.flash.sortingOrder = bodyOrder + 1;   // always over its own body, under the other ball
+            v.flash.enabled = false;
 
             if (art.Blade != null)
             {
@@ -42,11 +51,18 @@ namespace BallBattle.View
             return v;
         }
 
+        /// <summary>Show the white hit flash for a short time (driven by Render's frame time).</summary>
+        public void Flash(float seconds) => flashRemaining = Mathf.Max(flashRemaining, seconds);
+
         /// <summary>Called every frame with interpolated sim values (world units = native pixels).</summary>
-        public void Render(Vector2 pos, float angleDeg, float bladeInner, float bladeLength, float statValue, bool alive)
+        public void Render(Vector2 pos, float angleDeg, float bladeInner, float bladeLength, float statValue, bool alive, float deltaTime)
         {
             if (gameObject.activeSelf != alive) gameObject.SetActive(alive);
             if (!alive) return;
+
+            flashRemaining = Mathf.Max(0f, flashRemaining - deltaTime);
+            var flashing = flashRemaining > 0f;
+            if (flash.enabled != flashing) flash.enabled = flashing;
 
             transform.localPosition = new Vector3(Mathf.Round(pos.x), Mathf.Round(pos.y), 0f);
             if (blade == null) return;

@@ -40,6 +40,21 @@ namespace BallBattle.EditorTools
             return t;
         }
 
+        /// <summary>32x32 solid white disc (same shape as balls) for the hit flash.</summary>
+        public static Texture2D BallFlash()
+        {
+            var t = New(32, 32);
+            for (var y = 0; y < 32; y++)
+            for (var x = 0; x < 32; x++)
+            {
+                var dx = x + 0.5f - 16f;
+                var dy = y + 0.5f - 16f;
+                if (dx * dx + dy * dy <= 15.5f * 15.5f) t.SetPixel(x, y, Color.white);
+            }
+            t.Apply();
+            return t;
+        }
+
         /// <summary>32x32 ball: body color, 1px dark outline, light upper-left, shade lower-right, small highlight.</summary>
         public static Texture2D Ball(Palette.WeaponLook look)
         {
