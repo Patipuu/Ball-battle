@@ -1,10 +1,10 @@
-﻿---
+---
 phase: 1
-title: "Project setup"
-status: pending
+title: Project setup
+status: completed
 priority: P1
 dependencies: []
-effort: "0.5 ngày"
+effort: 0.5 ngày
 ---
 
 # Phase 1: Project setup

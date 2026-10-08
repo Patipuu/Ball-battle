@@ -1,14 +1,20 @@
-﻿---
-title: "Ball Battle v1 - 1v1 auto-battler pixel"
-description: "Bản 1 chơi được: 2 bóng mang vũ khí tự đấu 1v1 trong arena pixel 270x480, 4 vũ khí khắc chế nhau, best-of-3, trận tái lập từ seed."
+---
+title: Ball Battle v1 - 1v1 auto-battler pixel
+description: >-
+  Bản 1 chơi được: 2 bóng mang vũ khí tự đấu 1v1 trong arena pixel 270x480, 4 vũ
+  khí khắc chế nhau, best-of-3, trận tái lập từ seed.
 status: pending
 priority: P1
-branch: "master"
-tags: [feature, gameplay, unity, pixel-art]
+branch: master
+tags:
+  - feature
+  - gameplay
+  - unity
+  - pixel-art
 blockedBy: []
 blocks: []
-created: "2026-10-08T16:04:44.898Z"
-createdBy: "ck:plan"
+created: '2026-10-08T16:04:44.898Z'
+createdBy: 'ck:plan'
 source: skill
 ---
 
@@ -47,7 +53,7 @@ Input người chơi, chế độ khác (BR, team, raid), art/âm thanh thật, 
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | [Project setup](./phase-01-project-setup.md) | Pending |
+| 1 | [Project setup](./phase-01-project-setup.md) | Completed |
 | 2 | [Deterministic sim core](./phase-02-deterministic-sim-core.md) | Pending |
 | 3 | [Four weapons](./phase-03-four-weapons.md) | Pending |
 | 4 | [Pixel view](./phase-04-pixel-view.md) | Pending |

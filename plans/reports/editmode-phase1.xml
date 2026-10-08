@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="3" result="Passed" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.0349306">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.034931" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1005" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.026786" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="69536" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1006" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.026401" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1007" name="Tests" fullname="BallBattle.Tests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.026249" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="ProjectSetupTests" fullname="BallBattle.Tests.ProjectSetupTests" classname="BallBattle.Tests.ProjectSetupTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.025262" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1003" name="EveryQualityLevelUsesUrp" fullname="BallBattle.Tests.ProjectSetupTests.EveryQualityLevelUsesUrp" methodname="EveryQualityLevelUsesUrp" classname="BallBattle.Tests.ProjectSetupTests" runstate="Runnable" seed="1174297141" result="Passed" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.009499" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="SimAssemblyHasNoUnityEngineReference" fullname="BallBattle.Tests.ProjectSetupTests.SimAssemblyHasNoUnityEngineReference" methodname="SimAssemblyHasNoUnityEngineReference" classname="BallBattle.Tests.ProjectSetupTests" runstate="Runnable" seed="1656144259" result="Passed" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.002098" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="UrpIsActiveRenderPipeline" fullname="BallBattle.Tests.ProjectSetupTests.UrpIsActiveRenderPipeline" methodname="UrpIsActiveRenderPipeline" classname="BallBattle.Tests.ProjectSetupTests" runstate="Runnable" seed="1987365438" result="Passed" start-time="2026-10-08 16:25:25Z" end-time="2026-10-08 16:25:25Z" duration="0.001272" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

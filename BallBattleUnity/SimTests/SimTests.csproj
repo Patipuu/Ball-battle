@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Runs BallBattle.Sim outside Unity (dotnet test). Same toolchain as BoomOnlineUnity/SimTests.
+       LangVersion 9.0 = what Unity compiles, so Sim code that passes here also compiles in Unity. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="NUnit" Version="4.3.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Assets/Scripts/Sim/**/*.cs" />
+  </ItemGroup>
+</Project>

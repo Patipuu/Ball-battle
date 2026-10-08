@@ -1,0 +1,22 @@
+{
+  "name": "BallBattle.Editor",
+  "rootNamespace": "BallBattle.EditorTools",
+  "references": [
+    "BallBattle.Sim",
+    "BallBattle.View",
+    "Unity.2D.PixelPerfect",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Universal.2D.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

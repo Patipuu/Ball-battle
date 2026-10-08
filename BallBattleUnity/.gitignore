@@ -29,3 +29,7 @@ Assets/Plugins/Android/EOS/
 Assets/Plugins/Android/EOS.meta
 Assets/Plugins/Android/aar/
 Assets/Plugins/Android/aar.meta
+
+# dotnet SimTests build output
+SimTests/[Bb]in/
+SimTests/[Oo]bj/

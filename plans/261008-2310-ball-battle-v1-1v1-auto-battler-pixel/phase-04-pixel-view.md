@@ -13,7 +13,7 @@ effort: "1 ngày"
 Hiển thị trận ở 270x480 pixel, phóng nguyên x4, art placeholder sinh bằng code.
 
 ## Requirements
-- Pixel Perfect Camera: Assets PPU 1, reference 270x480, Grid Snapping = Upscale Render Texture, crop X/Y; point filter, không nén.
+- Pixel Perfect Camera: dùng component của URP `UnityEngine.Rendering.Universal.PixelPerfectCamera` (không dùng `UnityEngine.U2D` của package — dành cho Built-in); kiểm asmdef View resolve đủ reference khi có script đầu tiên. <!-- Updated: Phase 1 review --> Assets PPU 1, reference 270x480, Grid Snapping = Upscale Render Texture, crop X/Y; point filter, không nén.
 - Sprite placeholder do Editor tool sinh PNG: bóng r=12 (viền 1px + bóng đổ 1px), mỗi vũ khí 1 sprite hướng phải, Pike vẽ thân lặp được (dài ra không méo), nền arena + tường, ô HP.
 - Font pixel: atlas chữ số + chữ hoa 3x5 hoặc 4x6 sinh bằng code.
 - View nội suy giữa 2 snapshot (60 Hz sim, render theo màn).

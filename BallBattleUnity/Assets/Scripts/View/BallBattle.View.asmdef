@@ -1,0 +1,20 @@
+{
+  "name": "BallBattle.View",
+  "rootNamespace": "BallBattle.View",
+  "references": [
+    "BallBattle.Sim",
+    "Unity.2D.PixelPerfect",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Universal.2D.Runtime",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
