@@ -1,4 +1,4 @@
-# Project Overview / PDR — Ball Battle
+﻿# Project Overview / PDR — Ball Battle
 
 ## 1. Nguồn cảm hứng (nghiên cứu 2026-10-08)
 Trend "Weapon Ball Battles" của Earclacks: video mô phỏng vật lý, bùng nổ TikTok/Twitter cuối 2025, tập đầu 14/07/2025 (Sword vs Dagger).
@@ -43,6 +43,9 @@ Trục cân bằng: cận chiến ↔ tầm xa (kích thước arena quyết đ�
 - 3 bản đầu: auto-battler (chọn trận → xem). Tương tác người chơi để sau.
 - Engine: Unity 6000.5.1f1.
 - Trận phải **tái lập được từ seed** (cần cho replay, cân bằng tự động, quay clip).
+- Bản 1 (chốt 2026-10-08): mobile dọc 9:16, 4 vũ khí cân bằng, chế độ 1v1 (có best-of-3).
+- Đồ họa: **pixel art** (đổi từ tối giản phẳng, 2026-10-08). Hệ quả kỹ thuật: Pixel Perfect Camera, render độ phân giải thấp rồi phóng nguyên lần; vũ khí xoay phải giữ lưới pixel (không bị răng cưa lệch ô).
 
 ## 3. Câu hỏi còn mở
-- Nền tảng/hướng màn hình, bộ vũ khí bản 1, phong cách art — chốt ở bước plan.
+- Độ phân giải gốc pixel (vd 180x320 hay 270x480), nguồn sprite (tự vẽ / tạo bằng AI / placeholder vẽ bằng code) — chốt ở bước plan.
+
