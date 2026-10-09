@@ -93,6 +93,9 @@ namespace BallBattle.Sim
         /// <summary>Any Weapon or Projectile hit by this ball landed, after HP changed (poison on hit, +1 arrow per hit).</summary>
         public virtual void OnHitDealt(BallState target, float damage, DamageKind kind) { }
 
+        /// <summary>This ball took a Weapon or Projectile hit that was not shield-blocked, after HP changed (reflect, counter).</summary>
+        public virtual void OnHitTaken(BallState attacker, float damage, DamageKind kind) { }
+
         public virtual void OnParry(BallState other) { }
         public virtual void OnWall() { }
 

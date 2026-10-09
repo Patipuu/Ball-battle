@@ -28,3 +28,15 @@ MonoBehaviour:
   - Id: brawler
     Ball: {fileID: 21300000, guid: be3653d6417b34244b8490eae01021a5, type: 3}
     Blade: {fileID: 0}
+  - Id: volley
+    Ball: {fileID: 21300000, guid: 47f8b116effde8b4da5241a0d7cd4b4b, type: 3}
+    Blade: {fileID: 21300000, guid: d05bb2eeccfae66438f9fccb5a40d591, type: 3}
+  - Id: venom
+    Ball: {fileID: 21300000, guid: da39ebbd241ad7446a8d432b7d8a320c, type: 3}
+    Blade: {fileID: 21300000, guid: 09521d59a2562074398a4fb2e4295e7f, type: 3}
+  - Id: aegis
+    Ball: {fileID: 21300000, guid: 19f40aa45d068ee44a1b30749505852e, type: 3}
+    Blade: {fileID: 21300000, guid: b08dc3fb9d3c61a43ac6206b4511d610, type: 3}
+  - Id: rig
+    Ball: {fileID: 21300000, guid: 106147f6b3b63894db437781e92769ff, type: 3}
+    Blade: {fileID: 21300000, guid: fdc13f8a6bab69c4a812cb48393964dd, type: 3}

@@ -37,6 +37,7 @@ namespace BallBattle.Sim
         {
             attacker.Weapon.OnHitDealt(target, damage, kind);
             foreach (var t in attacker.Traits) t.OnHitDealt(target, damage, kind);
+            target.Weapon.OnHitTaken(attacker, damage, kind);
             foreach (var t in target.Traits) t.OnHitTaken(attacker, damage, kind);
         }
 

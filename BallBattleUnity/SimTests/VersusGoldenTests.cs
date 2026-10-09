@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using BallBattle.Sim;
 using BallBattle.Sim.Weapons;
@@ -16,12 +17,16 @@ namespace BallBattle.SimTests
         /// <summary>Computed on commit 91a1bf6 (end of Step 1) and unchanged by Step 2 Phase 1.</summary>
         const ulong ExpectedDigest = 0x2E92A642D4E02B1AUL;
 
+        /// <summary>The four Step 1 weapons only: later weapons have their own balance gate.</summary>
+        static readonly string[] Step1Ids = { "blade", "fang", "pike", "brawler" };
+        static System.Collections.Generic.IEnumerable<WeaponRegistry.Entry> Step1Weapons => WeaponRegistry.All.Where(e => Step1Ids.Contains(e.Id));
+
         [Test]
         public void VersusOutcomesMatchGolden()
         {
             var h = 14695981039346656037UL;
-            foreach (var a in WeaponRegistry.All)
-            foreach (var b in WeaponRegistry.All)
+            foreach (var a in Step1Weapons)
+            foreach (var b in Step1Weapons)
             for (uint seed = 1; seed <= 5; seed++)
             {
                 var m = new MatchSim(new MatchConfig(), seed, new[] { a.Create(), b.Create() });

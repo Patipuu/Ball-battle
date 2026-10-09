@@ -40,6 +40,10 @@ namespace BallBattle.View
             new WeaponLook { Id = "fang", Body = new Color32(140, 224, 80, 255), ColdAt = 8f, HotAt = 40f },
             new WeaponLook { Id = "pike", Body = new Color32(64, 208, 232, 255), ColdAt = 26f, HotAt = 90f },
             new WeaponLook { Id = "brawler", Body = new Color32(176, 176, 192, 255), ColdAt = 7f, HotAt = 14f },
+            new WeaponLook { Id = "volley", Body = new Color32(240, 200, 64, 255), ColdAt = 1f, HotAt = 8f },
+            new WeaponLook { Id = "venom", Body = new Color32(176, 96, 224, 255), ColdAt = 1f, HotAt = 8f },
+            new WeaponLook { Id = "aegis", Body = new Color32(80, 128, 232, 255), ColdAt = 7f, HotAt = 12f },
+            new WeaponLook { Id = "rig", Body = new Color32(232, 144, 64, 255), ColdAt = 0f, HotAt = 6f },
         };
 
         public static WeaponLook Look(string weaponId)

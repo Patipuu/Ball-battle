@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Four new weapons"
-status: pending
+status: completed
 priority: P1
 dependencies: [3]
 effort: "2 ngày"
@@ -34,8 +34,8 @@ effort: "2 ngày"
 4. Cập nhật BalanceThresholdTests cho 8 vũ khí.
 
 ## Success Criteria
-- [ ] 28 cặp không gương 30–70%; gương hòa < 5%; trần 180 s < 1%.
-- [ ] Đạn/turret không làm GC mỗi frame; không xuyên tường.
+- [x] 28 cặp không gương 30–70%; gương hòa < 5%; trần 180 s < 1%.
+- [x] Đạn/turret không làm GC mỗi frame (IndexLoop, mảng cố định); không xuyên tường (đạn dùng bounce tường sẵn có). Hiển thị đạn/turret để Phase 6.
 
 ## Risk Assessment
 - Aegis vs Aegis không bao giờ kết thúc (giống Shield vs Grimoire của clip gốc) → arena co + luật: hai bên không gây sát thương thì sát thương tường co tăng dần.

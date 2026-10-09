@@ -101,6 +101,11 @@ namespace BallBattle.EditorTools
                 case "blade": return Sword(24, out border);
                 case "fang": return Sword(16, out border);
                 case "pike": return Pike(26, out border);
+                // Placeholder blades for the Step 2 weapons (real art in Phase 6).
+                case "volley": return Sword(14, out border);
+                case "venom": return Sword(22, out border);
+                case "aegis": return Sword(22, out border);
+                case "rig": return Sword(18, out border);
                 default: border = Vector4.zero; return null;
             }
         }

@@ -29,6 +29,10 @@ namespace BallBattle.Sim.Weapons
             new Entry(FangRule.WeaponId, "FANG", () => new FangRule()),
             new Entry(PikeRule.WeaponId, "PIKE", () => new PikeRule()),
             new Entry(BrawlerRule.WeaponId, "BRAWLER", () => new BrawlerRule()),
+            new Entry(VolleyRule.WeaponId, "VOLLEY", () => new VolleyRule()),
+            new Entry(VenomRule.WeaponId, "VENOM", () => new VenomRule()),
+            new Entry(AegisRule.WeaponId, "AEGIS", () => new AegisRule()),
+            new Entry(RigRule.WeaponId, "RIG", () => new RigRule()),
         };
 
         public static IReadOnlyList<Entry> All => entries;
