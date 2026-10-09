@@ -58,9 +58,12 @@ namespace BallBattle.Sim
         {
             if (!a.Weapon.HasBlade || !b.Weapon.HasBlade) return false;
 
-            var distSq = Geometry.SegmentSegmentClosest(a.BladeStart, a.BladeEnd, b.BladeStart, b.BladeEnd, out var pa, out var pb);
             var reach = (a.Weapon.BladeThickness + b.Weapon.BladeThickness) * 0.5f;
-            if (distSq > reach * reach) return false;
+            var touch = Geometry.SegmentsTouch(a.BladeStart, a.BladeEnd, b.BladeStart, b.BladeEnd, reach, out var pa, out var pb)
+                || (b.HasTwinBlade && Geometry.SegmentsTouch(a.BladeStart, a.BladeEnd, b.TwinBladeStart, b.TwinBladeEnd, reach, out pa, out pb))
+                || (a.HasTwinBlade && Geometry.SegmentsTouch(a.TwinBladeStart, a.TwinBladeEnd, b.BladeStart, b.BladeEnd, reach, out pa, out pb))
+                || (a.HasTwinBlade && b.HasTwinBlade && Geometry.SegmentsTouch(a.TwinBladeStart, a.TwinBladeEnd, b.TwinBladeStart, b.TwinBladeEnd, reach, out pa, out pb));
+            if (!touch) return false;
             if (parryCooldown[a.Index, b.Index] > 0) return true;
 
             a.SpinDir = -a.SpinDir;
@@ -91,8 +94,11 @@ namespace BallBattle.Sim
             var w = attacker.Weapon;
             if (w.HasBlade)
             {
-                var closest = Geometry.ClosestPointOnSegment(attacker.BladeStart, attacker.BladeEnd, target.Pos);
                 var reach = target.Radius + w.BladeThickness * 0.5f;
+                var closest = Geometry.ClosestPointOnSegment(attacker.BladeStart, attacker.BladeEnd, target.Pos);
+                if ((closest - target.Pos).LengthSq <= reach * reach) { contact = closest; return true; }
+                if (!attacker.HasTwinBlade) return false;
+                closest = Geometry.ClosestPointOnSegment(attacker.TwinBladeStart, attacker.TwinBladeEnd, target.Pos);
                 if ((closest - target.Pos).LengthSq > reach * reach) return false;
                 contact = closest;
                 return true;

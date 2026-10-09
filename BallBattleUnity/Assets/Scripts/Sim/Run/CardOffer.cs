@@ -1,3 +1,4 @@
+using BallBattle.Sim.Traits;
 using System.Collections.Generic;
 
 namespace BallBattle.Sim.Run
@@ -14,6 +15,14 @@ namespace BallBattle.Sim.Run
         const float SwapWeightTotal = 1.5f;
         const float MaxHpWeight = 1f;
 
+        /// <summary>A weapon swap must not leave a held trait useless or banned on the new weapon.</summary>
+        static bool KeepsAllTraits(RunBuild build, string weaponId)
+        {
+            foreach (var slot in build.Traits)
+                if (!TraitRegistry.IsEligible(slot.Id, weaponId)) return false;
+            return true;
+        }
+
         public static Card[] Generate(uint runSeed, int fightIndex, int reroll, RunBuild build,
             IReadOnlyList<string> weapons, IReadOnlyList<string> traits)
         {
@@ -24,6 +33,7 @@ namespace BallBattle.Sim.Run
             var traitCards = new List<Card>();
             foreach (var id in traits)
             {
+                if (!TraitRegistry.IsEligible(id, build.WeaponId)) continue;
                 var level = build.TraitLevel(id);
                 if (level == 0 && build.Traits.Count < RunTuning.MaxTraits) traitCards.Add(new Card(CardKind.Trait, id, 1));
                 else if (level > 0 && level < RunTuning.MaxTraitLevel) traitCards.Add(new Card(CardKind.Trait, id, level + 1));
@@ -33,10 +43,10 @@ namespace BallBattle.Sim.Run
             Add(new Card(CardKind.DamageUp), StatWeight);
             Add(new Card(CardKind.SpeedUp), StatWeight);
 
-            var others = 0;
-            foreach (var w in weapons) if (w != build.WeaponId) others++;
+            var swaps = new List<string>();
             foreach (var w in weapons)
-                if (w != build.WeaponId) Add(new Card(CardKind.SwapWeapon, w), SwapWeightTotal / others);
+                if (w != build.WeaponId && KeepsAllTraits(build, w)) swaps.Add(w);
+            foreach (var w in swaps) Add(new Card(CardKind.SwapWeapon, w), SwapWeightTotal / swaps.Count);
 
             if (build.Hurt) Add(new Card(CardKind.Heal), build.Hp < build.MaxHp * 0.6f ? 3f : 1f);
             Add(new Card(CardKind.MaxHp), MaxHpWeight);

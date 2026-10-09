@@ -72,6 +72,11 @@ namespace BallBattle.Sim
                 var closest = Geometry.ClosestPointOnSegment(b.BladeStart, b.BladeEnd, p.Pos);
                 var reach = p.Radius + b.Weapon.BladeThickness * 0.5f;
                 var delta = p.Pos - closest;
+                if (delta.LengthSq > reach * reach && b.HasTwinBlade)
+                {
+                    closest = Geometry.ClosestPointOnSegment(b.TwinBladeStart, b.TwinBladeEnd, p.Pos);
+                    delta = p.Pos - closest;
+                }
                 if (delta.LengthSq > reach * reach) continue;
 
                 var normal = delta.NormalizedOr((-p.Vel).NormalizedOr(FallbackNormal));

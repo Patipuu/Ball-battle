@@ -45,15 +45,19 @@ namespace BallBattle.Sim.Run
             }
             e.Hp = e.MaxHp;
 
-            if (traitCount > traitPool.Count) traitCount = traitPool.Count;
-            var used = new bool[traitPool.Count];
+            // Only traits that work on the rolled weapon (no Parry Master on a bladeless body, no banned combos).
+            var eligible = new List<string>();
+            foreach (var id in traitPool)
+                if (TraitRegistry.IsEligible(id, e.WeaponId)) eligible.Add(id);
+            if (traitCount > eligible.Count) traitCount = eligible.Count;
+            var used = new bool[eligible.Count];
             for (var t = 0; t < traitCount; t++)
             {
-                var i = (int)(rng.NextUInt() % (uint)traitPool.Count);
-                while (used[i]) i = (i + 1) % traitPool.Count;
+                var i = (int)(rng.NextUInt() % (uint)eligible.Count);
+                while (used[i]) i = (i + 1) % eligible.Count;
                 used[i] = true;
                 var level = rng.NextFloat01() < RunTuning.EnemyLevel2Chance[stage] ? 2 : 1;
-                e.Traits.Add(new TraitSlot(traitPool[i], level));
+                e.Traits.Add(new TraitSlot(eligible[i], level));
             }
             return e;
         }

@@ -67,7 +67,7 @@ namespace BallBattle.SimTests
         [Test]
         public void RegistryCreatesFreshInstancesWithHudStats()
         {
-            Assert.That(WeaponRegistry.All.Select(e => e.Id), Is.EquivalentTo(new[] { "blade", "fang", "pike", "brawler" }));
+            Assert.That(WeaponRegistry.All.Select(e => e.Id), Is.EquivalentTo(new[] { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig" }));
             foreach (var e in WeaponRegistry.All)
             {
                 var a = e.Create();

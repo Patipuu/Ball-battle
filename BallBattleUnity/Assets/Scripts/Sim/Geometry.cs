@@ -18,6 +18,12 @@ namespace BallBattle.Sim
         }
 
         /// <summary>
+        /// True when the segments are within <paramref name="reach"/> of each other (closest points returned).
+        /// </summary>
+        public static bool SegmentsTouch(Vec2 a0, Vec2 a1, Vec2 b0, Vec2 b1, float reach, out Vec2 pa, out Vec2 pb)
+            => SegmentSegmentClosest(a0, a1, b0, b1, out pa, out pb) <= reach * reach;
+
+        /// <summary>
         /// Squared distance between segments [p1,q1] and [p2,q2], with the closest point on each
         /// (Ericson, Real-Time Collision Detection 5.1.9). Crossing segments return 0.
         /// </summary>

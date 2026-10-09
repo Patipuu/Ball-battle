@@ -16,6 +16,9 @@ namespace BallBattle.View
         SpriteRenderer flash;
         float flashRemaining;
         Transform pivot;
+        Transform twinPivot;
+        SpriteRenderer twin;
+        int bladeOrder;
         string weaponId;
         float shownHeat = -1f;
         float shownScale = 1f;
@@ -26,6 +29,7 @@ namespace BallBattle.View
             go.transform.SetParent(parent, false);
             var v = go.AddComponent<BallView>();
             v.weaponId = weaponId;
+            v.bladeOrder = bladeOrder;
 
             v.body = go.AddComponent<SpriteRenderer>();
             v.body.sprite = art.Ball;
@@ -62,13 +66,14 @@ namespace BallBattle.View
             shownScale = scale;
             transform.localScale = new Vector3(scale, scale, 1f);
             if (pivot != null) pivot.localScale = new Vector3(1f / scale, 1f / scale, 1f);
+            if (twinPivot != null) twinPivot.localScale = new Vector3(1f / scale, 1f / scale, 1f);
         }
 
         /// <summary>Show the white hit flash for a short time (driven by Render's frame time).</summary>
         public void Flash(float seconds) => flashRemaining = Mathf.Max(flashRemaining, seconds);
 
         /// <summary>Called every frame with interpolated sim values (world units = native pixels).</summary>
-        public void Render(Vector2 pos, float angleDeg, float bladeInner, float bladeLength, float statValue, bool alive, float deltaTime)
+        public void Render(Vector2 pos, float angleDeg, float bladeInner, float bladeLength, float statValue, bool alive, float deltaTime, float twinLength = 0f)
         {
             if (gameObject.activeSelf != alive) gameObject.SetActive(alive);
             if (!alive) return;
@@ -85,12 +90,43 @@ namespace BallBattle.View
             var minLength = blade.sprite.border.x + blade.sprite.border.z;
             blade.size = new Vector2(Mathf.Max(minLength, Mathf.Round(bladeLength)), BladeHeight);
 
+            RenderTwin(angleDeg, bladeInner, twinLength);
+
             var heat = Palette.Heat(weaponId, statValue);
             if (!Mathf.Approximately(heat, shownHeat))
             {
                 shownHeat = heat;
                 blade.color = Color.Lerp(Color.white, Palette.Hot, heat * 0.85f);
+                if (twin != null) twin.color = blade.color;
             }
+        }
+
+        /// <summary>Second blade opposite the first (Twin Blade). Created the first time it is needed.</summary>
+        void RenderTwin(float angleDeg, float bladeInner, float twinLength)
+        {
+            if (twinLength <= 0f)
+            {
+                if (twinPivot != null && twinPivot.gameObject.activeSelf) twinPivot.gameObject.SetActive(false);
+                return;
+            }
+            if (twinPivot == null)
+            {
+                twinPivot = new GameObject("TwinPivot").transform;
+                twinPivot.SetParent(transform, false);
+                twinPivot.localScale = pivot.localScale;
+                var t = new GameObject("TwinBlade");
+                t.transform.SetParent(twinPivot, false);
+                twin = t.AddComponent<SpriteRenderer>();
+                twin.sprite = blade.sprite;
+                twin.drawMode = SpriteDrawMode.Sliced;
+                twin.sortingOrder = bladeOrder;
+                twin.color = blade.color;
+            }
+            if (!twinPivot.gameObject.activeSelf) twinPivot.gameObject.SetActive(true);
+            twinPivot.localRotation = Quaternion.Euler(0f, 0f, angleDeg + 180f);
+            twin.transform.localPosition = new Vector3(Mathf.Round(bladeInner), 0f, 0f);
+            var minLength = twin.sprite.border.x + twin.sprite.border.z;
+            twin.size = new Vector2(Mathf.Max(minLength, Mathf.Round(twinLength)), BladeHeight);
         }
     }
 }

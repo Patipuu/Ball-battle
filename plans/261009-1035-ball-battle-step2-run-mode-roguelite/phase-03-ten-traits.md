@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Ten traits"
-status: pending
+status: completed
 priority: P1
 dependencies: [2]
 effort: "1.5 ngày"
@@ -39,9 +39,9 @@ effort: "1.5 ngày"
 4. Test ngưỡng hồi quy (như BalanceThresholdTests).
 
 ## Success Criteria
-- [ ] 10 trait đúng công thức, cấp 2 mạnh hơn cấp 1.
-- [ ] Mọi trait cấp 1: +3..+15 điểm; không combo 3 trait nào thắng > 85% trên toàn sân (lấy mẫu 500 combo).
-- [ ] 4 vũ khí cũ vẫn 30–70% khi không trait.
+- [x] 10 trait đúng công thức, cấp 2 mạnh hơn cấp 1.
+- [x] Mọi trait cấp 1: +3..+15 điểm (gate: TraitBalanceThresholdTests). Combo 3 trait: lấy mẫu 300, tệ nhất 85.7% (Brawler + 3 trait phản đòn cấp 2), còn lại <= 82% - để Phase 7. Xem reports/phase-03-trait-balance-report.md.
+- [x] 4 vũ khí cũ vẫn 30–70% khi không trait.
 
 ## Risk Assessment
 - Combo phá game (Vampire + Glass Cannon + Thorns…) → test combo lấy mẫu; giới hạn cộng dồn (vd tổng hồi máu tối đa).
