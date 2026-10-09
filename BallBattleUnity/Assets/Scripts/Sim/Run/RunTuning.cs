@@ -24,7 +24,7 @@ namespace BallBattle.Sim.Run
         public const int MaxTraits = 3;
         public const int MaxTraitLevel = 2;
 
-        public static float WinHealPct = 0.3f;
+        public static float WinHealPct = 0.35f;
         public static float HealCardPct = 0.5f;
         public static float MaxHpCardBonus = 15f;
         public static float DamageCardPct = 0.15f;

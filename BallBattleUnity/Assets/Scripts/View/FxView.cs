@@ -26,6 +26,7 @@ namespace BallBattle.View
         ScreenShake shake;
         float slowMoRemaining;
         bool winPending;
+        int lastShotSoundTick = -1;
 
         // Built in Awake (not Start) so effects work from the very first tick, whatever order the Starts run in.
         void Awake()
@@ -59,6 +60,7 @@ namespace BallBattle.View
             shake?.Stop();
             slowMoRemaining = 0f;
             winPending = false;
+            lastShotSoundTick = -1;
         }
 
         Color32 BallColor(int index) => Palette.Look(arena.Sim.Balls[index].Weapon.Id).Body;
@@ -90,7 +92,11 @@ namespace BallBattle.View
                     break;
                 case SimEventType.ProjectileFired:
                     particles.Burst(V(e.Point), 2, BallColor(e.A), 20f, 50f, 0.15f);
-                    sfx.Play(Sfx != null ? Sfx.Wall : null, 0.12f, 1.7f);
+                    if (e.Tick != lastShotSoundTick)   // six turrets fire together: one sound
+                    {
+                        lastShotSoundTick = e.Tick;
+                        sfx.Play(Sfx != null ? Sfx.Wall : null, 0.12f, 1.7f);
+                    }
                     break;
                 case SimEventType.ProjectileHit:
                     if (e.Value > 0f)
@@ -132,7 +138,8 @@ namespace BallBattle.View
                         particles.Burst(V(e.Point), 4, Palette.Hot, 40f, 100f, 0.25f);
                         popups.Show(V(e.Point), e.Value, Palette.Hot);
                     }
-                    break;                case SimEventType.WallBounce:
+                    break;
+                case SimEventType.WallBounce:
                     if (e.Value > 0f) popups.Show(V(arena.Sim.Balls[e.A].Pos), e.Value, Palette.Hot);
                     sfx.Play(Sfx != null ? Sfx.Wall : null, 0.2f, Random.Range(0.9f, 1.1f));
                     break;

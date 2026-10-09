@@ -51,12 +51,12 @@ namespace BallBattle.View
                 var sr = shots[i];
                 ref readonly var p = ref pool.Get(i);
                 if (!p.Active || p.Owner < 0 || p.Owner >= sim.Balls.Count) { sr.enabled = false; continue; }
-                var size = Mathf.Max(2f, Mathf.Round(p.Radius * 2f));
-                var x = Mathf.Round(p.Pos.X);
-                var y = Mathf.Round(p.Pos.Y);
+                var size = Mathf.Max(2, Mathf.RoundToInt(p.Radius * 2f));
+                var x = Mathf.RoundToInt(p.Pos.X);
+                var y = Mathf.RoundToInt(p.Pos.Y);
                 sr.enabled = true;
                 sr.color = Palette.Look(sim.Balls[p.Owner].Weapon.Id).Body;
-                PixelRect.Set(sr, x - size * 0.5f, y - size * 0.5f, x + size * 0.5f, y + size * 0.5f);
+                var left = x - size / 2;   // whole-pixel edges: the size never depends on the position`r`n                var bottom = y - size / 2;`r`n                PixelRect.Set(sr, left, bottom, left + size, bottom + size);
             }
 
             var slot = 0;
@@ -68,14 +68,14 @@ namespace BallBattle.View
                 {
                     if (t >= count) { turretRims[slot].enabled = false; turretBodies[slot].enabled = false; continue; }
                     var c = rig.GetTurret(t);
-                    var x = Mathf.Round(c.X);
-                    var y = Mathf.Round(c.Y);
-                    const float h = TurretSize * 0.5f;
+                    var x = Mathf.RoundToInt(c.X);
+                    var y = Mathf.RoundToInt(c.Y);
+                    const int half = TurretSize / 2;   // 5 px body (x-2..x+3), 7 px rim
                     turretRims[slot].enabled = true;
                     turretBodies[slot].enabled = true;
                     turretBodies[slot].color = Palette.Look(rig.Id).Body;
-                    PixelRect.Set(turretRims[slot], x - h - 1f, y - h - 1f, x + h + 1f, y + h + 1f);
-                    PixelRect.Set(turretBodies[slot], x - h, y - h, x + h, y + h);
+                    PixelRect.Set(turretRims[slot], x - half - 1, y - half - 1, x - half + TurretSize + 1, y - half + TurretSize + 1);
+                    PixelRect.Set(turretBodies[slot], x - half, y - half, x - half + TurretSize, y - half + TurretSize);
                 }
             }
         }

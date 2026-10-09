@@ -29,6 +29,15 @@ namespace BallBattle.View
         readonly SpriteRenderer[] masks = new SpriteRenderer[4];
         readonly SpriteRenderer[] walls = new SpriteRenderer[4];
 
+        static void DestroyNow(GameObject go)
+
+        {
+
+            if (Application.isPlaying) Destroy(go); else DestroyImmediate(go);
+
+        }
+
+
         public static ArenaFrameView Create(Transform parent, Sprite pixel)
         {
             var go = new GameObject("ArenaFrame");
@@ -99,7 +108,7 @@ namespace BallBattle.View
         {
             if (ReferenceEquals(layout, drawnLayout)) return;
             drawnLayout = layout;
-            if (obstacleRoot != null) Destroy(obstacleRoot.gameObject);
+            if (obstacleRoot != null) DestroyNow(obstacleRoot.gameObject);
             var root = new GameObject("Obstacles");
             root.transform.SetParent(transform, false);
             obstacleRoot = root.transform;

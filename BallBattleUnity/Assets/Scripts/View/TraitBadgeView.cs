@@ -38,6 +38,15 @@ namespace BallBattle.View
         ArtLibrary art;
         Transform root;
 
+        static void DestroyNow(GameObject go)
+
+        {
+
+            if (Application.isPlaying) Destroy(go); else DestroyImmediate(go);
+
+        }
+
+
         public static TraitBadgeView Create(Transform parent, ArtLibrary art)
         {
             var go = new GameObject("TraitBadges");
@@ -62,7 +71,7 @@ namespace BallBattle.View
         /// <summary>Rebuild the badges for a new match. Ball 0 is the top side, ball 1 the bottom.</summary>
         public void Bind(MatchSim sim)
         {
-            if (root != null) Destroy(root.gameObject);
+            if (root != null) DestroyNow(root.gameObject);
             root = new GameObject("Badges").transform;
             root.SetParent(transform, false);
             for (var side = 0; side < 2 && side < sim.Balls.Count; side++)
