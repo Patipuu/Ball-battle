@@ -132,7 +132,7 @@ namespace BallBattle.Sim
             // Push away from the contact point (a long blade tip pushes along the swing, not center-to-center).
             var centerDir = (target.Pos - attacker.Pos).NormalizedOr(FallbackNormal);
             var knock = (target.Pos - contact).NormalizedOr(centerDir);
-            target.Vel += knock * (Config.HitKnockback * attacker.Weapon.KnockbackScale);
+            target.Vel += knock * (Config.HitKnockback * attacker.Weapon.KnockbackScale * (1f - target.KnockbackResist));
 
             if (blocked)
             {
@@ -180,9 +180,12 @@ namespace BallBattle.Sim
                         a.Vel += normal * (closing * 2f * wa);
                         b.Vel -= normal * (closing * 2f * wb);
                         Emit(SimEventType.BallBounce, a.Index, b.Index, -closing, a.Pos + normal * a.Radius);
+                        foreach (var t in a.Traits) t.OnBodyContact(b);
+                        foreach (var t in b.Traits) t.OnBodyContact(a);
                     }
                 }
             }
+            ResolveDeaths();
         }
     }
 }

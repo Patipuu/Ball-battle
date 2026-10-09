@@ -79,7 +79,8 @@ namespace BallBattle.View
             sr.transform.localScale = new Vector3(width, BarHeight, 1f);
         }
 
-        public void Bind(int side, string weaponId)
+        /// <summary>Show a side's weapon; an optional tag (YOU / BOSS) goes before its name.</summary>
+        public void Bind(int side, string weaponId, string tag = null)
         {
             var s = sides[side];
             s.WeaponId = weaponId;
@@ -88,7 +89,8 @@ namespace BallBattle.View
             s.ShownHp = int.MinValue;
             s.ShownStat = float.NaN;
             s.BarFill.color = s.Color;
-            s.Name.Set(WeaponRegistry.Get(weaponId).DisplayName, s.Color);
+            var name = WeaponRegistry.Get(weaponId).DisplayName;
+            s.Name.Set(string.IsNullOrEmpty(tag) ? name : tag + " " + name, s.Color);
         }
 
         public void Render(MatchSim sim, float deltaTime)

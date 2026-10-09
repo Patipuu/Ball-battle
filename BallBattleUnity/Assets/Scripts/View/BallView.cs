@@ -18,6 +18,7 @@ namespace BallBattle.View
         Transform pivot;
         string weaponId;
         float shownHeat = -1f;
+        float shownScale = 1f;
 
         public static BallView Create(Transform parent, int index, string weaponId, ArtLibrary.WeaponArt art, Sprite flashSprite, int bodyOrder, int bladeOrder)
         {
@@ -49,6 +50,18 @@ namespace BallBattle.View
                 v.blade.sortingOrder = bladeOrder;
             }
             return v;
+        }
+
+        /// <summary>
+        /// Size relative to the default ball (giant boss 1.5, Heavy 1.2). Scales the body and flash; the blade pivot
+        /// is scaled back so blade offsets stay in native pixels. Placeholder until real big-ball sprites (Phase 6).
+        /// </summary>
+        public void SetScale(float scale)
+        {
+            if (Mathf.Approximately(scale, shownScale)) return;
+            shownScale = scale;
+            transform.localScale = new Vector3(scale, scale, 1f);
+            if (pivot != null) pivot.localScale = new Vector3(1f / scale, 1f / scale, 1f);
         }
 
         /// <summary>Show the white hit flash for a short time (driven by Render's frame time).</summary>

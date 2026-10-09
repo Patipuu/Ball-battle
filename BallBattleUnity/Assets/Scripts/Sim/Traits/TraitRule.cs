@@ -11,7 +11,7 @@ namespace BallBattle.Sim
         Projectile,
         /// <summary>Damage over time (poison). Incoming traits only; never blocked by shield.</summary>
         Status,
-        /// <summary>Damage sent back by a trait (thorns). Incoming traits only; never triggers hit hooks (no loops).</summary>
+        /// <summary>Damage dealt by a trait (thorns, spikes). Incoming traits only; never triggers hit hooks (no loops).</summary>
         Reflect,
         /// <summary>Arena hazard (spikes). Incoming traits only.</summary>
         Hazard
@@ -23,6 +23,8 @@ namespace BallBattle.Sim
     /// then trait index; hit hooks run attacker's traits, then target's (trait index within each ball).
     /// Modify* hooks must be pure (no side effects): they also run for hits a shield then blocks, and both
     /// directions of a trade are computed before either is applied. React in the On* hooks instead.
+    /// Max-HP changes must keep the HP fraction (scale Hp with MaxHp): Run mode carries HP between fights as
+    /// a fraction of the build's max HP. Reflect damage (thorns, spikes) skips shields and never triggers hit hooks.
     /// A new trait = one subclass + HashState covering every mutable field it adds.
     /// </summary>
     public abstract class TraitRule
@@ -70,6 +72,9 @@ namespace BallBattle.Sim
 
         public virtual void OnParry(BallState other) { }
         public virtual void OnWall() { }
+
+        /// <summary>Self's body bounced off <paramref name="other"/>'s body (they were closing in).</summary>
+        public virtual void OnBodyContact(BallState other) { }
 
         /// <summary>Self's blade knocked back projectile <paramref name="slot"/>.</summary>
         public virtual void OnDeflect(int slot) { }

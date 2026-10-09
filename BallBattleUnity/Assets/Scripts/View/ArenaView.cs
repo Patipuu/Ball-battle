@@ -28,6 +28,9 @@ namespace BallBattle.View
         /// <summary>Frozen: the sim does not step, the current pose is still drawn (menu, countdown).</summary>
         public bool Paused { get; set; }
 
+        /// <summary>Playback speed (Run mode x2). Ticks stay fixed; more of them run per frame.</summary>
+        public float TimeScale { get; set; } = 1f;
+
         /// <summary>Raised for every sim event, in tick order (effects/audio subscribe here).</summary>
         public event Action<SimEvent> SimEventRaised;
         /// <summary>Raised once when the current match ends: winner ball index, -1 on draw.</summary>
@@ -48,9 +51,8 @@ namespace BallBattle.View
         float endTimer;
         bool endReported;
         bool stepping;
-        bool hasPending;
-        string pendingA, pendingB;
-        uint pendingSeed;
+        MatchSim pending;
+        string pendingTagA, pendingTagB;
 
         void Start()
         {
@@ -66,21 +68,26 @@ namespace BallBattle.View
             hud = HudView.Create(transform, Art);
         }
 
+        /// <summary>Plain Versus match from two weapon ids.</summary>
         public void StartMatch(string weaponA, string weaponB, uint seed)
+            => StartMatch(new MatchSim(new MatchConfig(), seed, new[] { WeaponRegistry.Create(weaponA), WeaponRegistry.Create(weaponB) }));
+
+        /// <summary>Show and run a match built elsewhere (Run mode: loadouts with traits, HP, size). Tags label the HUD names.</summary>
+        public void StartMatch(MatchSim sim, string tagA = null, string tagB = null)
         {
+            if (sim == null) throw new ArgumentNullException(nameof(sim));
             if (stepping)
             {
-                hasPending = true;
-                pendingA = weaponA;
-                pendingB = weaponB;
-                pendingSeed = seed;
+                pending = sim;
+                pendingTagA = tagA;
+                pendingTagB = tagB;
                 return;
             }
 
             EnsureInit();
-            WeaponA = weaponA;
-            WeaponB = weaponB;
-            Seed = seed;
+            WeaponA = sim.Balls[0].Weapon.Id;
+            WeaponB = sim.Balls[1].Weapon.Id;
+            Seed = sim.Seed;
             foreach (var v in ballViews)
             {
                 if (v == null) continue;
@@ -88,7 +95,7 @@ namespace BallBattle.View
                 Destroy(v.gameObject);
             }
 
-            Sim = new MatchSim(new MatchConfig(), seed, new[] { WeaponRegistry.Create(weaponA), WeaponRegistry.Create(weaponB) });
+            Sim = sim;
             var n = Sim.Balls.Count;
             ballViews = new BallView[n];
             prevPos = new Vector2[n];
@@ -97,7 +104,7 @@ namespace BallBattle.View
             {
                 var id = Sim.Balls[i].Weapon.Id;
                 ballViews[i] = BallView.Create(transform, i, id, Art.Get(id), Art.BallFlash, BodyOrderBase + i * 2, BladeOrderBase + i);
-                hud.Bind(i, id);
+                hud.Bind(i, id, i == 0 ? tagA : (i == 1 ? tagB : null));
             }
             SnapshotPrevious();
             accumulator = 0f;
@@ -117,12 +124,12 @@ namespace BallBattle.View
                 Draw(0f, dt);
                 return;
             }
-            accumulator += dt;
+            accumulator += dt * TimeScale;
 
             stepping = true;
             try
             {
-                while (accumulator >= TickSeconds && !hasPending)
+                while (accumulator >= TickSeconds && pending == null)
                 {
                     accumulator -= TickSeconds;
                     SnapshotPrevious();
@@ -141,10 +148,11 @@ namespace BallBattle.View
                 stepping = false;
             }
 
-            if (hasPending)
+            if (pending != null)
             {
-                hasPending = false;
-                StartMatch(pendingA, pendingB, pendingSeed);
+                var next = pending;
+                pending = null;
+                StartMatch(next, pendingTagA, pendingTagB);
                 return;
             }
 
@@ -175,6 +183,7 @@ namespace BallBattle.View
                 var b = Sim.Balls[i];
                 var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X, b.Pos.Y), alpha);
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg, alpha);
+                ballViews[i].SetScale(b.Radius / Sim.Config.BallRadius);
                 ballViews[i].Render(pos, angle, b.Weapon.BladeInner + b.BladeShift, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt);
             }
             hud.Render(Sim, dt);

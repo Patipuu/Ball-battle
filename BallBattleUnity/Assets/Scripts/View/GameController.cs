@@ -3,7 +3,8 @@ using UnityEngine;
 namespace BallBattle.View
 {
     /// <summary>
-    /// Wires the screens together: MenuView → MatchFlow (best-of-3) → ArenaView rounds → OverlayView result.
+    /// Wires the screens together: MenuView → MatchFlow (best-of-3) → ArenaView rounds → OverlayView result,
+    /// or MenuView → RunController (Run mode, its own screens) → back to the menu.
     /// The arena is frozen (Paused) in the menu and during countdowns; one clock (Time.deltaTime) drives the flow.
     /// </summary>
     public sealed class GameController : MonoBehaviour
@@ -13,6 +14,7 @@ namespace BallBattle.View
         public MatchFlow Flow { get; private set; }
         public MenuView Menu { get; private set; }
         public OverlayView Overlay { get; private set; }
+        public RunController Run { get; private set; }
 
         void Awake()
         {
@@ -23,6 +25,7 @@ namespace BallBattle.View
             Flow = new MatchFlow();
             Menu = MenuView.Create(transform, Arena.Art);
             Overlay = OverlayView.Create(transform, Arena.Art);
+            Run = RunController.Create(transform, Arena, FileSaveStore.Default());
 
             Flow.RoundPrepared += (a, b, seed) =>
             {
@@ -38,6 +41,13 @@ namespace BallBattle.View
             };
 
             Menu.StartRequested += (a, b) => Flow.Begin(a, b, NewSeed());
+            Menu.RunRequested += () =>
+            {
+                if (Flow.Current != MatchFlow.State.Menu) return;
+                Menu.Show(false);
+                Run.Open();
+            };
+            Run.Closed += () => Flow.ToMenu();
             Overlay.RematchRequested += () => Flow.Rematch();
             Overlay.NewMatchRequested += () => Flow.NewMatch(NewSeed());
             Overlay.MenuRequested += () => Flow.ToMenu();
@@ -59,8 +69,12 @@ namespace BallBattle.View
 
         void Update()
         {
-            // Esc on desktop = Back on Android: leave the match for the menu.
-            if (Input.GetKeyDown(KeyCode.Escape) && Flow.Current != MatchFlow.State.Menu) Flow.ToMenu();
+            // Esc on desktop = Back on Android: leave the match (or Run mode, which is saved) for the menu.
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (Run.IsOpen) Run.Flow.Close();
+                else if (Flow.Current != MatchFlow.State.Menu) Flow.ToMenu();
+            }
 
             var dt = Time.deltaTime;
             Flow.Tick(dt);

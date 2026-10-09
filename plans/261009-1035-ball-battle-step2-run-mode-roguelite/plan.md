@@ -49,7 +49,7 @@ Nền: Step 1 (`plans/261008-2310-ball-battle-v1-1v1-auto-battler-pixel/`) — s
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | [Sim foundation for traits projectiles arenas](./phase-01-sim-foundation-for-traits-projectiles-arenas.md) | Completed |
-| 2 | [Run core and vertical slice](./phase-02-run-core-and-vertical-slice.md) | Pending |
+| 2 | [Run core and vertical slice](./phase-02-run-core-and-vertical-slice.md) | Completed |
 | 3 | [Ten traits](./phase-03-ten-traits.md) | Pending |
 | 4 | [Four new weapons](./phase-04-four-new-weapons.md) | Pending |
 | 5 | [Arena variants](./phase-05-arena-variants.md) | Pending |

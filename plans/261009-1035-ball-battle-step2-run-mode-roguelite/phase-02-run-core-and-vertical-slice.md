@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Run core and vertical slice"
-status: pending
+status: completed
 priority: P1
 dependencies: [1]
 effort: "2 ngày"
@@ -43,12 +43,15 @@ RunController giống GameController: một máy trạng thái thuần (`RunFlow
 6. Chơi thử qua MCP + user playtest → ghi cảm nhận vào report.
 
 ## Success Criteria
-- [ ] Chơi trọn 1 run 8 trận trong Editor; thoát giữa chừng rồi tiếp tục được.
-- [ ] Cùng seed run + cùng lựa chọn → cùng hash từng trận và cùng HP sau mỗi trận (dotnet).
-- [ ] Luật HP: thắng +20% (không quá MaxHp), thua = mất mạng + hồi đầy (test).
-- [ ] Bot 2.000 run chạy < 2 phút (song song).
-- [ ] Báo cáo playtest lát cắt dọc ở `reports/`.
+- [x] Chơi trọn 1 run 8 trận trong Editor; thoát giữa chừng rồi tiếp tục được.
+- [x] Cùng seed run + cùng lựa chọn → cùng hash từng trận và cùng HP sau mỗi trận (dotnet).
+- [x] Luật HP: thắng +30% (chỉnh theo bot, xem report) (không quá MaxHp), thua = mất mạng + hồi đầy (test).
+- [x] Bot 2.000 run chạy < 2 phút (song song).
+- [x] Báo cáo playtest lát cắt dọc ở `reports/`.
 
 ## Risk Assessment
 - Vòng lặp không vui ở lát cắt dọc → dừng, brainstorm lại trước Phase 3 (đây là lý do làm lát cắt sớm).
 - Lựa chọn thẻ không đủ ý nghĩa với 3 trait → chấp nhận ở phase này, đánh giá lại sau Phase 3.
+
+## Kết quả (2026-10-09)
+Xem `reports/phase-02-vertical-slice-playtest-report.md`. SimTests 123/123, Unity EditMode 25/25, bot 2×2.000 run ≈ 35 s mỗi chính sách.

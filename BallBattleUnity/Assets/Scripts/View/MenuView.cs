@@ -15,6 +15,8 @@ namespace BallBattle.View
         const int Gap = 6;
 
         public event Action<string, string> StartRequested;
+        /// <summary>RUN MODE button.</summary>
+        public event Action RunRequested;
 
         readonly string[] selected = new string[2];
         PixelButton[][] tiles;
@@ -57,6 +59,11 @@ namespace BallBattle.View
             start.Clicked += () => StartRequested?.Invoke(selected[0], selected[1]);
 
             Text(art, "BEST OF 3", 0, -160, 1, Palette.TextDim);
+
+            var run = PixelButton.Create(transform, "RunMode", art, new Rect(-80, -206, 160, 30), "RUN MODE", 2,
+                                         Palette.Floor, new Color32(180, 120, 240, 255), new Color32(180, 120, 240, 255), Order + 2);
+            run.Clicked += () => RunRequested?.Invoke();
+            Text(art, "ROGUELITE: 8 FIGHTS AND CARDS", 0, -218, 1, Palette.TextDim);
             Refresh();
         }
 
@@ -124,5 +131,7 @@ namespace BallBattle.View
         }
 
         public void PressStart() => StartRequested?.Invoke(selected[0], selected[1]);
+
+        public void PressRun() => RunRequested?.Invoke();
     }
 }

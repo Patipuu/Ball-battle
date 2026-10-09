@@ -9,6 +9,8 @@ namespace BallBattle.Sim
         public readonly TraitRule[] Traits;
         public readonly StatusEffects Status = new StatusEffects();
         public StatBonus Bonus;
+        /// <summary>0..1: fraction of hit knockback ignored (Heavy). 0 = normal.</summary>
+        public float KnockbackResist;
 
         public Vec2 Pos;
         public Vec2 Vel;
@@ -56,6 +58,7 @@ namespace BallBattle.Sim
             h = SimHash.Mix(h, LastAttacker);
             for (var i = 0; i < HitCooldown.Length; i++) h = SimHash.Mix(h, HitCooldown[i]);
             h = Bonus.HashInto(h);
+            h = SimHash.Mix(h, KnockbackResist);
             h = Status.HashInto(h);
             for (var i = 0; i < Traits.Length; i++) h = Traits[i].HashInto(h);
             return Weapon.HashInto(h);

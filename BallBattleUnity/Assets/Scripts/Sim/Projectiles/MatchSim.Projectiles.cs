@@ -101,7 +101,7 @@ namespace BallBattle.Sim
 
                 var contact = b.Pos + delta.NormalizedOr(FallbackNormal) * b.Radius;
                 var damage = ComputeHitDamage(owner, b, p.Damage > 0f ? p.Damage : 0f, DamageKind.Projectile, out var blocked);
-                b.Vel += p.Vel.NormalizedOr(FallbackNormal) * (Config.HitKnockback * Config.ProjectileKnockbackScale);
+                b.Vel += p.Vel.NormalizedOr(FallbackNormal) * (Config.HitKnockback * Config.ProjectileKnockbackScale * (1f - b.KnockbackResist));
                 Emit(SimEventType.ProjectileHit, owner.Index, b.Index, damage, contact);
                 if (blocked)
                 {

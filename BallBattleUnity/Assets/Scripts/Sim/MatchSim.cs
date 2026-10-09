@@ -24,7 +24,7 @@ namespace BallBattle.Sim
         readonly ProjectilePool projectiles = new ProjectilePool();
         /// <summary>Captured at construction, so changing Config.Layout mid-match has no effect.</summary>
         readonly ArenaLayout layout;
-        /// <summary>WeaponTuning values at match start (tuning is static; this pins it into the hash).</summary>
+        /// <summary>Weapon + trait tuning at match start (tuning is static; this pins it into the hash).</summary>
         readonly ulong tuningFingerprint;
         bool spawnHooksDone;
 
@@ -63,7 +63,7 @@ namespace BallBattle.Sim
             balls = new BallState[loadouts.Count];
             parryCooldown = new int[loadouts.Count, loadouts.Count];
             Arena = config.ArenaAt(0);
-            tuningFingerprint = Weapons.WeaponTuning.Fingerprint();
+            tuningFingerprint = unchecked(Weapons.WeaponTuning.Fingerprint() * 1099511628211UL ^ Traits.TraitTuning.Fingerprint());
 
             for (var i = 0; i < loadouts.Count; i++)
             {
@@ -176,7 +176,17 @@ namespace BallBattle.Sim
             CheckTimeCap();
         }
 
-        /// <summary>On the first Step (not in the constructor), so their events reach the view.</summary>
+        /// <summary>
+        /// Runs traits' OnSpawn now instead of on the first Step, so a preview/countdown already shows the final
+        /// sizes and HP (Heavy). Idempotent. Its events stay in Events only until the first Step.
+        /// </summary>
+        public void ApplySpawnHooks()
+        {
+            if (spawnHooksDone || !Ongoing) return;
+            RunSpawnHooks();
+        }
+
+        /// <summary>On the first Step unless ApplySpawnHooks ran first.</summary>
         void RunSpawnHooks()
         {
             spawnHooksDone = true;

@@ -67,3 +67,10 @@ Editor tools: `BallBattle/Generate Placeholder Art`, `BallBattle/Build Scenes`, 
 
 ### Match flow
 `GameController` (GameObject "Game") owns `MatchFlow` (Menu → Countdown → Playing → RoundOver → Result) and the pixel UI: `MenuView` (weapon pick, sorting 60+), `OverlayView` (score, seed, countdown, banner, result panel 70+), `PixelButton` + `PixelInput` (screen → native via Windowbox integer zoom, legacy input). `Sim/Series` holds best-of-3 rules and per-round seeds: REMATCH replays the series exactly. Arena is `Paused` in menu/countdown. Esc / Android Back returns to the menu.
+
+
+### Run mode (Step 2)
+- **Sim/Run** (pure, seeded): `RunState` (serializable run: fight, lives, coins, build, offer, history, `FightLocked`, content pools snapshotted at start), `RunBuild` (weapon id, trait slots, bonuses, MaxHp/HP in whole points → `ToLoadout()`), `Card` + `CardOffer` (3 seeded cards; trait category has a fixed total weight), `EnemyGenerator` (from run seed + fight index and the run's own pools; bosses r=24), `UnlockRules` (achievements → content), `RunTuning`, `RunRecords` (`FightRecord`, `OfferSlot`, `RunValidation`).
+- **Sim/Traits**: `TraitRegistry`, `TraitTuning` (+ fingerprint test), Heavy / Spiky / Vampire. Max-HP changes keep the HP fraction.
+- **View/Run**: `RunFlow` (plain state machine: Title → PickWeapon → (Prepare → Countdown → Playing → FightOver)×8 → Summary; saves after every change; starting a fight locks the run so quitting can never change a seen result), `RunController` (drives ArenaView, ×2 speed), screens (`RunTitleView`, `PickWeaponView`, `PrepareView`, `RunOverlayView`, `RunSummaryView`), `SaveStore` (JSON in persistentDataPath; never throws; older versions keep progress and drop the run; invalid runs dropped on open).
+- `MatchSim.ApplySpawnHooks()` lets the countdown show final sizes/HP.
