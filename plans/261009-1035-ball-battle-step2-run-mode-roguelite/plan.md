@@ -52,7 +52,7 @@ Nền: Step 1 (`plans/261008-2310-ball-battle-v1-1v1-auto-battler-pixel/`) — s
 | 2 | [Run core and vertical slice](./phase-02-run-core-and-vertical-slice.md) | Completed |
 | 3 | [Ten traits](./phase-03-ten-traits.md) | Completed |
 | 4 | [Four new weapons](./phase-04-four-new-weapons.md) | Completed |
-| 5 | [Arena variants](./phase-05-arena-variants.md) | Pending |
+| 5 | [Arena variants](./phase-05-arena-variants.md) | Completed |
 | 6 | [Visual language and run UI](./phase-06-visual-language-and-run-ui.md) | Pending |
 | 7 | [Difficulty balance and playtest](./phase-07-difficulty-balance-and-playtest.md) | Pending |
 

@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Arena variants"
-status: pending
+status: completed
 priority: P2
 dependencies: [4]
 effort: "1 ngày"

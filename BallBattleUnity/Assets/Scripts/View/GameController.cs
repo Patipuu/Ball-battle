@@ -40,7 +40,11 @@ namespace BallBattle.View
                 Menu.Show(true);
             };
 
-            Menu.StartRequested += (a, b) => Flow.Begin(a, b, NewSeed());
+            Menu.StartRequested += (a, b) =>
+            {
+                Arena.ArenaId = Menu.ArenaId;
+                Flow.Begin(a, b, NewSeed());
+            };
             Menu.RunRequested += () =>
             {
                 if (Flow.Current != MatchFlow.State.Menu) return;

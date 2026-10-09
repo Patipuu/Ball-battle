@@ -141,6 +141,9 @@ namespace BallBattle.Sim.Run
 
         public uint FightSeed => RunTuning.Derive(Seed, 3000 + FightIndex, 0);
 
+        /// <summary>Arena of the current fight, picked by its seed.</summary>
+        public string ArenaId => ArenaRegistry.ForSeed(FightSeed);
+
         /// <summary>
         /// Fresh match for the current fight (ball 0 = player, ball 1 = enemy) with spawn hooks applied, so the
         /// countdown already shows final sizes and HP. Locking the run is RunFlow's job (it also saves).
@@ -148,7 +151,7 @@ namespace BallBattle.Sim.Run
         public MatchSim CreateMatch(MatchConfig config = null)
         {
             if (Over) throw new InvalidOperationException("Run is over");
-            var m = new MatchSim(config ?? new MatchConfig(), FightSeed, new[] { Build.ToLoadout(), Enemy.ToLoadout() });
+            var m = new MatchSim(config ?? ArenaRegistry.Create(ArenaId), FightSeed, new[] { Build.ToLoadout(), Enemy.ToLoadout() });
             m.ApplySpawnHooks();
             return m;
         }

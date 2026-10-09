@@ -1,4 +1,5 @@
 using System;
+using BallBattle.Sim;
 using BallBattle.Sim.Weapons;
 using UnityEngine;
 
@@ -21,6 +22,11 @@ namespace BallBattle.View
         readonly string[] selected = new string[2];
         PixelButton[][] tiles;
         PixelText versus;
+        PixelText arenaLabel;
+        int arenaIndex;
+
+        /// <summary>Arena picked for Versus (ArenaRegistry id).</summary>
+        public string ArenaId => ArenaRegistry.All[arenaIndex].Id;
         string[] ids;
 
         public static MenuView Create(Transform parent, ArtLibrary art)
@@ -51,7 +57,11 @@ namespace BallBattle.View
 
             versus = PixelText.Create(transform, "Versus", art.Font, new Vector2(0, -38), PixelText.Align.Center, 2, Order + 4);
 
-            var random = PixelButton.Create(transform, "Random", art, new Rect(-60, -86, 120, 22), "RANDOM", 1,
+            var arenaBtn = PixelButton.Create(transform, "ArenaPick", art, new Rect(-60, -62, 120, 18), "", 1,
+                                              Palette.Floor, Palette.Wall, Palette.Text, Order + 2);
+            arenaBtn.Clicked += () => { arenaIndex = (arenaIndex + 1) % ArenaRegistry.All.Count; Refresh(); };
+            arenaLabel = PixelText.Create(transform, "ArenaLabel", art.Font, new Vector2(0, -53), PixelText.Align.Center, 1, Order + 4);
+            var random = PixelButton.Create(transform, "Random", art, new Rect(-60, -92, 120, 22), "RANDOM", 1,
                                             Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             random.Clicked += Randomize;
             var start = PixelButton.Create(transform, "Start", art, new Rect(-80, -136, 160, 32), "START", 3,
@@ -118,6 +128,7 @@ namespace BallBattle.View
                     var on = ids[i] == selected[side];
                     tiles[side][i].SetColors(on ? Palette.HpBack : Palette.Floor, on ? (Color32)Palette.Look(ids[i]).Body : Palette.Wall);
                 }
+            arenaLabel.Set("ARENA: " + ArenaRegistry.All[arenaIndex].DisplayName, Palette.Text);
             versus.Set($"{WeaponRegistry.Get(selected[0]).DisplayName} VS {WeaponRegistry.Get(selected[1]).DisplayName}", Palette.Text);
         }
 
@@ -127,6 +138,12 @@ namespace BallBattle.View
         public void Select(int side, string weaponId)
         {
             selected[side] = weaponId;
+            Refresh();
+        }
+
+        public void SelectArena(string id)
+        {
+            for (var i = 0; i < ArenaRegistry.All.Count; i++) if (ArenaRegistry.All[i].Id == id) arenaIndex = i;
             Refresh();
         }
 

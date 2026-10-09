@@ -17,6 +17,14 @@ namespace BallBattle.View
         const int WarnTicks = 3 * MatchConfig.TicksPerSecond;
         const float Far = 400f;
 
+        public const int ObstacleOrder = 1;
+        static readonly Color32 PostColor = new Color32(120, 130, 150, 255);
+        static readonly Color32 BumperColor = new Color32(240, 170, 60, 255);
+        static readonly Color32 SpikeColor = new Color32(210, 60, 60, 255);
+
+        Sprite pixelSprite;
+        ArenaLayout drawnLayout;
+        Transform obstacleRoot;
         SpriteRenderer floor;
         readonly SpriteRenderer[] masks = new SpriteRenderer[4];
         readonly SpriteRenderer[] walls = new SpriteRenderer[4];
@@ -26,6 +34,7 @@ namespace BallBattle.View
             var go = new GameObject("ArenaFrame");
             go.transform.SetParent(parent, false);
             var v = go.AddComponent<ArenaFrameView>();
+            v.pixelSprite = pixel;
             v.floor = Quad(go.transform, "Floor", pixel, Palette.Floor, FloorOrder);
             for (var i = 0; i < 4; i++)
             {
@@ -73,13 +82,45 @@ namespace BallBattle.View
             Box(walls[2], l - w, b, l, t);
             Box(walls[3], r, b, r + w, t);
 
-            var color = Palette.Wall;
+            DrawObstacles(config.Layout ?? ArenaLayout.Empty);
+
+            var baseColor = (config.Layout != null && config.Layout.WallDamage > 0f) ? SpikeColor : (Color32)Palette.Wall;
+            var color = baseColor;
             var untilShrink = config.ShrinkStartTick - activeTick;
             if (untilShrink > 0 && untilShrink <= WarnTicks)
-                color = (untilShrink / 8) % 2 == 0 ? Palette.WallWarning : Palette.Wall;   // blink ~4 Hz
+                color = (untilShrink / 8) % 2 == 0 ? Palette.WallWarning : baseColor;   // blink ~4 Hz
             else if (untilShrink <= 0 && activeTick < config.ShrinkStartTick + config.ShrinkDurationTicks)
                 color = Palette.WallWarning;
             foreach (var wall in walls) wall.color = color;
+        }
+
+        /// <summary>Static obstacles as pixel rows (circles) under the balls; rebuilt only when the layout changes.</summary>
+        void DrawObstacles(ArenaLayout layout)
+        {
+            if (ReferenceEquals(layout, drawnLayout)) return;
+            drawnLayout = layout;
+            if (obstacleRoot != null) Destroy(obstacleRoot.gameObject);
+            var root = new GameObject("Obstacles");
+            root.transform.SetParent(transform, false);
+            obstacleRoot = root.transform;
+            for (var i = 0; i < layout.ObstacleCount; i++)
+            {
+                var o = layout.Get(i);
+                var color = o.Damage > 0f ? SpikeColor : (o.Boost > 0f ? BumperColor : PostColor);
+                var steps = o.Shape == ObstacleShape.Circle ? 1 : Mathf.Max(1, Mathf.CeilToInt((o.B - o.A).Length));
+                for (var s = 0; s < steps; s++)
+                {
+                    var c = o.Shape == ObstacleShape.Circle ? o.A : o.A + (o.B - o.A) * (s / (float)steps);
+                    var r = Mathf.RoundToInt(o.Radius);
+                    for (var dy = -r; dy < r; dy++)
+                    {
+                        var half = Mathf.Round(Mathf.Sqrt(r * r - (dy + 0.5f) * (dy + 0.5f)));
+                        var row = Quad(obstacleRoot, "Row", pixelSprite, color, ObstacleOrder);
+                        var y = Mathf.Round(c.Y) + dy;
+                        Box(row, Mathf.Round(c.X) - half, y, Mathf.Round(c.X) + half, y + 1);
+                    }
+                }
+            }
         }
     }
 }

@@ -21,6 +21,8 @@ namespace BallBattle.View
         public string WeaponA = BladeRule.WeaponId;
         public string WeaponB = FangRule.WeaponId;
         public uint Seed = 1;
+        /// <summary>Arena used by plain Versus matches (ArenaRegistry id).</summary>
+        public string ArenaId = ArenaRegistry.Classic;
         [Tooltip("Restart with the next seed a moment after a match ends (preview without the match flow).")]
         public bool AutoRestart = true;
         public float RestartDelaySeconds = 2f;
@@ -70,7 +72,7 @@ namespace BallBattle.View
 
         /// <summary>Plain Versus match from two weapon ids.</summary>
         public void StartMatch(string weaponA, string weaponB, uint seed)
-            => StartMatch(new MatchSim(new MatchConfig(), seed, new[] { WeaponRegistry.Create(weaponA), WeaponRegistry.Create(weaponB) }));
+            => StartMatch(new MatchSim(ArenaRegistry.Create(ArenaId), seed, new[] { WeaponRegistry.Create(weaponA), WeaponRegistry.Create(weaponB) }));
 
         /// <summary>Show and run a match built elsewhere (Run mode: loadouts with traits, HP, size). Tags label the HUD names.</summary>
         public void StartMatch(MatchSim sim, string tagA = null, string tagB = null)
