@@ -53,7 +53,7 @@ Nền: Step 1 (`plans/261008-2310-ball-battle-v1-1v1-auto-battler-pixel/`) — s
 | 3 | [Ten traits](./phase-03-ten-traits.md) | Completed |
 | 4 | [Four new weapons](./phase-04-four-new-weapons.md) | Completed |
 | 5 | [Arena variants](./phase-05-arena-variants.md) | Completed |
-| 6 | [Visual language and run UI](./phase-06-visual-language-and-run-ui.md) | Pending |
+| 6 | [Visual language and run UI](./phase-06-visual-language-and-run-ui.md) | Completed |
 | 7 | [Difficulty balance and playtest](./phase-07-difficulty-balance-and-playtest.md) | Pending |
 
 Thứ tự: 1 → 2 (lát cắt dọc chơi được) → 3, 4, 5 (song song được về nội dung, nhưng đều động vào balance → làm tuần tự để số liệu sạch) → 6 → 7.

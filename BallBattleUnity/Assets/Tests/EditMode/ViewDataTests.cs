@@ -1,4 +1,6 @@
 using System.Linq;
+using BallBattle.Sim;
+using BallBattle.Sim.Traits;
 using BallBattle.Sim.Weapons;
 using BallBattle.View;
 using NUnit.Framework;
@@ -34,6 +36,19 @@ namespace BallBattle.Tests
             }
         }
 
+        [Test]
+        public void TraitAndArenaTextIsInTheFontAndEveryTraitHasABadge()
+        {
+            foreach (var e in TraitRegistry.All)
+            {
+                Assert.That(TraitBadgeView.HasStyle(e.Id), Is.True, $"badge style for {e.Id}");
+                foreach (var c in e.DisplayName + e.Blurb)
+                    Assert.That(PixelFontData.IndexOf(c), Is.GreaterThanOrEqualTo(0), $"'{c}' missing from font (trait {e.Id})");
+            }
+            foreach (var a in ArenaRegistry.All)
+                foreach (var c in "ARENA: " + a.DisplayName)
+                    Assert.That(PixelFontData.IndexOf(c), Is.GreaterThanOrEqualTo(0), $"'{c}' missing from font (arena {a.Id})");
+        }
         [Test]
         public void EveryWeaponHasPaletteAndArt()
         {

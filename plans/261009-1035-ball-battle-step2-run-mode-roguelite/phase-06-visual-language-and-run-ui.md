@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Visual language and run UI"
-status: pending
+status: completed
 priority: P1
 dependencies: [5]
 effort: "2 ngày"

@@ -12,7 +12,9 @@ namespace BallBattle.View
     public sealed class MenuView : MonoBehaviour
     {
         public const int Order = 60;
-        const int Tile = 56;
+        const int Cols = 4;
+        const int TileW = 62;
+        const int TileH = 34;
         const int Gap = 6;
 
         public event Action<string, string> StartRequested;
@@ -52,15 +54,15 @@ namespace BallBattle.View
             selected[1] = ids.Length > 1 ? ids[1] : ids[0];
 
             tiles = new PixelButton[2][];
-            BuildRow(art, 0, "BALL 1", 160, 90);   // label 160..170, tiles 98..154
-            BuildRow(art, 1, "BALL 2", 70, 0);    // label 70..80, tiles 8..64
+            BuildRow(art, 0, "BALL 1", 168, 164);   // label 168..178, tiles 90..164
+            BuildRow(art, 1, "BALL 2", 78, 74);    // label 78..88, tiles 0..74
 
-            versus = PixelText.Create(transform, "Versus", art.Font, new Vector2(0, -38), PixelText.Align.Center, 2, Order + 4);
+            versus = PixelText.Create(transform, "Versus", art.Font, new Vector2(0, -22), PixelText.Align.Center, 2, Order + 4);
 
-            var arenaBtn = PixelButton.Create(transform, "ArenaPick", art, new Rect(-60, -62, 120, 18), "", 1,
+            var arenaBtn = PixelButton.Create(transform, "ArenaPick", art, new Rect(-60, -64, 120, 18), "", 1,
                                               Palette.Floor, Palette.Wall, Palette.Text, Order + 2);
             arenaBtn.Clicked += () => { arenaIndex = (arenaIndex + 1) % ArenaRegistry.All.Count; Refresh(); };
-            arenaLabel = PixelText.Create(transform, "ArenaLabel", art.Font, new Vector2(0, -53), PixelText.Align.Center, 1, Order + 4);
+            arenaLabel = PixelText.Create(transform, "ArenaLabel", art.Font, new Vector2(0, -55), PixelText.Align.Center, 1, Order + 4);
             var random = PixelButton.Create(transform, "Random", art, new Rect(-60, -92, 120, 22), "RANDOM", 1,
                                             Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             random.Clicked += Randomize;
@@ -83,28 +85,32 @@ namespace BallBattle.View
             t.Set(s, c);
         }
 
-        void BuildRow(ArtLibrary art, int side, string title, float labelY, float tileTop)
+        /// <summary>Weapon tiles in a grid of Cols columns: icon on the left, name on the right.</summary>
+        void BuildRow(ArtLibrary art, int side, string title, float labelY, float tilesTop)
         {
             var label = PixelText.Create(transform, title, art.Font, new Vector2(-121, labelY), PixelText.Align.Left, 2, Order + 4);
             label.Set(title, Palette.Text);
 
             tiles[side] = new PixelButton[ids.Length];
-            var totalWidth = ids.Length * Tile + (ids.Length - 1) * Gap;
-            var x0 = -totalWidth / 2;
+            var rows = (ids.Length + Cols - 1) / Cols;
+            var x0 = -(Cols * TileW + (Cols - 1) * Gap) / 2f;
             for (var i = 0; i < ids.Length; i++)
             {
                 var id = ids[i];
-                var area = new Rect(x0 + i * (Tile + Gap), tileTop + 8, Tile, Tile);
+                var col = i % Cols;
+                var row = i / Cols;
+                var area = new Rect(x0 + col * (TileW + Gap), tilesTop - (row + 1) * TileH - row * Gap, TileW, TileH);
                 var b = PixelButton.Create(transform, $"Tile{side}_{id}", art, area, null, 1, Palette.Floor, Palette.Wall, Palette.Text, Order + 2);
 
                 var icon = new GameObject("Icon");
                 icon.transform.SetParent(b.transform, false);
-                icon.transform.localPosition = new Vector3(area.center.x, area.yMin + 34, 0f);
+                icon.transform.localPosition = new Vector3(area.xMin + 13, area.center.y, 0f);
+                icon.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
                 var sr = icon.AddComponent<SpriteRenderer>();
                 sr.sprite = art.Get(id).Ball;
                 sr.sortingOrder = b.IconOrder;
 
-                var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.center.x, area.yMin + 5), PixelText.Align.Center, 1, b.IconOrder);
+                var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.xMin + 26, area.center.y - 2), PixelText.Align.Left, 1, b.IconOrder);
                 name.Set(WeaponRegistry.Get(id).DisplayName, Palette.Look(id).Body);
 
                 var s = side;
@@ -112,7 +118,6 @@ namespace BallBattle.View
                 tiles[side][i] = b;
             }
         }
-
         void Randomize()
         {
             selected[0] = ids[UnityEngine.Random.Range(0, ids.Length)];

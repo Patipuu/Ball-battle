@@ -16,6 +16,8 @@ namespace BallBattle.View
         const float FlashSeconds = 0.06f;
         const float KoSlowMoSeconds = 0.5f;
         const float KoSlowMoScale = 0.3f;
+        static readonly Color32 StatusPoison = new Color32(96, 255, 64, 255);
+        static readonly Color32 StatusHeal = new Color32(80, 255, 160, 255);
 
         ArenaView arena;
         PixelParticles particles;
@@ -86,7 +88,52 @@ namespace BallBattle.View
                     shake?.Add(1f, 0.08f);
                     sfx.Play(Sfx != null ? Sfx.Parry : null, 0.6f, Random.Range(0.95f, 1.05f));
                     break;
-                case SimEventType.WallBounce:
+                case SimEventType.ProjectileFired:
+                    particles.Burst(V(e.Point), 2, BallColor(e.A), 20f, 50f, 0.15f);
+                    sfx.Play(Sfx != null ? Sfx.Wall : null, 0.12f, 1.7f);
+                    break;
+                case SimEventType.ProjectileHit:
+                    if (e.Value > 0f)
+                    {
+                        var hurt = arena.Sim.Balls[e.B];
+                        arena.GetBallView(e.B)?.Flash(FlashSeconds);
+                        particles.Burst(V(e.Point), 4, BallColor(e.A), 40f, 90f, 0.25f);
+                        popups.Show(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), e.Value, Palette.Text);
+                        sfx.Play(Sfx != null ? Sfx.Hit : null, 0.35f, 1.35f);
+                    }
+                    break;
+                case SimEventType.ProjectileDeflected:
+                    particles.Burst(V(e.Point), 4, Palette.Text, 60f, 120f, 0.2f);
+                    sfx.Play(Sfx != null ? Sfx.Parry : null, 0.3f, 1.3f);
+                    break;
+                case SimEventType.StatusTick:
+                {
+                    var sick = arena.Sim.Balls[e.A];
+                    particles.Burst(V(sick.Pos), 3, StatusPoison, 20f, 60f, 0.3f);
+                    popups.Show(V(sick.Pos) + new Vector2(0f, sick.Radius + 4f), e.Value, StatusPoison);
+                    break;
+                }
+                case SimEventType.ShieldBlocked:
+                    particles.Burst(V(e.Point), 6, Palette.Text, 60f, 130f, 0.3f);
+                    sfx.Play(Sfx != null ? Sfx.Parry : null, 0.5f, 0.8f);
+                    break;
+                case SimEventType.Heal:
+                    if (e.Value >= 0.5f)
+                    {
+                        var healed = arena.Sim.Balls[e.A];
+                        popups.Show(V(healed.Pos) + new Vector2(0f, healed.Radius + 4f), e.Value, StatusHeal);
+                        particles.Burst(V(healed.Pos), 3, StatusHeal, 15f, 50f, 0.4f);
+                    }
+                    break;
+                case SimEventType.ObstacleHit:
+                    sfx.Play(Sfx != null ? Sfx.Wall : null, 0.25f, e.Value > 0f ? 0.7f : 1.2f);
+                    if (e.Value > 0f)
+                    {
+                        particles.Burst(V(e.Point), 4, Palette.Hot, 40f, 100f, 0.25f);
+                        popups.Show(V(e.Point), e.Value, Palette.Hot);
+                    }
+                    break;                case SimEventType.WallBounce:
+                    if (e.Value > 0f) popups.Show(V(arena.Sim.Balls[e.A].Pos), e.Value, Palette.Hot);
                     sfx.Play(Sfx != null ? Sfx.Wall : null, 0.2f, Random.Range(0.9f, 1.1f));
                     break;
                 case SimEventType.BallBounce:

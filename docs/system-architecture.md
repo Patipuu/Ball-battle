@@ -80,3 +80,8 @@ Editor tools: `BallBattle/Generate Placeholder Art`, `BallBattle/Build Scenes`, 
 
 `Sim/Arena/ArenaRegistry` builds a `MatchConfig` for seven arenas (classic, pillar, bumpers, spike-walls, low-gravity, tight, wide; numbers in `ArenaTuning`). Classic is the default config, so Step 1 results are unchanged. Run fights pick the arena from the fight seed (`RunState.ArenaId`); Versus picks it in the menu (`ArenaView.ArenaId`). `ArenaFrameView` draws obstacles as pixel rows and tints spike walls. Arena height stays <= 230 so the HUD stays fixed.
 
+
+### Visual language (Step 2 phase 6)
+
+`ProjectileView` (shots 2-3 px + Engineer turrets, owner color), `StatusView` (poison = lime dots per stack, shield = white ring, 2nd ring at 2+ charges), `TraitBadgeView` (2-letter badges on the HUD stat row, gold rim at level 2) are driven by `ArenaView.Draw` from sim state; `FxView` reacts to the new sim events (reuses existing sounds with other pitches). Versus menu shows all 8 weapons (4x2 grid per side) plus an arena picker. EditMode `ViewSmokeTests` draws every effect and (with BB_CAPTURE) writes screenshots; captures in `plans/.../reports/phase-06-captures`.
+

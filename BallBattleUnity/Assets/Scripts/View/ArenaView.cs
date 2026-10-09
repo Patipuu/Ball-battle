@@ -47,6 +47,9 @@ namespace BallBattle.View
         BallView[] ballViews = new BallView[0];
         ArenaFrameView frame;
         HudView hud;
+        ProjectileView projectileView;
+        StatusView statusView;
+        TraitBadgeView badges;
         Vector2[] prevPos = new Vector2[0];
         float[] prevAngle = new float[0];
         float accumulator;
@@ -68,6 +71,9 @@ namespace BallBattle.View
             if (Art == null) throw new InvalidOperationException("ArenaView needs an ArtLibrary (run BallBattle/Build Scenes)");
             frame = ArenaFrameView.Create(transform, Art.Pixel);
             hud = HudView.Create(transform, Art);
+            projectileView = ProjectileView.Create(transform, Art.Pixel);
+            statusView = StatusView.Create(transform, Art.Pixel);
+            badges = TraitBadgeView.Create(transform, Art);
         }
 
         /// <summary>Plain Versus match from two weapon ids.</summary>
@@ -108,6 +114,7 @@ namespace BallBattle.View
                 ballViews[i] = BallView.Create(transform, i, id, Art.Get(id), Art.BallFlash, BodyOrderBase + i * 2, BladeOrderBase + i);
                 hud.Bind(i, id, i == 0 ? tagA : (i == 1 ? tagB : null));
             }
+            badges.Bind(Sim);
             SnapshotPrevious();
             accumulator = 0f;
             endTimer = 0f;
@@ -187,7 +194,9 @@ namespace BallBattle.View
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg, alpha);
                 ballViews[i].SetScale(b.Radius / Sim.Config.BallRadius);
                 ballViews[i].Render(pos, angle, b.Weapon.BladeInner + b.BladeShift, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt, b.HasTwinBlade ? b.Weapon.BladeLength * b.TwinBladeScale : 0f);
+                statusView.Render(i, b, pos, Sim.ActiveTick);
             }
+            projectileView.Render(Sim);
             hud.Render(Sim, dt);
         }
 
