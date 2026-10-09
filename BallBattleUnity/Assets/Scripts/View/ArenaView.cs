@@ -175,7 +175,7 @@ namespace BallBattle.View
                 var b = Sim.Balls[i];
                 var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X, b.Pos.Y), alpha);
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg, alpha);
-                ballViews[i].Render(pos, angle, b.Weapon.BladeInner, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt);
+                ballViews[i].Render(pos, angle, b.Weapon.BladeInner + b.BladeShift, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt);
             }
             hud.Render(Sim, dt);
         }

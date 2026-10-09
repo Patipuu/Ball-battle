@@ -5,10 +5,13 @@ namespace BallBattle.Sim
 {
     /// <summary>
     /// Deterministic match simulation. One Step() = one tick (1/60 s).
-    /// Order per active tick: arena update → N substeps of (integrate → weapon contacts → ball-ball → walls)
-    /// → speed limits → cooldowns → time cap. During hitstop the whole world is frozen.
-    /// Same config + seed + weapon set → identical state hash on the same build.
-    /// Collision handling lives in MatchSim.Collisions.cs.
+    /// First Step only: traits' OnSpawn. Per active tick: arena update → N substeps of (integrate balls +
+    /// projectiles → weapon contacts → projectile contacts → ball-ball → obstacles → walls) → speed limits →
+    /// status pulses → weapon/trait OnTick → projectile lifetimes → cooldowns → time cap.
+    /// During hitstop the whole world is frozen.
+    /// Same config + seed + loadouts → identical state hash on the same build.
+    /// Partials: Motion (substeps, integration), Collisions (blades, bodies, ball-ball), Damage (pipeline,
+    /// heal, status), Rules (limits, deaths, end, hash), Arena/MatchSim.Obstacles, Projectiles/MatchSim.Projectiles.
     /// </summary>
     public sealed partial class MatchSim
     {
@@ -18,12 +21,18 @@ namespace BallBattle.Sim
         readonly SimRandom rng;
         readonly BallState[] balls;
         readonly int[,] parryCooldown;
+        readonly ProjectilePool projectiles = new ProjectilePool();
+        /// <summary>Captured at construction, so changing Config.Layout mid-match has no effect.</summary>
+        readonly ArenaLayout layout;
         /// <summary>WeaponTuning values at match start (tuning is static; this pins it into the hash).</summary>
         readonly ulong tuningFingerprint;
+        bool spawnHooksDone;
 
         public IReadOnlyList<BallState> Balls => balls;
+        public ProjectilePool Projectiles => projectiles;
+        public ArenaLayout Layout => layout;
         /// <summary>Events produced by the last Step() only.</summary>
-        public readonly List<SimEvent> Events = new List<SimEvent>(32);
+        public readonly List<SimEvent> Events = new List<SimEvent>(512);
 
         /// <summary>All ticks stepped, including hitstop.</summary>
         public int Tick { get; private set; }
@@ -36,35 +45,81 @@ namespace BallBattle.Sim
         public MatchEndReason EndReason { get; private set; }
         public int WinnerIndex { get; private set; } = -1;
 
+        bool Ongoing => Outcome == MatchOutcome.Ongoing;
+
+        /// <summary>Plain Versus match: each ball gets only a weapon, default HP and size.</summary>
         public MatchSim(MatchConfig config, uint seed, IReadOnlyList<WeaponRule> weapons)
+            : this(config, seed, Wrap(weapons)) { }
+
+        public MatchSim(MatchConfig config, uint seed, IReadOnlyList<BallLoadout> loadouts)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
-            if (weapons == null || weapons.Count < 2) throw new ArgumentException("Need at least 2 weapons", nameof(weapons));
+            Validate(loadouts);
 
             Config = config;
             Seed = seed;
             rng = new SimRandom(seed);
-            balls = new BallState[weapons.Count];
-            parryCooldown = new int[weapons.Count, weapons.Count];
+            layout = config.Layout ?? ArenaLayout.Empty;
+            balls = new BallState[loadouts.Count];
+            parryCooldown = new int[loadouts.Count, loadouts.Count];
             Arena = config.ArenaAt(0);
             tuningFingerprint = Weapons.WeaponTuning.Fingerprint();
 
-            for (var i = 0; i < weapons.Count; i++)
+            for (var i = 0; i < loadouts.Count; i++)
             {
-                if (weapons[i] == null) throw new ArgumentException($"Weapon {i} is null", nameof(weapons));
-                weapons[i].Bind(config);
-                balls[i] = Spawn(i, weapons.Count, weapons[i]);
+                loadouts[i].Weapon.Bind(config);
+                balls[i] = Spawn(i, loadouts.Count, loadouts[i]);
             }
         }
 
-        BallState Spawn(int index, int count, WeaponRule weapon)
+        /// <summary>Checks everything before binding anything, so a rejected set of loadouts can be fixed and reused.</summary>
+        static void Validate(IReadOnlyList<BallLoadout> loadouts)
         {
-            var b = new BallState(index, weapon, count)
+            if (loadouts == null || loadouts.Count < 2) throw new ArgumentException("Need at least 2 balls", nameof(loadouts));
+            if (loadouts.Count > ProjectilePool.MaxBalls) throw new ArgumentException($"At most {ProjectilePool.MaxBalls} balls", nameof(loadouts));
+
+            var seenWeapons = new HashSet<WeaponRule>();
+            var seenTraits = new HashSet<TraitRule>();
+            for (var i = 0; i < loadouts.Count; i++)
             {
-                Radius = Config.BallRadius,
-                MaxHp = Config.StartHp,
-                Hp = Config.StartHp
+                var l = loadouts[i];
+                if (l == null || l.Weapon == null) throw new ArgumentException($"Loadout {i} has no weapon", nameof(loadouts));
+                if (l.Weapon.IsBound || !seenWeapons.Add(l.Weapon))
+                    throw new InvalidOperationException($"Weapon '{l.Weapon.Id}' instance is already used by a ball; create a new instance per ball and per match.");
+                if (l.Hp == 0f) throw new ArgumentException($"Loadout {i} starts with 0 HP", nameof(loadouts));
+                for (var t = 0; t < l.Traits.Count; t++)
+                {
+                    var trait = l.Traits[t];
+                    if (trait == null) throw new ArgumentException($"Loadout {i} trait {t} is null", nameof(loadouts));
+                    if (trait.IsBound || !seenTraits.Add(trait))
+                        throw new InvalidOperationException($"Trait '{trait.Id}' instance is already used by a ball; create a new instance per ball and per match.");
+                }
+            }
+        }
+
+        static BallLoadout[] Wrap(IReadOnlyList<WeaponRule> weapons)
+        {
+            if (weapons == null) throw new ArgumentNullException(nameof(weapons));
+            var result = new BallLoadout[weapons.Count];
+            for (var i = 0; i < weapons.Count; i++) result[i] = new BallLoadout(weapons[i]);
+            return result;
+        }
+
+        BallState Spawn(int index, int count, BallLoadout l)
+        {
+            var traits = l.Traits.ToArray();
+            var maxHp = l.MaxHp > 0f ? l.MaxHp : Config.StartHp;
+            var radius = l.Radius > 0f ? l.Radius : Config.BallRadius;
+            var b = new BallState(index, l.Weapon, count, traits)
+            {
+                Radius = radius,
+                BladeShift = radius - Config.BallRadius,
+                MaxHp = maxHp,
+                Hp = l.Hp >= 0f ? MathF.Min(l.Hp, maxHp) : maxHp,
+                Bonus = l.Bonus
             };
+            l.Weapon.Attach(this, b);
+            foreach (var t in traits) t.Bind(this, b);
 
             // Spread evenly across the width, upper half, with a seeded jitter.
             var slot = (index + 0.5f) / count;
@@ -82,9 +137,15 @@ namespace BallBattle.Sim
         public void Step()
         {
             Events.Clear();
-            if (Outcome != MatchOutcome.Ongoing) return;
+            if (!Ongoing) return;
 
             Tick++;
+            if (!spawnHooksDone)
+            {
+                RunSpawnHooks();
+                if (!Ongoing) return;
+            }
+
             if (HitstopRemaining > 0)
             {
                 HitstopRemaining--;
@@ -96,164 +157,49 @@ namespace BallBattle.Sim
 
             var substeps = SubstepCount();
             var dt = 1f / substeps;
-            for (var s = 0; s < substeps && Outcome == MatchOutcome.Ongoing; s++)
+            for (var s = 0; s < substeps && Ongoing; s++)
             {
                 Integrate(dt);
+                IntegrateProjectiles(dt);
                 ResolveWeaponContacts();
+                ResolveProjectileContacts();
                 ResolveBallCollisions();
+                ResolveObstacles();
                 ResolveWalls();
             }
 
             ApplySpeedLimits();
+            TickStatusEffects();
+            RunTickHooks();
+            TickProjectileLifetimes();
             TickCooldowns();
             CheckTimeCap();
         }
 
-        /// <summary>
-        /// Enough substeps that per substep: no blade turns more than MaxSpinPerSubstepDeg, no ball moves
-        /// more than half a radius, and two blade tips cannot close faster than the parry reach
-        /// (otherwise fast/long blades could pass through each other without a parry).
-        /// </summary>
-        int SubstepCount()
+        /// <summary>On the first Step (not in the constructor), so their events reach the view.</summary>
+        void RunSpawnHooks()
         {
-            var maxSpin = 0f;
-            var maxSpeed = 0f;
-            var maxTipSpeed = 0f;
-            var minParryReach = float.MaxValue;
+            spawnHooksDone = true;
             foreach (var b in balls)
-            {
-                if (!b.Alive) continue;
-                var speed = b.Vel.Length;
-                if (speed > maxSpeed) maxSpeed = speed;
-                var w = b.Weapon;
-                if (!w.HasBlade) continue;
-                if (w.SpinDegPerTick > maxSpin) maxSpin = w.SpinDegPerTick;
-                var tip = w.SpinDegPerTick * (MathF.PI / 180f) * (w.BladeInner + w.BladeLength);
-                if (tip > maxTipSpeed) maxTipSpeed = tip;
-                if (w.BladeThickness < minParryReach) minParryReach = w.BladeThickness;
-            }
-
-            var bySpin = (int)MathF.Ceiling(maxSpin / Config.MaxSpinPerSubstepDeg);
-            var bySpeed = (int)MathF.Ceiling(maxSpeed / (Config.BallRadius * 0.5f));
-            var bySweep = maxTipSpeed > 0f ? (int)MathF.Ceiling((2f * maxTipSpeed + 2f * maxSpeed) / minParryReach) : 0;
-            bySpin = Math.Max(bySpin, bySweep);
-            var n = Math.Max(Config.MinSubsteps, Math.Max(bySpin, bySpeed));
-            return Math.Min(n, Config.MaxSubsteps);
+                foreach (var t in b.Traits) t.OnSpawn();
+            ResolveDeaths();
         }
 
-        void Integrate(float dt)
+        /// <summary>Weapon then trait OnTick, ball by ball. A ball that drops to 0 HP stops acting at once.</summary>
+        void RunTickHooks()
         {
             foreach (var b in balls)
             {
-                if (!b.Alive) continue;
-                b.Vel.Y -= Config.Gravity * dt;
-                b.Pos += b.Vel * dt;
-                if (b.Weapon.HasBlade)
+                if (!Ongoing) return;
+                if (!Active(b)) continue;
+                b.Weapon.OnTick();
+                foreach (var t in b.Traits)
                 {
-                    var a = b.WeaponAngleDeg + b.SpinDir * b.Weapon.SpinDegPerTick * dt;
-                    a %= 360f;
-                    if (a < 0f) a += 360f;
-                    b.WeaponAngleDeg = a;
+                    if (!Active(b)) break;
+                    t.OnTick();
                 }
+                ResolveDeaths();
             }
-        }
-
-        void ApplySpeedLimits()
-        {
-            foreach (var b in balls)
-            {
-                if (!b.Alive) continue;
-                // Horizontal floor first, then the cap, so the cap always holds.
-                if (MathF.Abs(b.Vel.X) < Config.MinHorizontalSpeed)
-                {
-                    float sign = b.Vel.X > 0f ? 1f : (b.Vel.X < 0f ? -1f : (b.Index % 2 == 0 ? 1f : -1f));
-                    b.Vel.X = sign * Config.MinHorizontalSpeed;
-                }
-
-                var max = Config.MaxSpeed + b.Weapon.MaxSpeedBonus;
-                var speedSq = b.Vel.LengthSq;
-                if (speedSq > max * max) b.Vel = b.Vel * (max / MathF.Sqrt(speedSq));
-            }
-        }
-
-        void TickCooldowns()
-        {
-            var n = balls.Length;
-            for (var i = 0; i < n; i++)
-            {
-                var cd = balls[i].HitCooldown;
-                for (var j = 0; j < n; j++)
-                {
-                    if (cd[j] > 0) cd[j]--;
-                    if (parryCooldown[i, j] > 0) parryCooldown[i, j]--;
-                }
-            }
-        }
-
-        void CheckTimeCap()
-        {
-            if (Outcome != MatchOutcome.Ongoing || ActiveTick < Config.CapTicks) return;
-
-            var best = -1;
-            var bestFrac = -1f;
-            var tie = false;
-            foreach (var b in balls)
-            {
-                if (!b.Alive) continue;
-                var f = b.HpFraction;
-                if (f > bestFrac) { bestFrac = f; best = b.Index; tie = false; }
-                else if (f == bestFrac) tie = true;
-            }
-
-            End(tie ? -1 : best, MatchEndReason.TimeCap);
-        }
-
-        void EndIfDecided()
-        {
-            var alive = 0;
-            var last = -1;
-            foreach (var b in balls)
-            {
-                if (!b.Alive) continue;
-                alive++;
-                last = b.Index;
-            }
-
-            if (alive == 1) End(last, MatchEndReason.Knockout);
-            else if (alive == 0) End(-1, MatchEndReason.Knockout);
-        }
-
-        void End(int winner, MatchEndReason reason)
-        {
-            Outcome = winner >= 0 ? MatchOutcome.Win : MatchOutcome.Draw;
-            WinnerIndex = winner;
-            EndReason = reason;
-            Emit(SimEventType.MatchEnd, winner, -1, 0f, Vec2.Zero);
-        }
-
-        void Emit(SimEventType type, int a, int b, float value, Vec2 point)
-        {
-            Events.Add(new SimEvent { Type = type, Tick = Tick, A = a, B = b, Value = value, Point = point });
-        }
-
-        /// <summary>Hash of the whole match state. Equal hashes ⇔ (practically) identical matches.</summary>
-        public ulong ComputeHash()
-        {
-            var h = SimHash.Seed;
-            h = SimHash.Mix(h, SimVersion.Rules);
-            h = SimHash.Mix(SimHash.Mix(h, (uint)tuningFingerprint), (uint)(tuningFingerprint >> 32));
-            h = SimHash.Mix(h, Tick);
-            h = SimHash.Mix(h, ActiveTick);
-            h = SimHash.Mix(h, HitstopRemaining);
-            h = SimHash.Mix(h, rng.State);
-            h = SimHash.Mix(h, (int)Outcome);
-            h = SimHash.Mix(h, WinnerIndex);
-            foreach (var b in balls) h = b.HashInto(h);
-            var n = balls.Length;
-            for (var i = 0; i < n; i++)
-                for (var j = 0; j < n; j++)
-                    h = SimHash.Mix(h, parryCooldown[i, j]);
-            return h;
         }
     }
 }

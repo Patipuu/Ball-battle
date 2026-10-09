@@ -19,6 +19,9 @@ namespace BallBattle.Sim
         /// <summary>Safety cap: match ends here and higher HP% wins (equal → draw).</summary>
         public int CapTicks = 180 * TicksPerSecond;
 
+        /// <summary>Obstacles and wall hazards. Empty = the classic Step 1 arena.</summary>
+        public ArenaLayout Layout = ArenaLayout.Empty;
+
         // Balls.
         public float BallRadius = 16f;
         public float StartHp = 100f;
@@ -40,6 +43,8 @@ namespace BallBattle.Sim
         public float ParryPush = 2f;
         /// <summary>Extra reach for body-attack contact (ball-ball resolution leaves them exactly touching).</summary>
         public float BodyContactSlop = 0.5f;
+        /// <summary>Push on a ball hit by a projectile (fraction of HitKnockback).</summary>
+        public float ProjectileKnockbackScale = 0.5f;
 
         // Integration.
         public int MinSubsteps = 2;

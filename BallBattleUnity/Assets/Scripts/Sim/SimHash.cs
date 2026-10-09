@@ -25,5 +25,14 @@ namespace BallBattle.Sim
         public static ulong Mix(ulong h, bool value) => Mix(h, value ? 1 : 0);
 
         public static ulong Mix(ulong h, Vec2 v) => Mix(Mix(h, v.X), v.Y);
+
+        /// <summary>Mixes a string's UTF-16 code units (no allocation).</summary>
+        public static ulong Mix(ulong h, string s)
+        {
+            if (s == null) return Mix(h, -1);
+            h = Mix(h, s.Length);
+            for (var i = 0; i < s.Length; i++) h = Mix(h, (int)s[i]);
+            return h;
+        }
     }
 }

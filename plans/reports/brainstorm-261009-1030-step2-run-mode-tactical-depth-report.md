@@ -70,3 +70,14 @@ Cột giữa, bumper tăng tốc, tường gai, trọng lực thấp, sân nhỏ
 - Độ khó đối thủ tăng theo màn: thêm trait hay thêm HP/chỉ số.
 - Lưu tiến trình: file local (PlayerPrefs/JSON) — đủ cho Step 2?
 - Thứ tự làm: sim (trait/đạn/arena) trước hay run mode UI trước.
+
+## Quyết định cho câu hỏi mở (Claude tự quyết 2026-10-09, user hiệu chỉnh sau)
+1. **Trait:** tối đa **3 trait/bóng**. Chọn lại trait đã có → **lên cấp 2** (mạnh hơn, vẫn chiếm 1 ô). Tối đa cấp 2. Lý do: 3 ô đủ tạo build, vẫn đọc được trên HUD 270 px; cấp 2 thưởng cho việc theo đuổi một hướng.
+2. **Kinh tế xu:** bắt đầu 2 xu; **thắng +3, thua +1** (thua vẫn có xu để gỡ). Mỗi trận được chọn **miễn phí 1 thẻ / 3**. **Đổi bộ thẻ: 1 xu. Mua thêm 1 thẻ: 3 xu.** Đơn giản, một loại tiền, tiêu ngay trong run (không mang qua run).
+3. **Độ khó:** chủ yếu **thêm trait** (đọc được, tạo bài toán khắc chế); chỉ số chỉ tăng nhẹ.
+   - Màn 1 (trận 1–2): 0–1 trait. Boss 1 (trận 3): bản Super, 250 HP.
+   - Màn 2 (4–5): 1–2 trait, +10% HP. Boss 2 (6): Super + 2 trait, 350 HP.
+   - Màn 3 (7): 2–3 trait (có cấp 2), +20% HP. Boss cuối (8): Super + 3 trait, 500 HP.
+4. **Lưu tiến trình:** **JSON trong Application.persistentDataPath** (JsonUtility): mở khóa, kỷ lục, cài đặt, và run đang dở (để chơi tiếp). Đủ cho Step 2; cloud save để sau.
+5. **Thứ tự:** **sim nền trước** (móc trait, trạng thái, đạn, vật cản) → **lát cắt dọc chơi được sớm** (run mode tối thiểu với 4 vũ khí cũ + 3 trait + 1 arena) → lấp nội dung (đủ trait, 4 vũ khí, arena) → ngôn ngữ hình ảnh → cân bằng độ khó. Lý do: run mode cần nội dung để có nghĩa, nhưng phải chơi thử vòng lặp sớm để biết có vui không trước khi đổ công làm nội dung.
+6. **Tái lập run:** run có seed; cùng seed run + cùng lựa chọn → cùng đối thủ, cùng thẻ, cùng kết quả (replay/chia sẻ seed).

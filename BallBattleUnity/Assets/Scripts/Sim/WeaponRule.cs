@@ -62,7 +62,14 @@ namespace BallBattle.Sim
         /// <summary>Config of the match this weapon is bound to (null before Bind).</summary>
         protected MatchConfig Config { get; private set; }
 
+        /// <summary>Match this weapon is in (null before the ball spawns). Use it to fire, poison, heal.</summary>
+        protected MatchSim Sim { get; private set; }
+
+        /// <summary>The ball holding this weapon.</summary>
+        protected BallState Self { get; private set; }
+
         bool bound;
+        internal bool IsBound => bound;
 
         /// <summary>Called by MatchSim. Throws if this instance already belongs to a ball.</summary>
         internal void Bind(MatchConfig config)
@@ -72,11 +79,28 @@ namespace BallBattle.Sim
             Config = config;
         }
 
+        internal void Attach(MatchSim sim, BallState self)
+        {
+            Sim = sim;
+            Self = self;
+        }
+
         public abstract float Damage(in HitContext ctx);
 
+        /// <summary>This weapon's own blade/body hit landed (not shield-blocked). Growth goes here.</summary>
         public virtual void OnHit(in HitContext ctx) { }
-        public virtual void OnParry() { }
+
+        /// <summary>Any Weapon or Projectile hit by this ball landed, after HP changed (poison on hit, +1 arrow per hit).</summary>
+        public virtual void OnHitDealt(BallState target, float damage, DamageKind kind) { }
+
+        public virtual void OnParry(BallState other) { }
         public virtual void OnWall() { }
+
+        /// <summary>This ball's blade knocked back projectile <paramref name="slot"/> (it now belongs to this ball).</summary>
+        public virtual void OnDeflect(int slot) { }
+
+        /// <summary>Once per active (non-hitstop) tick, after movement. Ranged weapons fire here via Sim.FireProjectile.</summary>
+        public virtual void OnTick() { }
 
         /// <summary>Mixes the subclass's own mutable fields into the hash. Return <paramref name="h"/> unchanged if there are none.</summary>
         protected abstract ulong HashState(ulong h);
@@ -84,6 +108,7 @@ namespace BallBattle.Sim
         /// <summary>Hash of base shape fields + subclass state, for determinism checks.</summary>
         public ulong HashInto(ulong h)
         {
+            h = SimHash.Mix(h, Id);
             h = SimHash.Mix(h, BladeInner);
             h = SimHash.Mix(h, BladeLength);
             h = SimHash.Mix(h, BladeThickness);

@@ -18,7 +18,7 @@ namespace BallBattle.SimTests
 
         public override string Id => "test-fixed-blade";
         public override float Damage(in HitContext ctx) => damage;
-        public override void OnParry() => Parries++;
+        public override void OnParry(BallState other) => Parries++;
         public override void OnWall() => Walls++;
         protected override ulong HashState(ulong h) => h;
     }
