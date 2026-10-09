@@ -51,3 +51,6 @@ Editor tools: `BallBattle/Generate Placeholder Art`, `BallBattle/Build Scenes`, 
 
 ### Effects & audio
 `FxView` (same GameObject as ArenaView) maps SimEvents to: `BallView.Flash`, `PixelParticles` (pooled, whole-pixel), `DamagePopups` (pooled PixelText, cached strings), `ScreenShake` (integer px, re-captures base when idle), `SfxPlayer` (8 voices, same-clip 30 ms gap). Placeholder WAVs from `PlaceholderSfxSynth` via `BallBattle/Generate Placeholder Sfx`; clips referenced by `SfxLibrary`. Zero GC allocation per frame mid-match (Profiler Recorder).
+
+### Match flow
+`GameController` (GameObject "Game") owns `MatchFlow` (Menu → Countdown → Playing → RoundOver → Result) and the pixel UI: `MenuView` (weapon pick, sorting 60+), `OverlayView` (score, seed, countdown, banner, result panel 70+), `PixelButton` + `PixelInput` (screen → native via Windowbox integer zoom, legacy input). `Sim/Series` holds best-of-3 rules and per-round seeds: REMATCH replays the series exactly. Arena is `Paused` in menu/countdown. Esc / Android Back returns to the menu.

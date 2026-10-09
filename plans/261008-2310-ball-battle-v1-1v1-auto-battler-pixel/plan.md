@@ -3,7 +3,7 @@ title: Ball Battle v1 - 1v1 auto-battler pixel
 description: >-
   Bản 1 chơi được: 2 bóng mang vũ khí tự đấu 1v1 trong arena pixel 270x480, 4 vũ
   khí khắc chế nhau, best-of-3, trận tái lập từ seed.
-status: in-progress
+status: pending
 priority: P1
 branch: master
 tags:
@@ -58,7 +58,7 @@ Input người chơi, chế độ khác (BR, team, raid), art/âm thanh thật, 
 | 3 | [Four weapons](./phase-03-four-weapons.md) | Completed |
 | 4 | [Pixel view](./phase-04-pixel-view.md) | Completed |
 | 5 | [Juice and audio](./phase-05-juice-and-audio.md) | Completed |
-| 6 | [Match flow UI](./phase-06-match-flow-ui.md) | In Progress |
+| 6 | [Match flow UI](./phase-06-match-flow-ui.md) | Completed |
 | 7 | [Tests and balance](./phase-07-tests-and-balance.md) | Pending |
 
 Thứ tự: 1 → 2 → 3 → (4, 5 song song được) → 6 → 7. Test Sim viết dần từ phase 2, phase 7 chốt cân bằng.

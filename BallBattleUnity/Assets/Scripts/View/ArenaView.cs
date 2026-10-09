@@ -25,6 +25,9 @@ namespace BallBattle.View
         public bool AutoRestart = true;
         public float RestartDelaySeconds = 2f;
 
+        /// <summary>Frozen: the sim does not step, the current pose is still drawn (menu, countdown).</summary>
+        public bool Paused { get; set; }
+
         /// <summary>Raised for every sim event, in tick order (effects/audio subscribe here).</summary>
         public event Action<SimEvent> SimEventRaised;
         /// <summary>Raised once when the current match ends: winner ball index, -1 on draw.</summary>
@@ -108,6 +111,12 @@ namespace BallBattle.View
         {
             if (Sim == null) return;
             var dt = Mathf.Min(Time.deltaTime, MaxFrameSeconds);
+            if (Paused)
+            {
+                accumulator = 0f;
+                Draw(0f, dt);
+                return;
+            }
             accumulator += dt;
 
             stepping = true;

@@ -57,8 +57,12 @@ namespace BallBattle.EditorTools
 
             var arena = new GameObject("Arena").AddComponent<ArenaView>();
             arena.Art = AssetDatabase.LoadAssetAtPath<ArtLibrary>(PlaceholderArtGenerator.LibraryPath);
+            arena.AutoRestart = false;   // GameController drives rounds
             var fx = arena.gameObject.AddComponent<FxView>();
             fx.Sfx = AssetDatabase.LoadAssetAtPath<SfxLibrary>(PlaceholderSfxGenerator.LibraryPath);
+
+            var game = new GameObject("Game").AddComponent<GameController>();
+            game.Arena = arena;
 
             EditorSceneManager.SaveScene(scene, ArenaScenePath);
         }

@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: Match flow UI
-status: in-progress
+status: completed
 priority: P1
 dependencies:
   - 4
@@ -32,9 +32,23 @@ Vòng chơi đầy đủ: Menu chọn bóng → đếm ngược → best-of-3 �
 4. SceneBuilder thêm Menu làm scene 0.
 
 ## Success Criteria
-- [ ] Đi hết vòng Menu → 3 ván → Kết quả → Đấu lại không lỗi console.
-- [ ] Đấu lại cùng seed cho trận giống hệt (so hash cuối).
-- [ ] EditMode test cho MatchFlow xanh.
+- [x] Đi hết vòng Menu → 3 ván → Kết quả → Đấu lại không lỗi console.
+- [x] Đấu lại cùng seed cho trận giống hệt (so hash cuối).
+- [x] EditMode test cho MatchFlow xanh.
 
 ## Risk Assessment
 - Click trên RT phóng to lệch tọa độ → quy đổi tọa độ màn → pixel gốc trong 1 hàm, có test.
+
+## Kết quả (2026-10-09)
+- `Sim/Series.cs`: best-of-3, hòa đánh lại bằng seed mới, seed ván = SeedFor(seed trận, chỉ số ván). Test dotnet: phát lại cả loạt với cùng seed → hash từng ván giống hệt.
+- `View/MatchFlow.cs` (C# thuần): Menu → Countdown → Playing → RoundOver → Result; lệnh sai trạng thái bị bỏ qua. EditMode test.
+- `PixelInput` (đổi toạ độ màn → pixel gốc theo Windowbox, có test 1080x1920 / 1080x2400 / 1920x1080), `PixelButton` (bấm-thả trong nút), `MenuView`, `OverlayView`, `GameController`; `ArenaView.Paused`; Esc/Back về menu.
+- Chạy thật qua MCP (tốc x6): PIKE vs BRAWLER 2-0 → REMATCH: 2 ván cùng seed/tick/hash/kết quả → NEW MATCH seed mới → MENU. Log: `reports/phase-06-playthrough.log`.
+- EditMode 17/17; SimTests 51/51; console sạch.
+
+## Khác plan
+- Menu là lớp phủ trong cùng scene `Arena.unity` thay vì `Menu.unity` riêng: một AudioListener, chuyển màn tức thì, không phải nạp scene.
+
+## Còn mở
+- Bấm nút bằng chuột/chạm thật mới kiểm bằng unit test toạ độ; cần người chơi thử (Phase 7 playtest).
+- Đếm ngược "3" có thể ngắn 1 khung hình (chấp nhận).
