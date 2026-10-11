@@ -44,6 +44,9 @@ namespace BallBattle.View
 
         public MatchSim Sim { get; private set; }
 
+        /// <summary>HUD (tests).</summary>
+        public HudView Hud => hud;
+
         /// <summary>Ball that gets the player marker (arrow + dotted ring) in the next StartMatch; -1 = none (Versus).</summary>
         public int MarkedBall { get; set; } = -1;
 

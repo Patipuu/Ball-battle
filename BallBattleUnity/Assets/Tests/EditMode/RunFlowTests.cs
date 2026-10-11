@@ -32,6 +32,8 @@ namespace BallBattle.Tests
             f.OnMatchEnded(lastMatch);
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.FightOver));
             f.Tick(2.1f);
+            Assert.That(f.Current, Is.EqualTo(RunFlow.State.FightResult), "result screen after every fight");
+            f.NextAfterResult();
         }
 
         [Test]

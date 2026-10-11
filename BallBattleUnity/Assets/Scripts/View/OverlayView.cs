@@ -14,6 +14,13 @@ namespace BallBattle.View
         public const int Order = 50;
         public const int ResultOrder = 70;
         const float GoSeconds = 0.6f;
+        /// <summary>The result panel takes taps only after this long (like the Run Prepare screen).</summary>
+        public const float ResultInputBlockSeconds = 0.3f;
+        public static readonly Rect RematchArea = new Rect(-80, -10, 160, 28);
+        public static readonly Rect NewMatchArea = new Rect(-80, -50, 160, 28);
+        public static readonly Rect MenuArea = new Rect(-80, -90, 160, 28);
+        /// <summary>Round banner band (the tap target testers hit by mistake).</summary>
+        public static readonly Rect BannerArea = new Rect(-115, -12, 230, 24);
 
         public event Action RematchRequested;
         public event Action NewMatchRequested;
@@ -53,9 +60,9 @@ namespace BallBattle.View
             resultTitle = PixelText.Create(p, "Title", art.Font, new Vector2(0, 120), PixelText.Align.Center, 3, ResultOrder + 4);
             resultScore = PixelText.Create(p, "ScoreBig", art.Font, new Vector2(0, 70), PixelText.Align.Center, 4, ResultOrder + 4);
             resultSeed = PixelText.Create(p, "Seed", art.Font, new Vector2(0, 45), PixelText.Align.Center, 1, ResultOrder + 4);
-            Button(art, p, "Rematch", new Rect(-80, -10, 160, 28), "REMATCH", Palette.WallWarning, () => RematchRequested?.Invoke());
-            Button(art, p, "NewMatch", new Rect(-80, -50, 160, 28), "NEW MATCH", Palette.Text, () => NewMatchRequested?.Invoke());
-            Button(art, p, "MenuBtn", new Rect(-80, -90, 160, 28), "MENU", Palette.TextDim, () => MenuRequested?.Invoke());
+            Button(art, p, "Rematch", RematchArea, "REMATCH", Palette.WallWarning, () => RematchRequested?.Invoke());
+            Button(art, p, "NewMatch", NewMatchArea, "NEW MATCH", Palette.Text, () => NewMatchRequested?.Invoke());
+            Button(art, p, "MenuBtn", MenuArea, "MENU", Palette.TextDim, () => MenuRequested?.Invoke());
             Text(p, art, "REMATCH REPLAYS THE SAME FIGHT", -120, Palette.TextDim);   // font has no = or ,
 
             HideAll();
@@ -95,13 +102,20 @@ namespace BallBattle.View
             {
                 if (state == MatchFlow.State.Playing) goTimer = GoSeconds;
                 resultPanel.SetActive(state == MatchFlow.State.Result);
-                if (state == MatchFlow.State.Result) FillResult(s);
+                if (state == MatchFlow.State.Result)
+                {
+                    FillResult(s);
+                    // The tap that lands as the panel appears (on the round banner, say) must not press REMATCH under it.
+                    PixelInput.BlockFor(ResultInputBlockSeconds);
+                    PixelButton.NoteShownAll(resultPanel.transform);
+                }
                 seed.Set("SEED " + s.MatchSeed, Palette.TextDim);
                 lastState = state;
             }
 
             // Rebuild the score string only when it changes (no per-frame garbage).
-            var scoreKey = state == MatchFlow.State.Result ? -1 : s.DisplayRound * 10000 + s.WinsA * 100 + s.WinsB;
+            // No "ROUND n" line once the series is decided (the pause after the deciding round, and the result).
+            var scoreKey = state == MatchFlow.State.Result || s.IsOver ? -1 : s.DisplayRound * 10000 + s.WinsA * 100 + s.WinsB;
             if (scoreKey != lastScoreKey)
             {
                 lastScoreKey = scoreKey;
@@ -130,6 +144,10 @@ namespace BallBattle.View
                 banner.Set(showBanner ? RoundText(s, flow.LastRoundWinner) : "", showBanner ? BannerColor(s, flow.LastRoundWinner) : default);
             }
         }
+
+        /// <summary>Read-back for tests.</summary>
+        public string ScoreText => score.Text;
+        public bool ResultShown => resultPanel.activeSelf;
 
         static string WeaponOf(Series s, int side) => side == 0 ? s.WeaponA : s.WeaponB;
 

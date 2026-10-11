@@ -15,12 +15,14 @@ namespace BallBattle.View
         PrepareView prepare;
         RunOverlayView overlay;
         RunSummaryView summary;
+        RunResultView result;
         RunFlow.State shown = RunFlow.State.Closed;
         bool dirty;
 
         public RunFlow Flow { get; private set; }
         public bool IsOpen => Flow.Current != RunFlow.State.Closed;
         public PrepareView Prepare => prepare;
+        public RunResultView Result => result;
 
         public event Action Closed;
 
@@ -44,6 +46,7 @@ namespace BallBattle.View
             prepare = PrepareView.Create(transform, art);
             overlay = RunOverlayView.Create(transform, art);
             summary = RunSummaryView.Create(transform, art);
+            result = RunResultView.Create(transform, art);
 
             title.ContinueRequested += () => Flow.Continue();
             title.NewRunRequested += () => Flow.NewRun(NewSeed());
@@ -57,6 +60,7 @@ namespace BallBattle.View
                 arena.TimeScale = arena.TimeScale > 1f ? 1f : 2f;
                 overlay.SetSpeed(arena.TimeScale);
             };
+            result.ContinueRequested += () => Flow.NextAfterResult();
             summary.NewRunRequested += () => Flow.NewRun(NewSeed());
             summary.MenuRequested += () => Flow.Close();
 
@@ -77,6 +81,7 @@ namespace BallBattle.View
                 Closed?.Invoke();
             };
             arena.MatchEnded += OnArenaMatchEnded;
+            arena.SimEventRaised += OnArenaEvent;
 
             HideAll();
             overlay.SetSpeed(1f);
@@ -84,9 +89,19 @@ namespace BallBattle.View
 
         void OnArenaMatchEnded(int winner) => Flow.OnMatchEnded(arena.Sim);
 
+        /// <summary>Damage totals for the result screen: the sim's own event values, only while a Run fight plays.</summary>
+        void OnArenaEvent(BallBattle.Sim.SimEvent e)
+        {
+            if (Flow.Current == RunFlow.State.Playing) Flow.Stats.Add(e);
+        }
+
         void OnDestroy()
         {
-            if (arena != null) arena.MatchEnded -= OnArenaMatchEnded;
+            if (arena != null)
+            {
+                arena.MatchEnded -= OnArenaMatchEnded;
+                arena.SimEventRaised -= OnArenaEvent;
+            }
         }
 
         public void Open()
@@ -102,6 +117,7 @@ namespace BallBattle.View
             prepare.Hide();
             overlay.Hide();
             summary.Hide();
+            result.Hide();
             shown = RunFlow.State.Closed;
         }
 
@@ -125,6 +141,7 @@ namespace BallBattle.View
                 pick.Hide();
                 prepare.Hide();
                 summary.Hide();
+                result.Hide();
                 shown = s;
             }
 
@@ -133,6 +150,7 @@ namespace BallBattle.View
                 case RunFlow.State.Title: title.Show(Flow); break;
                 case RunFlow.State.PickWeapon: pick.Show(Flow.StartChoices); break;
                 case RunFlow.State.Prepare: prepare.Show(Flow.Run); break;
+                case RunFlow.State.FightResult: result.Show(Flow.LastReport); break;
                 case RunFlow.State.Summary: summary.Show(Flow.Run); break;
             }
         }

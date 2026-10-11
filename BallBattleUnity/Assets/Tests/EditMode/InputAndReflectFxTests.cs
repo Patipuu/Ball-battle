@@ -296,7 +296,7 @@ namespace BallBattle.Tests
         }
 
         [Test]
-        public void NumbersShownTogetherStackTwelvePixelsApartAndStayInTheArena()
+        public void NumbersShownTogetherStackAndStayInTheArena()
         {
             var popups = DamagePopups.Create(root.transform, art.Font, 8);
             var arena = ArenaRect.Centered(230f, 230f);
@@ -307,12 +307,13 @@ namespace BallBattle.Tests
             popups.Tick(0.05f);
             popups.Show(at, 2f, Palette.Text, arena);
             var shown = popups.Showing().OrderBy(p => p.start.y).ToList();
-            Assert.That(shown.Select(p => p.start.y), Is.EqualTo(new[] { 0f, 12f, 24f }), "each new number 12 px above the previous");
+            Assert.That(shown.Count, Is.EqualTo(3));
+            for (var i = 1; i < shown.Count; i++) Assert.That(shown[i].start.y - shown[i - 1].start.y, Is.GreaterThanOrEqualTo(DamagePopups.StackStep));
             AssertNoOverlap(shown);
 
-            popups.Tick(DamagePopups.StackWindow + 0.01f);
+            popups.Clear();
             popups.Show(new Vector2(60, 0), 5f, Palette.Text, arena);
-            Assert.That(popups.Showing().Any(p => p.value == "5" && p.start == new Vector2(60, 0)), Is.True, "elsewhere: not moved");
+            Assert.That(popups.Showing().Any(p => p.value == "5" && p.start == new Vector2(60, 0)), Is.True, "alone: not moved");
 
             // Against the top wall: stacked below instead, still inside.
             var top = new Vector2(0f, arena.Top);
@@ -326,7 +327,6 @@ namespace BallBattle.Tests
                 Assert.That(p.start.y, Is.GreaterThanOrEqualTo(arena.Bottom + DamagePopups.WallMargin));
             }
         }
-
         static void AssertNoOverlap(List<(string value, int scale, Vector2 start)> shown)
         {
             for (var i = 0; i < shown.Count; i++)

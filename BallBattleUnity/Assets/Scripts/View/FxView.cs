@@ -223,6 +223,7 @@ namespace BallBattle.View
                 sfx.Play(Sfx != null ? Sfx.Win : null, 0.6f);
             }
             particles.Tick(fxDt);
+            popups.SetBounds(arena.Sim != null ? arena.Sim.Arena : (ArenaRect?)null);
             popups.Tick(fxDt);
             shake?.Tick(dt);
         }

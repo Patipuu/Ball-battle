@@ -6,14 +6,14 @@ using BallBattle.Sim.Run;
 namespace BallBattle.View
 {
     /// <summary>
-    /// Run mode screens: Title → PickWeapon → (Prepare → Countdown → Playing → FightOver)×8 → Summary.
+    /// Run mode screens: Title → PickWeapon → (Prepare → Countdown → Playing → FightOver → FightResult)×8 → Summary.
     /// Plain C# so it is unit-testable; RunController drives it with Tick(dt) and the arena's match end.
     /// Saves after every change. Starting a fight locks the run and saves, so quitting during a fight (even after
     /// seeing its result) resumes straight into that same fight with the same build: the result cannot be changed.
     /// </summary>
     public sealed class RunFlow
     {
-        public enum State { Closed, Title, PickWeapon, Prepare, Countdown, Playing, FightOver, Summary }
+        public enum State { Closed, Title, PickWeapon, Prepare, Countdown, Playing, FightOver, FightResult, Summary }
 
         public readonly float CountdownSeconds;
         public readonly float FightOverSeconds;
@@ -35,6 +35,12 @@ namespace BallBattle.View
 
         /// <summary>Tester switch (-bbForceTrait): this trait is always in the offer before fight 1. Null = normal play.</summary>
         public string ForceTraitId { get; set; }
+
+        /// <summary>Damage totals of the fight being played; the arena feeds it the sim's events (RunController).</summary>
+        public FightStats Stats { get; } = new FightStats();
+
+        /// <summary>Result of the last finished fight, shown on the FightResult screen.</summary>
+        public FightReport LastReport { get; private set; }
         public int CountdownNumber => Current == State.Countdown ? Math.Max(1, (int)Math.Ceiling(timer)) : 0;
 
         /// <summary>A fight is ready: show it frozen for the countdown.</summary>
@@ -88,15 +94,21 @@ namespace BallBattle.View
             if (Current != State.PickWeapon || !StartChoices.Contains(weaponId)) return;
             if (save.HasRun) UnlockRules.RecordAbandoned(save.Progress);
             Run = RunState.Start(pendingSeed, weaponId, save.Progress);
+            UnityEngine.Debug.Log(RunStartLog(pendingSeed, weaponId, ForceTraitId));
             DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
             Persist();
             Go(State.Prepare);
         }
 
+        /// <summary>Logged when a run starts, so a tester can report the seed and replay the same run.</summary>
+        public static string RunStartLog(uint seed, string weaponId, string forceTraitId) =>
+            $"[BallBattle] Run started: seed {seed}, weapon {weaponId}" + (forceTraitId != null ? $", -bbForceTrait {forceTraitId}" : "");
+
         public void Continue()
         {
             if (Current != State.Title || !HasSavedRun) return;
             Run = save.Run;
+            UnityEngine.Debug.Log($"[BallBattle] Run resumed: seed {Run.Seed}, fight {Run.FightIndex + 1}");
             if (DebugOptions.ApplyForcedTrait(Run, ForceTraitId)) Persist();
             if (Run.FightLocked) StartFight();   // quit mid-fight: replay that exact fight, no edits
             else Go(State.Prepare);
@@ -130,6 +142,7 @@ namespace BallBattle.View
         void StartFight()
         {
             match = Run.CreateMatch();
+            Stats.Reset();
             MatchPrepared?.Invoke(match);
             timer = CountdownSeconds;
             Go(State.Countdown);
@@ -165,10 +178,19 @@ namespace BallBattle.View
         {
             var finished = match;
             match = null;   // never applied twice, even if saving fails below
+            var before = FightReport.Snapshot.Of(Run);
             Run.ApplyResult(finished);
             UnlockRules.Record(save.Progress, Run);
-            Go(Run.Over ? State.Summary : State.Prepare);
+            LastReport = FightReport.Build(finished, Stats, before, Run);
+            Go(State.FightResult);   // result screen first, then Prepare (or the summary)
             Persist();
+        }
+
+        /// <summary>Leave the post-fight result screen: next fight's Prepare, or the summary when the run is over.</summary>
+        public void NextAfterResult()
+        {
+            if (Current != State.FightResult) return;
+            Go(Run.Over ? State.Summary : State.Prepare);
         }
 
         void Persist()

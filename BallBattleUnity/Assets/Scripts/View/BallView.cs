@@ -55,14 +55,14 @@ namespace BallBattle.View
             var o = new GameObject("OutlineFlash");
             o.transform.SetParent(go.transform, false);
             v.outlineFlash = o.AddComponent<SpriteRenderer>();
-            v.outlineFlash.sprite = ProceduralSprites.BallOutline;
+            v.outlineFlash.sprite = BallEdges.Source.Edge(art.Ball, 2);
             v.outlineFlash.sortingOrder = bodyOrder + 1;
             v.outlineFlash.enabled = false;
 
             var e = new GameObject("EdgeFlash");
             e.transform.SetParent(go.transform, false);
             v.edgeFlash = e.AddComponent<SpriteRenderer>();
-            v.edgeFlash.sprite = ProceduralSprites.BallOutlineThin;
+            v.edgeFlash.sprite = BallEdges.Source.Edge(art.Ball, 1);
             v.edgeFlash.sortingOrder = bodyOrder + 1;
             v.edgeFlash.enabled = false;
 
@@ -101,7 +101,7 @@ namespace BallBattle.View
         public float NativeRadius => body != null && body.sprite != null ? body.sprite.rect.width / body.sprite.pixelsPerUnit * 0.5f : ProceduralSprites.BallSize * 0.5f;
 
         /// <summary>From this size up the hit flash only lights the outline: a flashing giant body is a wall of white.</summary>
-        public const float OutlineFlashScale = 1.4f;
+        public const float OutlineFlashScale = 1.3f;
 
         /// <summary>True when hit flashes draw only the outline (giant / very big balls).</summary>
         public bool UsesOutlineFlash => shownScale >= OutlineFlashScale;
@@ -115,53 +115,65 @@ namespace BallBattle.View
         /// <summary>Order of the white arrow over the player's ball: above walls (31), under the HUD (40).</summary>
         public const int MarkerArrowOrder = 32;
 
-        public bool IsMarked => markerRing != null && markerRing.gameObject.activeSelf;
+        public bool IsMarked => markerUnscaled != null && markerUnscaled.gameObject.activeSelf;
 
         /// <summary>
-        /// Player marker: white arrow above the ball and a dotted ring around it, so two balls with the same weapon
-        /// (same color) can be told apart.
+        /// Player marker (Run mode only), per docs/design/art/fix_marker_flash_v1.png: a white down arrow with a dark
+        /// 1 px outline whose tip is 5 pixel rows above the ball's top row, centred, following the ball; and a white
+        /// dashed ring (1 px, 6° on / 6° off, never rotating) on the 3rd pixel out from the ball edge. Both are drawn
+        /// at native pixel size whatever the ball scale, so two same-weapon balls can be told apart.
         /// </summary>
         public void SetMarked(bool marked)
         {
             if (!marked)
             {
-                if (markerRing != null) markerRing.gameObject.SetActive(false);
                 if (markerUnscaled != null) markerUnscaled.gameObject.SetActive(false);
                 return;
             }
-            if (markerRing == null)
+            if (markerUnscaled == null)
             {
+                markerUnscaled = new GameObject("Marker").transform;
+                markerUnscaled.SetParent(transform, false);
+
                 var r = new GameObject("MarkerRing");
-                r.transform.SetParent(transform, false);
+                r.transform.SetParent(markerUnscaled, false);
                 markerRing = r.AddComponent<SpriteRenderer>();
-                markerRing.sprite = ProceduralSprites.DottedRing;
-                markerRing.sortingOrder = body.sortingOrder - 1;   // behind its own body: only the dots outside it show
+                markerRing.sortingOrder = body.sortingOrder - 1;   // never over its own body
                 markerRing.color = Color.white;
 
-                markerUnscaled = new GameObject("MarkerArrowRoot").transform;
-                markerUnscaled.SetParent(transform, false);
                 var a = new GameObject("MarkerArrow");
                 a.transform.SetParent(markerUnscaled, false);
                 markerArrow = a.AddComponent<SpriteRenderer>();
                 markerArrow.sprite = ProceduralSprites.DownArrow;
                 markerArrow.sortingOrder = MarkerArrowOrder;
-                markerArrow.color = Color.white;
+                markerArrow.color = Color.white;   // the sprite carries its own white and outline colors
             }
-            markerRing.gameObject.SetActive(true);
             markerUnscaled.gameObject.SetActive(true);
             PlaceMarker();
         }
 
-        /// <summary>Arrow tip sits 3 px above the top of the (scaled) ball, in native pixels.</summary>
+        /// <summary>Top edge of the ball's topmost drawn pixel row above its centre, whole native px (the sprite's top row is empty).</summary>
+        public int VisibleTopPixels => Mathf.Max(1, Mathf.RoundToInt((NativeRadius - ProceduralSprites.BallTopInset) * shownScale));
+
+        /// <summary>Radius of the drawn disc on screen (native px).</summary>
+        public float VisibleRadius => NativeRadius * (ProceduralSprites.BallDiscRadius / (ProceduralSprites.BallSize * 0.5f)) * shownScale;
+
         void PlaceMarker()
         {
             if (markerUnscaled == null) return;
             markerUnscaled.localScale = new Vector3(1f / shownScale, 1f / shownScale, 1f);
-            markerArrow.transform.localPosition = new Vector3(0f, Mathf.Round(NativeRadius * shownScale + 3f), 0f);
+            markerRing.sprite = ProceduralSprites.DashedRing(VisibleRadius);
+            // The ball's top row is [top-1, top); the tip white row is 5 rows higher, and the sprite's pivot is the outline row under it.
+            var top = VisibleTopPixels;
+            markerArrow.transform.localPosition = new Vector3(0f, top - 1 + 5 - ProceduralSprites.ArrowRowsBelowTip, 0f);
         }
 
-        /// <summary>World-space top of the arrow tip (tests).</summary>
+        /// <summary>World position of the arrow sprite's pivot: bottom of its outline row, left edge of the tip column (tests).</summary>
         public Vector3 MarkerArrowPosition => markerArrow != null ? markerArrow.transform.position : transform.position;
+
+        /// <summary>Marker renderers (tests).</summary>
+        public SpriteRenderer MarkerArrowRenderer => markerArrow;
+        public SpriteRenderer MarkerRingRenderer => markerRing;
 
         /// <summary>Show the white hit flash for a short time (driven by Render's frame time).</summary>
         public void Flash(float seconds) => Flash(seconds, Color.white);

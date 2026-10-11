@@ -7,8 +7,8 @@ namespace BallBattle.View
     /// <summary>
     /// Floating damage numbers: rise ~14 px in whole-pixel steps, then fade. Two pooled sizes (big hits use 2x).
     /// Number strings are cached, so a repeated value never allocates again.
-    /// A number that would start on top of one shown less than StackWindow ago is moved StackStep px above it
-    /// (no more "1.4.3" pile-ups), and every number stays WallMargin px inside the arena for its whole rise.
+    /// Every number stays at least StackStep px from every other number on screen in the same columns, for their whole
+    /// lives (even numbers of the same tick), and WallMargin px inside the arena for its whole rise.
     /// </summary>
     public sealed class DamagePopups : MonoBehaviour
     {
@@ -19,9 +19,9 @@ namespace BallBattle.View
         public const float Duration = 0.7f;
         public const float Rise = 14f;
         const float BigHit = 10f;
-        /// <summary>Numbers shown within this many seconds of each other, at nearly the same spot, are stacked.</summary>
+        /// <summary>Kept for reference: stacking now applies to every number on screen, not only those this recent.</summary>
         public const float StackWindow = 0.2f;
-        /// <summary>Vertical step between stacked numbers (more than a 2x number's 10 px height).</summary>
+        /// <summary>Minimum vertical gap between numbers in the same columns (more than a 2x number's 10 px height).</summary>
         public const float StackStep = 12f;
         const int MaxStack = 16;
 
@@ -41,6 +41,10 @@ namespace BallBattle.View
         readonly Dictionary<int, string> numberCache = new Dictionary<int, string>();
         int nextSmall, nextBig;
         float clock;
+        ArenaRect? bounds;
+
+        /// <summary>Current arena (FxView sets it every frame): numbers never drift over a wall that closed in.</summary>
+        public void SetBounds(ArenaRect? arena) => bounds = arena;
 
         public static DamagePopups Create(Transform parent, Texture2D font, int perSize)
         {
@@ -88,46 +92,61 @@ namespace BallBattle.View
         }
 
         /// <summary>
-        /// Where a new number of <paramref name="scale"/> starts: moved StackStep px above any number shown less than
-        /// StackWindow ago that it would overlap, then clamped into the arena. If the clamp pushes it back onto a
-        /// number (against the top wall), it goes below that number instead.
+        /// Where a new number of <paramref name="scale"/> starts so that it stays at least StackStep px from every number on
+        /// screen it shares columns with, for both their lifetimes, then inside the arena.
+        /// All numbers rise on the same ease-out curve, so: placed StackStep above another's CURRENT height the gap only
+        /// grows; placed StackStep below another's START height it never shrinks under StackStep. A number is stacked
+        /// above; if the top wall stops it, it is stacked below instead.
         /// </summary>
         public Vector2 Place(Vector2 at, string text, int scale, ArenaRect? arena)
         {
             var p = new Vector2(Mathf.Round(at.x), Mathf.Round(at.y));
+            if (arena.HasValue) p = ClampToArena(p, text, scale, arena.Value);
             for (var i = 0; i < MaxStack; i++)
             {
-                var hit = RecentOverlap(p, text, scale);
-                if (hit == null) break;
-                p.y = hit.Start.y + StackStep;
+                var q = Conflict(p, text, scale);
+                if (q == null) break;
+                p.y = CurrentY(q) + StackStep + (q.Age > 0f ? 1f : 0f);   // +1: whole-pixel rounding of two different ages
             }
             if (!arena.HasValue) return p;
-            var clamped = ClampToArena(p, text, scale, arena.Value);
-            if (clamped == p) return p;
-            p = clamped;
+            var limited = ClampToArena(p, text, scale, arena.Value);
+            if (limited.y >= p.y) return limited;
+            p = limited;   // the top wall stopped it: go below the numbers it meets
             for (var i = 0; i < MaxStack; i++)
             {
-                var hit = RecentOverlap(p, text, scale);
-                if (hit == null) break;
-                p.y = hit.Start.y - StackStep;
+                var q = Conflict(p, text, scale);
+                if (q == null) break;
+                p.y = q.Start.y - StackStep;
             }
             return ClampToArena(p, text, scale, arena.Value);
         }
 
-        Popup RecentOverlap(Vector2 start, string text, int scale)
+        /// <summary>A number on screen that a new one starting at <paramref name="start"/> would come closer than StackStep to.</summary>
+        Popup Conflict(Vector2 start, string text, int scale)
         {
             var mine = StartRect(start, text, scale);
             Popup best = null;
             foreach (var list in new[] { small, big })
                 foreach (var p in list)
                 {
-                    if (p.Age >= Duration || clock - p.ShownAt >= StackWindow) continue;
-                    if (!Expand(StartRect(p.Start, p.Value, p.Scale), 1f).Overlaps(mine)) continue;
-                    if (best == null || p.Start.y > best.Start.y) best = p;   // step past the highest one hit
+                    if (p.Age >= Duration) continue;
+                    var other = StartRect(p.Start, p.Value, p.Scale);
+                    if (mine.xMax + 1f <= other.xMin || other.xMax + 1f <= mine.xMin) continue;   // different columns
+                    var below = p.Start.y - StackStep;
+                    var above = CurrentY(p) + StackStep;
+                    if (start.y <= below || start.y >= above) continue;
+                    if (best == null || CurrentY(p) > CurrentY(best)) best = p;   // step past the highest one hit
                 }
             return best;
         }
 
+        static float RiseAt(float age)
+        {
+            var t = Mathf.Clamp01(age / Duration);
+            return Mathf.Round(Rise * (1f - (1f - t) * (1f - t)));   // ease-out
+        }
+
+        static float CurrentY(Popup p) => p.Start.y + RiseAt(p.Age);
         /// <summary>Area a centred number covers at its start position.</summary>
         public static Rect StartRect(Vector2 start, string text, int scale)
         {
@@ -183,6 +202,16 @@ namespace BallBattle.View
             p.Text.Set("", default);
         }
 
+        /// <summary>Height a number shows at now (tests): start + rise so far, kept under the top wall.</summary>
+        public List<(string value, int scale, Vector2 start, float y)> ShowingNow()
+        {
+            var list = new List<(string, int, Vector2, float)>();
+            foreach (var l in new[] { small, big })
+                foreach (var p in l)
+                    if (p.Age < Duration) list.Add((p.Value, p.Scale, p.Start, p.Text.transform.localPosition.y));
+            return list;
+        }
+
         /// <summary>Numbers on screen now: value, scale, start position (tests).</summary>
         public List<(string value, int scale, Vector2 start)> Showing()
         {
@@ -200,7 +229,7 @@ namespace BallBattle.View
             Advance(big, dt);
         }
 
-        static void Advance(List<Popup> list, float dt)
+        void Advance(List<Popup> list, float dt)
         {
             for (var i = 0; i < list.Count; i++)
             {
@@ -209,7 +238,8 @@ namespace BallBattle.View
                 p.Age += dt;
                 if (p.Age >= Duration) { Hide(p); continue; }
                 var t = p.Age / Duration;
-                var y = p.Start.y + Mathf.Round(Rise * (1f - (1f - t) * (1f - t)));   // ease-out
+                var y = CurrentY(p);
+                if (bounds.HasValue) y = Mathf.Min(y, Mathf.Floor(bounds.Value.Top - WallMargin - PixelFontData.GlyphHeight * p.Scale));   // the walls may close in
                 p.Text.transform.localPosition = new Vector3(p.Start.x, y, 0f);
                 var c = p.Color;
                 c.a = (byte)(t < 0.5f ? 255 : 255f * (1f - t) / 0.5f);
