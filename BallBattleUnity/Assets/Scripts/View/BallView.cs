@@ -9,7 +9,10 @@ namespace BallBattle.View
     /// </summary>
     public sealed class BallView : MonoBehaviour
     {
-        public const int BladeHeight = 5;
+        /// <summary>Thinnest drawn blade; the sim's BladeThickness (3 by default) is drawn at least this thick to stay readable.</summary>
+        public const int MinBladePixels = 5;
+        /// <summary>Blade sprite pivot height as a fraction of the sprite (2/5 for the 5 px art).</summary>
+        const float BladePivotY = 0.4f;
 
         SpriteRenderer body;
         SpriteRenderer blade;
@@ -73,7 +76,7 @@ namespace BallBattle.View
         public void Flash(float seconds) => flashRemaining = Mathf.Max(flashRemaining, seconds);
 
         /// <summary>Called every frame with interpolated sim values (world units = native pixels).</summary>
-        public void Render(Vector2 pos, float angleDeg, float bladeInner, float bladeLength, float statValue, bool alive, float deltaTime, float twinLength = 0f)
+        public void Render(Vector2 pos, float angleDeg, float bladeInner, float bladeLength, float statValue, bool alive, float deltaTime, float twinLength = 0f, float bladeThickness = 0f)
         {
             if (gameObject.activeSelf != alive) gameObject.SetActive(alive);
             if (!alive) return;
@@ -86,11 +89,12 @@ namespace BallBattle.View
             if (blade == null) return;
 
             pivot.localRotation = Quaternion.Euler(0f, 0f, angleDeg);
-            blade.transform.localPosition = new Vector3(Mathf.Round(bladeInner), 0f, 0f);
+            var height = BladePixels(bladeThickness);
+            blade.transform.localPosition = new Vector3(Mathf.Round(bladeInner), PivotOffset(height), 0f);
             var minLength = blade.sprite.border.x + blade.sprite.border.z;
-            blade.size = new Vector2(Mathf.Max(minLength, Mathf.Round(bladeLength)), BladeHeight);
+            blade.size = new Vector2(Mathf.Max(minLength, Mathf.Round(bladeLength)), height);
 
-            RenderTwin(angleDeg, bladeInner, twinLength);
+            RenderTwin(angleDeg, bladeInner, twinLength, height);
 
             var heat = Palette.Heat(weaponId, statValue);
             if (!Mathf.Approximately(heat, shownHeat))
@@ -102,7 +106,7 @@ namespace BallBattle.View
         }
 
         /// <summary>Second blade opposite the first (Twin Blade). Created the first time it is needed.</summary>
-        void RenderTwin(float angleDeg, float bladeInner, float twinLength)
+        void RenderTwin(float angleDeg, float bladeInner, float twinLength, int height)
         {
             if (twinLength <= 0f)
             {
@@ -124,9 +128,18 @@ namespace BallBattle.View
             }
             if (!twinPivot.gameObject.activeSelf) twinPivot.gameObject.SetActive(true);
             twinPivot.localRotation = Quaternion.Euler(0f, 0f, angleDeg + 180f);
-            twin.transform.localPosition = new Vector3(Mathf.Round(bladeInner), 0f, 0f);
+            twin.transform.localPosition = new Vector3(Mathf.Round(bladeInner), PivotOffset(height), 0f);
             var minLength = twin.sprite.border.x + twin.sprite.border.z;
-            twin.size = new Vector2(Mathf.Max(minLength, Mathf.Round(twinLength)), BladeHeight);
+            twin.size = new Vector2(Mathf.Max(minLength, Mathf.Round(twinLength)), height);
         }
+
+        /// <summary>Sim blade thickness to whole pixels, never thinner than MinBladePixels.</summary>
+        public static int BladePixels(float simThickness) => Mathf.Max(MinBladePixels, Mathf.RoundToInt(simThickness));
+
+        /// <summary>
+        /// Shift along the blade's normal so its bottom edge sits on a whole pixel (floor(h/2) below the axis) whatever
+        /// the height: the sliced sprite keeps its pivot at BladePivotY of its size. 0 for the 5 px default.
+        /// </summary>
+        static float PivotOffset(int height) => BladePivotY * height - height / 2;
     }
 }

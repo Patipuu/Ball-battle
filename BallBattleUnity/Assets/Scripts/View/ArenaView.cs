@@ -193,7 +193,7 @@ namespace BallBattle.View
                 var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X, b.Pos.Y), alpha);
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg, alpha);
                 ballViews[i].SetScale(b.Radius / Sim.Config.BallRadius);
-                ballViews[i].Render(pos, angle, b.Weapon.BladeInner + b.BladeShift, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt, b.HasTwinBlade ? b.Weapon.BladeLength * b.TwinBladeScale : 0f);
+                ballViews[i].Render(pos, angle, b.Weapon.BladeInner + b.BladeShift, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt, b.HasTwinBlade ? b.Weapon.BladeLength * b.TwinBladeScale : 0f, b.Weapon.BladeThickness);
                 statusView.Render(i, b, pos, Sim.ActiveTick);
             }
             projectileView.Render(Sim);

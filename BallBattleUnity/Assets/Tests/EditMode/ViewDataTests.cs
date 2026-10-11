@@ -1,5 +1,6 @@
 using System.Linq;
 using BallBattle.Sim;
+using BallBattle.Sim.Run;
 using BallBattle.Sim.Traits;
 using BallBattle.Sim.Weapons;
 using BallBattle.View;
@@ -48,6 +49,27 @@ namespace BallBattle.Tests
             foreach (var a in ArenaRegistry.All)
                 foreach (var c in "ARENA: " + a.DisplayName)
                     Assert.That(PixelFontData.IndexOf(c), Is.GreaterThanOrEqualTo(0), $"'{c}' missing from font (arena {a.Id})");
+        }
+        [Test]
+        public void EveryCardTextFitsTheCard()
+        {
+            var cards = new System.Collections.Generic.List<Card>
+            {
+                new Card(CardKind.DamageUp), new Card(CardKind.SpeedUp), new Card(CardKind.Heal), new Card(CardKind.MaxHp),
+            };
+            foreach (var e in TraitRegistry.All) { cards.Add(new Card(CardKind.Trait, e.Id, 1)); cards.Add(new Card(CardKind.Trait, e.Id, 2)); }
+            foreach (var w in WeaponRegistry.All) cards.Add(new Card(CardKind.SwapWeapon, w.Id));
+            foreach (var c in cards)
+            {
+                var title = CardText.Title(c);
+                var d1 = CardText.Detail(c);
+                var d2 = CardText.Detail2(c);
+                Assert.That(title.Length, Is.LessThanOrEqualTo(CardText.MaxTitleChars), $"title '{title}' ({c})");
+                Assert.That(d1.Length, Is.InRange(1, CardText.MaxDetailChars), $"detail '{d1}' ({c})");
+                Assert.That(d2.Length, Is.LessThanOrEqualTo(CardText.MaxDetailChars), $"detail2 '{d2}' ({c})");
+                foreach (var ch in title + d1 + d2)
+                    Assert.That(PixelFontData.IndexOf(ch), Is.GreaterThanOrEqualTo(0), $"'{ch}' missing from font ({c})");
+            }
         }
         [Test]
         public void EveryWeaponHasPaletteAndArt()
