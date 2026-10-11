@@ -24,6 +24,7 @@ namespace BallBattle.View
         int scale = 1;
         string current;
         Color32 currentColor;
+        bool highlighted;
 
         public static PixelText Create(Transform parent, string name, Texture2D font, Vector2 position, Align align, int scale, int sortingOrder)
         {
@@ -88,7 +89,8 @@ namespace BallBattle.View
         public void Set(string text, Color32 color)
         {
             text = text ?? string.Empty;
-            if (text == current && color.Equals(currentColor)) return;
+            if (text == current && color.Equals(currentColor) && !highlighted) return;
+            highlighted = false;
             current = text;
             currentColor = color;
 
@@ -107,6 +109,38 @@ namespace BallBattle.View
                 sr.color = color;
                 sr.transform.localPosition = new Vector3(startX + i * PixelFontData.Advance * scale, 0f, 0f);
             }
+        }
+
+        /// <summary>
+        /// Same as Set, but numbers are drawn in <paramref name="numberColor"/> (card descriptions: 250,210,70).
+        /// A number is a run of 0-9 . % + - / X S without spaces that contains a digit ("+15%", "X1.5", "0.7/S", "3S").
+        /// </summary>
+        public void SetHighlighted(string text, Color32 color, Color32 numberColor)
+        {
+            text = text ?? string.Empty;
+            highlighted = false;
+            current = null;   // force a full redraw
+            Set(text, color);
+            highlighted = true;
+            for (var i = 0; i < text.Length && i < glyphs.Count; i++)
+                if (IsNumberChar(text, i)) glyphs[i].color = numberColor;
+        }
+
+        /// <summary>Color of character <paramref name="index"/> as drawn (tests).</summary>
+        public Color32 GlyphColor(int index) => index < glyphs.Count ? (Color32)glyphs[index].color : currentColor;
+
+        static bool NumberLike(char c) => (c >= '0' && c <= '9') || c == '.' || c == '%' || c == '+' || c == '-' || c == '/' || c == 'X' || c == 'S';
+
+        /// <summary>True when character <paramref name="i"/> belongs to a number token (see SetHighlighted).</summary>
+        public static bool IsNumberChar(string text, int i)
+        {
+            if (!NumberLike(text[i])) return false;
+            var a = i;
+            while (a > 0 && NumberLike(text[a - 1])) a--;
+            var b = i;
+            while (b < text.Length - 1 && NumberLike(text[b + 1])) b++;
+            for (var k = a; k <= b; k++) if (text[k] >= '0' && text[k] <= '9') return true;
+            return false;
         }
 
         SpriteRenderer NewGlyph()

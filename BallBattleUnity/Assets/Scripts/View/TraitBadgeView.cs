@@ -13,6 +13,8 @@ namespace BallBattle.View
         const int BoxWidth = 13;
         const int BoxHeight = 9;
         const int Spacing = 2;
+        /// <summary>Trait icons (art v1) are 14x14.</summary>
+        public const int IconSize = 14;
         static readonly Color32 Gold = new Color32(250, 210, 70, 255);
 
         struct Style
@@ -35,6 +37,21 @@ namespace BallBattle.View
             new Style { Id = "poison-tip", Code = "PT", Color = new Color32(80, 160, 60, 255) },
         };
 
+        /// <summary>A spent badge (once-per-fight trait already used) shows at this brightness, crossed out.</summary>
+        public const float SpentBrightness = 0.4f;
+
+        sealed class Badge
+        {
+            public int Side;
+            public string Id;
+            public SpriteRenderer Box, Rim;
+            public PixelText Code;
+            public Color32 BoxColor, CodeColor;
+            public GameObject Slash;
+            public bool Spent;
+        }
+
+        readonly System.Collections.Generic.List<Badge> badges = new System.Collections.Generic.List<Badge>();
         ArtLibrary art;
         Transform root;
 
@@ -68,10 +85,54 @@ namespace BallBattle.View
             return new Style { Id = id, Code = id.Length >= 2 ? id.Substring(0, 2).ToUpperInvariant() : "??", Color = Palette.Wall };
         }
 
+        /// <summary>
+        /// Mark a once-per-fight trait as used on side <paramref name="side"/>: 40% brightness and a diagonal slash.
+        /// Badges are rebuilt for every match, so the next fight starts normal again.
+        /// </summary>
+        public void SetSpent(int side, string traitId, bool spent)
+        {
+            foreach (var b in badges)
+            {
+                if (b.Side != side || b.Id != traitId || b.Spent == spent) continue;
+                b.Spent = spent;
+                var k = spent ? SpentBrightness : 1f;
+                b.Box.color = Dim(b.BoxColor, k);
+                if (b.Rim != null) b.Rim.color = Dim(Gold, k);
+                b.Code?.Set(b.Code.Text, Dim(b.CodeColor, k));
+                b.Slash.SetActive(spent);
+            }
+        }
+
+        public bool IsSpent(int side, string traitId)
+        {
+            foreach (var b in badges) if (b.Side == side && b.Id == traitId) return b.Spent;
+            return false;
+        }
+
+        /// <summary>Trait color (badge fallback, card stripe).</summary>
+        public static Color32 ColorOf(string traitId) => StyleFor(traitId).Color;
+
+        /// <summary>Icon sprite shown for a badge, or null (tests).</summary>
+        public Sprite IconOf(int side, string traitId)
+        {
+            foreach (var b in badges) if (b.Side == side && b.Id == traitId) return b.Box.sprite == art.Pixel ? null : b.Box.sprite;
+            return null;
+        }
+
+        /// <summary>Badge box color now (tests).</summary>
+        public Color32? BoxColor(int side, string traitId)
+        {
+            foreach (var b in badges) if (b.Side == side && b.Id == traitId) return (Color32)b.Box.color;
+            return null;
+        }
+
+        static Color32 Dim(Color32 c, float k) => new Color32((byte)(c.r * k), (byte)(c.g * k), (byte)(c.b * k), c.a);
+
         /// <summary>Rebuild the badges for a new match. Ball 0 is the top side, ball 1 the bottom.</summary>
         public void Bind(MatchSim sim)
         {
             if (root != null) DestroyNow(root.gameObject);
+            badges.Clear();
             root = new GameObject("Badges").transform;
             root.SetParent(transform, false);
             for (var side = 0; side < 2 && side < sim.Balls.Count; side++)
@@ -81,18 +142,52 @@ namespace BallBattle.View
                 for (var i = 0; i < traits.Length; i++)
                 {
                     var st = StyleFor(traits[i].Id);
-                    var right = 115f - i * (BoxWidth + Spacing);
-                    var left = right - BoxWidth;
+                    var icon = art.TraitIcon(traits[i].Id);
+                    var w = icon != null ? IconSize : BoxWidth;    // art v1: 14x14 icon; drawn badge only as a fallback
+                    var h = icon != null ? IconSize : BoxHeight;
+                    var right = 115f - i * (w + Spacing);
+                    var left = right - w;
                     var bottom = baseY - 2f;
+                    SpriteRenderer rim = null;
                     if (traits[i].Level >= 2)
                     {
-                        var rim = PixelRect.Create(root, "Rim", art.Pixel, Gold, Order);
-                        PixelRect.Set(rim, left - 1f, bottom - 1f, right + 1f, bottom + BoxHeight + 1f);
+                        rim = PixelRect.Create(root, "Rim", art.Pixel, Gold, Order);
+                        PixelRect.Set(rim, left - 1f, bottom - 1f, right + 1f, bottom + h + 1f);
                     }
-                    var box = PixelRect.Create(root, "Box", art.Pixel, st.Color, Order + 1);
-                    PixelRect.Set(box, left, bottom, right, bottom + BoxHeight);
-                    var txt = PixelText.Create(root, "Code", art.Font, new Vector2((left + right) * 0.5f, baseY), PixelText.Align.Center, 1, Order + 2);
-                    txt.Set(st.Code, Palette.Text);
+                    SpriteRenderer box;
+                    PixelText txt = null;
+                    Color32 boxColor;
+                    if (icon != null)
+                    {
+                        var go = new GameObject("Icon_" + traits[i].Id);
+                        go.transform.SetParent(root, false);
+                        go.transform.localPosition = new Vector3(left + w * 0.5f, bottom + h * 0.5f, 0f);
+                        box = go.AddComponent<SpriteRenderer>();
+                        box.sprite = icon;
+                        box.sortingOrder = Order + 1;
+                        boxColor = new Color32(255, 255, 255, 255);
+                        box.color = boxColor;
+                    }
+                    else
+                    {
+                        box = PixelRect.Create(root, "Box", art.Pixel, st.Color, Order + 1);
+                        PixelRect.Set(box, left, bottom, right, bottom + h);
+                        boxColor = st.Color;
+                        txt = PixelText.Create(root, "Code", art.Font, new Vector2((left + right) * 0.5f, baseY), PixelText.Align.Center, 1, Order + 2);
+                        txt.Set(st.Code, Palette.Text);
+                    }
+
+                    // Cross-out for a spent badge: a 1 px diagonal from the bottom-left to the top-right corner (hidden until spent).
+                    var slash = new GameObject("Slash");
+                    slash.transform.SetParent(root, false);
+                    for (var k = 0; k < w; k++)
+                    {
+                        var y = Mathf.Floor(k * (h - 1) / (float)(w - 1));
+                        var px = PixelRect.Create(slash.transform, "S", art.Pixel, Palette.Text, Order + 3);
+                        PixelRect.Set(px, left + k, bottom + y, left + k + 1, bottom + y + 1);
+                    }
+                    slash.SetActive(false);
+                    badges.Add(new Badge { Side = side, Id = traits[i].Id, Box = box, Rim = rim, Code = txt, BoxColor = boxColor, CodeColor = Palette.Text, Slash = slash });
                 }
             }
         }

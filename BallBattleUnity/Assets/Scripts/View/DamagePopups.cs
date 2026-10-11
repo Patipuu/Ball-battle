@@ -34,7 +34,16 @@ namespace BallBattle.View
             public int Scale;
             public Color32 Color;
             public string Value;
+            /// <summary>Optional small caption under the number ("2ND WIND"), moving and fading with it.</summary>
+            public PixelText Label;
+            public Color32 LabelColor;
         }
+
+        /// <summary>Caption under a labelled number: scale 1, this many px below the number's bottom.</summary>
+        public const int LabelGap = 2;
+        const int LabelHeight = 5;
+        readonly List<PixelText> labelPool = new List<PixelText>();
+        int nextLabel;
 
         readonly List<Popup> small = new List<Popup>();
         readonly List<Popup> big = new List<Popup>();
@@ -55,6 +64,12 @@ namespace BallBattle.View
             {
                 d.small.Add(new Popup { Scale = 1, Text = PixelText.Create(go.transform, "s", font, Vector2.zero, PixelText.Align.Center, 1, Order) });
                 d.big.Add(new Popup { Scale = 2, Text = PixelText.Create(go.transform, "b", font, Vector2.zero, PixelText.Align.Center, 2, Order) });
+            }
+            for (var i = 0; i < 4; i++)
+            {
+                var l = PixelText.Create(go.transform, "label", font, Vector2.zero, PixelText.Align.Center, 1, Order);
+                l.Set("", default);
+                d.labelPool.Add(l);
             }
             foreach (var p in d.small) p.Text.Set("", default);
             foreach (var p in d.big) p.Text.Set("", default);
@@ -176,7 +191,27 @@ namespace BallBattle.View
             return new Vector2(x, y);
         }
 
-        void Spawn(Vector2 start, float damage, Color32 color, int scale)
+        /// <summary>
+        /// A number given as text (e.g. "+20"), at <paramref name="scale"/>, with a small caption under it. Stacked and
+        /// kept inside the arena like any number (the caption included).
+        /// </summary>
+        public void ShowLabelled(Vector2 at, string text, Color32 color, int scale, string label, Color32 labelColor, ArenaRect? arena)
+        {
+            var p = Place(at, text, scale, arena);
+            if (arena.HasValue) p.y = Mathf.Max(p.y, Mathf.Ceil(arena.Value.Bottom + WallMargin + LabelGap + LabelHeight));
+            var popup = SpawnText(p, text, color, scale);
+            var l = labelPool[nextLabel];
+            nextLabel = (nextLabel + 1) % labelPool.Count;
+            foreach (var other in new[] { small, big }) foreach (var o in other) if (o.Label == l) o.Label = null;   // a reused caption leaves its old number
+            popup.Label = l;
+            popup.LabelColor = labelColor;
+            l.transform.localPosition = new Vector3(popup.Start.x, popup.Start.y - LabelGap - LabelHeight, 0f);
+            l.Set(label, labelColor);
+        }
+
+        void Spawn(Vector2 start, float damage, Color32 color, int scale) => SpawnText(start, Format(damage), color, scale);
+
+        Popup SpawnText(Vector2 start, string value, Color32 color, int scale)
         {
             Popup p;
             if (scale >= 2) { p = big[nextBig]; nextBig = (nextBig + 1) % big.Count; }
@@ -185,9 +220,11 @@ namespace BallBattle.View
             p.Age = 0f;
             p.ShownAt = clock;
             p.Color = color;
-            p.Value = Format(damage);
+            p.Value = value;
+            if (p.Label != null) { p.Label.Set("", default); p.Label = null; }
             p.Text.transform.localPosition = p.Start;
             p.Text.Set(p.Value, color);
+            return p;
         }
 
         public void Clear()
@@ -200,6 +237,7 @@ namespace BallBattle.View
         {
             p.Age = Duration;
             p.Text.Set("", default);
+            if (p.Label != null) { p.Label.Set("", default); p.Label = null; }
         }
 
         /// <summary>Height a number shows at now (tests): start + rise so far, kept under the top wall.</summary>
@@ -210,6 +248,20 @@ namespace BallBattle.View
                 foreach (var p in l)
                     if (p.Age < Duration) list.Add((p.Value, p.Scale, p.Start, p.Text.transform.localPosition.y));
             return list;
+        }
+
+        /// <summary>Caption shown under a number on screen with this text, or null (tests).</summary>
+        public PixelText LabelOf(string value)
+        {
+            foreach (var l in new[] { small, big }) foreach (var p in l) if (p.Age < Duration && p.Value == value) return p.Label;
+            return null;
+        }
+
+        /// <summary>Color of a number on screen (tests).</summary>
+        public Color32? ColorOf(string value)
+        {
+            foreach (var l in new[] { small, big }) foreach (var p in l) if (p.Age < Duration && p.Value == value) return p.Color;
+            return null;
         }
 
         /// <summary>Numbers on screen now: value, scale, start position (tests).</summary>
@@ -244,6 +296,13 @@ namespace BallBattle.View
                 var c = p.Color;
                 c.a = (byte)(t < 0.5f ? 255 : 255f * (1f - t) / 0.5f);
                 p.Text.Set(p.Value, c);
+                if (p.Label != null)
+                {
+                    p.Label.transform.localPosition = new Vector3(p.Start.x, y - LabelGap - LabelHeight, 0f);
+                    var lc = p.LabelColor;
+                    lc.a = c.a;
+                    p.Label.Set(p.Label.Text, lc);
+                }
             }
         }
     }

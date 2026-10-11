@@ -271,7 +271,7 @@ namespace BallBattle.Tests
             var thorny = view.GetBallView(0);
             Assert.That(hurt.IsEdgeFlashing, Is.True);
             Assert.That(hurt.EdgeFlashRenderer.enabled, Is.True);
-            Assert.That(hurt.EdgeFlashRenderer.sprite, Is.SameAs(ProceduralSprites.BallOutlineThin));
+            Assert.That(hurt.EdgeFlashRenderer.sprite, Is.SameAs(BallEdges.Source.Edge(art.Get(FangRule.WeaponId).Ball, 1)), "the sprite's own 1 px rim");
             Assert.That((Color32)hurt.EdgeFlashRenderer.color, Is.EqualTo(FxView.ReflectColor));
             Assert.That(hurt.FullFlashRenderer.enabled, Is.False, "body keeps its weapon color");
             Assert.That(thorny.IsEdgeFlashing, Is.False, "the reflecting ball does not show the reflect flash");

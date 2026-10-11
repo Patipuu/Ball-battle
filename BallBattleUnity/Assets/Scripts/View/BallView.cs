@@ -9,10 +9,13 @@ namespace BallBattle.View
     /// </summary>
     public sealed class BallView : MonoBehaviour
     {
-        /// <summary>Thinnest drawn blade; the sim's BladeThickness (3 by default) is drawn at least this thick to stay readable.</summary>
-        public const int MinBladePixels = 5;
-        /// <summary>Blade sprite pivot height as a fraction of the sprite (2/5 for the 5 px art).</summary>
-        const float BladePivotY = 0.4f;
+        /// <summary>
+        /// Blade sprites are 7 px tall: 1 px top outline + 5 px core + 1 px bottom outline. The sim's BladeThickness is drawn
+        /// rounded to whole pixels and never thinner than this, so the 9-slice only ever stretches the core, never the outline.
+        /// </summary>
+        public const int MinBladePixels = 7;
+        /// <summary>Blade sprite pivot height as a fraction of the sprite (3/7: the 7 px art sits on whole pixels, y-3 .. y+4).</summary>
+        public const float BladePivotY = 3f / 7f;
 
         SpriteRenderer body;
         SpriteRenderer blade;
@@ -32,6 +35,7 @@ namespace BallBattle.View
         string weaponId;
         float shownHeat = -1f;
         float shownScale = 1f;
+        bool scaleDirty;
 
         public static BallView Create(Transform parent, int index, string weaponId, ArtLibrary.WeaponArt art, Sprite flashSprite, int bodyOrder, int bladeOrder)
         {
@@ -86,7 +90,8 @@ namespace BallBattle.View
         /// </summary>
         public void SetScale(float scale)
         {
-            if (Mathf.Approximately(scale, shownScale)) return;
+            if (!scaleDirty && Mathf.Approximately(scale, shownScale)) return;
+            scaleDirty = false;
             shownScale = scale;
             transform.localScale = new Vector3(scale, scale, 1f);
             if (pivot != null) pivot.localScale = new Vector3(1f / scale, 1f / scale, 1f);
@@ -98,13 +103,65 @@ namespace BallBattle.View
         public float Scale => shownScale;
 
         /// <summary>Radius in native pixels of the ball sprite at scale 1 (the size the sim radius is mapped onto).</summary>
-        public float NativeRadius => body != null && body.sprite != null ? body.sprite.rect.width / body.sprite.pixelsPerUnit * 0.5f : ProceduralSprites.BallSize * 0.5f;
+        public float NativeRadius => bodyRadiusOverride > 0f ? bodyRadiusOverride
+            : body != null && body.sprite != null ? body.sprite.rect.width / body.sprite.pixelsPerUnit * 0.5f : ProceduralSprites.BallSize * 0.5f;
+
+        float bodyRadiusOverride;
+        SpriteRenderer glow;
+        float glowRemaining, glowDuration;
+
+        /// <summary>
+        /// Draw this ball with another body sprite (boss art: 64x64, body radius 24 px around the pivot). The sim radius maps
+        /// onto <paramref name="bodyRadiusPixels"/>, so a 24 px boss drawn with a 24 px body is NOT scaled up. The outline
+        /// flashes follow the new sprite's own rim.
+        /// </summary>
+        public void SetBodySprite(Sprite sprite, float bodyRadiusPixels)
+        {
+            if (sprite == null) return;
+            body.sprite = sprite;
+            bodyRadiusOverride = bodyRadiusPixels;
+            if (outlineFlash != null) outlineFlash.sprite = BallEdges.Source.Edge(sprite, 2);
+            if (edgeFlash != null) edgeFlash.sprite = BallEdges.Source.Edge(sprite, 1);
+            scaleDirty = true;   // the next SetScale re-applies even if the value is the same (Scale stays valid meanwhile)
+        }
+
+        /// <summary>Body sprite now (tests).</summary>
+        public Sprite BodySprite => body.sprite;
+
+        /// <summary>Show <paramref name="glowSprite"/> over the body, fading out over <paramref name="seconds"/> (Shell King glow).</summary>
+        public void PlayGlow(Sprite glowSprite, float seconds)
+        {
+            if (glowSprite == null || seconds <= 0f) return;
+            if (glow == null)
+            {
+                var g = new GameObject("Glow");
+                g.transform.SetParent(transform, false);
+                glow = g.AddComponent<SpriteRenderer>();
+                glow.sortingOrder = body.sortingOrder + 1;
+            }
+            glow.sprite = glowSprite;
+            glowDuration = seconds;
+            glowRemaining = seconds;
+            glow.enabled = true;
+            glow.color = Color.white;
+        }
+
+        public bool IsGlowing => glow != null && glow.enabled;
+
+        void TickGlow(float dt)
+        {
+            if (glow == null || !glow.enabled) return;
+            glowRemaining -= dt;
+            if (glowRemaining <= 0f) { glow.enabled = false; return; }
+            glow.color = new Color(1f, 1f, 1f, glowRemaining / glowDuration);
+        }
 
         /// <summary>From this size up the hit flash only lights the outline: a flashing giant body is a wall of white.</summary>
         public const float OutlineFlashScale = 1.3f;
 
         /// <summary>True when hit flashes draw only the outline (giant / very big balls).</summary>
-        public bool UsesOutlineFlash => shownScale >= OutlineFlashScale;
+        /// <summary>Big on screen (radius at least 1.3x a default 16 px ball): Heavy LV2, bosses, whatever their sprite.</summary>
+        public bool UsesOutlineFlash => NativeRadius * shownScale >= OutlineFlashScale * ProceduralSprites.BallSize * 0.5f - 0.001f;
 
         /// <summary>True while the hit flash is showing.</summary>
         public bool IsFlashing => flashRemaining > 0f;
@@ -152,11 +209,40 @@ namespace BallBattle.View
             PlaceMarker();
         }
 
-        /// <summary>Top edge of the ball's topmost drawn pixel row above its centre, whole native px (the sprite's top row is empty).</summary>
-        public int VisibleTopPixels => Mathf.Max(1, Mathf.RoundToInt((NativeRadius - ProceduralSprites.BallTopInset) * shownScale));
+        /// <summary>Top edge of the ball's topmost drawn pixel row above its centre, whole native px (measured on the sprite).</summary>
+        public int VisibleTopPixels => Mathf.Max(1, Mathf.RoundToInt((NativeRadius - DiscOf(body != null ? body.sprite : null).topInset) * shownScale));
 
-        /// <summary>Radius of the drawn disc on screen (native px).</summary>
-        public float VisibleRadius => NativeRadius * (ProceduralSprites.BallDiscRadius / (ProceduralSprites.BallSize * 0.5f)) * shownScale;
+        /// <summary>Radius of the drawn disc on screen (native px), measured on the sprite.</summary>
+        public float VisibleRadius => DiscOf(body != null ? body.sprite : null).radius * shownScale;
+
+        static readonly System.Collections.Generic.Dictionary<Sprite, (float topInset, float radius)> discs = new System.Collections.Generic.Dictionary<Sprite, (float, float)>();
+
+        /// <summary>
+        /// The ball disc as drawn in its sprite: transparent rows above it and its half-width, from the alpha channel when
+        /// the texture is readable (real art: 30 px disc in a 32 px cell), else the placeholder's known disc.
+        /// </summary>
+        public static (float topInset, float radius) DiscOf(Sprite sprite)
+        {
+            var fallback = (ProceduralSprites.BallTopInset, ProceduralSprites.BallDiscRadius);
+            if (sprite == null || !sprite.texture.isReadable) return fallback;
+            if (discs.TryGetValue(sprite, out var known)) return known;
+            var r = sprite.textureRect;
+            int x0 = (int)r.x, y0 = (int)r.y, w = (int)r.width, h = (int)r.height;
+            var px = sprite.texture.GetPixels32();
+            var texW = sprite.texture.width;
+            int top = -1, left = w, right = -1;
+            for (var y = 0; y < h; y++)
+            for (var x = 0; x < w; x++)
+            {
+                if (px[(y0 + y) * texW + x0 + x].a == 0) continue;
+                if (y > top) top = y;
+                if (x < left) left = x;
+                if (x > right) right = x;
+            }
+            var disc = top < 0 ? fallback : ((float)(h - 1 - top), (right - left + 1) * 0.5f);
+            discs[sprite] = disc;
+            return disc;
+        }
 
         void PlaceMarker()
         {
@@ -228,6 +314,7 @@ namespace BallBattle.View
             flashRemaining = Mathf.Max(0f, flashRemaining - deltaTime);
             edgeRemaining = Mathf.Max(0f, edgeRemaining - deltaTime);
             ApplyFlash();
+            TickGlow(deltaTime);
 
             transform.localPosition = new Vector3(Mathf.Round(pos.x), Mathf.Round(pos.y), 0f);
             if (blade == null) return;
@@ -282,8 +369,8 @@ namespace BallBattle.View
 
         /// <summary>
         /// Shift along the blade's normal so its bottom edge sits on a whole pixel (floor(h/2) below the axis) whatever
-        /// the height: the sliced sprite keeps its pivot at BladePivotY of its size. 0 for the 5 px default.
+        /// the height: the sliced sprite keeps its pivot at BladePivotY of its size. 0 for the 7 px default.
         /// </summary>
-        static float PivotOffset(int height) => BladePivotY * height - height / 2;
+        public static float PivotOffset(int height) => BladePivotY * height - height / 2;
     }
 }

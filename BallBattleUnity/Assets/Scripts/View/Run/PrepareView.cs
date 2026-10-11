@@ -44,6 +44,16 @@ namespace BallBattle.View
         readonly PixelText[] cardDetails = new PixelText[RunTuning.OfferSize];
         readonly PixelText[] cardDetails2 = new PixelText[RunTuning.OfferSize];
         readonly PixelText[] cardTags = new PixelText[RunTuning.OfferSize];
+        readonly SpriteRenderer[] cardFrames = new SpriteRenderer[RunTuning.OfferSize];
+        readonly SpriteRenderer[] cardStripes = new SpriteRenderer[RunTuning.OfferSize];
+        readonly SpriteRenderer[] cardIcons = new SpriteRenderer[RunTuning.OfferSize];
+        readonly CardFace[] faces = new CardFace[RunTuning.OfferSize];
+
+        /// <summary>Card text starts here; with a 2x icon (28 px) it moves right past it.</summary>
+        public const float CardTextX = -117f;
+        public const float CardTextXWithIcon = -85f;
+        static readonly Color32 FrameTaken = new Color32(150, 230, 160, 255);
+        static readonly Color32 FrameBlocked = new Color32(120, 120, 132, 255);
         readonly float[] cardBlink = new float[RunTuning.OfferSize];
         float rerollBlink;
         Transform confirmRoot;
@@ -92,7 +102,21 @@ namespace BallBattle.View
                 var index = i;
                 var area = CardArea(i);
                 cards[i] = RunUi.Button(root, art, area, null, 1, Palette.Wall, () => { if (!TapSwallowed) OnCardClicked(index); });
-                var order = cards[i].IconOrder + 1;
+                // Art v1: 9-slice frame over the button fill, 4 px stripe on the left, trait icon at 2x, then the text.
+                var frameGo = new GameObject("Frame");
+                frameGo.transform.SetParent(cards[i].transform, false);
+                frameGo.transform.localPosition = new Vector3(area.center.x, area.center.y, 0f);
+                cardFrames[i] = frameGo.AddComponent<SpriteRenderer>();
+                cardFrames[i].sortingOrder = cards[i].IconOrder;
+                cardStripes[i] = PixelRect.Create(cards[i].transform, "Stripe", art.Pixel, Palette.Text, cards[i].IconOrder + 1);
+                PixelRect.Set(cardStripes[i], area.xMin + 2, area.yMin + 2, area.xMin + 6, area.yMax - 2);
+                var iconGo = new GameObject("Icon");
+                iconGo.transform.SetParent(cards[i].transform, false);
+                iconGo.transform.localPosition = new Vector3(area.xMin + 22, area.yMin + 18, 0f);   // 28x28 at x -117..-89, y +4..+32
+                iconGo.transform.localScale = new Vector3(2f, 2f, 1f);
+                cardIcons[i] = iconGo.AddComponent<SpriteRenderer>();
+                cardIcons[i].sortingOrder = cards[i].IconOrder + 1;
+                var order = cards[i].IconOrder + 2;
                 cardTitles[i] = PixelText.Create(cards[i].transform, "Title", art.Font, new Vector2(-117, area.yMin + 22), PixelText.Align.Left, 2, order);
                 cardTags[i] = PixelText.Create(cards[i].transform, "Tag", art.Font, new Vector2(117, area.yMin + 25), PixelText.Align.Right, 1, order);
                 cardDetails[i] = PixelText.Create(cards[i].transform, "Detail", art.Font, new Vector2(-117, area.yMin + 12), PixelText.Align.Left, 1, order);
@@ -128,6 +152,12 @@ namespace BallBattle.View
         const float ArenaPreviewX = 92f;
         const float ArenaPreviewY = 160f;
         const float ArenaPreviewWidth = 46f;   // the widest arena (260) maps to this many pixels
+        /// <summary>The arena preview draws the floor tile at this scale (5 px instead of 10).</summary>
+        public const float PreviewTileScale = 0.5f;
+        SpriteRenderer previewFloor;
+
+        /// <summary>Floor tile renderer of the arena preview (tests).</summary>
+        public SpriteRenderer PreviewFloor => previewFloor;
 
         public void Show(RunState state)
         {
@@ -165,16 +195,15 @@ namespace BallBattle.View
                 var has = i < run.OfferCount;
                 cards[i].gameObject.SetActive(has);
                 if (!has) continue;
-                var card = run.OfferCard(i);
-                cardDetails[i].Set(CardText.Detail(card), Palette.TextDim);
-                cardDetails2[i].Set(CardText.Detail2(card), Palette.TextDim);
+                ApplyFace(i, CardFace.For(run.OfferCard(i), art));
                 StyleCard(i);
             }
 
             var rerollWhy = RerollBlockReason(run);
             reroll.SetText($"REROLL {RunTuning.RerollCost}", rerollWhy == null ? Palette.Text : Palette.HpBack);
             reroll.SetColors(Palette.Floor, rerollWhy == null ? Palette.TextDim : Palette.HpBack);
-            rerollReason.Set(rerollWhy ?? "", Blocked);
+            if (rerollWhy != null) rerollReason.Set(rerollWhy, Blocked);
+            else rerollReason.Set(RerollAgainText(run), Palette.TextDim);   // reroll is repeatable: say it costs again
             if (confirmRoot.gameObject.activeSelf && !ShouldConfirmSkip(run)) confirmRoot.gameObject.SetActive(false);
         }
 
@@ -213,24 +242,64 @@ namespace BallBattle.View
             var taken = run.IsPicked(i);
             var why = taken ? null : BlockReason(run, i);
             var blink = cardBlink[i] > 0f;
+            var face = faces[i] ?? CardFace.For(card, art);
             if (taken)
             {
                 cards[i].SetColors(TakenFill, blink ? Palette.Text : TakenAccent);
-                cardTitles[i].Set(CardText.Title(card), TakenAccent);
+                cardTitles[i].Set(face.Title, TakenAccent);
                 cardTags[i].Set("TAKEN", blink ? Palette.Text : TakenAccent);
+                cardFrames[i].color = blink ? Color.white : (Color)(Color32)FrameTaken;
             }
             else if (why != null)
             {
                 cards[i].SetColors(Palette.Floor, blink ? Blocked : Palette.HpBack);
-                cardTitles[i].Set(CardText.Title(card), Palette.TextDim);
+                cardTitles[i].Set(face.Title, Palette.TextDim);
                 cardTags[i].Set(why, blink ? Palette.Text : Blocked);
+                cardFrames[i].color = blink ? (Color)(Color32)Blocked : (Color)(Color32)FrameBlocked;
             }
             else
             {
                 cards[i].SetColors(Palette.Floor, KindColor(card.Kind));
-                cardTitles[i].Set(CardText.Title(card), Palette.Text);
-                cardTags[i].Set("", Palette.TextDim);
+                cardTitles[i].Set(face.Title, Palette.Text);
+                cardTags[i].Set(face.Tag, face.Frame == ArtLibrary.CardFrame.Counter ? CardFace.CounterColor : Palette.TextDim);
+                cardFrames[i].color = Color.white;
             }
+        }
+
+        /// <summary>Frame, stripe, icon and text of card <paramref name="i"/> from a face (colors of the state come from StyleCard).</summary>
+        void ApplyFace(int i, CardFace face)
+        {
+            faces[i] = face;
+            var frame = art.Frame(face.Frame);
+            cardFrames[i].sprite = frame;
+            cardFrames[i].enabled = frame != null;
+            if (frame != null)
+            {
+                // The dashed counter frame tiles its edges so the dashes keep their size; the others stretch.
+                cardFrames[i].drawMode = face.Frame == ArtLibrary.CardFrame.Counter ? SpriteDrawMode.Tiled : SpriteDrawMode.Sliced;
+                cardFrames[i].size = new Vector2(CardArea(i).width, CardArea(i).height);
+            }
+            cardStripes[i].color = face.Stripe;
+            cardIcons[i].sprite = face.Icon;
+            cardIcons[i].enabled = face.Icon != null;
+            var x = face.Icon != null ? CardTextXWithIcon : CardTextX;
+            var y0 = CardArea(i).yMin;
+            cardTitles[i].transform.localPosition = new Vector3(x, y0 + 22, 0f);
+            cardDetails[i].transform.localPosition = new Vector3(x, y0 + 12, 0f);
+            cardDetails2[i].transform.localPosition = new Vector3(x, y0 + 4, 0f);
+            cardDetails[i].SetHighlighted(face.Detail1, Palette.TextDim, CardFace.NumberColor);
+            cardDetails2[i].SetHighlighted(face.Detail2, Palette.TextDim, CardFace.NumberColor);
+        }
+
+        /// <summary>Draw a card face in slot <paramref name="i"/> without a run card behind it (style previews: counter sample).</summary>
+        public void ShowFace(int i, CardFace face)
+        {
+            cards[i].gameObject.SetActive(true);
+            ApplyFace(i, face);
+            cards[i].SetColors(Palette.Floor, face.Stripe);
+            cardTitles[i].Set(face.Title, Palette.Text);
+            cardTags[i].Set(face.Tag, face.Frame == ArtLibrary.CardFrame.Counter ? CardFace.CounterColor : Palette.TextDim);
+            cardFrames[i].color = Color.white;
         }
 
         /// <summary>Why card <paramref name="index"/> cannot be picked now, or null if it can (or is already taken).</summary>
@@ -270,6 +339,12 @@ namespace BallBattle.View
             return "LOCKED";
         }
 
+        /// <summary>
+        /// Under an available REROLL after one was used: each reroll costs RerollCost again (RunState allows repeats before
+        /// the first pick), so the line says so with the coins left. Empty before the first reroll.
+        /// </summary>
+        public static string RerollAgainText(RunState run) =>
+            run == null || run.RerollCount == 0 ? "" : $"AGAIN {RunTuning.RerollCost}  COINS {run.Coins}";
         /// <summary>True when FIGHT would throw away the free pick (none taken yet and at least one card can be taken).</summary>
         public static bool ShouldConfirmSkip(RunState run)
         {
@@ -339,7 +414,7 @@ namespace BallBattle.View
                 if (rerollBlink <= 0f && run != null)
                 {
                     var why = RerollBlockReason(run);
-                    rerollReason.Set(why ?? "", Blocked);
+                    if (why != null) rerollReason.Set(why, Blocked); else rerollReason.Set(RerollAgainText(run), Palette.TextDim);
                     reroll.SetColors(Palette.Floor, why == null ? Palette.TextDim : Palette.HpBack);
                 }
             }
@@ -362,9 +437,32 @@ namespace BallBattle.View
             var scale = ArenaPreviewWidth / ArenaTuning.WideWidth;
             var halfW = Mathf.Round(config.ArenaWidth * scale * 0.5f);
             var halfH = Mathf.Round(config.ArenaHeight * scale * 0.5f);
-            var wall = layout.WallDamage > 0f ? new Color32(210, 60, 60, 255) : Palette.Wall;
+            // Same colors and floor tile as the fight (arena_colors.json, floor_<id>), the tile drawn at half size.
+            var hasArt = art.TryArena(arenaId, out var look);
+            var wall = hasArt ? look.WallColor : (layout.WallDamage > 0f ? new Color32(210, 60, 60, 255) : Palette.Wall);
             Rect(wall, -halfW - 1, -halfH - 1, halfW + 1, halfH + 1, 3);
-            Rect(Palette.Floor, -halfW, -halfH, halfW, halfH, 4);
+            Rect(hasArt ? look.FloorColor : (Color32)Palette.Floor, -halfW, -halfH, halfW, halfH, 4);
+            if (hasArt && look.Floor != null)
+            {
+                var tiles = new GameObject("FloorTiles");
+                tiles.transform.SetParent(arenaRoot, false);
+                tiles.transform.localPosition = new Vector3(ArenaPreviewX, ArenaPreviewY, 0f);
+                tiles.transform.localScale = new Vector3(PreviewTileScale, PreviewTileScale, 1f);
+                var sr = tiles.AddComponent<SpriteRenderer>();
+                sr.sprite = look.Floor;
+                sr.drawMode = SpriteDrawMode.Tiled;
+                sr.size = new Vector2(2f * halfW / PreviewTileScale, 2f * halfH / PreviewTileScale);
+                sr.sortingOrder = RunUi.Order + 4;
+                previewFloor = sr;
+            }
+            if (layout.WallDamage > 0f)
+            {
+                var tooth = new Color32(255, 70, 50, 255);   // spike_tooth color: a 1 px band of teeth inside the walls
+                Rect(tooth, -halfW, halfH - 1, halfW, halfH, 5);
+                Rect(tooth, -halfW, -halfH, halfW, -halfH + 1, 5);
+                Rect(tooth, -halfW, -halfH, -halfW + 1, halfH, 5);
+                Rect(tooth, halfW - 1, -halfH, halfW, halfH, 5);
+            }
             if (config.MinArenaWidth < config.ArenaWidth && arenaId == ArenaRegistry.Tight)
             {
                 var mw = Mathf.Round(config.MinArenaWidth * scale * 0.5f);
@@ -423,6 +521,11 @@ namespace BallBattle.View
         public PixelButton Card(int i) => cards[i];
         public string CardTitle(int i) => cardTitles[i].Text;
         public PixelText CardTag(int i) => cardTags[i];
+        public SpriteRenderer CardFrameRenderer(int i) => cardFrames[i];
+        public SpriteRenderer CardIcon(int i) => cardIcons[i];
+        public SpriteRenderer CardStripe(int i) => cardStripes[i];
+        public PixelText CardDetail(int i, int line) => line == 1 ? cardDetails[i] : cardDetails2[i];
+        public PixelText CardTitleText(int i) => cardTitles[i];
         public string RerollReason => rerollReason.Text;
         public string YouStats => youStats.Text;
         public string EnemyStats => enemyStats.Text;

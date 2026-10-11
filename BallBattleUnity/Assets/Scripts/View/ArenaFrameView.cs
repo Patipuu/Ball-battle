@@ -22,7 +22,16 @@ namespace BallBattle.View
         static readonly Color32 BumperColor = new Color32(240, 170, 60, 255);
         static readonly Color32 SpikeColor = new Color32(210, 60, 60, 255);
 
+        /// <summary>Spike teeth (art v1) every this many px along each wall of a spike arena.</summary>
+        public const int ToothSpacing = 8;
+        public const int ToothOrder = ObstacleOrder + 1;
+
         Sprite pixelSprite;
+        ArtLibrary art;
+        string tiledArena;
+        Color32 shownWallColor;
+        readonly System.Collections.Generic.List<SpriteRenderer> teeth = new System.Collections.Generic.List<SpriteRenderer>();
+        int activeTeeth;
         ArenaLayout drawnLayout;
         Transform obstacleRoot;
         SpriteRenderer floor;
@@ -38,12 +47,14 @@ namespace BallBattle.View
         }
 
 
-        public static ArenaFrameView Create(Transform parent, Sprite pixel)
+        public static ArenaFrameView Create(Transform parent, ArtLibrary art)
         {
+            var pixel = art.Pixel;
             var go = new GameObject("ArenaFrame");
             go.transform.SetParent(parent, false);
             var v = go.AddComponent<ArenaFrameView>();
             v.pixelSprite = pixel;
+            v.art = art;
             v.floor = Quad(go.transform, "Floor", pixel, Palette.Floor, FloorOrder);
             for (var i = 0; i < 4; i++)
             {
@@ -71,7 +82,10 @@ namespace BallBattle.View
             sr.transform.localScale = new Vector3(right - left, top - bottom, 1f);
         }
 
-        public void Render(ArenaRect arena, int activeTick, MatchConfig config)
+        public void Render(ArenaRect arena, int activeTick, MatchConfig config) => Render(arena, activeTick, config, null);
+
+        /// <summary>Floor tiled with floor_&lt;arenaId&gt;, walls in that arena's color (arena_colors.json), teeth on spike walls.</summary>
+        public void Render(ArenaRect arena, int activeTick, MatchConfig config, string arenaId)
         {
             // Snap edges to whole pixels so the frame never smears.
             var l = Mathf.Round(arena.Left);
@@ -79,7 +93,32 @@ namespace BallBattle.View
             var b = Mathf.Round(arena.Bottom);
             var t = Mathf.Round(arena.Top);
 
-            Box(floor, l, b, r, t);
+            ArtLibrary.ArenaArt look = default;
+            var hasArt = art != null && arenaId != null && art.TryArena(arenaId, out look);
+            if (hasArt && look.Floor != null)
+            {
+                if (tiledArena != arenaId)
+                {
+                    tiledArena = arenaId;
+                    floor.sprite = look.Floor;
+                    floor.drawMode = SpriteDrawMode.Tiled;
+                    floor.color = Color.white;
+                }
+                floor.transform.localPosition = new Vector3((l + r) * 0.5f, (b + t) * 0.5f, 0f);
+                floor.transform.localScale = Vector3.one;
+                floor.size = new Vector2(r - l, t - b);
+            }
+            else
+            {
+                if (tiledArena != null)
+                {
+                    tiledArena = null;
+                    floor.drawMode = SpriteDrawMode.Simple;
+                    floor.sprite = pixelSprite;
+                }
+                floor.color = hasArt ? look.FloorColor : (Color32)Palette.Floor;
+                Box(floor, l, b, r, t);
+            }
             Box(masks[0], -Far, t, Far, Far);    // above
             Box(masks[1], -Far, -Far, Far, b);   // below
             Box(masks[2], -Far, b, l, t);        // left
@@ -93,14 +132,69 @@ namespace BallBattle.View
 
             DrawObstacles(config.Layout ?? ArenaLayout.Empty);
 
-            var baseColor = (config.Layout != null && config.Layout.WallDamage > 0f) ? SpikeColor : (Color32)Palette.Wall;
+            var spikes = config.Layout != null && config.Layout.WallDamage > 0f;
+            var baseColor = hasArt ? look.WallColor : (spikes ? SpikeColor : (Color32)Palette.Wall);
+            var closing = art != null ? art.ClosingWallColor : (Color32)Palette.WallWarning;
+            DrawTeeth(spikes && hasArt && art.SpikeTooth != null, l, b, r, t);
             var color = baseColor;
             var untilShrink = config.ShrinkStartTick - activeTick;
             if (untilShrink > 0 && untilShrink <= WarnTicks)
-                color = (untilShrink / 8) % 2 == 0 ? Palette.WallWarning : baseColor;   // blink ~4 Hz
+                color = (untilShrink / 8) % 2 == 0 ? closing : baseColor;   // blink ~4 Hz
             else if (untilShrink <= 0 && activeTick < config.ShrinkStartTick + config.ShrinkDurationTicks)
-                color = Palette.WallWarning;
+                color = closing;
+            shownWallColor = color;
             foreach (var wall in walls) wall.color = color;
+        }
+
+        /// <summary>Wall color drawn now (tests).</summary>
+        public Color32 WallColor => shownWallColor;
+
+        /// <summary>Floor renderer (tests).</summary>
+        public SpriteRenderer Floor => floor;
+
+        /// <summary>Spike teeth shown now (tests).</summary>
+        public int TeethShown => activeTeeth;
+
+        /// <summary>
+        /// spike_tooth (6x4, pointing down, pivot top-centre) every ToothSpacing px along the inside of the 4 walls, pointing
+        /// into the arena; follows the walls when they close in.
+        /// </summary>
+        void DrawTeeth(bool show, float l, float b, float r, float t)
+        {
+            var n = 0;
+            if (show)
+            {
+                n = Edge(n, l, r, t, 0f, horizontal: true);      // top: pointing down
+                n = Edge(n, l, r, b, 180f, horizontal: true);    // bottom: pointing up
+                n = Edge(n, b, t, l, 90f, horizontal: false);    // left: pointing right
+                n = Edge(n, b, t, r, -90f, horizontal: false);   // right: pointing left
+            }
+            for (var i = n; i < activeTeeth; i++) teeth[i].enabled = false;
+            activeTeeth = n;
+        }
+
+        int Edge(int n, float from, float to, float at, float angle, bool horizontal)
+        {
+            var count = Mathf.FloorToInt((to - from) / ToothSpacing);
+            var start = Mathf.Round((from + to) * 0.5f - (count - 1) * ToothSpacing * 0.5f);
+            for (var i = 0; i < count; i++, n++)
+            {
+                if (n >= teeth.Count)
+                {
+                    var go = new GameObject("Tooth");
+                    go.transform.SetParent(transform, false);
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = art.SpikeTooth;
+                    sr.sortingOrder = ToothOrder;
+                    teeth.Add(sr);
+                }
+                var tooth = teeth[n];
+                tooth.enabled = true;
+                var along = start + i * ToothSpacing;
+                tooth.transform.localPosition = horizontal ? new Vector3(along, at, 0f) : new Vector3(at, along, 0f);
+                tooth.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
+            }
+            return n;
         }
 
         /// <summary>Static obstacles as pixel rows (circles) under the balls; rebuilt only when the layout changes.</summary>

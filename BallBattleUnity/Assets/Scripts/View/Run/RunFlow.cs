@@ -39,6 +39,9 @@ namespace BallBattle.View
         /// <summary>Damage totals of the fight being played; the arena feeds it the sim's events (RunController).</summary>
         public FightStats Stats { get; } = new FightStats();
 
+        /// <summary>The fight being played (from StartFight until its result is applied); null otherwise.</summary>
+        public MatchSim CurrentMatch => match;
+
         /// <summary>Result of the last finished fight, shown on the FightResult screen.</summary>
         public FightReport LastReport { get; private set; }
         public int CountdownNumber => Current == State.Countdown ? Math.Max(1, (int)Math.Ceiling(timer)) : 0;
@@ -142,7 +145,7 @@ namespace BallBattle.View
         void StartFight()
         {
             match = Run.CreateMatch();
-            Stats.Reset();
+            Stats.Reset(match);
             MatchPrepared?.Invoke(match);
             timer = CountdownSeconds;
             Go(State.Countdown);

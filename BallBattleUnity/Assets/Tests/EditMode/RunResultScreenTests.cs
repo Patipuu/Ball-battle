@@ -45,6 +45,7 @@ namespace BallBattle.Tests
             sim.ApplySpawnHooks();
             var startHp = sim.Balls.Select(x => x.Hp).ToArray();
             var stats = new FightStats();
+            stats.Reset(sim);
             var healed = new float[2];
             for (var t = 0; t < 180 * 60 && sim.Outcome == MatchOutcome.Ongoing; t++)
             {
@@ -57,11 +58,10 @@ namespace BallBattle.Tests
             Assert.That(sim.Balls.Any(x => x.Alive), Is.True, "these seeds end by KO with a survivor, so one exact check always runs");
             for (var i = 0; i < 2; i++)
             {
-                var removed = startHp[i] + healed[i] - sim.Balls[i].Hp;
-                if (sim.Balls[i].Alive)
-                    Assert.That(stats.Taken(i), Is.EqualTo(removed).Within(0.01f), $"ball {i}: taken = HP the sim removed");
-                else   // the killing blow counts in full; the sim then sets the dead ball's HP to 0
-                    Assert.That(stats.Taken(i), Is.GreaterThanOrEqualTo(removed - 0.01f), $"ball {i}: knocked out, taken includes the overkill");
+                // Only the HP really removed counts (no overkill): matches the HP bar, knocked out or not.
+                var removed = startHp[i] + healed[i] - Mathf.Max(0f, sim.Balls[i].Hp);
+                Assert.That(stats.Taken(i), Is.EqualTo(removed).Within(0.01f), $"ball {i}: taken = HP the sim removed");
+                if (!sim.Balls[i].Alive) Assert.That(stats.Taken(i), Is.LessThanOrEqualTo(startHp[i] + healed[i] + 0.01f), $"ball {i}: never more than it had");
             }
             Assert.That(stats.Dealt(0), Is.GreaterThan(0f));
             Assert.That(stats.Dealt(0), Is.LessThanOrEqualTo(stats.Taken(1) + 0.01f), "what you dealt is part of what the enemy took");
@@ -98,11 +98,13 @@ namespace BallBattle.Tests
             Assert.That(r.Outcome, Is.EqualTo(m.WinnerIndex == 0 ? FightOutcome.Win : m.WinnerIndex < 0 ? FightOutcome.Draw : FightOutcome.Lost));
             Assert.That(r.HpLeft, Is.EqualTo(Mathf.Max(0f, m.Balls[0].Hp)));
             Assert.That(r.MaxHpInFight, Is.EqualTo(m.Balls[0].MaxHp));
-            Assert.That(r.DamageDealt, Is.EqualTo(f.Stats.Dealt(0)));
+            Assert.That(r.DamageDealt, Is.EqualTo(f.Stats.Taken(1)), "DMG DEALT = everything the enemy lost");
             Assert.That(r.DamageTaken, Is.EqualTo(f.Stats.Taken(0)));
             Assert.That(r.CoinsGained, Is.EqualTo(f.Run.Coins - coinsBefore));
             Assert.That(r.CoinsGained, Is.EqualTo(m.WinnerIndex == 0 ? RunTuning.WinCoins : RunTuning.LossCoins));
-            Assert.That(r.HpNext, Is.EqualTo(f.Run.Build.Hp));
+            var nextStart = f.Run.CreateMatch().Balls[0];
+            Assert.That(r.HpNext, Is.EqualTo(nextStart.Hp), "HP NEXT FIGHT = the next fight's real start HP");
+            Assert.That(r.MaxHpNext, Is.EqualTo(nextStart.MaxHp));
             Assert.That(r.LivesBefore, Is.EqualTo(livesBefore));
             Assert.That(r.LivesAfter, Is.EqualTo(f.Run.Lives));
 
@@ -194,7 +196,7 @@ namespace BallBattle.Tests
                 if (r.RunOver) Assert.That(v.NextHeaderText, Is.Empty, "no next fight after the last one");
                 else
                 {
-                    Assert.That(v.NextNameText, Is.EqualTo(WeaponRegistry.Get(r.NextWeaponId).DisplayName));
+                    Assert.That(v.NextNameText, Is.EqualTo(WeaponNames.Of(r.NextWeaponId)));
                     Assert.That(v.NextStatsText, Does.Contain("ARENA " + ArenaRegistry.Get(r.NextArenaId).DisplayName));
                 }
                 Assert.That(v.ContinueButton.LabelText, Is.EqualTo(r.RunOver ? "SUMMARY" : "NEXT FIGHT"));
@@ -213,7 +215,11 @@ namespace BallBattle.Tests
             v.Show(Report(FightOutcome.Win));
             PixelInput.InjectTap(RunResultView.ContinueArea.center);
             PixelInput.Dispatch(() => root.GetComponentsInChildren<PixelButton>(false));
-            Assert.That(pressed, Is.Zero, "tap in the first 300 ms (closing the fight banner) is dropped");
+            Assert.That(pressed, Is.Zero, "tap right away (closing the fight banner) is dropped");
+            PixelInput.AdvanceTestClock(0.5f);
+            PixelInput.InjectTap(RunResultView.ContinueArea.center);
+            PixelInput.Dispatch(() => root.GetComponentsInChildren<PixelButton>(false));
+            Assert.That(pressed, Is.Zero, "still locked at 0.5 s (0.8 s lock)");
             PixelInput.AdvanceTestClock(0.4f);
             PixelInput.InjectTap(RunResultView.ContinueArea.center);
             PixelInput.Dispatch(() => root.GetComponentsInChildren<PixelButton>(false));

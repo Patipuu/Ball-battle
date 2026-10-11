@@ -152,7 +152,7 @@ namespace BallBattle.View
         static string WeaponOf(Series s, int side) => side == 0 ? s.WeaponA : s.WeaponB;
 
         static string RoundText(Series s, int winner) =>
-            winner < 0 ? "DRAW - REPLAY" : WeaponRegistry.Get(WeaponOf(s, winner)).DisplayName + " WINS";
+            winner < 0 ? "DRAW - REPLAY" : WeaponNames.Of(WeaponOf(s, winner)) + " WINS";
 
         static Color32 BannerColor(Series s, int winner) =>
             winner < 0 ? Palette.Text : Palette.Look(WeaponOf(s, winner)).Body;
@@ -160,7 +160,7 @@ namespace BallBattle.View
         void FillResult(Series s)
         {
             var w = s.Winner;
-            resultTitle.Set(WeaponRegistry.Get(WeaponOf(s, w)).DisplayName + " WINS", Palette.Look(WeaponOf(s, w)).Body);
+            resultTitle.Set(WeaponNames.Of(WeaponOf(s, w)) + " WINS", Palette.Look(WeaponOf(s, w)).Body);
             resultScore.Set($"{s.WinsA} - {s.WinsB}", Palette.Text);
             resultSeed.Set("SEED " + s.MatchSeed, Palette.TextDim);
         }

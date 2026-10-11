@@ -47,6 +47,60 @@ namespace BallBattle.View
         /// <summary>HUD (tests).</summary>
         public HudView Hud => hud;
 
+        /// <summary>Trait badges on the HUD (FxView marks a used Second Wind).</summary>
+        public TraitBadgeView Badges => badges;
+
+        /// <summary>Arena frame: floor tiles, walls, teeth (tests).</summary>
+        public ArenaFrameView Frame => frame;
+
+        /// <summary>How a boss ball is drawn (art v1). Sizes and hitboxes stay the sim's; only the body sprite changes.</summary>
+        public enum BossLook { None, ShellKing, Mimic }
+
+        /// <summary>Boss look applied to <see cref="BossBall"/> in the next StartMatch (Run sets it per fight; Versus: None).</summary>
+        public BossLook Boss { get; set; } = BossLook.None;
+        public int BossBall { get; set; } = 1;
+        public ArtLibrary.MimicLook MimicShown { get; private set; } = ArtLibrary.MimicLook.Idle;
+
+        /// <summary>Mimic's sprite for the damage kind it adapted to (wired when the sim reports adaptation, v4).</summary>
+        public static ArtLibrary.MimicLook MimicLookFor(DamageKind kind)
+        {
+            switch (kind)
+            {
+                case DamageKind.Weapon: return ArtLibrary.MimicLook.Weapon;
+                case DamageKind.Projectile: return ArtLibrary.MimicLook.Shot;
+                case DamageKind.Status: return ArtLibrary.MimicLook.Poison;
+                case DamageKind.Reflect: return ArtLibrary.MimicLook.Reflect;
+                default: return ArtLibrary.MimicLook.Idle;
+            }
+        }
+
+        /// <summary>Swap Mimic's body to the look for what it adapted to. No-op for other bosses.</summary>
+        public void SetMimicLook(ArtLibrary.MimicLook look)
+        {
+            if (Boss != BossLook.Mimic) return;
+            var sprite = Art.MimicSprite(look);
+            var v = GetBallView(BossBall);
+            if (sprite == null || v == null) return;
+            v.SetBodySprite(sprite, ArtLibrary.BossBodyRadius);
+            MimicShown = look;
+        }
+
+        /// <summary>Shell King's 1 s glow (shellking_glow.png), e.g. when its shield takes a hit.</summary>
+        public void PlayBossGlow()
+        {
+            if (Boss != BossLook.ShellKing) return;
+            GetBallView(BossBall)?.PlayGlow(Art.ShellKingGlow, 1f);
+        }
+
+        void ApplyBossLook()
+        {
+            MimicShown = ArtLibrary.MimicLook.Idle;
+            if (Boss == BossLook.None) return;
+            var v = GetBallView(BossBall);
+            var sprite = Boss == BossLook.ShellKing ? Art.ShellKing : Art.MimicSprite(ArtLibrary.MimicLook.Idle);
+            if (v != null && sprite != null) v.SetBodySprite(sprite, ArtLibrary.BossBodyRadius);   // drawn at its own size: no x1.5
+        }
+
         /// <summary>Ball that gets the player marker (arrow + dotted ring) in the next StartMatch; -1 = none (Versus).</summary>
         public int MarkedBall { get; set; } = -1;
 
@@ -75,7 +129,7 @@ namespace BallBattle.View
         {
             if (frame != null) return;
             if (Art == null) throw new InvalidOperationException("ArenaView needs an ArtLibrary (run BallBattle/Build Scenes)");
-            frame = ArenaFrameView.Create(transform, Art.Pixel);
+            frame = ArenaFrameView.Create(transform, Art);
             hud = HudView.Create(transform, Art);
             projectileView = ProjectileView.Create(transform, Art.Pixel);
             statusView = StatusView.Create(transform, Art.Pixel);
@@ -106,7 +160,7 @@ namespace BallBattle.View
             {
                 if (v == null) continue;
                 v.gameObject.SetActive(false);   // Destroy is deferred to end of frame; hide now
-                Destroy(v.gameObject);
+                if (Application.isPlaying) Destroy(v.gameObject); else DestroyImmediate(v.gameObject);
             }
 
             Sim = sim;
@@ -121,6 +175,7 @@ namespace BallBattle.View
                 hud.Bind(i, id, i == 0 ? tagA : (i == 1 ? tagB : null));
                 ballViews[i].SetMarked(i == MarkedBall);
             }
+            ApplyBossLook();
             badges.Bind(Sim);
             SnapshotPrevious();
             accumulator = 0f;
@@ -130,10 +185,13 @@ namespace BallBattle.View
             MatchStarted?.Invoke();
         }
 
-        void Update()
+        void Update() => Advance(Time.deltaTime);
+
+        /// <summary>One frame of <paramref name="frameSeconds"/> (Update's body; tests drive it with a fixed step).</summary>
+        public void Advance(float frameSeconds)
         {
             if (Sim == null) return;
-            var dt = Mathf.Min(Time.deltaTime, MaxFrameSeconds);
+            var dt = Mathf.Min(frameSeconds, MaxFrameSeconds);
             if (Paused)
             {
                 accumulator = 0f;
@@ -193,7 +251,7 @@ namespace BallBattle.View
 
         void Draw(float alpha, float dt)
         {
-            frame.Render(Sim.Arena, Sim.ActiveTick, Sim.Config);
+            frame.Render(Sim.Arena, Sim.ActiveTick, Sim.Config, ArenaId);
             for (var i = 0; i < Sim.Balls.Count; i++)
             {
                 var b = Sim.Balls[i];

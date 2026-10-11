@@ -6,26 +6,31 @@ using BallBattle.Sim.Weapons;
 namespace BallBattle.View
 {
     /// <summary>
-    /// Damage totals of one fight, summed from the values the sim reports in its events (the HP each one removed).
-    /// Nothing is recomputed: Hit / ProjectileHit / Damage (reflect, traits) / StatusTick (poison) / ObstacleHit and
-    /// WallBounce (arena) carry exactly the damage applied. A killing blow counts in full (the sim then sets the dead
-    /// ball's HP to 0), so a knocked-out ball has taken at least its HP.
+    /// Damage totals of one fight, from the values the sim reports in its events: Hit / ProjectileHit / Damage (reflect,
+    /// traits) / StatusTick (poison) / ObstacleHit and WallBounce (arena). Each hit counts at most the HP its target
+    /// still had (the overkill of a killing blow is dropped), so the totals match the HP bars: taken = start HP + heals
+    /// - end HP. HP is followed from the match's start values and the Heal events (a Second Wind save included).
     /// </summary>
     public sealed class FightStats
     {
         readonly float[] dealt = new float[2];
         readonly float[] taken = new float[2];
+        readonly float[] hp = new float[2];
+        bool tracking;
 
-        public void Reset()
+        /// <summary>Start a fight: totals to zero, HP from the match as it will start (spawn hooks applied).</summary>
+        public void Reset(MatchSim match)
         {
             dealt[0] = dealt[1] = 0f;
             taken[0] = taken[1] = 0f;
+            tracking = match != null;
+            for (var i = 0; i < 2; i++) hp[i] = match != null && i < match.Balls.Count ? Mathf0(match.Balls[i].Hp) : 0f;
         }
 
         /// <summary>Damage ball <paramref name="i"/> (0 = player) dealt to others.</summary>
         public float Dealt(int i) => i >= 0 && i < 2 ? dealt[i] : 0f;
 
-        /// <summary>Damage ball <paramref name="i"/> took from every source (enemy, poison, reflect, arena).</summary>
+        /// <summary>HP ball <paramref name="i"/> lost to every source (enemy, poison, reflect, arena).</summary>
         public float Taken(int i) => i >= 0 && i < 2 ? taken[i] : 0f;
 
         public void Add(SimEvent e)
@@ -44,6 +49,9 @@ namespace BallBattle.View
                 case SimEventType.WallBounce:
                     Count(-1, e.A, e.Value);    // arena hazard: nobody dealt it
                     break;
+                case SimEventType.Heal:
+                    if (tracking && e.A >= 0 && e.A < 2) hp[e.A] += e.Value;
+                    break;
             }
         }
 
@@ -55,11 +63,19 @@ namespace BallBattle.View
         void Count(int source, int target, float value)
         {
             if (value <= 0f) return;
-            if (source >= 0 && source < 2 && source != target) dealt[source] += value;
-            if (target >= 0 && target < 2) taken[target] += value;
+            var removed = value;
+            if (tracking && target >= 0 && target < 2)
+            {
+                removed = value < hp[target] ? value : hp[target];   // nothing beyond the HP left
+                hp[target] = Mathf0(hp[target] - value);
+            }
+            if (removed <= 0f) return;
+            if (source >= 0 && source < 2 && source != target) dealt[source] += removed;
+            if (target >= 0 && target < 2) taken[target] += removed;
         }
-    }
 
+        static float Mathf0(float v) => v > 0f ? v : 0f;
+    }
     public enum FightOutcome { Win, Lost, Draw }
 
     /// <summary>
@@ -117,7 +133,7 @@ namespace BallBattle.View
                 Seconds = match.ActiveTick / (float)MatchConfig.TicksPerSecond,
                 HpLeft = you.Hp > 0f ? you.Hp : 0f,
                 MaxHpInFight = you.MaxHp,
-                DamageDealt = stats != null ? stats.Dealt(0) : 0f,
+                DamageDealt = stats != null ? stats.Taken(1) : 0f,   // everything the enemy lost (hits, poison, reflect, arena), like DMG TAKEN
                 DamageTaken = stats != null ? stats.Taken(0) : 0f,
                 CoinsGained = run.Coins - before.Coins,
                 CoinsTotal = run.Coins,
@@ -134,6 +150,8 @@ namespace BallBattle.View
             {
                 var next = run.CreateMatch();   // the exact next fight: spawn hooks (Heavy, Glass Cannon, boss HP) applied
                 var enemy = run.Enemy;
+                r.HpNext = next.Balls[0].Hp;      // real start HP and max HP (Heavy: 170/170, not /100)
+                r.MaxHpNext = next.Balls[0].MaxHp;
                 r.NextFightNumber = run.FightIndex + 1;
                 r.NextIsBoss = run.IsBossFight;
                 r.NextWeaponId = enemy.WeaponId;
@@ -197,7 +215,7 @@ namespace BallBattle.View
 
         public string NextStats => $"HP {Ceil(NextEnemyHp)}   ARENA {ArenaRegistry.Get(NextArenaId).DisplayName}";
 
-        public string NextWeaponName => NextWeaponId != null ? WeaponRegistry.Get(NextWeaponId).DisplayName : "";
+        public string NextWeaponName => NextWeaponId != null ? WeaponNames.Of(NextWeaponId) : "";
 
         public static string Number(float v)
         {

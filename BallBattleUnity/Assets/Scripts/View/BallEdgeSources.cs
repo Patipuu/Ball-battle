@@ -86,9 +86,12 @@ namespace BallBattle.View
             c.a > 0 && Mathf.Abs(c.r - outline.r) <= tolerance && Mathf.Abs(c.g - outline.g) <= tolerance && Mathf.Abs(c.b - outline.b) <= tolerance;
     }
 
-    /// <summary>The edge source every BallView uses (procedural until the real sprites land).</summary>
+    /// <summary>The edge source every BallView uses.</summary>
     public static class BallEdges
     {
-        public static IBallEdgeSource Source { get; set; } = new ProceduralEdgeSource();
+        public static IBallEdgeSource Source { get; set; } = Default();
+
+        /// <summary>Real art (v1): flash the sprite's own 1 px dark rim; placeholder rings when a texture cannot be read.</summary>
+        public static IBallEdgeSource Default() => new SpriteOutlineEdgeSource(new ProceduralEdgeSource());
     }
 }

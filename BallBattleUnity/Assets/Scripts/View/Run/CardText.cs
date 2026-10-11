@@ -23,7 +23,7 @@ namespace BallBattle.View
                 case CardKind.Trait: return TraitRegistry.Get(c.Id).DisplayName + (c.Level > 1 ? " LV2" : "");
                 case CardKind.DamageUp: return $"DAMAGE +{Pct(RunTuning.DamageCardPct)}%";
                 case CardKind.SpeedUp: return $"SPEED CAP +{Pct(RunTuning.SpeedCardPct)}%";
-                case CardKind.SwapWeapon: return "SWAP TO " + WeaponRegistry.Get(c.Id).DisplayName;
+                case CardKind.SwapWeapon: return "SWAP TO " + WeaponNames.Of(c.Id);
                 case CardKind.Heal: return $"HEAL {Pct(RunTuning.HealCardPct)}%";
                 case CardKind.MaxHp: return $"MAX HP +{(int)RunTuning.MaxHpCardBonus}";
                 default: return c.Kind.ToString().ToUpperInvariant();
@@ -120,7 +120,7 @@ namespace BallBattle.View
             foreach (var t in b.Traits)
             {
                 if (s.Length > 0) s += " ";
-                s += TraitRegistry.Get(t.Id).DisplayName + (t.Level > 1 ? "2" : "");
+                s += TraitRegistry.Get(t.Id).DisplayName + (t.Level > 1 ? " " + t.Level : "");   // "SECOND WIND 2"
             }
             return s;
         }

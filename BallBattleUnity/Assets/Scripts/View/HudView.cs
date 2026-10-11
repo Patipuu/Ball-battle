@@ -23,6 +23,8 @@ namespace BallBattle.View
             public Vector3 NameHome;
             public SpriteRenderer BarBack, BarLost, BarFill;
             public float LostFraction = 1f;
+            /// <summary>Just bound to a new match: the red "lost" segment starts at the current HP, not at full.</summary>
+            public bool Fresh = true;
             public string WeaponId;
             public Color32 Color;
             // Last drawn values: strings are rebuilt only when these change (no per-frame garbage).
@@ -43,6 +45,9 @@ namespace BallBattle.View
         /// <summary>Arrow and name of a side (tests).</summary>
         public SpriteRenderer PlayerArrow(int side) => sides[side].Arrow;
         public PixelText NameText(int side) => sides[side].Name;
+        public string HpText(int side) => sides[side].Hp.Text;
+        /// <summary>Width of the red "lost" segment as a fraction of the bar (tests).</summary>
+        public float LostFraction(int side) => sides[side].LostFraction;
 
         public static HudView Create(Transform parent, ArtLibrary art)
         {
@@ -110,10 +115,11 @@ namespace BallBattle.View
             s.WeaponId = weaponId;
             s.Color = Palette.Look(weaponId).Body;
             s.LostFraction = 1f;
+            s.Fresh = true;
             s.ShownHp = int.MinValue;
             s.ShownStat = float.NaN;
             s.BarFill.color = s.Color;
-            var name = WeaponRegistry.Get(weaponId).DisplayName;
+            var name = WeaponNames.Of(weaponId);
             var you = tag == PlayerTag;
             s.Arrow.enabled = you;
             s.Name.transform.localPosition = you ? s.NameHome + new Vector3(ArrowWidth + ArrowGap, 0f, 0f) : s.NameHome;
@@ -127,6 +133,7 @@ namespace BallBattle.View
                 var s = sides[i];
                 var ball = sim.Balls[i];
                 var frac = Mathf.Clamp01(ball.HpFraction);
+                if (s.Fresh) { s.LostFraction = frac; s.Fresh = false; }   // a fight that starts hurt shows no red drain
                 s.LostFraction = Mathf.Max(frac, s.LostFraction - LostLagPerSecond * deltaTime);
 
                 var left = -BarWidth / 2f;

@@ -17,26 +17,125 @@ MonoBehaviour:
   Font: {fileID: 2800000, guid: 9f0157771693c6343ad5b4541adca432, type: 3}
   Weapons:
   - Id: blade
-    Ball: {fileID: 21300000, guid: 5803b3c9346b79f499285ae24e05f427, type: 3}
-    Blade: {fileID: 21300000, guid: e238c293564b7994094eb611236e5592, type: 3}
+    Ball: {fileID: 21300000, guid: dd2813e1a8215e64aa10a4f8ccb762be, type: 3}
+    Blade: {fileID: 21300000, guid: e6aa047c93d999440af2c0ea5f58708c, type: 3}
   - Id: fang
-    Ball: {fileID: 21300000, guid: 00e62968f831133498735e28ac27ff0e, type: 3}
-    Blade: {fileID: 21300000, guid: 815a926940847284d8b0422162baf5a8, type: 3}
+    Ball: {fileID: 21300000, guid: 3070eb54c8ffbbe4985a20e744b91067, type: 3}
+    Blade: {fileID: 21300000, guid: 6e3468b30834b9c41926d4668e427d42, type: 3}
   - Id: pike
-    Ball: {fileID: 21300000, guid: b6d3d54954d993449a76383cc21a66e3, type: 3}
-    Blade: {fileID: 21300000, guid: 3385500a7effead4989164a8f5ea2554, type: 3}
+    Ball: {fileID: 21300000, guid: f13d206f99017a9419c3c95efab35b6a, type: 3}
+    Blade: {fileID: 21300000, guid: 673b8709f1adee54187a28ba3c6046ec, type: 3}
   - Id: brawler
-    Ball: {fileID: 21300000, guid: be3653d6417b34244b8490eae01021a5, type: 3}
+    Ball: {fileID: 21300000, guid: 116133b1c3162ee4c9de67048f383cd9, type: 3}
     Blade: {fileID: 0}
   - Id: volley
-    Ball: {fileID: 21300000, guid: 47f8b116effde8b4da5241a0d7cd4b4b, type: 3}
-    Blade: {fileID: 21300000, guid: d05bb2eeccfae66438f9fccb5a40d591, type: 3}
+    Ball: {fileID: 21300000, guid: a87895b48296dfd4b97e69d78962c94b, type: 3}
+    Blade: {fileID: 21300000, guid: 9bf90c6c85a8498478ab4f590b908d3f, type: 3}
   - Id: venom
-    Ball: {fileID: 21300000, guid: da39ebbd241ad7446a8d432b7d8a320c, type: 3}
-    Blade: {fileID: 21300000, guid: 09521d59a2562074398a4fb2e4295e7f, type: 3}
+    Ball: {fileID: 21300000, guid: 6881cf1d1805530449d10ba9a2be890c, type: 3}
+    Blade: {fileID: 21300000, guid: 391670376392c8e4496445ed3fc5cddc, type: 3}
   - Id: aegis
-    Ball: {fileID: 21300000, guid: 19f40aa45d068ee44a1b30749505852e, type: 3}
-    Blade: {fileID: 21300000, guid: b08dc3fb9d3c61a43ac6206b4511d610, type: 3}
+    Ball: {fileID: 21300000, guid: 4a30db3248b007840919202df27915b5, type: 3}
+    Blade: {fileID: 21300000, guid: 1805964ec549ca44f832e0c2b5aa5984, type: 3}
   - Id: rig
-    Ball: {fileID: 21300000, guid: 106147f6b3b63894db437781e92769ff, type: 3}
-    Blade: {fileID: 21300000, guid: fdc13f8a6bab69c4a812cb48393964dd, type: 3}
+    Ball: {fileID: 21300000, guid: 79ab4999df1f82c4f8179c9beb709dcf, type: 3}
+    Blade: {fileID: 21300000, guid: 4dd4e5981316bc9469a53237a9d1c1c6, type: 3}
+  RetryTokenOn: {fileID: 21300000, guid: 4fdaa4e9339a5a14994bf93e35676fbe, type: 3}
+  RetryTokenOff: {fileID: 21300000, guid: 3a3b3d3f7621c6e498ed47f67dcc8e5c, type: 3}
+  IconAntidote: {fileID: 21300000, guid: 2fdd769ffc0576a45a7eb9bfa53c5c29, type: 3}
+  Traits:
+  - Id: heavy
+    Icon: {fileID: 21300000, guid: 0ae6ad5485f874547a404561b340ecc6, type: 3}
+  - Id: vampire
+    Icon: {fileID: 21300000, guid: 0fd34b52094617a4f89f9351268bd16f, type: 3}
+  - Id: spiky
+    Icon: {fileID: 21300000, guid: 1c84ec18011d627419a8bfa7d69bb00a, type: 3}
+  - Id: thorns
+    Icon: {fileID: 21300000, guid: b9b0cdd9e0ecf3e42ad5729db33f266e, type: 3}
+  - Id: second-wind
+    Icon: {fileID: 21300000, guid: d6ce1bf9d43058d4eb098f12bd791de4, type: 3}
+  - Id: glass-cannon
+    Icon: {fileID: 21300000, guid: 0ab24550347c54d4c842d9c2638422ff, type: 3}
+  - Id: parry-master
+    Icon: {fileID: 21300000, guid: b55cf2cb0e291c544bbdaa8514def92c, type: 3}
+  - Id: bubble
+    Icon: {fileID: 21300000, guid: 2ff8e0abf0013294daeb3b41ea1e85bf, type: 3}
+  - Id: twin-blade
+    Icon: {fileID: 21300000, guid: ba0e756249bbead428137e44285b307e, type: 3}
+  - Id: poison-tip
+    Icon: {fileID: 21300000, guid: 737f6205e2ba1b2458b60564dd67b913, type: 3}
+  CardFrames:
+  - {fileID: 21300000, guid: 89ad1d97071010141a6905e1c8953cf0, type: 3}
+  - {fileID: 21300000, guid: 4c0cf260712aff14b9eda05896f487a1, type: 3}
+  - {fileID: 21300000, guid: d1b1adf4c14f7cb4fa3783679d3fcb04, type: 3}
+  - {fileID: 21300000, guid: dce43d1ce88bfb44cae503150553341f, type: 3}
+  CardAntidote: {fileID: 21300000, guid: 066c8a823ede10841a504647fc6c6f1f, type: 3}
+  ShellKing: {fileID: 21300000, guid: 0c6350efcf1dbc14ebb995cbfd0bfc2f, type: 3}
+  ShellKingGlow: {fileID: 21300000, guid: cfc8f4e536b1cab449cd1037c61b8bac, type: 3}
+  Mimic:
+  - {fileID: 21300000, guid: f3a83166737b99145a7658c4160a9bba, type: 3}
+  - {fileID: 21300000, guid: d1316a998151c1943873db190be6d3fa, type: 3}
+  - {fileID: 21300000, guid: b0c63eefb0814ab4db25c8e962df52ac, type: 3}
+  - {fileID: 21300000, guid: fca7b4463aaf414499ab898287dc4beb, type: 3}
+  - {fileID: 21300000, guid: c0542368d65a4474fb151e8d48a3695e, type: 3}
+  Arenas:
+  - Id: classic
+    Floor: {fileID: 21300000, guid: 02406a84fbf7850429f2c6e61c9e3bd7, type: 3}
+    FloorColor:
+      serializedVersion: 2
+      rgba: 4281212446
+    WallColor:
+      serializedVersion: 2
+      rgba: 4287389792
+  - Id: pillar
+    Floor: {fileID: 21300000, guid: eef9505ddc5e9204b88c201dc711579c, type: 3}
+    FloorColor:
+      serializedVersion: 2
+      rgba: 4280953902
+    WallColor:
+      serializedVersion: 2
+      rgba: 4284772472
+  - Id: bumpers
+    Floor: {fileID: 21300000, guid: c8a289b8364bf8e47a444b48d8233e7c, type: 3}
+    FloorColor:
+      serializedVersion: 2
+      rgba: 4280819740
+    WallColor:
+      serializedVersion: 2
+      rgba: 4287395950
+  - Id: spike-walls
+    Floor: {fileID: 21300000, guid: e3504bc139b113448b63b0f54a39b552, type: 3}
+    FloorColor:
+      serializedVersion: 2
+      rgba: 4280426016
+    WallColor:
+      serializedVersion: 2
+      rgba: 4285424750
+  - Id: low-gravity
+    Floor: {fileID: 21300000, guid: 35eb25e6bbc05df4f881339b3a7781c9, type: 3}
+    FloorColor:
+      serializedVersion: 2
+      rgba: 4280159756
+    WallColor:
+      serializedVersion: 2
+      rgba: 4288698950
+  - Id: tight
+    Floor: {fileID: 21300000, guid: ec7b0c4e4ee5e3c4293669be867de320, type: 3}
+    FloorColor:
+      serializedVersion: 2
+      rgba: 4279903800
+    WallColor:
+      serializedVersion: 2
+      rgba: 4281883788
+  - Id: wide
+    Floor: {fileID: 21300000, guid: ab7894914bcee3d48b677dca504d65d0, type: 3}
+    FloorColor:
+      serializedVersion: 2
+      rgba: 4280164898
+    WallColor:
+      serializedVersion: 2
+      rgba: 4285103490
+  ClosingWallColor:
+    serializedVersion: 2
+    rgba: 4282168552
+  SpikeTooth: {fileID: 21300000, guid: a3f0777e8619e384abce8070ca94b988, type: 3}

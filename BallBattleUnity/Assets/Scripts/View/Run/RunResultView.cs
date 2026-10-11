@@ -12,7 +12,7 @@ namespace BallBattle.View
     {
         public static readonly Rect ContinueArea = new Rect(-80, -150, 160, 32);
         /// <summary>The tap that closed the fight banner must not press CONTINUE.</summary>
-        public const float EntryInputBlockSeconds = 0.3f;
+        public const float EntryInputBlockSeconds = 0.8f;
 
         const float RowLeft = -110f;
         const float RowRight = 110f;

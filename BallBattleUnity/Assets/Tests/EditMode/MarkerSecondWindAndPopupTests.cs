@@ -34,7 +34,7 @@ namespace BallBattle.Tests
         public void TearDown()
         {
             PixelInput.SetTestClock(null);
-            BallEdges.Source = new ProceduralEdgeSource();
+            BallEdges.Source = BallEdges.Default();
             Object.DestroyImmediate(root);
         }
 
@@ -168,7 +168,8 @@ namespace BallBattle.Tests
                 Assert.That(you.IsMarked, Is.True);
                 Assert.That(view.GetBallView(1).IsMarked, Is.False);
                 // Topmost drawn row of the ball disc, read from the disc itself (independent of BallView's formula).
-                var disc = ProceduralSprites.BallOutline.texture;
+                var sprite = you.GetComponent<SpriteRenderer>().sprite;
+                var disc = sprite.texture.isReadable ? sprite.texture : ProceduralSprites.BallOutline.texture;   // the ball's own pixels (real art is readable)
                 var topRow = Enumerable.Range(0, disc.height).Where(y => Enumerable.Range(0, disc.width).Any(x => disc.GetPixel(x, y).a > 0.5f)).Max();
                 var visibleTop = Mathf.RoundToInt((topRow + 1 - disc.height / 2f) * you.Scale);
                 var centre = you.transform.position;

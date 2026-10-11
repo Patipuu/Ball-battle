@@ -94,6 +94,8 @@ namespace BallBattle.View
             winPending = false;
             lastShotSoundTick = -1;
             pendingTick.Clear();
+            secondWindShown[0] = secondWindShown[1] = false;
+            foreach (var r in rings) { r.Renderer.enabled = false; r.Age = RingPulseSeconds; }
         }
 
         /// <summary>Damage/heal number kept inside the current (possibly shrunk) arena.</summary>
@@ -101,6 +103,109 @@ namespace BallBattle.View
         {
             if (arena.Sim != null) popups.Show(at, value, color, arena.Sim.Arena, scale);
             else popups.Show(at, value, color, scale);
+        }
+
+        // ---- Second Wind ----
+
+        /// <summary>Second Wind heal number and ring: pale turquoise (not the lime of poison 96,255,64).</summary>
+        public static readonly Color32 SecondWindColor = new Color32(140, 240, 220, 255);
+        /// <summary>"2ND WIND" caption under the number (the trait's badge color).</summary>
+        public static readonly Color32 SecondWindLabelColor = new Color32(60, 150, 170, 255);
+        public const string SecondWindLabel = "2ND WIND";
+        public const float RingPulseSeconds = 0.3f;
+        const float RingPulseGrow = 0.8f;   // the ring ends at 1.8x the ball size
+
+        readonly bool[] secondWindShown = new bool[2];
+
+        sealed class RingPulse
+        {
+            public SpriteRenderer Renderer;
+            public int Ball;
+            public float Age = RingPulseSeconds;
+        }
+
+        readonly List<RingPulse> rings = new List<RingPulse>();
+
+        /// <summary>
+        /// The Heal of a ball with Second Wind that is the trait firing (at &lt;= 30% or saving a lethal blow), told apart
+        /// from Vampire / regen heals by its amount: the trait heals exactly SecondWindHeal[level] (capped by max HP), and
+        /// fires once per fight.
+        /// </summary>
+        bool IsSecondWindHeal(SimEvent e)
+        {
+            if (arena.Sim == null || e.A < 0 || e.A >= arena.Sim.Balls.Count || e.A >= secondWindShown.Length || secondWindShown[e.A]) return false;
+            var ball = arena.Sim.Balls[e.A];
+            SecondWindTrait sw = null;
+            foreach (var t in ball.Traits) if (t is SecondWindTrait s) { sw = s; break; }
+            if (sw == null) return false;
+            var amount = TraitTuning.SecondWindHeal[sw.Level - 1];
+            return Mathf.Abs(e.Value - amount) < 0.01f || Mathf.Abs(e.Value - Mathf.Min(amount, ball.MaxHp)) < 0.01f;
+        }
+
+        void ShowSecondWind(SimEvent e)
+        {
+            secondWindShown[e.A] = true;
+            var ball = arena.Sim.Balls[e.A];
+            var at = V(ball.Pos) + new Vector2(0f, ball.Radius + 4f);
+            popups.ShowLabelled(at, "+" + popups.Format(e.Value), SecondWindColor, 2, SecondWindLabel, SecondWindLabelColor, arena.Sim.Arena);
+            StartRing(e.A);
+            arena.Badges?.SetSpent(e.A, SecondWindTrait.TraitId, true);
+            sfx.Play(Sfx != null ? Sfx.Parry : null, 0.5f, 1.6f);
+        }
+
+        void StartRing(int ballIndex)
+        {
+            RingPulse r = null;
+            foreach (var x in rings) if (x.Age >= RingPulseSeconds) { r = x; break; }
+            if (r == null)
+            {
+                var go = new GameObject("SecondWindRing");
+                go.transform.SetParent(transform, false);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = ProceduralSprites.BallOutlineThin;
+                sr.sortingOrder = PixelParticles.Order + 1;
+                r = new RingPulse { Renderer = sr };
+                rings.Add(r);
+            }
+            r.Ball = ballIndex;
+            r.Age = 0f;
+            r.Renderer.enabled = true;
+            PlaceRing(r);
+        }
+
+        void TickRings(float dt)
+        {
+            foreach (var r in rings)
+            {
+                if (r.Age >= RingPulseSeconds) continue;
+                r.Age += dt;
+                if (r.Age >= RingPulseSeconds) { r.Renderer.enabled = false; continue; }
+                PlaceRing(r);
+            }
+        }
+
+        void PlaceRing(RingPulse r)
+        {
+            var view = arena.GetBallView(r.Ball);
+            var t = Mathf.Clamp01(r.Age / RingPulseSeconds);
+            var baseScale = view != null ? view.Scale : 1f;
+            var s = baseScale * (1f + RingPulseGrow * t);
+            if (view != null) r.Renderer.transform.localPosition = view.transform.localPosition;
+            r.Renderer.transform.localScale = new Vector3(s, s, 1f);
+            var c = SecondWindColor;
+            c.a = (byte)(255f * (1f - t));
+            r.Renderer.color = c;
+        }
+
+        /// <summary>Second Wind ring pulses showing now (tests).</summary>
+        public int ActiveRingPulses
+        {
+            get
+            {
+                var n = 0;
+                foreach (var r in rings) if (r.Age < RingPulseSeconds && r.Renderer.enabled) n++;
+                return n;
+            }
         }
 
         /// <summary>Damage numbers (tests).</summary>
@@ -165,10 +270,12 @@ namespace BallBattle.View
                     break;
                 }
                 case SimEventType.ShieldBlocked:
+                    if (e.A == arena.BossBall) arena.PlayBossGlow();   // Shell King glows 1 s when its shield takes a hit
                     particles.Burst(V(e.Point), 6, Palette.Text, 60f, 130f, 0.3f);
                     sfx.Play(Sfx != null ? Sfx.Parry : null, 0.5f, 0.8f);
                     break;
                 case SimEventType.Heal:
+                    if (IsSecondWindHeal(e)) { ShowSecondWind(e); break; }
                     if (e.Value >= 0.5f)
                     {
                         var healed = arena.Sim.Balls[e.A];
@@ -223,6 +330,7 @@ namespace BallBattle.View
                 sfx.Play(Sfx != null ? Sfx.Win : null, 0.6f);
             }
             particles.Tick(fxDt);
+            TickRings(fxDt);
             popups.SetBounds(arena.Sim != null ? arena.Sim.Arena : (ArenaRect?)null);
             popups.Tick(fxDt);
             shake?.Tick(dt);

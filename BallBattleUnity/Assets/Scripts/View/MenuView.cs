@@ -112,7 +112,7 @@ namespace BallBattle.View
                 sr.sortingOrder = b.IconOrder;
 
                 var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.xMin + 26, area.center.y - 2), PixelText.Align.Left, 1, b.IconOrder);
-                name.Set(WeaponRegistry.Get(id).DisplayName, Palette.Look(id).Body);
+                name.Set(WeaponNames.Of(id), Palette.Look(id).Body);
 
                 var s = side;
                 b.Clicked += () => { selected[s] = id; Refresh(); };
@@ -135,7 +135,7 @@ namespace BallBattle.View
                     tiles[side][i].SetColors(on ? Palette.HpBack : Palette.Floor, on ? (Color32)Palette.Look(ids[i]).Body : Palette.Wall);
                 }
             arenaLabel.Set("ARENA: " + ArenaRegistry.All[arenaIndex].DisplayName, Palette.Text);
-            versus.Set($"{WeaponRegistry.Get(selected[0]).DisplayName} VS {WeaponRegistry.Get(selected[1]).DisplayName}", Palette.Text);
+            versus.Set($"{WeaponNames.Of(selected[0])} VS {WeaponNames.Of(selected[1])}", Palette.Text);
         }
 
         public void Show(bool visible)

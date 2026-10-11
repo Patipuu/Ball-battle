@@ -49,6 +49,6 @@ namespace BallBattle.View
             return sr;
         }
 
-        public static string WeaponName(string id) => WeaponRegistry.Get(id).DisplayName;
+        public static string WeaponName(string id) => WeaponNames.Of(id);
     }
 }

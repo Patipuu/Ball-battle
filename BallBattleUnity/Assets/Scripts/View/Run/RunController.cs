@@ -67,17 +67,25 @@ namespace BallBattle.View
             Flow.Changed += () => dirty = true;
             Flow.MatchPrepared += sim =>
             {
+                Debug.Log(FightLog("prepared", sim));
                 arena.MarkedBall = 0;   // ball 0 is always the player in Run mode
+                arena.ArenaId = Flow.Run.ArenaId;   // floor tiles and wall colors of this fight's arena
+                arena.Boss = BossLookFor(Flow.Run);
                 arena.StartMatch(sim, "YOU", Flow.Run.IsBossFight ? "BOSS" : "FOE");
                 arena.Paused = true;
             };
-            Flow.FightBegan += () => arena.Paused = false;
+            Flow.FightBegan += () =>
+            {
+                arena.Paused = false;
+                Debug.Log(FightLog(arena.Sim == Flow.CurrentMatch ? "began" : "began ON ANOTHER MATCH", arena.Sim));
+            };
             Flow.Closed += () =>
             {
                 HideAll();
                 arena.Paused = true;
                 arena.TimeScale = 1f;
                 arena.MarkedBall = -1;
+                arena.Boss = ArenaView.BossLook.None;
                 Closed?.Invoke();
             };
             arena.MatchEnded += OnArenaMatchEnded;
@@ -121,11 +129,13 @@ namespace BallBattle.View
             shown = RunFlow.State.Closed;
         }
 
-        void Update()
+        void Update() => Tick(Time.deltaTime);
+
+        /// <summary>One frame (Update's body; tests drive it with a fixed step).</summary>
+        public void Tick(float dt)
         {
             if (!IsOpen) return;
-            var dt = Time.deltaTime;
-            Flow.Tick(dt);
+            CheckArenaShowsTheFight();            Flow.Tick(dt);
             if (dirty) Refresh();
             overlay.Render(Flow, dt);
         }
@@ -153,6 +163,49 @@ namespace BallBattle.View
                 case RunFlow.State.FightResult: result.Show(Flow.LastReport); break;
                 case RunFlow.State.Summary: summary.Show(Flow.Run); break;
             }
+        }
+
+        /// <summary>
+        /// Boss art for the current fight until the sim knows its bosses (v4): the last boss fight is MIMIC, earlier boss
+        /// fights are SHELL KING; normal fights none.
+        /// </summary>
+        public static ArenaView.BossLook BossLookFor(BallBattle.Sim.Run.RunState run)
+        {
+            if (run == null || !run.IsBossFight) return ArenaView.BossLook.None;
+            var last = BallBattle.Sim.Run.RunTuning.BossFights[BallBattle.Sim.Run.RunTuning.BossFights.Length - 1];
+            return run.FightIndex == last ? ArenaView.BossLook.Mimic : ArenaView.BossLook.ShellKing;
+        }
+
+        bool mismatchLogged;
+
+        /// <summary>
+        /// Field check for the "HP jumps when the fight starts / Second Wind never fires" report: from the countdown to the
+        /// result, the arena must show and step the very match the run prepared. Logged once per fight if not.
+        /// </summary>
+        void CheckArenaShowsTheFight()
+        {
+            var s = Flow.Current;
+            var inFight = s == RunFlow.State.Countdown || s == RunFlow.State.Playing || s == RunFlow.State.FightOver;
+            if (!inFight || Flow.CurrentMatch == null) { mismatchLogged = false; return; }
+            if (arena.Sim == Flow.CurrentMatch || mismatchLogged) return;
+            mismatchLogged = true;
+            Debug.LogError("[BallBattle] The arena is not showing the Run fight. " + FightLog("expected", Flow.CurrentMatch) + " | " + FightLog("shown", arena.Sim));
+        }
+
+        /// <summary>One line per fight start in the log: seed, both balls' HP and traits (to compare with what the screen showed).</summary>
+        string FightLog(string what, BallBattle.Sim.MatchSim sim)
+        {
+            if (sim == null) return $"[BallBattle] Fight {what}: no match";
+            string Ball(int i)
+            {
+                if (i >= sim.Balls.Count) return "-";
+                var b = sim.Balls[i];
+                var traits = new System.Text.StringBuilder();
+                foreach (var t in b.Traits) traits.Append(traits.Length > 0 ? "," : "").Append(t.Id).Append(t.Level);
+                return $"{b.Weapon.Id} HP {b.Hp:0.##}/{b.MaxHp:0.##} [{traits}]";
+            }
+            var fight = Flow.Run != null ? Flow.Run.FightIndex + 1 : 0;
+            return $"[BallBattle] Fight {fight} {what}: seed {sim.Seed}, tick {sim.Tick}, you {Ball(0)}, enemy {Ball(1)}";
         }
 
         static uint NewSeed() => (uint)UnityEngine.Random.Range(1, int.MaxValue);

@@ -286,7 +286,7 @@ namespace BallBattle.Tests
             you.Flash(0.06f);
             Draw(view, 0f);
             Assert.That(boss.UsesOutlineFlash, Is.True);
-            Assert.That(boss.ActiveFlashRenderer.sprite, Is.SameAs(ProceduralSprites.BallOutline));
+            Assert.That(boss.ActiveFlashRenderer.sprite, Is.SameAs(BallEdges.Source.Edge(art.Get("blade").Ball, 2)), "outline flash = the sprite's own rim");
             Assert.That(boss.ActiveFlashRenderer.enabled, Is.True);
             Assert.That(boss.transform.Find("Flash").GetComponent<SpriteRenderer>().enabled, Is.False, "giant body does not flash whole");
             Assert.That(you.UsesOutlineFlash, Is.False);
