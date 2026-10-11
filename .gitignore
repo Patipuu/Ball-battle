@@ -6,3 +6,9 @@
 node_modules/
 *.log
 .secrets/
+
+# Player builds (BuildScript)
+/Builds/
+
+# WebGL build output (Burst)
+/BallBattleUnity/Data/
