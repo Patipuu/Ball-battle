@@ -72,6 +72,9 @@ namespace BallBattle.View
                 arena.ArenaId = Flow.Run.ArenaId;   // floor tiles and wall colors of this fight's arena
                 arena.Boss = BossLookFor(Flow.Run);
                 arena.StartMatch(sim, "YOU", Flow.Run.IsBossFight ? "BOSS" : "FOE");
+                // Stat cards taken this run: HUD badges with the card icons (DAMAGE, SPEED CAP, MAX HP).
+                var build = Flow.Run.Build;
+                arena.Badges?.SetCardBadges(0, build.DamagePct > 0f, build.SpeedPct > 0f, build.MaxHp > BallBattle.Sim.Run.RunTuning.PlayerStartHp);
                 arena.Paused = true;
             };
             Flow.FightBegan += () =>
@@ -166,16 +169,18 @@ namespace BallBattle.View
         }
 
         /// <summary>
-        /// Boss art for the current fight until the sim knows its bosses (v4): the last boss fight is MIMIC, earlier boss
-        /// fights are SHELL KING; normal fights none.
+        /// Shell King / Mimic art switch. OFF until the sim has those two bosses (v4): today a boss is an ordinary weapon
+        /// with boss stats, so it is drawn with its own pre-drawn x1.5 ball (ball_<id>_48, dark outline), the same sprite
+        /// on Prepare and in the arena. Flip <see cref="BossArtEnabled"/> (and keep SetMimicLook / glow) when v4 lands.
         /// </summary>
+        public static bool BossArtEnabled = false;
+
         public static ArenaView.BossLook BossLookFor(BallBattle.Sim.Run.RunState run)
         {
-            if (run == null || !run.IsBossFight) return ArenaView.BossLook.None;
+            if (!BossArtEnabled || run == null || !run.IsBossFight) return ArenaView.BossLook.None;
             var last = BallBattle.Sim.Run.RunTuning.BossFights[BallBattle.Sim.Run.RunTuning.BossFights.Length - 1];
             return run.FightIndex == last ? ArenaView.BossLook.Mimic : ArenaView.BossLook.ShellKing;
         }
-
         bool mismatchLogged;
 
         /// <summary>

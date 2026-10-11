@@ -27,21 +27,26 @@ namespace BallBattle.View
         public void Add(float amplitudePx, float seconds)
         {
             // Re-capture the rest position when idle, so camera moves made by other code (menus, transitions) are kept.
+            if (!CameraAlive) return;
             if (remaining <= 0f) basePosition = cam.position;
             amplitude = Mathf.Min(MaxAmplitude, Mathf.Max(amplitude * (remaining / Mathf.Max(duration, 0.0001f)), amplitudePx));
             duration = Mathf.Max(seconds, remaining);
             remaining = duration;
         }
 
+        /// <summary>The camera may already be destroyed (game closing mid-fight: FxView.OnDisable runs after it).</summary>
+        bool CameraAlive => cam != null;
+
         public void Stop()
         {
             remaining = 0f;
-            cam.position = basePosition;
+            if (CameraAlive) cam.position = basePosition;
         }
 
         public void Tick(float dt)
         {
             if (remaining <= 0f) return;
+            if (!CameraAlive) { remaining = 0f; return; }
             remaining -= dt;
             if (remaining <= 0f) { Stop(); return; }
 

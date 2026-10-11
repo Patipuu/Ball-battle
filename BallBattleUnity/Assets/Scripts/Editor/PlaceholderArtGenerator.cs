@@ -83,6 +83,10 @@ namespace BallBattle.EditorTools
             }
             foreach (var hud in new[] { "hud/retry_token_on.png", "hud/retry_token_off.png", "hud/icon_antidote.png" })
                 if (File.Exists($"{SpritesFolder}/{hud}")) ConfigureSprite($"{SpritesFolder}/{hud}", new Vector2(0.5f, 0.5f), Vector4.zero);
+            // Balls pre-drawn at x1.2 / x1.35 / x1.5 (ball_sizes/ball_<id>_38|43|48.png): same settings as ball_<id>.png.
+            if (AssetDatabase.IsValidFolder(SpritesFolder + "/ball_sizes"))
+                foreach (var file in Directory.GetFiles(SpritesFolder + "/ball_sizes", "*.png"))
+                    ConfigureSprite(file.Replace('\\', '/'), new Vector2(0.5f, 0.5f), Vector4.zero, readable: true);
             if (AssetDatabase.IsValidFolder(SpritesFolder + "/boss"))
                 foreach (var file in Directory.GetFiles(SpritesFolder + "/boss", "*.png"))
                     ConfigureSprite(file.Replace('\\', '/'), BossPivot, Vector4.zero, readable: true);
@@ -140,6 +144,11 @@ namespace BallBattle.EditorTools
             lib.Traits = traits.ToArray();
             lib.CardFrames = new[] { Real("card/card_frame_common.png"), Real("card/card_frame_uncommon.png"), Real("card/card_frame_rare.png"), Real("card/card_frame_counter.png") };
             lib.CardAntidote = Real("icons/card_antidote.png");
+            lib.CardSpeedCap = Real("icons/card_speed-cap.png");
+            lib.CardMaxHp = Real("icons/card_max-hp.png");
+            lib.CardDamage = Real("icons/card_damage.png");
+            foreach (var (file, sprite) in new[] { ("card_speed-cap", lib.CardSpeedCap), ("card_max-hp", lib.CardMaxHp), ("card_damage", lib.CardDamage) })
+                if (sprite == null) Debug.LogWarning($"[BallBattle] missing icons/{file}.png");
 
             lib.ShellKing = Real("boss/shellking.png");
             lib.ShellKingGlow = Real("boss/shellking_glow.png");
@@ -225,6 +234,9 @@ namespace BallBattle.EditorTools
                 {
                     Id = id,
                     Ball = Pick($"ball_{id}.png"),
+                    Ball38 = Real($"ball_sizes/ball_{id}_38.png"),
+                    Ball43 = Real($"ball_sizes/ball_{id}_43.png"),
+                    Ball48 = Real($"ball_sizes/ball_{id}_48.png"),
                     Blade = Pick($"blade_{id}.png")
                 };
             }

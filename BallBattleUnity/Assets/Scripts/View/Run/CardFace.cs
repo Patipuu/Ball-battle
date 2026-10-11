@@ -35,7 +35,7 @@ namespace BallBattle.View
         {
             Frame = RarityOf(c),
             Stripe = c.Kind == CardKind.Trait ? TraitBadgeView.ColorOf(c.Id) : KindColor(c.Kind),
-            Icon = c.Kind == CardKind.Trait && art != null ? art.TraitIcon(c.Id) : null,
+            Icon = art != null ? art.CardIcon(c) : null,   // traits and the stat cards (DAMAGE, SPEED CAP, MAX HP)
             Title = CardText.Title(c),
             Detail1 = CardText.Detail(c),
             Detail2 = CardText.Detail2(c),

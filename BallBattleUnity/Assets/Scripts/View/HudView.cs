@@ -141,7 +141,7 @@ namespace BallBattle.View
                 SetBar(s.BarLost, left, y, BarWidth * s.LostFraction);
                 SetBar(s.BarFill, left, y, BarWidth * frac);
 
-                var hp = Mathf.CeilToInt(ball.Hp);
+                var hp = BallBattle.View.HpText.Of(ball.Hp);
                 if (hp != s.ShownHp)
                 {
                     s.ShownHp = hp;

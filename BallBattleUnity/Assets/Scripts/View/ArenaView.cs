@@ -172,6 +172,7 @@ namespace BallBattle.View
             {
                 var id = Sim.Balls[i].Weapon.Id;
                 ballViews[i] = BallView.Create(transform, i, id, Art.Get(id), Art.BallFlash, BodyOrderBase + i * 2, BladeOrderBase + i);
+                ballViews[i].ArtLibraryRef = Art;
                 hud.Bind(i, id, i == 0 ? tagA : (i == 1 ? tagB : null));
                 ballViews[i].SetMarked(i == MarkedBall);
             }
@@ -257,7 +258,7 @@ namespace BallBattle.View
                 var b = Sim.Balls[i];
                 var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X, b.Pos.Y), alpha);
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg, alpha);
-                ballViews[i].SetScale(b.Radius / ballViews[i].NativeRadius);   // sim radius 24 (boss) on a 16 px sprite = x1.5
+                ballViews[i].FitRadius(b.Radius);   // x1.2/x1.35/x1.5: pre-drawn sprite at scale 1; other sizes scale the base sprite
                 ballViews[i].Render(pos, angle, b.Weapon.BladeInner + b.BladeShift, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt, b.HasTwinBlade ? b.Weapon.BladeLength * b.TwinBladeScale : 0f, b.Weapon.BladeThickness);
                 statusView.Render(i, b, pos, Sim.ActiveTick);
             }

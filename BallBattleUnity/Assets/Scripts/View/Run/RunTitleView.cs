@@ -30,10 +30,20 @@ namespace BallBattle.View
         {
             gameObject.SetActive(true);
             var p = flow.Progress;
-            stats.Set($"BEST FIGHT {p.BestFight}/8   RUNS WON {p.RunsWon}/{p.RunsPlayed}", Palette.Text);
+            stats.Set(StatsLine(p), Palette.Text);
             continueButton.gameObject.SetActive(flow.HasSavedRun);
         }
 
+        /// <summary>
+        /// "BEST FIGHT b/8   WINS w/p": runs won (ended by beating the last boss) out of runs played (as counted today:
+        /// started and finished or abandoned). Falls back to "WINS w" if the line would not fit the 270 px screen.
+        /// </summary>
+        public static string StatsLine(BallBattle.Sim.Run.ProgressData p)
+        {
+            var best = $"BEST FIGHT {p.BestFight}/{BallBattle.Sim.Run.RunTuning.Fights}   ";
+            var full = best + $"WINS {p.RunsWon}/{p.RunsPlayed}";
+            return full.Length <= TextWrap.MaxCharsOnScreen(1) ? full : best + $"WINS {p.RunsWon}";
+        }
         public void Hide() => gameObject.SetActive(false);
     }
 }

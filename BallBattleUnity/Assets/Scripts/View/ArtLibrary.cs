@@ -14,6 +14,8 @@ namespace BallBattle.View
             public Sprite Ball;
             /// <summary>Horizontal, pivot at the inner end, 9-sliced so it can stretch to any blade length. Null for bladeless weapons.</summary>
             public Sprite Blade;
+            /// <summary>The ball pre-drawn at x1.2 / x1.35 / x1.5 (ball_sizes/ball_&lt;id&gt;_38|43|48.png); null when missing.</summary>
+            public Sprite Ball38, Ball43, Ball48;
         }
 
         /// <summary>Trait icon (14x14), by TraitId.</summary>
@@ -55,6 +57,8 @@ namespace BallBattle.View
         /// <summary>16x16 frames, 9-slice border 4: common, uncommon, rare, counter (dashed).</summary>
         public Sprite[] CardFrames = new Sprite[4];
         public Sprite CardAntidote;
+        /// <summary>Stat card icons (14x14): SPEED CAP, MAX HP, DAMAGE. Also the HUD badges of those cards.</summary>
+        public Sprite CardSpeedCap, CardMaxHp, CardDamage;
 
         [Header("Art v1: bosses (64x64, body centre (32,34) from the top-left, body radius 24)")]
         public Sprite ShellKing;
@@ -78,6 +82,41 @@ namespace BallBattle.View
             throw new ArgumentException($"No art for weapon '{id}'", nameof(id));
         }
 
+        /// <summary>Size factors (vs the 32 px ball) that have a pre-drawn sprite, and that sprite's size in px.</summary>
+        public static readonly (float factor, int pixels)[] SizedBalls = { (1.2f, 38), (1.35f, 43), (1.5f, 48) };
+        const float SizeTolerance = 0.02f;
+
+        /// <summary>
+        /// The ball sprite for a size <paramref name="factor"/> (sim radius / default radius): the pre-drawn _38/_43/_48 for
+        /// x1.2 / x1.35 / x1.5 when present (<paramref name="preSized"/> = true: draw at scale 1), else the base sprite to be
+        /// scaled up as before.
+        /// </summary>
+        public Sprite BallForSize(string weaponId, float factor, out bool preSized)
+        {
+            var w = Get(weaponId);
+            Sprite sized = null;
+            if (Mathf.Abs(factor - 1.2f) < SizeTolerance) sized = w.Ball38;
+            else if (Mathf.Abs(factor - 1.35f) < SizeTolerance) sized = w.Ball43;
+            else if (Mathf.Abs(factor - 1.5f) < SizeTolerance) sized = w.Ball48;
+            preSized = sized != null;
+            return preSized ? sized : w.Ball;
+        }
+
+        /// <summary>
+        /// Icon of a card: the trait's icon or the stat card icons (DAMAGE, SPEED CAP, MAX HP). Null for HEAL and SWAP:
+        /// no icon art yet (SWAP keeps the text-only layout so its long titles never meet the reason tag).
+        /// </summary>
+        public Sprite CardIcon(BallBattle.Sim.Run.Card card)
+        {
+            switch (card.Kind)
+            {
+                case BallBattle.Sim.Run.CardKind.Trait: return TraitIcon(card.Id);
+                case BallBattle.Sim.Run.CardKind.DamageUp: return CardDamage;
+                case BallBattle.Sim.Run.CardKind.SpeedUp: return CardSpeedCap;
+                case BallBattle.Sim.Run.CardKind.MaxHp: return CardMaxHp;
+                default: return null;
+            }
+        }
         /// <summary>Trait icon, or null when the art has none (callers fall back to the drawn badge).</summary>
         public Sprite TraitIcon(string traitId)
         {

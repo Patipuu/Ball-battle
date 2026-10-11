@@ -69,7 +69,7 @@ namespace BallBattle.Tests
             var view = Arena(sim, -1);
             var heavy2 = view.GetBallView(0);
             var heavy1 = view.GetBallView(1);
-            Assert.That(heavy2.Scale, Is.EqualTo(1.35f).Within(0.001f));
+            Assert.That(heavy2.NativeRadius * heavy2.Scale, Is.EqualTo(16f * 1.35f).Within(0.01f), "x1.35 on screen (pre-drawn _43 sprite at scale 1 since 3d)");
             Assert.That(BallView.OutlineFlashScale, Is.EqualTo(1.3f));
             heavy2.Flash(0.06f);
             heavy1.Flash(0.06f);
@@ -402,7 +402,7 @@ namespace BallBattle.Tests
         // ---- 5. Prepare HP = the fight's HP ----
 
         static (string you, string enemy) Expected(MatchSim m) =>
-            ($"HP {Mathf.CeilToInt(m.Balls[0].Hp)}/{Mathf.CeilToInt(m.Balls[0].MaxHp)}", PrepareView.EnemyHpText(m.Balls[1].Hp, m.Balls[1].MaxHp));
+            ($"HP {HpText.Of(m.Balls[0].Hp)}/{HpText.Of(m.Balls[0].MaxHp)}", PrepareView.EnemyHpText(m.Balls[1].Hp, m.Balls[1].MaxHp));
 
         void AssertPrepareMatchesFight(PrepareView v, RunFlow f, string label)
         {

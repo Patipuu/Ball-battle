@@ -19,27 +19,51 @@ MonoBehaviour:
   - Id: blade
     Ball: {fileID: 21300000, guid: dd2813e1a8215e64aa10a4f8ccb762be, type: 3}
     Blade: {fileID: 21300000, guid: e6aa047c93d999440af2c0ea5f58708c, type: 3}
+    Ball38: {fileID: 21300000, guid: b73b6f00f8c91704ab8ce19015305fe0, type: 3}
+    Ball43: {fileID: 21300000, guid: 8476ef0ddfb06de44bfdd4dfd3a76fcc, type: 3}
+    Ball48: {fileID: 21300000, guid: 38e2f0f116808b84cb90c0ff673e1894, type: 3}
   - Id: fang
     Ball: {fileID: 21300000, guid: 3070eb54c8ffbbe4985a20e744b91067, type: 3}
     Blade: {fileID: 21300000, guid: 6e3468b30834b9c41926d4668e427d42, type: 3}
+    Ball38: {fileID: 21300000, guid: 6e4a55e6014fd1047814c8927c517cf9, type: 3}
+    Ball43: {fileID: 21300000, guid: 9a17585091cff854c9b869301014292c, type: 3}
+    Ball48: {fileID: 21300000, guid: 1566b3d815cbb8e4092ad489ac3e4df7, type: 3}
   - Id: pike
     Ball: {fileID: 21300000, guid: f13d206f99017a9419c3c95efab35b6a, type: 3}
     Blade: {fileID: 21300000, guid: 673b8709f1adee54187a28ba3c6046ec, type: 3}
+    Ball38: {fileID: 21300000, guid: 54369f5a8d3ce7e438aece19df6dadc5, type: 3}
+    Ball43: {fileID: 21300000, guid: d5906ea067e8939408e37c8a229c15d9, type: 3}
+    Ball48: {fileID: 21300000, guid: 88d4565d1d1321b4f8cac7ae392b2422, type: 3}
   - Id: brawler
     Ball: {fileID: 21300000, guid: 116133b1c3162ee4c9de67048f383cd9, type: 3}
     Blade: {fileID: 0}
+    Ball38: {fileID: 21300000, guid: e5ba240a0de8cec439720525e7fff939, type: 3}
+    Ball43: {fileID: 21300000, guid: 70e82ee1935f33b4bb1508524959e527, type: 3}
+    Ball48: {fileID: 21300000, guid: ceb59ef5aafb00f439195cb20e4a580b, type: 3}
   - Id: volley
     Ball: {fileID: 21300000, guid: a87895b48296dfd4b97e69d78962c94b, type: 3}
     Blade: {fileID: 21300000, guid: 9bf90c6c85a8498478ab4f590b908d3f, type: 3}
+    Ball38: {fileID: 21300000, guid: 1c7a04f0c92abb4429de7c363916c7c3, type: 3}
+    Ball43: {fileID: 21300000, guid: 9312d3edd9ad02a43be5bc0a6cb93989, type: 3}
+    Ball48: {fileID: 21300000, guid: c63b82f94ee13f24e8ec72e3ca1cb754, type: 3}
   - Id: venom
     Ball: {fileID: 21300000, guid: 6881cf1d1805530449d10ba9a2be890c, type: 3}
     Blade: {fileID: 21300000, guid: 391670376392c8e4496445ed3fc5cddc, type: 3}
+    Ball38: {fileID: 21300000, guid: 4deda465c19ffae48b0944e71c7942c0, type: 3}
+    Ball43: {fileID: 21300000, guid: aede5eb20aad5f045b2005282f1d98f4, type: 3}
+    Ball48: {fileID: 21300000, guid: 1c544d7326e1fc64c8d2877b305d4ca0, type: 3}
   - Id: aegis
     Ball: {fileID: 21300000, guid: 4a30db3248b007840919202df27915b5, type: 3}
     Blade: {fileID: 21300000, guid: 1805964ec549ca44f832e0c2b5aa5984, type: 3}
+    Ball38: {fileID: 21300000, guid: 193a7b98236102648b41f7c901064461, type: 3}
+    Ball43: {fileID: 21300000, guid: 13c3e4413ea21b3489f89566da3de2d1, type: 3}
+    Ball48: {fileID: 21300000, guid: 46667944023ac534cbec47e74c0197c7, type: 3}
   - Id: rig
     Ball: {fileID: 21300000, guid: 79ab4999df1f82c4f8179c9beb709dcf, type: 3}
     Blade: {fileID: 21300000, guid: 4dd4e5981316bc9469a53237a9d1c1c6, type: 3}
+    Ball38: {fileID: 21300000, guid: fe77091624d06214dad6bfc377297457, type: 3}
+    Ball43: {fileID: 21300000, guid: e277dd46d541b1c4a84829b388d21a76, type: 3}
+    Ball48: {fileID: 21300000, guid: da7d0fccfd89e604c99c317b4d862c0a, type: 3}
   RetryTokenOn: {fileID: 21300000, guid: 4fdaa4e9339a5a14994bf93e35676fbe, type: 3}
   RetryTokenOff: {fileID: 21300000, guid: 3a3b3d3f7621c6e498ed47f67dcc8e5c, type: 3}
   IconAntidote: {fileID: 21300000, guid: 2fdd769ffc0576a45a7eb9bfa53c5c29, type: 3}
@@ -70,6 +94,9 @@ MonoBehaviour:
   - {fileID: 21300000, guid: d1b1adf4c14f7cb4fa3783679d3fcb04, type: 3}
   - {fileID: 21300000, guid: dce43d1ce88bfb44cae503150553341f, type: 3}
   CardAntidote: {fileID: 21300000, guid: 066c8a823ede10841a504647fc6c6f1f, type: 3}
+  CardSpeedCap: {fileID: 21300000, guid: 2bda3733ed1b1e74a951f524188c1e02, type: 3}
+  CardMaxHp: {fileID: 21300000, guid: 37f454ae1ded1ed4f9a9ee9971bf1c4c, type: 3}
+  CardDamage: {fileID: 21300000, guid: 932c4643b37bc5448a5d87fab43a671b, type: 3}
   ShellKing: {fileID: 21300000, guid: 0c6350efcf1dbc14ebb995cbfd0bfc2f, type: 3}
   ShellKingGlow: {fileID: 21300000, guid: cfc8f4e536b1cab449cd1037c61b8bac, type: 3}
   Mimic:

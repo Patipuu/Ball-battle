@@ -129,16 +129,56 @@ namespace BallBattle.View
         static Color32 Dim(Color32 c, float k) => new Color32((byte)(c.r * k), (byte)(c.g * k), (byte)(c.b * k), c.a);
 
         /// <summary>Rebuild the badges for a new match. Ball 0 is the top side, ball 1 the bottom.</summary>
+        /// <summary>HUD stat row height of a side (ball 0 top, ball 1 bottom).</summary>
+        static float BaseY(int side) => side == 0 ? 163f : -219f;
+
+        readonly int[] slotsUsed = new int[2];
+
+        /// <summary>Badge ids of the stat cards (DAMAGE, SPEED CAP, MAX HP) on the HUD.</summary>
+        public const string DamageBadge = "card-damage";
+        public const string SpeedCapBadge = "card-speed-cap";
+        public const string MaxHpBadge = "card-max-hp";
+
+        /// <summary>
+        /// Stat card badges after the trait icons of <paramref name="side"/>: one per card type taken (DAMAGE, SPEED CAP,
+        /// MAX HP), drawn with the same 14x14 icons as the cards. Call after Bind (Run mode, from the build).
+        /// </summary>
+        public void SetCardBadges(int side, bool damage, bool speedCap, bool maxHp)
+        {
+            if (root == null || side < 0 || side > 1) return;
+            var cards = new[] { (damage, DamageBadge, art.CardDamage), (speedCap, SpeedCapBadge, art.CardSpeedCap), (maxHp, MaxHpBadge, art.CardMaxHp) };
+            foreach (var (on, id, icon) in cards)
+            {
+                if (!on || icon == null || IconOf(side, id) != null) continue;
+                var slot = slotsUsed[side]++;
+                var right = 115f - slot * (IconSize + Spacing);
+                var left = right - IconSize;
+                var bottom = BaseY(side) - 2f;
+                var go = new GameObject("Icon_" + id);
+                go.transform.SetParent(root, false);
+                go.transform.localPosition = new Vector3(left + IconSize * 0.5f, bottom + IconSize * 0.5f, 0f);
+                var box = go.AddComponent<SpriteRenderer>();
+                box.sprite = icon;
+                box.sortingOrder = Order + 1;
+                var slash = new GameObject("Slash");   // stat cards are never "spent": empty, kept for SetSpent
+                slash.transform.SetParent(root, false);
+                slash.SetActive(false);
+                badges.Add(new Badge { Side = side, Id = id, Box = box, BoxColor = new Color32(255, 255, 255, 255), CodeColor = Palette.Text, Slash = slash });
+            }
+        }
+
         public void Bind(MatchSim sim)
         {
             if (root != null) DestroyNow(root.gameObject);
             badges.Clear();
+            slotsUsed[0] = slotsUsed[1] = 0;
             root = new GameObject("Badges").transform;
             root.SetParent(transform, false);
             for (var side = 0; side < 2 && side < sim.Balls.Count; side++)
             {
                 var traits = sim.Balls[side].Traits;
-                var baseY = side == 0 ? 163f : -219f;   // HudView stat row
+                var baseY = BaseY(side);
+                slotsUsed[side] = traits.Length;
                 for (var i = 0; i < traits.Length; i++)
                 {
                     var st = StyleFor(traits[i].Id);

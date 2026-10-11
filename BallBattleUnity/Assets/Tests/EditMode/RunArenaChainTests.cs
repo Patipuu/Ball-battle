@@ -144,7 +144,7 @@ namespace BallBattle.Tests
                 Assert.That(you.Weapon.Id, Is.EqualTo(BrawlerRule.WeaponId));
                 Assert.That(you.Traits.OfType<ThornsTrait>().Any(), Is.True);
             }
-            Assert.That(Mathf.CeilToInt(you.Hp).ToString(), Is.EqualTo(shownHp), "countdown HP = Prepare HP");
+            Assert.That(HpText.Of(you.Hp).ToString(), Is.EqualTo(shownHp), "countdown HP = Prepare HP");
             Assert.That(rig.Arena.Hud.HpText(0), Is.EqualTo(shownHp), "HUD during the countdown");
             var hp0 = you.Hp;
 
@@ -226,7 +226,7 @@ namespace BallBattle.Tests
             var next = run.CreateMatch().Balls[0];
             Assert.That(report.MaxHpNext, Is.EqualTo(next.MaxHp), "HP NEXT FIGHT uses the real max HP");
             Assert.That(report.MaxHpNext, Is.EqualTo(run.Build.MaxHp * (1f + TraitTuning.HeavyMaxHpPct[1])).Within(0.01f), "Heavy 2: not /100");
-            Assert.That(report.CarryLine, Does.Contain("/" + Mathf.CeilToInt(next.MaxHp)));
+            Assert.That(report.CarryLine, Does.Contain("/" + HpText.Of(next.MaxHp)));
         }
 
         [Test]
@@ -374,13 +374,14 @@ namespace BallBattle.Tests
             stats.Add(new SimEvent { Type = SimEventType.Heal, A = 0, Value = 10f });
             stats.Add(new SimEvent { Type = SimEventType.Hit, A = 1, B = 0, Value = 70f });   // only 50 left: 20 overkill
             Assert.That(stats.Taken(0), Is.EqualTo(110f));
-            Assert.That(stats.Dealt(1), Is.EqualTo(110f));
+            Assert.That(stats.DealtBySource(1), Is.EqualTo(110f));
             stats.Add(new SimEvent { Type = SimEventType.StatusTick, A = 0, B = 1, Value = 5f });   // already at 0
             Assert.That(stats.Taken(0), Is.EqualTo(110f));
             stats.Add(new SimEvent { Type = SimEventType.Heal, A = 0, Value = 20f });   // Second Wind save: back to 20
             stats.Add(new SimEvent { Type = SimEventType.WallBounce, A = 0, Value = 25f });
             Assert.That(stats.Taken(0), Is.EqualTo(130f), "after a save, counts again up to the HP it got back");
-            Assert.That(stats.Dealt(1), Is.EqualTo(110f), "arena damage is nobody's");
+            Assert.That(stats.DealtBySource(1), Is.EqualTo(110f), "arena damage is nobody's");
+            Assert.That(stats.Dealt(1), Is.EqualTo(stats.Taken(0)), "DMG DEALT = everything the opponent lost");
         }
     }
 }

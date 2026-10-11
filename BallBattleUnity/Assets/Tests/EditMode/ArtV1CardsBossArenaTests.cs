@@ -150,7 +150,7 @@ namespace BallBattle.Tests
             Assert.That(v.CardIcon(0).sprite, Is.SameAs(art.TraitIcon(VampireTrait.TraitId)));
             Assert.That(v.CardIcon(0).bounds.size.x, Is.EqualTo(28f).Within(0.01f), "icon at 2x");
             Assert.That(v.CardIcon(0).bounds.max.x, Is.LessThan(v.CardTitleText(0).WorldBounds.xMin), "icon left of the title");
-            Assert.That(v.CardIcon(2).enabled, Is.False, "no icon on non-trait cards");
+            Assert.That(v.CardIcon(2).sprite, Is.SameAs(art.CardMaxHp), "stat cards have their icon too (3d)");
 
             var detail = v.CardDetail(0, 1);
             var text = detail.Text;
@@ -265,15 +265,23 @@ namespace BallBattle.Tests
         [Test]
         public void RunPicksShellKingForEarlierBossesAndMimicForTheLast()
         {
+            // 3d: boss art is OFF until the sim has Shell King / Mimic (v4); the switch still picks them when enabled.
             var run = RunState.Start(62, FirstChoice(62), new ProgressData());
-            run.FightIndex = 0;
-            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.None));
             run.FightIndex = RunTuning.BossFights[0];
-            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.ShellKing));
-            run.FightIndex = RunTuning.BossFights[RunTuning.BossFights.Length - 1];
-            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.Mimic));
+            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.None), "off before v4");
+            var was = RunController.BossArtEnabled;
+            try
+            {
+                RunController.BossArtEnabled = true;
+                run.FightIndex = 0;
+                Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.None));
+                run.FightIndex = RunTuning.BossFights[0];
+                Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.ShellKing));
+                run.FightIndex = RunTuning.BossFights[RunTuning.BossFights.Length - 1];
+                Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.Mimic));
+            }
+            finally { RunController.BossArtEnabled = was; }
         }
-
         // ---- arenas ----
 
         [Test]

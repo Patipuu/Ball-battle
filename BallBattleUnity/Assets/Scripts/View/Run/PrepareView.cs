@@ -210,8 +210,8 @@ namespace BallBattle.View
         /// <summary>Enemy HP line: the HP the fight really starts with (Heavy, Glass Cannon, boss HP all applied).</summary>
         public static string EnemyHpText(float hp, float maxHp)
         {
-            var h = (int)Math.Ceiling(hp);
-            var m = (int)Math.Ceiling(maxHp);
+            var h = HpText.Of(hp);
+            var m = HpText.Of(maxHp);
             return h == m ? $"HP {m}" : $"HP {h}/{m}";
         }
 
@@ -488,8 +488,10 @@ namespace BallBattle.View
 
         void SetBall(SpriteRenderer icon, PixelText name, string weaponId, float scale)
         {
-            icon.sprite = art.Get(weaponId).Ball;
-            icon.transform.localScale = new Vector3(scale, scale, 1f);
+            // Same sprite as in the arena: the pre-drawn _38/_43/_48 ball for x1.2/x1.35/x1.5 (bosses: _48) at x1, else scaled.
+            icon.sprite = art.BallForSize(weaponId, scale, out var preSized);
+            var s = preSized ? 1f : scale;
+            icon.transform.localScale = new Vector3(s, s, 1f);
             name.Set(RunUi.WeaponName(weaponId), Palette.Look(weaponId).Body);
         }
 

@@ -47,6 +47,7 @@ namespace BallBattle.View
 
             v.body = go.AddComponent<SpriteRenderer>();
             v.body.sprite = art.Ball;
+            v.weaponArt = art;
             v.body.sortingOrder = bodyOrder;
 
             var f = new GameObject("Flash");
@@ -107,6 +108,48 @@ namespace BallBattle.View
             : body != null && body.sprite != null ? body.sprite.rect.width / body.sprite.pixelsPerUnit * 0.5f : ProceduralSprites.BallSize * 0.5f;
 
         float bodyRadiusOverride;
+        ArtLibrary.WeaponArt weaponArt;
+        /// <summary>The body was set by SetBodySprite (boss art): FitRadius only scales, never swaps it.</summary>
+        bool customBody;
+        float fittedRadius = -1f;
+
+        /// <summary>Radius in px of the base (x1) ball sprite: the size the default sim radius maps onto.</summary>
+        float BaseRadius => weaponArt.Ball != null ? weaponArt.Ball.rect.width / weaponArt.Ball.pixelsPerUnit * 0.5f : ProceduralSprites.BallSize * 0.5f;
+
+        /// <summary>True when the body shows a pre-drawn size sprite (ball_&lt;id&gt;_38|43|48) at scale 1.</summary>
+        public bool UsesSizedSprite { get; private set; }
+
+        /// <summary>
+        /// Show the ball at sim radius <paramref name="simRadius"/>. x1.2 / x1.35 / x1.5 use the pre-drawn _38/_43/_48 sprite
+        /// at scale 1 (marker and outline flash then follow that sprite); other sizes scale the base sprite as before;
+        /// a missing size sprite falls back to scaling the base one.
+        /// </summary>
+        public void FitRadius(float simRadius)
+        {
+            if (!customBody && !Mathf.Approximately(simRadius, fittedRadius))
+            {
+                fittedRadius = simRadius;
+                var art = ArtLibraryRef;
+                Sprite sprite = weaponArt.Ball;
+                var preSized = false;
+                if (art != null && weaponArt.Id != null) sprite = art.BallForSize(weaponArt.Id, simRadius / BaseRadius, out preSized);
+                if (sprite != null && sprite != body.sprite) ApplyBody(sprite);
+                bodyRadiusOverride = preSized ? simRadius : 0f;   // pre-sized: the sim radius maps onto this sprite at x1
+                UsesSizedSprite = preSized;
+                scaleDirty = true;
+            }
+            SetScale(simRadius / NativeRadius);
+        }
+
+        /// <summary>Library the sized sprites come from (set by ArenaView / tests).</summary>
+        public ArtLibrary ArtLibraryRef { get; set; }
+
+        void ApplyBody(Sprite sprite)
+        {
+            body.sprite = sprite;
+            if (outlineFlash != null) outlineFlash.sprite = BallEdges.Source.Edge(sprite, 2);
+            if (edgeFlash != null) edgeFlash.sprite = BallEdges.Source.Edge(sprite, 1);
+        }
         SpriteRenderer glow;
         float glowRemaining, glowDuration;
 
@@ -118,10 +161,10 @@ namespace BallBattle.View
         public void SetBodySprite(Sprite sprite, float bodyRadiusPixels)
         {
             if (sprite == null) return;
-            body.sprite = sprite;
+            ApplyBody(sprite);
             bodyRadiusOverride = bodyRadiusPixels;
-            if (outlineFlash != null) outlineFlash.sprite = BallEdges.Source.Edge(sprite, 2);
-            if (edgeFlash != null) edgeFlash.sprite = BallEdges.Source.Edge(sprite, 1);
+            customBody = true;
+            UsesSizedSprite = false;
             scaleDirty = true;   // the next SetScale re-applies even if the value is the same (Scale stays valid meanwhile)
         }
 
@@ -210,7 +253,12 @@ namespace BallBattle.View
         }
 
         /// <summary>Top edge of the ball's topmost drawn pixel row above its centre, whole native px (measured on the sprite).</summary>
-        public int VisibleTopPixels => Mathf.Max(1, Mathf.RoundToInt((NativeRadius - DiscOf(body != null ? body.sprite : null).topInset) * shownScale));
+        public int VisibleTopPixels => Mathf.Max(1, Mathf.RoundToInt((SpriteTopAbovePivot - DiscOf(body != null ? body.sprite : null).topInset) * shownScale));
+
+        /// <summary>Distance from the pivot to the top edge of the body sprite (px at scale 1): the drawn sprite, whatever its size.</summary>
+        float SpriteTopAbovePivot => body != null && body.sprite != null
+            ? (body.sprite.rect.height - body.sprite.pivot.y) / body.sprite.pixelsPerUnit
+            : ProceduralSprites.BallSize * 0.5f;
 
         /// <summary>Radius of the drawn disc on screen (native px), measured on the sprite.</summary>
         public float VisibleRadius => DiscOf(body != null ? body.sprite : null).radius * shownScale;

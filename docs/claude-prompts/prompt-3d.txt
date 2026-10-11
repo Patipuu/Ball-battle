@@ -1,0 +1,35 @@
+Prompt 3d: sửa lỗi sau test build 9434c1f + art v1.1 (chỉ View/, Editor/, Tests/)
+
+Luật chạy: KHÔNG sửa Sim/, SimVersion giữ 3. Không commit, không xoá file. Chạy cả SimTests và EditMode tests sau khi làm xong; nếu test fail thì dừng và ghi lại. Báo cáo vào docs/claude-runs/3d.md (đã làm gì, file sửa, kết quả test, điểm cần quyết).
+
+1. DMG DEALT / DMG TAKEN trên màn kết quả (Run/FightReport.cs, FightStats).
+   Lỗi: hạ KO đối thủ 100 HP mà ghi 104.8; trận 1 (seed 1791713962) đối thủ mất 95 HP nhưng ghi 105. Trận boss lại đúng.
+   Luật đã chốt: số liệu = HP thực bị trừ, không tính phần dư của đòn cuối, tổng phải khớp thanh HP (start HP + heal - end HP).
+   Hướng kiểm:
+   - Count() chỉ giới hạn khi `tracking` = true. Kiểm xem trận thường có thật sự bật tracking và khởi tạo hp[] từ match đúng lúc (Stats.Reset(match)) không, hay chỉ trận boss có.
+   - Kiểm có đếm trùng không: cùng một lượng sát thương có thể vừa có Hit/ProjectileHit vừa có Damage (reflect, thorns), hoặc WallBounce/ObstacleHit ra event nhưng Sim không thật sự trừ HP; sát thương bị khiên/Aegis/parry chặn có event với Value trước khi chặn không.
+   - Đọc MatchSim.Damage.cs để biết event nào tương ứng với HP bị trừ thật; nếu cần, so trực tiếp HP của match ở đầu và cuối trận.
+   Thêm test: chạy lại trận 1 của seed 1791713962 và vài trận ngẫu nhiên, assert Dealt(0) == HP đầu của đối thủ + heal của đối thủ - HP cuối của đối thủ (sai số 0.01), và tương tự cho Taken.
+
+2. NullReferenceException trong ScreenShake.Stop (gọi từ FxView.OnDisable) khi đóng game lúc đang đánh. `cam` đã bị huỷ lúc thoát; Stop() phải kiểm cam còn sống trước khi đặt lại vị trí. Thêm test nếu được.
+
+3. Làm tròn HP hiển thị: làm tròn XUỐNG, nhưng bóng còn sống (HP > 0) luôn hiện tối thiểu 1. Áp dụng mọi chỗ hiện HP (HUD, Prepare, màn kết quả, HP NEXT FIGHT). Ví dụ 97.2 hiện 97, 0.4 hiện 1, 0 hiện 0. Tìm hết chỗ đang dùng Ceil/Round cho HP. Thêm test.
+
+4. Sprite bóng theo cỡ: Art đã đặt `Assets/Art/Sprites/ball_sizes/ball_<id>_<N>.png`, N = 38, 43, 48 (vẽ sẵn ở đúng cỡ).
+   - Generator: import giống ball_<id>.png (PPU 1, Point, không nén, không mipmap, pivot giữa, Read/Write bật), đưa vào ArtLibrary.
+   - BallView chọn sprite theo hệ số kích thước so với cỡ gốc: 1.2 dùng _38, 1.35 dùng _43, 1.5 dùng _48, scale vẽ = 1. Các hệ số khác giữ cách phóng to cũ. Nếu thiếu file thì dùng sprite gốc phóng to.
+   - Marker người chơi và nháy viền (SpriteOutlineEdgeSource) phải lấy từ sprite đang hiển thị.
+
+5. Sprite boss trước v4: boss trận 3 là vũ khí thường mang chỉ số boss, nên dùng `ball_<id>_48.png` của chính vũ khí đó, có viền tối. TẮT việc gán shellking/mimic trong RunController.BossLookFor cho tới khi Sim có 2 boss này (v4); giữ code SetMimicLook và glow để dùng sau. Màn Prepare và trong sân phải cùng một sprite boss. Thêm test.
+
+6. Icon thẻ chỉ số: `Assets/Art/Sprites/icons/card_speed-cap.png`, `card_max-hp.png`, `card_damage.png` (14x14).
+   - Import giống các icon trait, đưa vào ArtLibrary.
+   - Thẻ SPEED CAP, MAX HP, DAMAGE ở Prepare dùng icon này (giống icon trait trên thẻ).
+   - HUD có huy hiệu cho cả 3 thẻ này, dùng chính các icon đó (hiện SPEED CAP chưa có huy hiệu).
+   Thêm test: mọi loại thẻ trong pool đều có icon.
+
+7. Sau khi sửa Generator, chạy lại BallBattle.EditorTools.PlaceholderArtGenerator.Run (batchmode được). Nếu Unity crash lúc thoát thì kiểm lại .meta của file mới và ArtLibrary rồi ghi vào báo cáo.
+
+8. Ô Runs ở màn Run Mode: đang hiện số run đã bắt đầu. Đổi thành "WINS <thắng>/<đã chơi>", ví dụ "WINS 3/12". Nếu không đủ chỗ trong 270 px thì chỉ hiện "WINS <thắng>". Nếu save chưa đếm số run thắng thì thêm trường đếm, tăng khi run kết thúc bằng thắng boss cuối. Thêm trường theo kiểu tương thích ngược: save cũ đọc ra 0, KHÔNG tăng SaveData.CurrentVersion; nếu bắt buộc phải tăng thì dừng và ghi vào báo cáo. "Đã chơi" chỉ tính run đã bắt đầu như hiện tại. Thêm test.
+
+Không làm trong đợt này (để v4): REROLL tăng giá, event TraitTriggered, boss Shell King/Mimic thật, độ hiếm thẻ thành dữ liệu.

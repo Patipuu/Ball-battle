@@ -196,9 +196,9 @@ namespace BallBattle.Tests
             var you = real.Balls[0];
             var foe = real.Balls[1];
             Assert.That(you.MaxHp, Is.GreaterThan(run.Build.MaxHp), "Heavy adds HP at spawn");
-            Assert.That(v.YouStats, Does.StartWith($"HP {Mathf.CeilToInt(you.Hp)}/{Mathf.CeilToInt(you.MaxHp)}"));
+            Assert.That(v.YouStats, Does.StartWith($"HP {HpText.Of(you.Hp)}/{HpText.Of(you.MaxHp)}"));
             Assert.That(v.EnemyStats, Is.EqualTo(PrepareView.EnemyHpText(foe.Hp, foe.MaxHp)));
-            Assert.That(v.EnemyStats, Does.Contain(Mathf.CeilToInt(foe.MaxHp).ToString()));
+            Assert.That(v.EnemyStats, Does.Contain(HpText.Of(foe.MaxHp).ToString()));
 
             Assert.That(v.ArenaLabel, Is.EqualTo("ARENA " + ArenaRegistry.Get(run.ArenaId).DisplayName));
             Assert.That(v.ArenaPreviewPieces, Is.GreaterThanOrEqualTo(2), "floor + wall at least");
@@ -280,13 +280,14 @@ namespace BallBattle.Tests
             var boss = view.GetBallView(1);
             Assert.That(boss.GetComponent<SpriteRenderer>().bounds.size.x, Is.EqualTo(RunTuning.BossRadius * 2f).Within(0.01f));
             Assert.That(you.GetComponent<SpriteRenderer>().bounds.size.x, Is.EqualTo(sim.Balls[0].Radius * 2f).Within(0.01f));
-            Assert.That(boss.Scale, Is.GreaterThan(you.Scale));
+            Assert.That(boss.NativeRadius * boss.Scale, Is.GreaterThan(you.NativeRadius * you.Scale), "bigger on screen (pre-drawn _48 at scale 1 since 3d)");
 
             boss.Flash(0.06f);
             you.Flash(0.06f);
             Draw(view, 0f);
             Assert.That(boss.UsesOutlineFlash, Is.True);
-            Assert.That(boss.ActiveFlashRenderer.sprite, Is.SameAs(BallEdges.Source.Edge(art.Get("blade").Ball, 2)), "outline flash = the sprite's own rim");
+            Assert.That(boss.ActiveFlashRenderer.sprite, Is.SameAs(BallEdges.Source.Edge(boss.BodySprite, 2)), "outline flash = the rim of the sprite shown (ball_blade_48 since 3d)");
+            Assert.That(boss.BodySprite, Is.SameAs(art.Get("blade").Ball48));
             Assert.That(boss.ActiveFlashRenderer.enabled, Is.True);
             Assert.That(boss.transform.Find("Flash").GetComponent<SpriteRenderer>().enabled, Is.False, "giant body does not flash whole");
             Assert.That(you.UsesOutlineFlash, Is.False);

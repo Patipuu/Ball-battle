@@ -64,8 +64,9 @@ namespace BallBattle.Tests
                 if (!sim.Balls[i].Alive) Assert.That(stats.Taken(i), Is.LessThanOrEqualTo(startHp[i] + healed[i] + 0.01f), $"ball {i}: never more than it had");
             }
             Assert.That(stats.Dealt(0), Is.GreaterThan(0f));
-            Assert.That(stats.Dealt(0), Is.LessThanOrEqualTo(stats.Taken(1) + 0.01f), "what you dealt is part of what the enemy took");
-            Assert.That(stats.Dealt(1), Is.LessThanOrEqualTo(stats.Taken(0) + 0.01f));
+            Assert.That(stats.DealtBySource(0), Is.LessThanOrEqualTo(stats.Taken(1) + 0.01f), "what you caused is part of what the enemy lost");
+            Assert.That(stats.Dealt(0), Is.EqualTo(stats.Taken(1)), "DMG DEALT = everything the enemy lost");
+            Assert.That(stats.DealtBySource(1), Is.LessThanOrEqualTo(stats.Taken(0) + 0.01f));
         }
 
         // ---- Flow: FightOver → FightResult → Prepare, report read from the finished fight ----
@@ -188,7 +189,7 @@ namespace BallBattle.Tests
             {
                 v.Show(r);
                 Assert.That(v.TitleText, Is.EqualTo(r.Title));
-                Assert.That(v.Value(0), Is.EqualTo($"{Mathf.CeilToInt(r.HpLeft)}/{Mathf.CeilToInt(r.MaxHpInFight)}"));
+                Assert.That(v.Value(0), Is.EqualTo($"{HpText.Of(r.HpLeft)}/{HpText.Of(r.MaxHpInFight)}"));
                 Assert.That(v.Value(1), Is.EqualTo(FightReport.Number(r.DamageDealt)));
                 Assert.That(v.Value(2), Is.EqualTo(FightReport.Number(r.DamageTaken)));
                 Assert.That(v.Value(3), Does.StartWith("+" + r.CoinsGained));

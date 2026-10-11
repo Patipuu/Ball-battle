@@ -27,8 +27,14 @@ namespace BallBattle.View
             for (var i = 0; i < 2; i++) hp[i] = match != null && i < match.Balls.Count ? Mathf0(match.Balls[i].Hp) : 0f;
         }
 
-        /// <summary>Damage ball <paramref name="i"/> (0 = player) dealt to others.</summary>
-        public float Dealt(int i) => i >= 0 && i < 2 ? dealt[i] : 0f;
+        /// <summary>
+        /// DMG DEALT of ball <paramref name="i"/> (0 = player): ALL the HP its opponent lost this fight (hits, poison, reflect,
+        /// arena), symmetric with Taken = start HP + heals - end HP of the opponent, so it matches the opponent's HP bar.
+        /// </summary>
+        public float Dealt(int i) => i == 0 ? Taken(1) : i == 1 ? Taken(0) : 0f;
+
+        /// <summary>Only the part of <see cref="Dealt"/> that ball <paramref name="i"/> itself caused (arena damage excluded).</summary>
+        public float DealtBySource(int i) => i >= 0 && i < 2 ? dealt[i] : 0f;
 
         /// <summary>HP ball <paramref name="i"/> lost to every source (enemy, poison, reflect, arena).</summary>
         public float Taken(int i) => i >= 0 && i < 2 ? taken[i] : 0f;
@@ -203,7 +209,7 @@ namespace BallBattle.View
             get
             {
                 if (RunOver) return "";
-                var hp = $"HP NEXT FIGHT {Ceil(HpNext)}/{Ceil(MaxHpNext)}";
+                var hp = "HP NEXT FIGHT " + HpText.Pair(HpNext, MaxHpNext);
                 if (Outcome == FightOutcome.Win || IsRetry) return hp;
                 return $"{hp}  LIVES {LivesAfter}";
             }
@@ -213,7 +219,7 @@ namespace BallBattle.View
 
         public string NextHeader => $"NEXT: FIGHT {NextFightNumber}/{RunTuning.Fights}" + (NextIsBoss ? "  GIANT BOSS" : "") + (IsRetry ? "  RETRY" : "");
 
-        public string NextStats => $"HP {Ceil(NextEnemyHp)}   ARENA {ArenaRegistry.Get(NextArenaId).DisplayName}";
+        public string NextStats => $"HP {HpText.Of(NextEnemyHp)}   ARENA {ArenaRegistry.Get(NextArenaId).DisplayName}";
 
         public string NextWeaponName => NextWeaponId != null ? WeaponNames.Of(NextWeaponId) : "";
 
@@ -223,7 +229,6 @@ namespace BallBattle.View
             return r.ToString(r % 1f == 0f ? "0" : "0.0", System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        static int Ceil(float v) => (int)System.Math.Ceiling(v);
         static int Pct(float a, float b) => b > 0f ? (int)System.Math.Round(a / b * 100f) : 0;
     }
 }

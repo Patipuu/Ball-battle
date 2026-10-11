@@ -130,7 +130,7 @@ namespace BallBattle.View
         /// <summary>Build stats with the HP the fight will really start with (after Heavy, Glass Cannon...).</summary>
         public static string Stats(RunBuild b, float hp, float maxHp)
         {
-            var s = $"HP {(int)System.Math.Ceiling(hp)}/{(int)System.Math.Ceiling(maxHp)}";
+            var s = "HP " + HpText.Pair(hp, maxHp);
             if (b.DamagePct > 0f) s += $"  DMG +{Pct(b.DamagePct)}%";
             if (b.SpeedPct > 0f) s += $"  SPD +{Pct(b.SpeedPct)}%";
             return s;

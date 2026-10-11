@@ -91,7 +91,7 @@ namespace BallBattle.View
             title.Set(r.Title, accent);
             how.Set(r.HowLine, Palette.TextDim);
 
-            values[0].Set($"{Mathf.CeilToInt(r.HpLeft)}/{Mathf.CeilToInt(r.MaxHpInFight)}", r.HpLeft > 0f ? Palette.Text : Palette.HpLost);
+            values[0].Set(HpText.Pair(r.HpLeft, r.MaxHpInFight), r.HpLeft > 0f ? Palette.Text : Palette.HpLost);
             values[1].Set(FightReport.Number(r.DamageDealt), Palette.Text);
             values[2].Set(FightReport.Number(r.DamageTaken), Palette.Text);
             values[3].Set($"+{r.CoinsGained}  TOTAL {r.CoinsTotal}", Palette.WallWarning);
