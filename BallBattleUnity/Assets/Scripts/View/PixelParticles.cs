@@ -13,7 +13,7 @@ namespace BallBattle.View
 
         SpriteRenderer[] renderers;
         Vector2[] pos, vel;
-        float[] life, maxLife;
+        float[] life, maxLife, gravity;
         Color32[] color;
         int next;
 
@@ -27,6 +27,7 @@ namespace BallBattle.View
             p.vel = new Vector2[capacity];
             p.life = new float[capacity];
             p.maxLife = new float[capacity];
+            p.gravity = new float[capacity];
             p.color = new Color32[capacity];
             for (var i = 0; i < capacity; i++)
             {
@@ -52,6 +53,7 @@ namespace BallBattle.View
                 if (dir == Vector2.zero) dir = Vector2.up;
                 pos[i] = at;
                 vel[i] = dir * Random.Range(speedMin, speedMax);
+                gravity[i] = 1f;
                 maxLife[i] = lifeSeconds * Random.Range(0.7f, 1.2f);
                 life[i] = maxLife[i];
                 color[i] = c;
@@ -60,6 +62,24 @@ namespace BallBattle.View
                 sr.color = c;
                 sr.enabled = true;
             }
+        }
+
+        /// <summary>One particle with an exact start and velocity. <paramref name="gravityScale"/> 0 = flies straight (homing streaks, rings).</summary>
+        public void Emit(Vector2 at, Vector2 velocity, Color32 c, float lifeSeconds, int size = 1, float gravityScale = 0f)
+        {
+            var i = next;
+            next = (next + 1) % renderers.Length;
+            pos[i] = at;
+            vel[i] = velocity;
+            gravity[i] = gravityScale;
+            maxLife[i] = lifeSeconds;
+            life[i] = lifeSeconds;
+            color[i] = c;
+            var sr = renderers[i];
+            sr.transform.localPosition = new Vector3(Mathf.Round(at.x), Mathf.Round(at.y), 0f);
+            sr.transform.localScale = new Vector3(size, size, 1f);
+            sr.color = c;
+            sr.enabled = true;
         }
 
         public void Clear()
@@ -81,7 +101,7 @@ namespace BallBattle.View
                 var sr = renderers[i];
                 if (life[i] <= 0f) { sr.enabled = false; continue; }
 
-                vel[i].y += Gravity * dt;
+                vel[i].y += Gravity * gravity[i] * dt;
                 pos[i] += vel[i] * dt;
                 sr.transform.localPosition = new Vector3(Mathf.Round(pos[i].x), Mathf.Round(pos[i].y), 0f);
 

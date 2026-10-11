@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using BallBattle.Sim;
+using BallBattle.Sim.Traits;
+using BallBattle.Sim.Weapons;
 using UnityEngine;
 
 namespace BallBattle.View
@@ -18,6 +21,9 @@ namespace BallBattle.View
         const float KoSlowMoScale = 0.3f;
         static readonly Color32 StatusPoison = new Color32(96, 255, 64, 255);
         static readonly Color32 StatusHeal = new Color32(80, 255, 160, 255);
+        /// <summary>Reflect damage (Aegis, Thorns, Spiky): numbers, flash and particles.</summary>
+        public static readonly Color32 ReflectColor = new Color32(255, 90, 200, 255);
+        const float ReflectFlightSeconds = 0.18f;
 
         ArenaView arena;
         PixelParticles particles;
@@ -27,6 +33,12 @@ namespace BallBattle.View
         float slowMoRemaining;
         bool winPending;
         int lastShotSoundTick = -1;
+
+        // Reflect damage is shown once its whole tick is known (Parry comes after the Damage it caused).
+        readonly List<SimEvent> pendingTick = new List<SimEvent>();
+        readonly List<ReflectFx> reflects = new List<ReflectFx>();
+        readonly ReflectSourceClassifier classifier = new ReflectSourceClassifier();
+        readonly SimOwners owners = new SimOwners();
 
         // Built in Awake (not Start) so effects work from the very first tick, whatever order the Starts run in.
         void Awake()
@@ -50,6 +62,7 @@ namespace BallBattle.View
         {
             arena.SimEventRaised -= OnSimEvent;
             arena.MatchStarted -= OnMatchStarted;
+            pendingTick.Clear();
             shake?.Stop();
         }
 
@@ -61,6 +74,7 @@ namespace BallBattle.View
             slowMoRemaining = 0f;
             winPending = false;
             lastShotSoundTick = -1;
+            pendingTick.Clear();
         }
 
         Color32 BallColor(int index) => Palette.Look(arena.Sim.Balls[index].Weapon.Id).Body;
@@ -70,6 +84,8 @@ namespace BallBattle.View
         void OnSimEvent(SimEvent e)
         {
             if (particles == null) return;   // events before Start (first frame) are ignored
+            if (pendingTick.Count > 0 && pendingTick[0].Tick != e.Tick) FlushReflects();
+            pendingTick.Add(e);
             switch (e.Type)
             {
                 case SimEventType.Hit:
@@ -153,6 +169,8 @@ namespace BallBattle.View
                     slowMoRemaining = KoSlowMoSeconds;
                     sfx.Play(Sfx != null ? Sfx.Death : null, 0.9f);
                     break;
+                case SimEventType.Damage:
+                    break;   // Reflect damage: shown by FlushReflects once the tick is complete
                 case SimEventType.MatchEnd:
                     winPending = e.A >= 0;   // played when the knockout slow-mo ends, not on top of the death sound
                     break;
@@ -169,6 +187,7 @@ namespace BallBattle.View
                 slowMoRemaining -= dt;
                 fxDt *= KoSlowMoScale;
             }
+            FlushReflects();
             if (winPending && slowMoRemaining <= 0f)
             {
                 winPending = false;
@@ -177,6 +196,98 @@ namespace BallBattle.View
             particles.Tick(fxDt);
             popups.Tick(fxDt);
             shake?.Tick(dt);
+        }
+
+        /// <summary>Classify and show every Reflect damage of the buffered tick(s), then forget them.</summary>
+        void FlushReflects()
+        {
+            if (pendingTick.Count == 0) return;
+            reflects.Clear();
+            var sim = arena != null ? arena.Sim : null;
+            if (sim != null && particles != null)
+            {
+                owners.Sim = sim;
+                classifier.Classify(pendingTick, owners, reflects);
+            }
+            pendingTick.Clear();
+            for (var i = 0; i < reflects.Count; i++) ShowReflect(sim, reflects[i]);
+            reflects.Clear();
+        }
+
+        void ShowReflect(MatchSim sim, in ReflectFx r)
+        {
+            var d = r.Damage;
+            if (d.A >= sim.Balls.Count || d.B >= sim.Balls.Count) return;
+            var src = sim.Balls[d.A];
+            var hurt = sim.Balls[d.B];
+
+            arena.GetBallView(d.B)?.Flash(FlashSeconds, ReflectColor);
+            popups.Show(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), d.Value, ReflectColor);
+
+            // 3-4 magenta motes fly from the reflecting ball to the one it hurts (spikes for Thorns).
+            var to = V(hurt.Pos);
+            var count = d.Value >= 2f ? 4 : 3;
+            for (var k = 0; k < count; k++)
+            {
+                var start = V(src.Pos) + Random.insideUnitCircle * (src.Radius * 0.6f);
+                var flight = ReflectFlightSeconds * Random.Range(0.85f, 1.15f);
+                var travel = to - start;
+                var vel = travel / flight;
+                if (r.Source == ReflectSource.Thorns)
+                {
+                    var dir = travel.sqrMagnitude > 0.01f ? travel.normalized : Vector2.up;
+                    for (var j = 0; j < 3; j++) particles.Emit(start - dir * j, vel, ReflectColor, flight);   // 3 px spike, tip first
+                }
+                else particles.Emit(start, vel, ReflectColor, flight);
+            }
+
+            var at = V(r.Point);
+            switch (r.Source)
+            {
+                case ReflectSource.Spiky:   // ring bursting at the bump
+                    for (var k = 0; k < 8; k++)
+                    {
+                        var a = k * Mathf.PI / 4f;
+                        particles.Emit(at, new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * 70f, ReflectColor, 0.25f);
+                    }
+                    break;
+                case ReflectSource.Aegis:   // streak running along the shield
+                    if (src.Weapon.HasBlade)
+                    {
+                        var s0 = V(src.BladeStart);
+                        var s1 = V(src.BladeEnd);
+                        var along = s1 - s0;
+                        var speed = along.sqrMagnitude > 0.01f ? along.normalized * 90f : Vector2.zero;
+                        for (var k = 0; k < 6; k++)
+                            particles.Emit(Vector2.Lerp(s0, s1, k / 5f), speed, ReflectColor, 0.08f + 0.03f * k);
+                    }
+                    else particles.Burst(at, 4, ReflectColor, 40f, 90f, 0.2f);
+                    break;
+                default:   // Thorns
+                    particles.Burst(at, 3, ReflectColor, 40f, 90f, 0.2f);
+                    break;
+            }
+        }
+
+        /// <summary>What each ball of the live match owns, for the reflect classifier.</summary>
+        sealed class SimOwners : ReflectSourceClassifier.IOwners
+        {
+            public MatchSim Sim;
+
+            BallState Ball(int i) => Sim != null && i >= 0 && i < Sim.Balls.Count ? Sim.Balls[i] : null;
+
+            public bool UsesAegis(int ball) => Ball(ball)?.Weapon is AegisRule;
+            public bool HasThorns(int ball) => Has(Ball(ball), ThornsTrait.TraitId);
+            public bool HasSpiky(int ball) => Has(Ball(ball), SpikyTrait.TraitId);
+            public Vec2 Center(int ball) => Ball(ball)?.Pos ?? Vec2.Zero;
+
+            static bool Has(BallState b, string traitId)
+            {
+                if (b?.Traits == null) return false;
+                foreach (var t in b.Traits)
+                    if (t != null && t.Id == traitId) return true;
+                return false;
+            }
         }
     }
 }

@@ -73,7 +73,14 @@ namespace BallBattle.View
         }
 
         /// <summary>Show the white hit flash for a short time (driven by Render's frame time).</summary>
-        public void Flash(float seconds) => flashRemaining = Mathf.Max(flashRemaining, seconds);
+        public void Flash(float seconds) => Flash(seconds, Color.white);
+
+        /// <summary>Same flash in another color (magenta for reflect damage). The latest call sets the color.</summary>
+        public void Flash(float seconds, Color color)
+        {
+            flashRemaining = Mathf.Max(flashRemaining, seconds);
+            if (flash != null) flash.color = color;
+        }
 
         /// <summary>Called every frame with interpolated sim values (world units = native pixels).</summary>
         public void Render(Vector2 pos, float angleDeg, float bladeInner, float bladeLength, float statValue, bool alive, float deltaTime, float twinLength = 0f, float bladeThickness = 0f)

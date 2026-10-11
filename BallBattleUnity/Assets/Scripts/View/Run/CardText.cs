@@ -75,7 +75,8 @@ namespace BallBattle.View
                 case ThornsTrait.TraitId:
                     return $"RETURN {Pct(TraitTuning.ThornsReflectPct[i])}% OF MELEE DMG TAKEN";
                 case SecondWindTrait.TraitId:
-                    // Old wording on purpose: waiting for Prompt 3 test 9 before rewriting this card.
+                    // Old wording on purpose until the playtest trigger reports (no heal at 9/135, LV1 healing 28) are explained.
+                    // Planned text once the code is confirmed: "ONCE: AT 30% HP HEAL 20" / "OR SURVIVE A KO AT 20 HP".
                     return level > 1 ? "UPGRADE: STRONGER" : TraitRegistry.Get(id).Blurb;
                 case GlassCannonTrait.TraitId:
                     return $"HITS X{Num(TraitTuning.GlassCannonDamageMul[i])} DMG  MAX HP -{Num(TraitTuning.GlassCannonHpLoss[i])}";
