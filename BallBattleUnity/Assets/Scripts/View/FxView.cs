@@ -24,6 +24,25 @@ namespace BallBattle.View
         /// <summary>Reflect damage (Aegis, Thorns, Spiky): numbers, flash and particles.</summary>
         public static readonly Color32 ReflectColor = new Color32(255, 90, 200, 255);
         const float ReflectFlightSeconds = 0.18f;
+        /// <summary>Reflect damage: 1 px edge flash on the ball hit back, and a 2x number.</summary>
+        public const float ReflectFlashSeconds = 0.12f;
+        public const int ReflectNumberScale = 2;
+        /// <summary>Thorns motes are spikes 2 px thick and 5 px long, flying tip first from A to B.</summary>
+        public const int ThornSpikeThickness = 2;
+        public const int ThornSpikeLength = 5;
+
+        /// <summary>
+        /// Offsets (tip first, going back along <paramref name="dir"/>) of the 2x2 particles that draw one Thorns spike:
+        /// 4 squares of 2 px stepped 1 px apart = 5 px long, 2 px thick.
+        /// </summary>
+        public static Vector2[] ThornSpikeOffsets(Vector2 dir)
+        {
+            var d = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.up;
+            var n = ThornSpikeLength - ThornSpikeThickness + 1;
+            var offsets = new Vector2[n];
+            for (var j = 0; j < n; j++) offsets[j] = -d * j;
+            return offsets;
+        }
 
         ArenaView arena;
         PixelParticles particles;
@@ -77,6 +96,16 @@ namespace BallBattle.View
             pendingTick.Clear();
         }
 
+        /// <summary>Damage/heal number kept inside the current (possibly shrunk) arena.</summary>
+        void ShowPopup(Vector2 at, float value, Color32 color, int scale = 0)
+        {
+            if (arena.Sim != null) popups.Show(at, value, color, arena.Sim.Arena, scale);
+            else popups.Show(at, value, color, scale);
+        }
+
+        /// <summary>Damage numbers (tests).</summary>
+        public DamagePopups Popups => popups;
+
         Color32 BallColor(int index) => Palette.Look(arena.Sim.Balls[index].Weapon.Id).Body;
 
         static Vector2 V(Vec2 p) => new Vector2(p.X, p.Y);
@@ -94,7 +123,7 @@ namespace BallBattle.View
                     var target = arena.Sim.Balls[e.B];
                     arena.GetBallView(e.B)?.Flash(FlashSeconds);
                     particles.Burst(V(e.Point), e.Value >= 5f ? 7 : 5, BallColor(e.A), 50f, 110f, 0.35f, e.Value >= 5f ? 2 : 1);
-                    popups.Show(V(target.Pos) + new Vector2(0f, target.Radius + 4f), e.Value, Palette.Text);
+                    ShowPopup(V(target.Pos) + new Vector2(0f, target.Radius + 4f), e.Value, Palette.Text);
                     shake?.Add(Mathf.Clamp(1f + e.Value / 6f, 1f, ScreenShake.MaxAmplitude), 0.15f);
                     var heat = Palette.Heat(attacker.Weapon.Id, attacker.Weapon.StatValue);
                     sfx.Play(Sfx != null ? Sfx.Hit : null, 0.6f, 1f + heat * 0.5f);
@@ -120,7 +149,7 @@ namespace BallBattle.View
                         var hurt = arena.Sim.Balls[e.B];
                         arena.GetBallView(e.B)?.Flash(FlashSeconds);
                         particles.Burst(V(e.Point), 4, BallColor(e.A), 40f, 90f, 0.25f);
-                        popups.Show(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), e.Value, Palette.Text);
+                        ShowPopup(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), e.Value, Palette.Text);
                         sfx.Play(Sfx != null ? Sfx.Hit : null, 0.35f, 1.35f);
                     }
                     break;
@@ -132,7 +161,7 @@ namespace BallBattle.View
                 {
                     var sick = arena.Sim.Balls[e.A];
                     particles.Burst(V(sick.Pos), 3, StatusPoison, 20f, 60f, 0.3f);
-                    popups.Show(V(sick.Pos) + new Vector2(0f, sick.Radius + 4f), e.Value, StatusPoison);
+                    ShowPopup(V(sick.Pos) + new Vector2(0f, sick.Radius + 4f), e.Value, StatusPoison);
                     break;
                 }
                 case SimEventType.ShieldBlocked:
@@ -143,7 +172,7 @@ namespace BallBattle.View
                     if (e.Value >= 0.5f)
                     {
                         var healed = arena.Sim.Balls[e.A];
-                        popups.Show(V(healed.Pos) + new Vector2(0f, healed.Radius + 4f), e.Value, StatusHeal);
+                        ShowPopup(V(healed.Pos) + new Vector2(0f, healed.Radius + 4f), e.Value, StatusHeal);
                         particles.Burst(V(healed.Pos), 3, StatusHeal, 15f, 50f, 0.4f);
                     }
                     break;
@@ -152,11 +181,11 @@ namespace BallBattle.View
                     if (e.Value > 0f)
                     {
                         particles.Burst(V(e.Point), 4, Palette.Hot, 40f, 100f, 0.25f);
-                        popups.Show(V(e.Point), e.Value, Palette.Hot);
+                        ShowPopup(V(e.Point), e.Value, Palette.Hot);
                     }
                     break;
                 case SimEventType.WallBounce:
-                    if (e.Value > 0f) popups.Show(V(arena.Sim.Balls[e.A].Pos), e.Value, Palette.Hot);
+                    if (e.Value > 0f) ShowPopup(V(arena.Sim.Balls[e.A].Pos), e.Value, Palette.Hot);
                     sfx.Play(Sfx != null ? Sfx.Wall : null, 0.2f, Random.Range(0.9f, 1.1f));
                     break;
                 case SimEventType.BallBounce:
@@ -221,8 +250,9 @@ namespace BallBattle.View
             var src = sim.Balls[d.A];
             var hurt = sim.Balls[d.B];
 
-            arena.GetBallView(d.B)?.Flash(FlashSeconds, ReflectColor);
-            popups.Show(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), d.Value, ReflectColor);
+            // The ball the damage came BACK to (d.B) shows it: 1 px magenta edge, body keeps its weapon color.
+            arena.GetBallView(d.B)?.FlashEdge(ReflectFlashSeconds, ReflectColor);
+            ShowPopup(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), d.Value, ReflectColor, ReflectNumberScale);
 
             // 3-4 magenta motes fly from the reflecting ball to the one it hurts (spikes for Thorns).
             var to = V(hurt.Pos);
@@ -236,7 +266,7 @@ namespace BallBattle.View
                 if (r.Source == ReflectSource.Thorns)
                 {
                     var dir = travel.sqrMagnitude > 0.01f ? travel.normalized : Vector2.up;
-                    for (var j = 0; j < 3; j++) particles.Emit(start - dir * j, vel, ReflectColor, flight);   // 3 px spike, tip first
+                    foreach (var o in ThornSpikeOffsets(dir)) particles.Emit(start + o, vel, ReflectColor, flight, ThornSpikeThickness);   // 2x5 px spike, tip first
                 }
                 else particles.Emit(start, vel, ReflectColor, flight);
             }

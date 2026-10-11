@@ -52,6 +52,39 @@ namespace BallBattle.View
             return arr;
         }
 
+        /// <summary>Text currently shown ("" before the first Set).</summary>
+        public string Text => current ?? string.Empty;
+
+        /// <summary>Color of the current text.</summary>
+        public Color32 TextColor => currentColor;
+
+        public int TextScale => scale;
+
+        /// <summary>Area the current text covers, in this object's parent space (whole pixels). Empty text = zero width.</summary>
+        public Rect Bounds
+        {
+            get
+            {
+                var width = PixelFontData.MeasureWidth(Text) * scale;
+                var startX = align == Align.Left ? 0 : (align == Align.Center ? -(width / 2) : -width);
+                var p = transform.localPosition;
+                return new Rect(p.x + startX, p.y, width, PixelFontData.GlyphHeight * scale);
+            }
+        }
+
+        /// <summary>Same area in world space (the 270x480 view is world units = native pixels).</summary>
+        public Rect WorldBounds
+        {
+            get
+            {
+                var b = Bounds;
+                var parent = transform.parent;
+                if (parent == null) return b;
+                var min = parent.TransformPoint(new Vector3(b.xMin, b.yMin, 0f));
+                var max = parent.TransformPoint(new Vector3(b.xMax, b.yMax, 0f));
+                return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+            }
+        }
         public void Set(string text, Color32 color)
         {
             text = text ?? string.Empty;

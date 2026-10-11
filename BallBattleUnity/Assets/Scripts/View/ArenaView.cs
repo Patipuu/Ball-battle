@@ -44,6 +44,9 @@ namespace BallBattle.View
 
         public MatchSim Sim { get; private set; }
 
+        /// <summary>Ball that gets the player marker (arrow + dotted ring) in the next StartMatch; -1 = none (Versus).</summary>
+        public int MarkedBall { get; set; } = -1;
+
         BallView[] ballViews = new BallView[0];
         ArenaFrameView frame;
         HudView hud;
@@ -113,6 +116,7 @@ namespace BallBattle.View
                 var id = Sim.Balls[i].Weapon.Id;
                 ballViews[i] = BallView.Create(transform, i, id, Art.Get(id), Art.BallFlash, BodyOrderBase + i * 2, BladeOrderBase + i);
                 hud.Bind(i, id, i == 0 ? tagA : (i == 1 ? tagB : null));
+                ballViews[i].SetMarked(i == MarkedBall);
             }
             badges.Bind(Sim);
             SnapshotPrevious();
@@ -192,7 +196,7 @@ namespace BallBattle.View
                 var b = Sim.Balls[i];
                 var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X, b.Pos.Y), alpha);
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg, alpha);
-                ballViews[i].SetScale(b.Radius / Sim.Config.BallRadius);
+                ballViews[i].SetScale(b.Radius / ballViews[i].NativeRadius);   // sim radius 24 (boss) on a 16 px sprite = x1.5
                 ballViews[i].Render(pos, angle, b.Weapon.BladeInner + b.BladeShift, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt, b.HasTwinBlade ? b.Weapon.BladeLength * b.TwinBladeScale : 0f, b.Weapon.BladeThickness);
                 statusView.Render(i, b, pos, Sim.ActiveTick);
             }

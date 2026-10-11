@@ -5,7 +5,8 @@ namespace BallBattle.View
 {
     /// <summary>
     /// Pixel button: 1px border + fill + optional label/icon, hit-tested in native pixels.
-    /// A click = press and release both inside the button (finger slide-off cancels). Only active buttons react.
+    /// A click = press and release both inside the button (finger slide-off cancels). Only active buttons react;
+    /// input comes from PixelInput's ordered event queue.
     /// </summary>
     public sealed class PixelButton : MonoBehaviour
     {
@@ -53,6 +54,10 @@ namespace BallBattle.View
 
         public void SetText(string text, Color32 color) => label?.Set(text, color);
 
+        public Color32 FillColor => fillColor;
+        public Color32 BorderColor => borderColor;
+        public string LabelText => label != null ? label.Text : string.Empty;
+
         public bool Contains(Vector2 nativePoint) => Area.Contains(nativePoint);
 
         static Color32 Darken(Color32 c) => new Color32((byte)(c.r * 0.6f), (byte)(c.g * 0.6f), (byte)(c.b * 0.6f), c.a);
@@ -64,20 +69,54 @@ namespace BallBattle.View
             fill.color = held ? Darken(fillColor) : fillColor;
         }
 
-        void OnDisable() => SetHeld(false);
+        /// <summary>Events with a smaller sequence number happened before this button was on screen: ignored.</summary>
+        long shownSeq;
 
-        void Update()
+        /// <summary>From now on only taps that start after this moment count (called when the button appears).</summary>
+        public void NoteShown()
         {
-            if (PixelInput.PressedThisFrame(out var down) && Contains(down)) SetHeld(true);
-            if (!held) return;
-            if (PixelInput.ReleasedThisFrame(out var up))
-            {
-                var inside = Contains(up);
-                SetHeld(false);
-                if (inside) Clicked?.Invoke();
-            }
-            else if (!PixelInput.Held) SetHeld(false);
+            shownSeq = PixelInput.NextSeq;
+            SetHeld(false);
         }
+
+        /// <summary>NoteShown on every active button under <paramref name="root"/> (screens call it when they appear).</summary>
+        public static void NoteShownAll(Transform root)
+        {
+            if (root == null) return;
+            foreach (var b in root.GetComponentsInChildren<PixelButton>(false)) b.NoteShown();
+        }
+        void OnEnable()
+        {
+            NoteShown();
+            PixelInput.Register(this);
+        }
+
+        void OnDisable()
+        {
+            SetHeld(false);
+            PixelInput.Unregister(this);
+        }
+
+        /// <summary>
+        /// One pointer event, in order (see PixelInput). A click = press AND release both inside this button, the
+        /// press after the button appeared. A press elsewhere, or one from before, never ends in a click here.
+        /// </summary>
+        internal void Handle(PixelInput.PointerEvent e)
+        {
+            if (e.Seq < shownSeq) return;
+            if (e.Down)
+            {
+                SetHeld(Contains(e.Native));
+                return;
+            }
+            if (!held) return;
+            var inside = Contains(e.Native);
+            SetHeld(false);
+            if (inside) Clicked?.Invoke();
+        }
+
+        /// <summary>True while a press that started inside is still down.</summary>
+        public bool IsHeld => held;
 
         /// <summary>Test/automation hook: behave as if tapped.</summary>
         public void SimulateClick() => Clicked?.Invoke();

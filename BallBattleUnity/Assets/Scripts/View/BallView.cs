@@ -17,7 +17,14 @@ namespace BallBattle.View
         SpriteRenderer body;
         SpriteRenderer blade;
         SpriteRenderer flash;
+        SpriteRenderer outlineFlash;
         float flashRemaining;
+        // Reflect-damage flash: only the outer 1 px ring, the body keeps its weapon color.
+        SpriteRenderer edgeFlash;
+        float edgeRemaining;
+        // Player marker (Run mode): dotted ring that scales with the ball, arrow kept at native pixel size.
+        SpriteRenderer markerRing, markerArrow;
+        Transform markerUnscaled;
         Transform pivot;
         Transform twinPivot;
         SpriteRenderer twin;
@@ -45,6 +52,20 @@ namespace BallBattle.View
             v.flash.sortingOrder = bodyOrder + 1;   // always over its own body, under the other ball
             v.flash.enabled = false;
 
+            var o = new GameObject("OutlineFlash");
+            o.transform.SetParent(go.transform, false);
+            v.outlineFlash = o.AddComponent<SpriteRenderer>();
+            v.outlineFlash.sprite = ProceduralSprites.BallOutline;
+            v.outlineFlash.sortingOrder = bodyOrder + 1;
+            v.outlineFlash.enabled = false;
+
+            var e = new GameObject("EdgeFlash");
+            e.transform.SetParent(go.transform, false);
+            v.edgeFlash = e.AddComponent<SpriteRenderer>();
+            v.edgeFlash.sprite = ProceduralSprites.BallOutlineThin;
+            v.edgeFlash.sortingOrder = bodyOrder + 1;
+            v.edgeFlash.enabled = false;
+
             if (art.Blade != null)
             {
                 v.pivot = new GameObject("BladePivot").transform;
@@ -70,7 +91,77 @@ namespace BallBattle.View
             transform.localScale = new Vector3(scale, scale, 1f);
             if (pivot != null) pivot.localScale = new Vector3(1f / scale, 1f / scale, 1f);
             if (twinPivot != null) twinPivot.localScale = new Vector3(1f / scale, 1f / scale, 1f);
+            PlaceMarker();
         }
+
+        /// <summary>Current size relative to the default ball.</summary>
+        public float Scale => shownScale;
+
+        /// <summary>Radius in native pixels of the ball sprite at scale 1 (the size the sim radius is mapped onto).</summary>
+        public float NativeRadius => body != null && body.sprite != null ? body.sprite.rect.width / body.sprite.pixelsPerUnit * 0.5f : ProceduralSprites.BallSize * 0.5f;
+
+        /// <summary>From this size up the hit flash only lights the outline: a flashing giant body is a wall of white.</summary>
+        public const float OutlineFlashScale = 1.4f;
+
+        /// <summary>True when hit flashes draw only the outline (giant / very big balls).</summary>
+        public bool UsesOutlineFlash => shownScale >= OutlineFlashScale;
+
+        /// <summary>True while the hit flash is showing.</summary>
+        public bool IsFlashing => flashRemaining > 0f;
+
+        /// <summary>The renderer the current flash uses (outline for big balls, full disc otherwise).</summary>
+        public SpriteRenderer ActiveFlashRenderer => UsesOutlineFlash ? outlineFlash : flash;
+
+        /// <summary>Order of the white arrow over the player's ball: above walls (31), under the HUD (40).</summary>
+        public const int MarkerArrowOrder = 32;
+
+        public bool IsMarked => markerRing != null && markerRing.gameObject.activeSelf;
+
+        /// <summary>
+        /// Player marker: white arrow above the ball and a dotted ring around it, so two balls with the same weapon
+        /// (same color) can be told apart.
+        /// </summary>
+        public void SetMarked(bool marked)
+        {
+            if (!marked)
+            {
+                if (markerRing != null) markerRing.gameObject.SetActive(false);
+                if (markerUnscaled != null) markerUnscaled.gameObject.SetActive(false);
+                return;
+            }
+            if (markerRing == null)
+            {
+                var r = new GameObject("MarkerRing");
+                r.transform.SetParent(transform, false);
+                markerRing = r.AddComponent<SpriteRenderer>();
+                markerRing.sprite = ProceduralSprites.DottedRing;
+                markerRing.sortingOrder = body.sortingOrder - 1;   // behind its own body: only the dots outside it show
+                markerRing.color = Color.white;
+
+                markerUnscaled = new GameObject("MarkerArrowRoot").transform;
+                markerUnscaled.SetParent(transform, false);
+                var a = new GameObject("MarkerArrow");
+                a.transform.SetParent(markerUnscaled, false);
+                markerArrow = a.AddComponent<SpriteRenderer>();
+                markerArrow.sprite = ProceduralSprites.DownArrow;
+                markerArrow.sortingOrder = MarkerArrowOrder;
+                markerArrow.color = Color.white;
+            }
+            markerRing.gameObject.SetActive(true);
+            markerUnscaled.gameObject.SetActive(true);
+            PlaceMarker();
+        }
+
+        /// <summary>Arrow tip sits 3 px above the top of the (scaled) ball, in native pixels.</summary>
+        void PlaceMarker()
+        {
+            if (markerUnscaled == null) return;
+            markerUnscaled.localScale = new Vector3(1f / shownScale, 1f / shownScale, 1f);
+            markerArrow.transform.localPosition = new Vector3(0f, Mathf.Round(NativeRadius * shownScale + 3f), 0f);
+        }
+
+        /// <summary>World-space top of the arrow tip (tests).</summary>
+        public Vector3 MarkerArrowPosition => markerArrow != null ? markerArrow.transform.position : transform.position;
 
         /// <summary>Show the white hit flash for a short time (driven by Render's frame time).</summary>
         public void Flash(float seconds) => Flash(seconds, Color.white);
@@ -80,6 +171,40 @@ namespace BallBattle.View
         {
             flashRemaining = Mathf.Max(flashRemaining, seconds);
             if (flash != null) flash.color = color;
+            if (outlineFlash != null) outlineFlash.color = color;
+            ApplyFlash();
+        }
+
+        /// <summary>
+        /// Flash only the outer 1 px of the ball in <paramref name="color"/> (reflect damage). Independent of the
+        /// hit flash; while it shows, the full-disc flash is suppressed so the body keeps its weapon color.
+        /// </summary>
+        public void FlashEdge(float seconds, Color color)
+        {
+            edgeRemaining = Mathf.Max(edgeRemaining, seconds);
+            if (edgeFlash != null) edgeFlash.color = color;
+            ApplyFlash();
+        }
+
+        /// <summary>True while the 1 px reflect edge flash shows.</summary>
+        public bool IsEdgeFlashing => edgeRemaining > 0f;
+
+        /// <summary>The 1 px edge renderer (tests).</summary>
+        public SpriteRenderer EdgeFlashRenderer => edgeFlash;
+
+        /// <summary>The full-disc flash renderer (tests).</summary>
+        public SpriteRenderer FullFlashRenderer => flash;
+
+        void ApplyFlash()
+        {
+            var edgeOn = edgeRemaining > 0f;
+            if (edgeFlash != null && edgeFlash.enabled != edgeOn) edgeFlash.enabled = edgeOn;
+            var flashing = flashRemaining > 0f;
+            var outlineOnly = UsesOutlineFlash;
+            var full = flashing && !outlineOnly && !edgeOn;
+            var edge = flashing && outlineOnly;
+            if (flash.enabled != full) flash.enabled = full;
+            if (outlineFlash != null && outlineFlash.enabled != edge) outlineFlash.enabled = edge;
         }
 
         /// <summary>Called every frame with interpolated sim values (world units = native pixels).</summary>
@@ -89,8 +214,8 @@ namespace BallBattle.View
             if (!alive) return;
 
             flashRemaining = Mathf.Max(0f, flashRemaining - deltaTime);
-            var flashing = flashRemaining > 0f;
-            if (flash.enabled != flashing) flash.enabled = flashing;
+            edgeRemaining = Mathf.Max(0f, edgeRemaining - deltaTime);
+            ApplyFlash();
 
             transform.localPosition = new Vector3(Mathf.Round(pos.x), Mathf.Round(pos.y), 0f);
             if (blade == null) return;

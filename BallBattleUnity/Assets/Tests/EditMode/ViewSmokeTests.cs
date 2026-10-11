@@ -1,5 +1,6 @@
 using System.Reflection;
 using BallBattle.Sim;
+using BallBattle.Sim.Run;
 using BallBattle.Sim.Traits;
 using BallBattle.Sim.Weapons;
 using BallBattle.View;
@@ -53,6 +54,7 @@ namespace BallBattle.Tests
             var root = new GameObject("CaptureRoot");
             var camGo = new GameObject("CaptureCam");
             GameObject menuRoot = null;
+            var extra = new System.Collections.Generic.List<GameObject>();
             try
             {
                 var cam = camGo.AddComponent<Camera>();
@@ -78,9 +80,59 @@ namespace BallBattle.Tests
                 menuRoot = new GameObject("MenuRoot");
                 MenuView.Create(menuRoot.transform, lib);
                 Shoot(cam, System.IO.Path.Combine(dir, "menu.png"));
+
+                // Run mode UI: player marker + boss outline flash, Prepare (taken / blocked cards, confirm), summary.
+                menuRoot.SetActive(false);
+                var run = RunState.Start(77, "blade", new ProgressData());
+                run.FightIndex = RunTuning.BossFights[0];
+                run.EnemyWeapons.Clear();
+                run.EnemyWeapons.Add("blade");
+                var bossGo = new GameObject("BossRoot");
+                extra.Add(bossGo);
+                var bossView = bossGo.AddComponent<ArenaView>();
+                bossView.Art = lib;
+                bossView.AutoRestart = false;
+                bossView.MarkedBall = 0;
+                var bossSim = run.CreateMatch();
+                bossView.StartMatch(bossSim, "YOU", "BOSS");
+                for (var tick = 0; tick < 200; tick++) bossSim.Step();
+                draw.Invoke(bossView, new object[] { 0f, 0.016f });
+                bossView.GetBallView(1).Flash(0.5f, FxView.ReflectColor);
+                bossView.GetBallView(0).Flash(0.5f);
+                draw.Invoke(bossView, new object[] { 0f, 0f });
+                Shoot(cam, System.IO.Path.Combine(dir, "boss_marker_flash.png"));
+                bossGo.SetActive(false);
+
+                var prepRoot = new GameObject("PrepareRoot");
+                extra.Add(prepRoot);
+                var prepRun = RunState.Start(77, "blade", new ProgressData());
+                prepRun.Coins = 1;
+                prepRun.OfferCards.Clear();
+                prepRun.OfferCards.Add(OfferSlot.From(new Card(CardKind.DamageUp)));
+                prepRun.OfferCards.Add(OfferSlot.From(new Card(CardKind.Heal)));
+                prepRun.OfferCards.Add(OfferSlot.From(new Card(CardKind.Trait, "thorns", 1)));
+                var prep = PrepareView.Create(prepRoot.transform, lib);
+                prep.Show(prepRun);
+                Shoot(cam, System.IO.Path.Combine(dir, "prepare_fresh.png"));
+                prep.PressFight();
+                Shoot(cam, System.IO.Path.Combine(dir, "prepare_confirm.png"));
+                prep.PressConfirm(false);
+                prepRun.Pick(0);
+                prep.Show(prepRun);
+                Shoot(cam, System.IO.Path.Combine(dir, "prepare_picked.png"));
+                prepRoot.SetActive(false);
+
+                var sumRoot = new GameObject("SummaryRoot");
+                extra.Add(sumRoot);
+                var sumRun = RunState.Start(78, "blade", new ProgressData());
+                sumRun.Won = true;
+                sumRun.Achievements.AddRange(new[] { UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Boss3, UnlockRules.Win1, UnlockRules.Win3 });
+                RunSummaryView.Create(sumRoot.transform, lib).Show(sumRun);
+                Shoot(cam, System.IO.Path.Combine(dir, "summary_unlocks.png"));
             }
             finally
             {
+                foreach (var e in extra) Object.DestroyImmediate(e);
                 Object.DestroyImmediate(camGo);
                 Object.DestroyImmediate(root);
             }

@@ -69,6 +69,7 @@ namespace BallBattle.View
             var start = PixelButton.Create(transform, "Start", art, new Rect(-80, -136, 160, 32), "START", 3,
                                            Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
             start.Clicked += () => StartRequested?.Invoke(selected[0], selected[1]);
+            StartButton = start;
 
             Text(art, "BEST OF 3", 0, -160, 1, Palette.TextDim);
 
@@ -137,7 +138,20 @@ namespace BallBattle.View
             versus.Set($"{WeaponRegistry.Get(selected[0]).DisplayName} VS {WeaponRegistry.Get(selected[1]).DisplayName}", Palette.Text);
         }
 
-        public void Show(bool visible) => gameObject.SetActive(visible);
+        public void Show(bool visible)
+        {
+            var appearing = visible && !gameObject.activeSelf;
+            gameObject.SetActive(visible);
+            if (appearing) PixelButton.NoteShownAll(transform);   // the tap that opened the menu (result MENU) is not a menu tap
+        }
+
+        /// <summary>Weapon picked for a side (0 = ball 1, 1 = ball 2).</summary>
+        public string Selected(int side) => selected[side];
+
+        /// <summary>Tile button of a weapon on a side (tests).</summary>
+        public PixelButton Tile(int side, string weaponId) => tiles[side][Array.IndexOf(ids, weaponId)];
+
+        public PixelButton StartButton { get; private set; }
 
         /// <summary>Automation hooks (tests, MCP playthroughs).</summary>
         public void Select(int side, string weaponId)

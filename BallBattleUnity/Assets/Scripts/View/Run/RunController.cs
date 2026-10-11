@@ -38,6 +38,7 @@ namespace BallBattle.View
             arena = arenaView;
             var art = arena.Art;
             Flow = new RunFlow(store);
+            Flow.ForceTraitId = DebugOptions.ForceTrait;   // null unless launched with -bbForceTrait
             title = RunTitleView.Create(transform, art);
             pick = PickWeaponView.Create(transform, art);
             prepare = PrepareView.Create(transform, art);
@@ -62,6 +63,7 @@ namespace BallBattle.View
             Flow.Changed += () => dirty = true;
             Flow.MatchPrepared += sim =>
             {
+                arena.MarkedBall = 0;   // ball 0 is always the player in Run mode
                 arena.StartMatch(sim, "YOU", Flow.Run.IsBossFight ? "BOSS" : "FOE");
                 arena.Paused = true;
             };
@@ -71,6 +73,7 @@ namespace BallBattle.View
                 HideAll();
                 arena.Paused = true;
                 arena.TimeScale = 1f;
+                arena.MarkedBall = -1;
                 Closed?.Invoke();
             };
             arena.MatchEnded += OnArenaMatchEnded;

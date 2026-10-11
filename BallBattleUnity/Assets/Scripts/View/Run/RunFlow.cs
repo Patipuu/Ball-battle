@@ -32,6 +32,9 @@ namespace BallBattle.View
         public bool LastFightWon { get; private set; }
         public bool LastFightDraw { get; private set; }
         public float TimeLeft => timer;
+
+        /// <summary>Tester switch (-bbForceTrait): this trait is always in the offer before fight 1. Null = normal play.</summary>
+        public string ForceTraitId { get; set; }
         public int CountdownNumber => Current == State.Countdown ? Math.Max(1, (int)Math.Ceiling(timer)) : 0;
 
         /// <summary>A fight is ready: show it frozen for the countdown.</summary>
@@ -85,6 +88,7 @@ namespace BallBattle.View
             if (Current != State.PickWeapon || !StartChoices.Contains(weaponId)) return;
             if (save.HasRun) UnlockRules.RecordAbandoned(save.Progress);
             Run = RunState.Start(pendingSeed, weaponId, save.Progress);
+            DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
             Persist();
             Go(State.Prepare);
         }
@@ -93,6 +97,7 @@ namespace BallBattle.View
         {
             if (Current != State.Title || !HasSavedRun) return;
             Run = save.Run;
+            if (DebugOptions.ApplyForcedTrait(Run, ForceTraitId)) Persist();
             if (Run.FightLocked) StartFight();   // quit mid-fight: replay that exact fight, no edits
             else Go(State.Prepare);
         }
@@ -101,6 +106,7 @@ namespace BallBattle.View
         {
             if (Current != State.Prepare || !Run.CanReroll) return;
             Run.Reroll();
+            DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
             Persist();
             Changed?.Invoke();
         }
