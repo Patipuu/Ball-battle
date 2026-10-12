@@ -16,10 +16,12 @@ namespace BallBattle.View
         public const string ForceTraitArg = "-bbForceTrait";
         /// <summary>-bbSeed &lt;number&gt;: every NEW run starts with this seed (a saved run keeps its own on CONTINUE).</summary>
         public const string ForceSeedArg = "-bbSeed";
+        public const string TraceArg = "-bbTrace";
 
         static bool parsed;
         static string forceTrait;
         static uint? forceSeed;
+        static bool trace;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
@@ -27,6 +29,7 @@ namespace BallBattle.View
             parsed = false;
             forceTrait = null;
             forceSeed = null;
+            trace = false;
         }
 
         /// <summary>Trait id forced into the first offer, or null (normal play).</summary>
@@ -40,6 +43,7 @@ namespace BallBattle.View
                     var args = Environment.GetCommandLineArgs();
                     forceTrait = ParseForceTrait(args);
                     forceSeed = ParseSeed(args);
+                    trace = ParseTrace(args);
                 }
                 return forceTrait;
             }
@@ -53,6 +57,16 @@ namespace BallBattle.View
                 _ = ForceTrait;   // parses the command line once (both switches)
                 return forceSeed;
             }
+        }
+
+        public static bool Trace { get { _ = ForceTrait; return trace; } }
+
+        public static bool ParseTrace(string[] args)
+        {
+            if (args == null) return false;
+            foreach (var arg in args)
+                if (string.Equals(arg, TraceArg, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
         }
 
         /// <summary>The number after -bbSeed in <paramref name="args"/> (0 .. 4294967295), or null (absent or not a number, with a warning).</summary>

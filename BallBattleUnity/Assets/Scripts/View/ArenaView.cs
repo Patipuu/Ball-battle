@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using BallBattle.Sim;
 using BallBattle.Sim.Weapons;
 using UnityEngine;
@@ -118,6 +119,17 @@ namespace BallBattle.View
         bool stepping;
         MatchSim pending;
         string pendingTagA, pendingTagB;
+        StreamWriter traceWriter, traceFieldsWriter;
+
+        void CloseTrace()
+        {
+            traceWriter?.Dispose();
+            traceFieldsWriter?.Dispose();
+            traceWriter = null;
+            traceFieldsWriter = null;
+        }
+
+        void OnDestroy() => CloseTrace();
 
         void Start()
         {
@@ -153,6 +165,7 @@ namespace BallBattle.View
             }
 
             EnsureInit();
+            CloseTrace();
             WeaponA = sim.Balls[0].Weapon.Id;
             WeaponB = sim.Balls[1].Weapon.Id;
             Seed = sim.Seed;
@@ -164,6 +177,16 @@ namespace BallBattle.View
             }
 
             Sim = sim;
+            if (DebugOptions.Trace)
+            {
+                Directory.CreateDirectory(Application.persistentDataPath);
+                var path = Path.Combine(Application.persistentDataPath, "trace-" + sim.Seed + ".txt");
+                traceWriter = new StreamWriter(path, false) { AutoFlush = true };
+                traceFieldsWriter = new StreamWriter(Path.Combine(Application.persistentDataPath, "trace-" + sim.Seed + ".fields.txt"), false) { AutoFlush = true };
+                traceWriter.WriteLine(SimTrace.Line(sim));
+                traceFieldsWriter.WriteLine(SimTrace.FieldsLine(sim));
+                Debug.Log("[BallBattle] Sim trace: " + path);
+            }
             var n = Sim.Balls.Count;
             ballViews = new BallView[n];
             prevPos = new Vector2[n];
@@ -209,6 +232,11 @@ namespace BallBattle.View
                     accumulator -= TickSeconds;
                     SnapshotPrevious();
                     Sim.Step();
+                    if (traceWriter != null)
+                    {
+                        traceWriter.WriteLine(SimTrace.Line(Sim));
+                        traceFieldsWriter.WriteLine(SimTrace.FieldsLine(Sim));
+                    }
                     var events = Sim.Events;
                     for (var i = 0; i < events.Count; i++) SimEventRaised?.Invoke(events[i]);
                     if (Sim.Outcome != MatchOutcome.Ongoing && !endReported)

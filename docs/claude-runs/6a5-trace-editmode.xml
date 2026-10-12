@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-12 12:31:20Z" end-time="2026-10-12 12:31:20Z" duration="0.4573293">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="182" result="Passed" start-time="2026-10-12 12:31:20Z" end-time="2026-10-12 12:31:20Z" duration="0.457329" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1212" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="182" result="Passed" start-time="2026-10-12 12:31:20Z" end-time="2026-10-12 12:31:20Z" duration="0.437754" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="65908" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1213" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="182" result="Passed" start-time="2026-10-12 12:31:20Z" end-time="2026-10-12 12:31:20Z" duration="0.434276" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1214" name="Tests" fullname="BallBattle.Tests" runstate="Runnable" testcasecount="182" result="Passed" start-time="2026-10-12 12:31:20Z" end-time="2026-10-12 12:31:20Z" duration="0.431616" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1196" name="VersusTraceTests" fullname="BallBattle.Tests.VersusTraceTests" classname="BallBattle.Tests.VersusTraceTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-12 12:31:20Z" end-time="2026-10-12 12:31:20Z" duration="0.425959" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1197" name="VersusRoundLogHasExactSeedTickAndHpBits" fullname="BallBattle.Tests.VersusTraceTests.VersusRoundLogHasExactSeedTickAndHpBits" methodname="VersusRoundLogHasExactSeedTickAndHpBits" classname="BallBattle.Tests.VersusTraceTests" runstate="Runnable" seed="1465797050" result="Passed" start-time="2026-10-12 12:31:20Z" end-time="2026-10-12 12:31:20Z" duration="0.043454" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Versus seed forced: 1454667
+]]></output>
+            </test-case>
+            <test-case id="1198" name="VersusTraceDump" fullname="BallBattle.Tests.VersusTraceTests.VersusTraceDump" methodname="VersusTraceDump" classname="BallBattle.Tests.VersusTraceTests" runstate="Runnable" seed="763444616" result="Passed" start-time="2026-10-12 12:31:20Z" end-time="2026-10-12 12:31:20Z" duration="0.355226" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] EditMode trace match seed 1454667, round seed 4134000519, ticks 3875, winner 0: E:\ball-battle\docs\claude-runs\trace-unity-4134000519.txt
+[BallBattle] EditMode trace match seed 1454667, round seed 2686071142, ticks 3724, winner 1: E:\ball-battle\docs\claude-runs\trace-unity-2686071142.txt
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

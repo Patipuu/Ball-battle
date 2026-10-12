@@ -44,7 +44,7 @@ namespace BallBattle.View
             Menu.StartRequested += (a, b) =>
             {
                 Arena.ArenaId = Menu.ArenaId;
-                Flow.Begin(a, b, NewSeed());
+                Flow.Begin(a, b, NewVersusSeed(DebugOptions.ForceSeed));
             };
             Menu.RunRequested += () =>
             {
@@ -54,7 +54,7 @@ namespace BallBattle.View
             };
             Run.Closed += () => Flow.ToMenu();
             Overlay.RematchRequested += () => Flow.Rematch();
-            Overlay.NewMatchRequested += () => Flow.NewMatch(NewSeed());
+            Overlay.NewMatchRequested += () => Flow.NewMatch(NewVersusSeed(DebugOptions.ForceSeed));
             Overlay.MenuRequested += () => Flow.ToMenu();
         }
 
@@ -83,7 +83,10 @@ namespace BallBattle.View
         void OnRoundEnded(int winner)
         {
             if (!Run.IsOpen && Flow.Current == MatchFlow.State.Playing)
+            {
                 Debug.Log(FightLog.Ended("Versus round " + Flow.Series.DisplayRound, Arena.Sim, versusStats));
+                Debug.Log(VersusRoundLog.Ended(Flow.Series, Arena.Sim));
+            }
             Flow.OnRoundEnded(winner);
         }
 
@@ -102,6 +105,14 @@ namespace BallBattle.View
         }
 
         /// <summary>Match seeds are random per new match; shown on screen so a fight can be replayed.</summary>
-        static uint NewSeed() => (uint)Random.Range(1, int.MaxValue);
+        public static uint NewVersusSeed(uint? forced)
+        {
+            if (forced.HasValue)
+            {
+                Debug.Log("[BallBattle] Versus seed forced: " + forced.Value);
+                return forced.Value;
+            }
+            return (uint)Random.Range(1, int.MaxValue);
+        }
     }
 }
