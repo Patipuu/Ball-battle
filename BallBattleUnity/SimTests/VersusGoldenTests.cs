@@ -14,8 +14,8 @@ namespace BallBattle.SimTests
     /// </summary>
     public class VersusGoldenTests
     {
-        /// <summary>Computed on commit 91a1bf6 (end of Step 1) and unchanged by Step 2 Phase 1.</summary>
-        const ulong ExpectedDigest = 0x2E92A642D4E02B1AUL;
+        /// <summary>Recomputed for SimVersion 4 with fixed trigonometry.</summary>
+        const ulong ExpectedDigest = 0xEE6798E60B605BCFUL;
 
         /// <summary>The four Step 1 weapons only: later weapons have their own balance gate.</summary>
         static readonly string[] Step1Ids = { "blade", "fang", "pike", "brawler" };

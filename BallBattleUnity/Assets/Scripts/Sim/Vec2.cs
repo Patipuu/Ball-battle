@@ -28,8 +28,7 @@ namespace BallBattle.Sim
 
         public static Vec2 FromAngleDeg(float degrees)
         {
-            var rad = degrees * (MathF.PI / 180f);
-            return new Vec2(MathF.Cos(rad), MathF.Sin(rad));
+            return new Vec2(FixedTrig.CosDeg(degrees), FixedTrig.SinDeg(degrees));
         }
 
         public static float Dot(Vec2 a, Vec2 b) => a.X * b.X + a.Y * b.Y;

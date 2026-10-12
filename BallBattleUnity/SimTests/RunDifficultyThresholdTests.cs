@@ -42,8 +42,11 @@ namespace BallBattle.SimTests
         {
             var reached = random.Count(x => x.BossesDefeated >= 2);
             var lost = random.Count(x => x.BossesDefeated == 2);
-            Assert.That(reached, Is.GreaterThan(30), "too few runs reach the last boss to judge");
-            Assert.That(lost * 100.0 / reached, Is.GreaterThanOrEqualTo(40.0));
+            var lossPct = reached == 0 ? 0.0 : lost * 100.0 / reached;
+            var bad = new System.Collections.Generic.List<string>();
+            if (reached <= 30) bad.Add($"reached {reached}, requires > 30");
+            if (lossPct < 40.0) bad.Add($"lost {lossPct:0.0}%, requires >= 40%");
+            Assert.That(bad, Is.Empty, $"N={Runs} random runs; reached={reached}, lost={lost}, loss={lossPct:0.0}%");
         }
     }
 }

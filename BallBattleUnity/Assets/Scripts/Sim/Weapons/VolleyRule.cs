@@ -48,11 +48,13 @@ namespace BallBattle.Sim.Weapons
             var foe = WeaponAim.NearestFoe(Sim, Self);
             if (foe == null) return;
             var aim = (foe.Pos - Self.Pos).NormalizedOr(new Vec2(1f, 0f));
-            var aimDeg = MathF.Atan2(aim.Y, aim.X) * (180f / MathF.PI);
             for (var k = 0; k < Arrows; k++)
             {
                 var offset = (k - (Arrows - 1) * 0.5f) * WeaponTuning.VolleySpreadDeg;
-                var dir = Vec2.FromAngleDeg(aimDeg + offset);
+                var rotation = Vec2.FromAngleDeg(offset);
+                var dir = new Vec2(
+                    aim.X * rotation.X - aim.Y * rotation.Y,
+                    aim.X * rotation.Y + aim.Y * rotation.X);
                 Sim.FireProjectile(Self, Self.Pos + dir * (Self.Radius + 3f), dir * WeaponTuning.VolleyArrowSpeed, arrow);
             }
         }
