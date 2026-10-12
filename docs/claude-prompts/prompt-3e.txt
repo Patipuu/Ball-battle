@@ -1,0 +1,23 @@
+Prompt 3e: gắn icon thẻ HEAL và SWAP (chỉ View/, Editor/, Tests/)
+
+Luật chạy: KHÔNG sửa Sim/, SimVersion giữ 3. Không commit, không xoá file. Chạy cả SimTests và EditMode tests; fail thì dừng và ghi lại. Báo cáo vào docs/claude-runs/3e.md.
+
+Art đã có `Assets/Art/Sprites/icons/card_heal.png` và `card_swap.png` (14x14, đã import đúng: Point, không nén, PPU 1), nhưng chưa được dùng.
+1. ArtLibrary: thêm CardHeal, CardSwap; Generator gán bằng Real("icons/card_heal.png") / Real("icons/card_swap.png") giống CardDamage, rồi chạy lại PlaceholderArtGenerator.Run.
+2. ArtLibrary (dòng ~106): icon của thẻ HEAL và SWAP trả về 2 icon này thay vì null. Thẻ SWAP: thử đặt icon như các thẻ khác; nếu tiêu đề dài nhất của SWAP chạm nhãn lý do khoá trong 270 px thì xuống dòng tiêu đề, không bỏ icon.
+3. Prompt3dTests: bỏ KindsWithoutIconArt, mọi CardKind trong pool đều phải có icon. Giữ test không chồng chữ của thẻ SWAP.
+4. Màn kết quả: thêm dòng chữ nhỏ "FOE HEALED +x" ngay dưới DMG DEALT, chỉ hiện khi đối thủ có hồi máu trong trận (tổng Heal event của đối thủ > 0). x là số nguyên làm tròn xuống (xem mục 5), chữ nhỏ, màu hồi máu (140,240,220). FightStats cần thêm Healed(i). Không được chồng lên dòng khác trong 270 px. Thêm test: trận gặp MIRROR (aegis) có dòng này và x = tổng heal của đối thủ; trận đối thủ không hồi thì không có dòng.
+5. Số sát thương trên màn kết quả (DMG DEALT, DMG TAKEN, FOE HEALED) hiện SỐ NGUYÊN, làm tròn XUỐNG, giống HP (dùng chung hàm HpText nếu hợp). Ví dụ 155.25 hiện 155, 87.4 hiện 87. Số sát thương bay ra trong trận giữ 1 số lẻ như cũ. Thêm test.
+6. Log cuối trận: khi trận kết thúc, ghi một dòng vào Player.log, ví dụ
+   `[BallBattle] Fight N ended: seed S, outcome Win|Lost|Draw, tick T, you <id> HP start a heal h end b, enemy <id> HP start a heal h end b, DMG DEALT d TAKEN t`
+   Số dùng giá trị thật (2 số lẻ), không làm tròn kiểu hiển thị. Ghi cho cả Run và Versus nếu dễ; tối thiểu Run.
+7. Tham số debug `-bbSeed <số>`: khi có, run MỚI bắt đầu bằng seed đó thay vì seed ngẫu nhiên (cùng chỗ đọc -bbForceTrait). Ghi log "[BallBattle] Run seed forced: S". Không ảnh hưởng run đang lưu dở (CONTINUE giữ seed cũ). Thêm test cho phần đọc tham số.
+8. Sọc màu bên trái của thẻ chỉ số trùng màu ký hiệu trên icon: SPEED CAP (255,190,90), MAX HP (140,240,170), DAMAGE (255,120,110), HEAL (140,240,220), SWAP (190,210,255). Thẻ trait giữ màu cũ.
+9. Chữ hiển thị không được dùng id vũ khí cũ: thẻ SPEED CAP đang ghi "BRAWLER: MORE SPEED IS MORE DMG", đổi thành "WRECKER: ..." qua WeaponNames. Rà toàn bộ CardText/PrepareView/HUD/màn kết quả xem còn chỗ nào in id cũ (blade, fang, pike, brawler, volley, venom, aegis, rig) ra màn hình thì đổi sang tên mới. Log và id trong code giữ nguyên. Thêm test: không có chỗ nào dùng id cũ in hoa Ở VỊ TRÍ TÊN VŨ KHÍ (đầu câu dạng "BRAWLER:", ô tên vũ khí, tên đối thủ, thẻ SWAP). KHÔNG cấm từ thường trùng id: "TWIN BLADE", "2ND BLADE BEHIND", "BLADE" chỉ lưỡi vũ khí, "VENOM"/"POISON" chỉ độc đều hợp lệ; không đổi tên trait. Test nên kiểm qua dữ liệu (tên vũ khí lấy từ WeaponNames) thay vì quét chuỗi tìm chữ.
+10. Click nhanh bị bỏ (View/PixelInput.cs, PixelButton.cs). Trên build 118270b, nút chỉ nhận click khi giữ chuột khoảng 120 ms; nhấn và nhả gần như cùng lúc thì không có tác dụng. Nghi đây cũng là nguyên nhân của lỗi "click đầu tiên sau khi mở game bị bỏ qua" trên Windows.
+   Hướng kiểm:
+   - Trường hợp nhấn và nhả trong CÙNG một frame, ở cả hai nguồn: polling (GetMouseButtonDown/Up, dòng ~122) và IMGUI events. Hàng đợi phải giữ đủ press rồi release theo thứ tự, và PixelButton phải nhận click dù cả hai được xử lý trong một lần dispatch.
+   - Thời điểm IMGUI events tới (OnGUI chạy SAU Update): press/release đến trong OnGUI của frame N có được dispatch ở frame N+1 không, hay bị xoá/ghi đè khi PumpFrame bắt đầu frame mới.
+   - Đoạn chuyển nguồn từ polling sang IMGUI (dòng ~135): event IMGUI đầu tiên bị bỏ vì cho rằng "đã poll trong frame này". Nếu poll KHÔNG bắt được cú nhấn đó (cửa sổ vừa được focus, click quá nhanh) thì click đầu tiên mất hẳn. Chỉ bỏ event IMGUI khi đúng là đã có một press poll được trong cùng frame.
+   - Khoá input 300 ms / 0.8 s ở các màn: một cú nhấn trước lúc mở khoá với cú nhả sau lúc mở khoá có làm mất click kế tiếp không.
+   Thêm test: nhấn và nhả cùng frame (polling và IMGUI) đều ra 1 click; nhấn và nhả ở hai frame liền nhau ra 1 click; click đầu tiên khi chuyển sang IMGUI không bị mất; không có click đôi. Ghi rõ trong báo cáo nguyên nhân tìm được.

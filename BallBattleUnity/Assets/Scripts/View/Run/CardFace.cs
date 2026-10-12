@@ -57,10 +57,13 @@ namespace BallBattle.View
         {
             switch (k)
             {
-                case CardKind.Trait: return new Color32(180, 120, 240, 255);
-                case CardKind.Heal:
-                case CardKind.MaxHp: return new Color32(110, 220, 120, 255);
-                case CardKind.SwapWeapon: return Palette.Text;
+                // Stat cards: the stripe matches the symbol color on their icon.
+                case CardKind.SpeedUp: return new Color32(255, 190, 90, 255);
+                case CardKind.MaxHp: return new Color32(140, 240, 170, 255);
+                case CardKind.DamageUp: return new Color32(255, 120, 110, 255);
+                case CardKind.Heal: return new Color32(140, 240, 220, 255);
+                case CardKind.SwapWeapon: return new Color32(190, 210, 255, 255);
+                case CardKind.Trait: return new Color32(180, 120, 240, 255);   // traits use TraitBadgeView.ColorOf instead
                 default: return Palette.WallWarning;
             }
         }

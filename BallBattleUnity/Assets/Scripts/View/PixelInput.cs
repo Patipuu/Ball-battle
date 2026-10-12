@@ -54,6 +54,9 @@ namespace BallBattle.View
             guiMode = false;
             guiScale = 1f;
             pointerDown = false;
+            captureDown = false;
+            polledFrame = int.MinValue;
+            polledDowns = polledUps = 0;
             pump = null;
         }
 
@@ -114,39 +117,99 @@ namespace BallBattle.View
             queue.Add(new PointerEvent { Down = down, Native = native, Seq = nextSeq++, Time = Now });
         }
 
+        // Capture state, shared by both sources.
+        /// <summary>The pointer is down as far as capture knows (any source). A release with no press seen first gets one.</summary>
+        static bool captureDown;
+        /// <summary>Frame of the last polling pass and how many presses / releases it captured (IMGUI duplicates of those are skipped).</summary>
+        static int polledFrame = int.MinValue;
+        static int polledDowns, polledUps;
+
         /// <summary>Called by the pump every frame before any other script: poll (until IMGUI events arrive), then dispatch.</summary>
         internal static void PumpFrame()
         {
-            if (!guiMode)
-            {
-                if (Input.GetMouseButtonDown(0)) Inject(true, Current);
-                if (Input.GetMouseButtonUp(0)) Inject(false, Current);
-            }
+            PollFrame(Time.frameCount, Input.GetMouseButtonDown(0), Input.GetMouseButtonUp(0), Current);
             Dispatch();
+        }
+
+        /// <summary>
+        /// One polling pass (legacy mouse API) for <paramref name="frame"/>: press then release, in that order, even when both
+        /// happened in the same frame. A release whose press the API never reported (press and release inside one frame on a
+        /// slow frame, or the click that focuses the window) still makes a click: the press is added right before it.
+        /// Ignored once IMGUI events are the source. Public for tests / automation.
+        /// </summary>
+        public static void PollFrame(int frame, bool pressed, bool released, Vector2 native)
+        {
+            if (guiMode) return;
+            polledFrame = frame;
+            polledDowns = 0;
+            polledUps = 0;
+            if (pressed) { CaptureDown(native); polledDowns++; }
+            if (released) { CaptureUp(native); polledUps++; }
         }
 
         /// <summary>Called by the pump's OnGUI for every IMGUI event.</summary>
         internal static void CaptureGui(Event e)
         {
             if (e == null || e.button != 0 || (e.type != EventType.MouseDown && e.type != EventType.MouseUp)) return;
-            var down = e.type == EventType.MouseDown;
             if (!guiMode)
             {
-                // First IMGUI mouse event: from now on IMGUI is the source. This click was already polled this frame,
-                // so it is not queued twice. IMGUI may measure in points: calibrate against the polled pixel position.
-                guiMode = true;
+                // IMGUI may measure in points: calibrate against the polled pixel position on the first event.
                 var polled = (Vector2)Input.mousePosition;
                 if (e.mousePosition.x > 4f && polled.x > 4f)
                 {
                     var s = polled.x / e.mousePosition.x;
                     guiScale = Mathf.Abs(s - 1f) < 0.05f ? 1f : Mathf.Clamp(s, 0.5f, 4f);
                 }
-                return;
             }
             var screen = new Vector2(e.mousePosition.x * guiScale, Screen.height - e.mousePosition.y * guiScale);
-            Inject(down, ScreenToNative(screen, Screen.width, Screen.height));
+            GuiEvent(Time.frameCount, e.type == EventType.MouseDown, ScreenToNative(screen, Screen.width, Screen.height));
         }
 
+        /// <summary>
+        /// One IMGUI mouse event (exact order and position of every press / release) of <paramref name="frame"/>. The first
+        /// one switches the source from polling to IMGUI. An event that the polling pass of the SAME frame already captured
+        /// (same kind, not yet matched) is skipped, so a click is never counted twice; anything polling did not see - the
+        /// window-focus click, a press and release inside one frame - is taken from IMGUI. Public for tests / automation.
+        /// </summary>
+        public static void GuiEvent(int frame, bool down, Vector2 native)
+        {
+            guiMode = true;
+            if (frame == polledFrame)
+            {
+                if (down && polledDowns > 0) { polledDowns--; return; }
+                if (!down && polledUps > 0) { polledUps--; return; }
+            }
+            if (down) CaptureDown(native);
+            else CaptureUp(native);
+        }
+
+        static void CaptureDown(Vector2 native)
+        {
+            Inject(true, native);
+            captureDown = true;
+        }
+
+        static void CaptureUp(Vector2 native)
+        {
+            if (!captureDown) Inject(true, native);   // the source reported only the release: the press happened in the same frame
+            Inject(false, native);
+            captureDown = false;
+        }
+
+        /// <summary>True once IMGUI events are the input source (tests).</summary>
+        public static bool UsesGuiEvents => guiMode;
+
+        /// <summary>Back to the start state: polling source, nothing pressed, nothing queued (tests).</summary>
+        public static void ResetCapture()
+        {
+            guiMode = false;
+            guiScale = 1f;
+            captureDown = false;
+            polledFrame = int.MinValue;
+            polledDowns = polledUps = 0;
+            queue.Clear();
+            pointerDown = false;
+        }
         // ---- Dispatch ----
 
         /// <summary>Deliver the queued events, in order, to the buttons on screen.</summary>

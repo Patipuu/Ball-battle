@@ -265,9 +265,6 @@ namespace BallBattle.Tests
 
         // ---- 6. Stat card icons ----
 
-        /// <summary>Card kinds the pool deals that have no icon file yet (reported in docs/claude-runs/3d.md).</summary>
-        static readonly CardKind[] KindsWithoutIconArt = { CardKind.Heal, CardKind.SwapWeapon };
-
         [Test]
         public void EveryCardInThePoolHasAnIcon()
         {
@@ -276,13 +273,15 @@ namespace BallBattle.Tests
             foreach (var c in cards)
             {
                 var icon = art.CardIcon(c);
-                if (KindsWithoutIconArt.Contains(c.Kind)) { Assert.That(icon, Is.Null, $"{c}: art arrived? remove it from KindsWithoutIconArt"); continue; }
                 Assert.That(icon, Is.Not.Null, c.ToString());
                 Assert.That(icon.rect.size, Is.EqualTo(new Vector2(14, 14)), c.ToString());
             }
             Assert.That(art.CardIcon(new Card(CardKind.SpeedUp)), Is.SameAs(art.CardSpeedCap));
             Assert.That(art.CardIcon(new Card(CardKind.MaxHp)), Is.SameAs(art.CardMaxHp));
             Assert.That(art.CardIcon(new Card(CardKind.DamageUp)), Is.SameAs(art.CardDamage));
+            Assert.That(art.CardIcon(new Card(CardKind.Heal)), Is.SameAs(art.CardHeal), "3e: card_heal.png");
+            Assert.That(art.CardIcon(new Card(CardKind.SwapWeapon, BladeRule.WeaponId)), Is.SameAs(art.CardSwap), "3e: card_swap.png");
+            foreach (CardKind k in System.Enum.GetValues(typeof(CardKind))) Assert.That(cards.Any(c => c.Kind == k), Is.True, $"{k} is covered");
         }
 
         [Test]

@@ -190,8 +190,8 @@ namespace BallBattle.Tests
                 v.Show(r);
                 Assert.That(v.TitleText, Is.EqualTo(r.Title));
                 Assert.That(v.Value(0), Is.EqualTo($"{HpText.Of(r.HpLeft)}/{HpText.Of(r.MaxHpInFight)}"));
-                Assert.That(v.Value(1), Is.EqualTo(FightReport.Number(r.DamageDealt)));
-                Assert.That(v.Value(2), Is.EqualTo(FightReport.Number(r.DamageTaken)));
+                Assert.That(v.Value(1), Is.EqualTo(HpText.Floor(r.DamageDealt).ToString()), "whole number, rounded down");
+                Assert.That(v.Value(2), Is.EqualTo(HpText.Floor(r.DamageTaken).ToString()));
                 Assert.That(v.Value(3), Does.StartWith("+" + r.CoinsGained));
                 Assert.That(v.ConsequenceText, Is.EqualTo(r.ConsequenceLine));
                 if (r.RunOver) Assert.That(v.NextHeaderText, Is.Empty, "no next fight after the last one");

@@ -47,6 +47,9 @@ namespace BallBattle.View
         readonly SpriteRenderer[] cardFrames = new SpriteRenderer[RunTuning.OfferSize];
         readonly SpriteRenderer[] cardStripes = new SpriteRenderer[RunTuning.OfferSize];
         readonly SpriteRenderer[] cardIcons = new SpriteRenderer[RunTuning.OfferSize];
+        /// <summary>A title too long to sit beside the reason tag wraps onto these two small lines (the icon stays).</summary>
+        readonly PixelText[] cardTitleSmall1 = new PixelText[RunTuning.OfferSize];
+        readonly PixelText[] cardTitleSmall2 = new PixelText[RunTuning.OfferSize];
         readonly CardFace[] faces = new CardFace[RunTuning.OfferSize];
 
         /// <summary>Card text starts here; with a 2x icon (28 px) it moves right past it.</summary>
@@ -119,6 +122,8 @@ namespace BallBattle.View
                 var order = cards[i].IconOrder + 2;
                 cardTitles[i] = PixelText.Create(cards[i].transform, "Title", art.Font, new Vector2(-117, area.yMin + 22), PixelText.Align.Left, 2, order);
                 cardTags[i] = PixelText.Create(cards[i].transform, "Tag", art.Font, new Vector2(117, area.yMin + 25), PixelText.Align.Right, 1, order);
+                cardTitleSmall1[i] = PixelText.Create(cards[i].transform, "TitleLine1", art.Font, new Vector2(-117, area.yMin + 27), PixelText.Align.Left, 1, order);
+                cardTitleSmall2[i] = PixelText.Create(cards[i].transform, "TitleLine2", art.Font, new Vector2(-117, area.yMin + 20), PixelText.Align.Left, 1, order);
                 cardDetails[i] = PixelText.Create(cards[i].transform, "Detail", art.Font, new Vector2(-117, area.yMin + 12), PixelText.Align.Left, 1, order);
                 cardDetails2[i] = PixelText.Create(cards[i].transform, "Detail2", art.Font, new Vector2(-117, area.yMin + 4), PixelText.Align.Left, 1, order);
             }
@@ -264,7 +269,44 @@ namespace BallBattle.View
                 cardTags[i].Set(face.Tag, face.Frame == ArtLibrary.CardFrame.Counter ? CardFace.CounterColor : Palette.TextDim);
                 cardFrames[i].color = Color.white;
             }
+            FitTitle(i, face.Title, cardTitles[i].TextColor);
         }
+
+        /// <summary>
+        /// The 2x title on one line, or - when it would touch the right-hand tag (a reason like ALREADY YOUR WEAPON) - wrapped
+        /// at a space onto two 1x lines: the first beside the tag, the second under it, both above the description. The icon
+        /// is kept either way.
+        /// </summary>
+        void FitTitle(int i, string title, Color32 color)
+        {
+            var x = cardTitles[i].transform.localPosition.x;
+            var y0 = CardArea(i).yMin;
+            var tag = cardTags[i].Text;
+            var tagLeft = string.IsNullOrEmpty(tag) ? float.PositiveInfinity : 117f - PixelFontData.MeasureWidth(tag);
+            string line1 = null, line2 = null;
+            if (x + PixelFontData.MeasureWidth(title) * 2 + TitleTagGap > tagLeft)
+                for (var at = title.LastIndexOf(' '); at > 0; at = title.LastIndexOf(' ', at - 1))
+                {
+                    var a = title.Substring(0, at);
+                    var b = title.Substring(at + 1);
+                    if (x + PixelFontData.MeasureWidth(a) + TitleTagGap > tagLeft || x + PixelFontData.MeasureWidth(b) > 117f) continue;
+                    line1 = a;
+                    line2 = b;
+                    break;   // the longest first line that fits
+                }
+            var wrapped = line1 != null;
+            cardTitles[i].Set(wrapped ? "" : title, color);
+            cardTitleSmall1[i].transform.localPosition = new Vector3(x, y0 + 27, 0f);
+            cardTitleSmall2[i].transform.localPosition = new Vector3(x, y0 + 20, 0f);
+            cardTitleSmall1[i].Set(wrapped ? line1 : "", color);
+            cardTitleSmall2[i].Set(wrapped ? line2 : "", color);
+        }
+
+        const float TitleTagGap = 2f;
+
+        /// <summary>True when card <paramref name="i"/>'s title is wrapped onto two small lines (tests).</summary>
+        public bool TitleWrapped(int i) => cardTitleSmall1[i].Text.Length > 0;
+        public PixelText CardTitleLine(int i, int line) => line == 1 ? cardTitleSmall1[i] : cardTitleSmall2[i];
 
         /// <summary>Frame, stripe, icon and text of card <paramref name="i"/> from a face (colors of the state come from StyleCard).</summary>
         void ApplyFace(int i, CardFace face)

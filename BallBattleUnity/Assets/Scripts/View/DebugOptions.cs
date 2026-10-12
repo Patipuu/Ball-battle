@@ -14,15 +14,19 @@ namespace BallBattle.View
     public static class DebugOptions
     {
         public const string ForceTraitArg = "-bbForceTrait";
+        /// <summary>-bbSeed &lt;number&gt;: every NEW run starts with this seed (a saved run keeps its own on CONTINUE).</summary>
+        public const string ForceSeedArg = "-bbSeed";
 
         static bool parsed;
         static string forceTrait;
+        static uint? forceSeed;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset()
         {
             parsed = false;
             forceTrait = null;
+            forceSeed = null;
         }
 
         /// <summary>Trait id forced into the first offer, or null (normal play).</summary>
@@ -33,12 +37,38 @@ namespace BallBattle.View
                 if (!parsed)
                 {
                     parsed = true;
-                    forceTrait = ParseForceTrait(Environment.GetCommandLineArgs());
+                    var args = Environment.GetCommandLineArgs();
+                    forceTrait = ParseForceTrait(args);
+                    forceSeed = ParseSeed(args);
                 }
                 return forceTrait;
             }
         }
 
+        /// <summary>Seed forced for new runs, or null (normal play: random seed).</summary>
+        public static uint? ForceSeed
+        {
+            get
+            {
+                _ = ForceTrait;   // parses the command line once (both switches)
+                return forceSeed;
+            }
+        }
+
+        /// <summary>The number after -bbSeed in <paramref name="args"/> (0 .. 4294967295), or null (absent or not a number, with a warning).</summary>
+        public static uint? ParseSeed(string[] args)
+        {
+            if (args == null) return null;
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!string.Equals(args[i], ForceSeedArg, StringComparison.OrdinalIgnoreCase)) continue;
+                if (i + 1 < args.Length && uint.TryParse(args[i + 1].Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var seed))
+                    return seed;
+                Debug.LogWarning("[BallBattle] " + ForceSeedArg + ": expected a number from 0 to 4294967295, ignored");
+                return null;
+            }
+            return null;
+        }
         /// <summary>The registry id named after -bbForceTrait in <paramref name="args"/>, or null (absent or unknown, with a warning).</summary>
         public static string ParseForceTrait(string[] args)
         {

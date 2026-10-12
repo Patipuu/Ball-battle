@@ -15,6 +15,11 @@ namespace BallBattle.View
         public const float EntryInputBlockSeconds = 0.8f;
 
         const float RowLeft = -110f;
+        /// <summary>HP LEFT, DMG DEALT, DMG TAKEN, COINS; the FOE HEALED line sits between DEALT and TAKEN (2 px clear of both).</summary>
+        static readonly float[] RowY = { 145f, 134f, 117f, 106f };
+        const float FoeHealedY = 126f;
+        static readonly Color32 HealColor = new Color32(140, 240, 220, 255);
+        PixelText foeHealed;
         const float RowRight = 110f;
 
         public event Action ContinueRequested;
@@ -50,11 +55,13 @@ namespace BallBattle.View
             string[] names = { "HP LEFT", "DMG DEALT", "DMG TAKEN", "COINS" };
             for (var i = 0; i < 4; i++)
             {
-                var y = 144 - i * 12;
+                var y = RowY[i];
                 labels[i] = RunUi.Text(root, art, RowLeft, y, 1, PixelText.Align.Left, names[i], Palette.TextDim);
                 values[i] = RunUi.Text(root, art, RowRight, y, 1, PixelText.Align.Right);
             }
 
+            // Small line under DMG DEALT, only when the enemy healed (Aegis regen, Vampire...): explains a DMG DEALT above its max HP.
+            foeHealed = RunUi.Text(root, art, RowLeft + 8, FoeHealedY, 1, PixelText.Align.Left);
             consequence = RunUi.Text(root, art, 0, 84, 1);
             carry = RunUi.Text(root, art, 0, 72, 1);
             runLine = RunUi.Text(root, art, 0, 40, 3);
@@ -92,8 +99,9 @@ namespace BallBattle.View
             how.Set(r.HowLine, Palette.TextDim);
 
             values[0].Set(HpText.Pair(r.HpLeft, r.MaxHpInFight), r.HpLeft > 0f ? Palette.Text : Palette.HpLost);
-            values[1].Set(FightReport.Number(r.DamageDealt), Palette.Text);
-            values[2].Set(FightReport.Number(r.DamageTaken), Palette.Text);
+            values[1].Set(HpText.Floor(r.DamageDealt).ToString(), Palette.Text);   // whole numbers, rounded down like HP
+            values[2].Set(HpText.Floor(r.DamageTaken).ToString(), Palette.Text);
+            foeHealed.Set(FoeHealedText(r), HealColor);
             values[3].Set($"+{r.CoinsGained}  TOTAL {r.CoinsTotal}", Palette.WallWarning);
 
             consequence.Set(r.ConsequenceLine, accent);
@@ -123,6 +131,10 @@ namespace BallBattle.View
         public PixelButton ContinueButton => continueButton;
         public string TitleText => title.Text;
         public string Value(int row) => values[row].Text;
+        public PixelText FoeHealedLine => foeHealed;
+
+        /// <summary>"FOE HEALED +x" (x rounded down), or "" when the enemy did not heal this fight.</summary>
+        public static string FoeHealedText(FightReport r) => r != null && r.EnemyHealed > 0f ? "FOE HEALED +" + HpText.Floor(r.EnemyHealed) : "";
         public string ConsequenceText => consequence.Text;
         public string CarryText => carry.Text;
         public string NextHeaderText => nextBox.activeSelf ? nextHeader.Text : "";

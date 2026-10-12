@@ -147,7 +147,9 @@ namespace BallBattle.EditorTools
             lib.CardSpeedCap = Real("icons/card_speed-cap.png");
             lib.CardMaxHp = Real("icons/card_max-hp.png");
             lib.CardDamage = Real("icons/card_damage.png");
-            foreach (var (file, sprite) in new[] { ("card_speed-cap", lib.CardSpeedCap), ("card_max-hp", lib.CardMaxHp), ("card_damage", lib.CardDamage) })
+            lib.CardHeal = Real("icons/card_heal.png");
+            lib.CardSwap = Real("icons/card_swap.png");
+            foreach (var (file, sprite) in new[] { ("card_speed-cap", lib.CardSpeedCap), ("card_max-hp", lib.CardMaxHp), ("card_damage", lib.CardDamage), ("card_heal", lib.CardHeal), ("card_swap", lib.CardSwap) })
                 if (sprite == null) Debug.LogWarning($"[BallBattle] missing icons/{file}.png");
 
             lib.ShellKing = Real("boss/shellking.png");

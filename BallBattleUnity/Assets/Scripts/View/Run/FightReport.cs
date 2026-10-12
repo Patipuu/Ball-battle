@@ -16,6 +16,8 @@ namespace BallBattle.View
         readonly float[] dealt = new float[2];
         readonly float[] taken = new float[2];
         readonly float[] hp = new float[2];
+        readonly float[] startHp = new float[2];
+        readonly float[] healed = new float[2];
         bool tracking;
 
         /// <summary>Start a fight: totals to zero, HP from the match as it will start (spawn hooks applied).</summary>
@@ -24,7 +26,8 @@ namespace BallBattle.View
             dealt[0] = dealt[1] = 0f;
             taken[0] = taken[1] = 0f;
             tracking = match != null;
-            for (var i = 0; i < 2; i++) hp[i] = match != null && i < match.Balls.Count ? Mathf0(match.Balls[i].Hp) : 0f;
+            for (var i = 0; i < 2; i++) startHp[i] = hp[i] = match != null && i < match.Balls.Count ? Mathf0(match.Balls[i].Hp) : 0f;
+            healed[0] = healed[1] = 0f;
         }
 
         /// <summary>
@@ -35,6 +38,12 @@ namespace BallBattle.View
 
         /// <summary>Only the part of <see cref="Dealt"/> that ball <paramref name="i"/> itself caused (arena damage excluded).</summary>
         public float DealtBySource(int i) => i >= 0 && i < 2 ? dealt[i] : 0f;
+
+        /// <summary>HP ball <paramref name="i"/> got back this fight (sum of its Heal events: Aegis regen, Vampire, Second Wind...).</summary>
+        public float Healed(int i) => i >= 0 && i < 2 ? healed[i] : 0f;
+
+        /// <summary>HP ball <paramref name="i"/> started the fight with (spawn hooks applied).</summary>
+        public float StartHp(int i) => i >= 0 && i < 2 ? startHp[i] : 0f;
 
         /// <summary>HP ball <paramref name="i"/> lost to every source (enemy, poison, reflect, arena).</summary>
         public float Taken(int i) => i >= 0 && i < 2 ? taken[i] : 0f;
@@ -56,7 +65,11 @@ namespace BallBattle.View
                     Count(-1, e.A, e.Value);    // arena hazard: nobody dealt it
                     break;
                 case SimEventType.Heal:
-                    if (tracking && e.A >= 0 && e.A < 2) hp[e.A] += e.Value;
+                    if (e.A >= 0 && e.A < 2 && e.Value > 0f)
+                    {
+                        healed[e.A] += e.Value;
+                        if (tracking) hp[e.A] += e.Value;
+                    }
                     break;
             }
         }
@@ -101,6 +114,8 @@ namespace BallBattle.View
         public float MaxHpInFight;
         public float DamageDealt;
         public float DamageTaken;
+        /// <summary>HP the enemy healed this fight (0 = no FOE HEALED line).</summary>
+        public float EnemyHealed;
 
         public int CoinsGained;
         public int CoinsTotal;
@@ -141,6 +156,7 @@ namespace BallBattle.View
                 MaxHpInFight = you.MaxHp,
                 DamageDealt = stats != null ? stats.Taken(1) : 0f,   // everything the enemy lost (hits, poison, reflect, arena), like DMG TAKEN
                 DamageTaken = stats != null ? stats.Taken(0) : 0f,
+                EnemyHealed = stats != null ? stats.Healed(1) : 0f,
                 CoinsGained = run.Coins - before.Coins,
                 CoinsTotal = run.Coins,
                 HpNext = run.Build.Hp,

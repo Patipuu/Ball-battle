@@ -97,6 +97,8 @@ MonoBehaviour:
   CardSpeedCap: {fileID: 21300000, guid: 2bda3733ed1b1e74a951f524188c1e02, type: 3}
   CardMaxHp: {fileID: 21300000, guid: 37f454ae1ded1ed4f9a9ee9971bf1c4c, type: 3}
   CardDamage: {fileID: 21300000, guid: 932c4643b37bc5448a5d87fab43a671b, type: 3}
+  CardHeal: {fileID: 21300000, guid: 165c8dda969713849a87e95194be99cc, type: 3}
+  CardSwap: {fileID: 21300000, guid: 02410f688d44515499e235cb8eb82e9e, type: 3}
   ShellKing: {fileID: 21300000, guid: 0c6350efcf1dbc14ebb995cbfd0bfc2f, type: 3}
   ShellKingGlow: {fileID: 21300000, guid: cfc8f4e536b1cab449cd1037c61b8bac, type: 3}
   Mimic:

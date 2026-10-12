@@ -31,6 +31,7 @@ namespace BallBattle.View
             {
                 Menu.Show(false);
                 Arena.StartMatch(a, b, seed);
+                versusStats.Reset(Arena.Sim);
                 Arena.Paused = true;   // frozen during the countdown
             };
             Flow.RoundBegan += () => Arena.Paused = false;
@@ -60,16 +61,31 @@ namespace BallBattle.View
         void OnEnable()
         {
             if (Arena != null) Arena.MatchEnded += OnRoundEnded;
+            if (Arena != null) Arena.SimEventRaised += OnVersusEvent;
         }
 
         void OnDisable()
         {
             if (Arena != null) Arena.MatchEnded -= OnRoundEnded;
+            if (Arena != null) Arena.SimEventRaised -= OnVersusEvent;
         }
 
         void Start() => Flow.ToMenu();
 
-        void OnRoundEnded(int winner) => Flow.OnRoundEnded(winner);
+        /// <summary>Versus round totals for the end-of-fight log line (Run mode keeps its own in RunFlow.Stats).</summary>
+        readonly FightStats versusStats = new FightStats();
+
+        void OnVersusEvent(BallBattle.Sim.SimEvent e)
+        {
+            if (!Run.IsOpen && Flow.Current == MatchFlow.State.Playing) versusStats.Add(e);
+        }
+
+        void OnRoundEnded(int winner)
+        {
+            if (!Run.IsOpen && Flow.Current == MatchFlow.State.Playing)
+                Debug.Log(FightLog.Ended("Versus round " + Flow.Series.DisplayRound, Arena.Sim, versusStats));
+            Flow.OnRoundEnded(winner);
+        }
 
         void Update()
         {

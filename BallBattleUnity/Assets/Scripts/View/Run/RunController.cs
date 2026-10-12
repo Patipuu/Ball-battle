@@ -213,6 +213,17 @@ namespace BallBattle.View
             return $"[BallBattle] Fight {fight} {what}: seed {sim.Seed}, tick {sim.Tick}, you {Ball(0)}, enemy {Ball(1)}";
         }
 
-        static uint NewSeed() => (uint)UnityEngine.Random.Range(1, int.MaxValue);
+        /// <summary>Seed of a NEW run: the -bbSeed value when given (logged), else random. CONTINUE never comes here.</summary>
+        static uint NewSeed() => NewSeed(DebugOptions.ForceSeed);
+
+        public static uint NewSeed(uint? forced)
+        {
+            if (forced.HasValue)
+            {
+                Debug.Log("[BallBattle] Run seed forced: " + forced.Value);
+                return forced.Value;
+            }
+            return (uint)UnityEngine.Random.Range(1, int.MaxValue);
+        }
     }
 }

@@ -54,7 +54,7 @@ namespace BallBattle.View
             {
                 case CardKind.Trait: return TraitLine2(c.Id, c.Level);
                 case CardKind.DamageUp: return "NOT POISON SPIKES OR THORNS";
-                case CardKind.SpeedUp: return "BRAWLER: MORE SPEED IS MORE DMG";
+                case CardKind.SpeedUp: return WeaponNames.Of(BrawlerRule.WeaponId) + ": MORE SPEED IS MORE DMG";
                 case CardKind.SwapWeapon: return "ONLY OFFERED IF ALL TRAITS STILL WORK";
                 case CardKind.Heal: return "HP CARRIES TO NEXT FIGHTS";
                 default: return "";
@@ -86,7 +86,7 @@ namespace BallBattle.View
                 case BubbleTrait.TraitId:
                     return $"SHIELD EVERY {Secs(TraitTuning.BubbleIntervalTicks[i])}S. HOLDS 1";
                 case TwinBladeTrait.TraitId:
-                    return $"2ND BLADE BEHIND  {Pct(TraitTuning.TwinBladeScale[i])}% LONG";
+                    return $"2ND EDGE BEHIND  {Pct(TraitTuning.TwinBladeScale[i])}% LONG";
                 case PoisonTipTrait.TraitId:
                     return $"HITS POISON {Num(TraitTuning.PoisonTipDps[i])}/S FOR {TraitTuning.PoisonTipSeconds[i]}S";
                 default:
@@ -105,7 +105,7 @@ namespace BallBattle.View
                 case ThornsTrait.TraitId: return "NOT SHOTS OR POISON";
                 case SecondWindTrait.TraitId: return "";
                 case GlassCannonTrait.TraitId: return $"MELEE AND SHOTS. MAX HP AT LEAST {Num(TraitTuning.GlassCannonMinHp)}";
-                case ParryMasterTrait.TraitId: return "NEEDS A BLADE";
+                case ParryMasterTrait.TraitId: return "NOT FOR " + WeaponNames.Of(BrawlerRule.WeaponId);   // the only bladeless weapon
                 case BubbleTrait.TraitId: return "BLOCKS 1 HIT OR SHOT. NOT POISON";
                 case TwinBladeTrait.TraitId: return $"ALL MELEE HITS X{Num(TraitTuning.TwinBladeDamageMul[i])} DMG";
                 case PoisonTipTrait.TraitId: return $"SKIPS IF TARGET HAS {TraitTuning.PoisonTipMaxStacks[i]} POISON";

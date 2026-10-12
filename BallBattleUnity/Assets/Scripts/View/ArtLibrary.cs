@@ -59,6 +59,8 @@ namespace BallBattle.View
         public Sprite CardAntidote;
         /// <summary>Stat card icons (14x14): SPEED CAP, MAX HP, DAMAGE. Also the HUD badges of those cards.</summary>
         public Sprite CardSpeedCap, CardMaxHp, CardDamage;
+        /// <summary>HEAL and SWAP card icons (14x14).</summary>
+        public Sprite CardHeal, CardSwap;
 
         [Header("Art v1: bosses (64x64, body centre (32,34) from the top-left, body radius 24)")]
         public Sprite ShellKing;
@@ -103,8 +105,7 @@ namespace BallBattle.View
         }
 
         /// <summary>
-        /// Icon of a card: the trait's icon or the stat card icons (DAMAGE, SPEED CAP, MAX HP). Null for HEAL and SWAP:
-        /// no icon art yet (SWAP keeps the text-only layout so its long titles never meet the reason tag).
+        /// Icon of a card: the trait's icon, or the card icons (DAMAGE, SPEED CAP, MAX HP, HEAL, SWAP).
         /// </summary>
         public Sprite CardIcon(BallBattle.Sim.Run.Card card)
         {
@@ -114,6 +115,8 @@ namespace BallBattle.View
                 case BallBattle.Sim.Run.CardKind.DamageUp: return CardDamage;
                 case BallBattle.Sim.Run.CardKind.SpeedUp: return CardSpeedCap;
                 case BallBattle.Sim.Run.CardKind.MaxHp: return CardMaxHp;
+                case BallBattle.Sim.Run.CardKind.Heal: return CardHeal;
+                case BallBattle.Sim.Run.CardKind.SwapWeapon: return CardSwap;
                 default: return null;
             }
         }

@@ -157,6 +157,7 @@ namespace BallBattle.View
             if (Current != State.Playing || finished != match) return;
             LastFightWon = finished.WinnerIndex == 0;
             LastFightDraw = finished.WinnerIndex < 0;
+            UnityEngine.Debug.Log(FightLog.Ended($"Fight {Run.FightIndex + 1}", finished, Stats, Run.Seed));   // real values, for testers' logs
             timer = FightOverSeconds;
             Go(State.FightOver);
         }
