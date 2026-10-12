@@ -79,6 +79,7 @@ namespace BallBattle.View
                 var build = Flow.Run.Build;
                 arena.Badges?.SetCardBadges(0, build.DamagePct > 0f, build.SpeedPct > 0f, build.MaxHp > BallBattle.Sim.Run.RunTuning.PlayerStartHp);
                 arena.Paused = true;
+                if (Flow.Run.IsRetry) overlay.ShowRetryBanner();
             };
             Flow.FightBegan += () =>
             {
@@ -142,7 +143,8 @@ namespace BallBattle.View
         public void Tick(float dt)
         {
             if (!IsOpen) return;
-            CheckArenaShowsTheFight();            Flow.Tick(dt);
+            CheckArenaShowsTheFight();
+            if (!overlay.TickRetryBanner(dt)) Flow.Tick(dt);
             if (dirty) Refresh();
             overlay.Render(Flow, dt);
         }

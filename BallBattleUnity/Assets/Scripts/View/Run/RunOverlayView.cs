@@ -12,10 +12,14 @@ namespace BallBattle.View
 
         public event Action SpeedToggled;
 
-        PixelText label, countdown, banner;
+        PixelText label, countdown, banner, retryCaption, sixtyPercent;
         SpriteRenderer band;
         PixelButton speed;
         SpriteRenderer retryToken;
+        SpriteRenderer[] retryBorder;
+        GameObject retryBannerRoot;
+        PixelButton retryBannerTap;
+        float retryBannerLeft, sixtyPercentLeft;
         ArtLibrary art;
         RunFlow.State lastState = RunFlow.State.Closed;
         int lastCountdown = -1;
@@ -33,7 +37,33 @@ namespace BallBattle.View
             v.banner = PixelText.Create(root, "Banner", art.Font, new Vector2(0, -5), PixelText.Align.Center, 2, Order + 1);
             v.speed = PixelButton.Create(root, "Speed", art, new Rect(-22, -234, 44, 18), "X1", 1, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             v.speed.Clicked += () => v.SpeedToggled?.Invoke();
-            v.retryToken = RunUi.Icon(root, new Vector2(110, 128), Order + 2);
+            v.retryToken = RunUi.Icon(root, new Vector2(115, 210), Order + 2);
+            v.retryCaption = PixelText.Create(root, "RetryCaption", art.Font, new Vector2(87, 158), PixelText.Align.Right, 1, Order + 2);
+            v.sixtyPercent = PixelText.Create(root, "SixtyPercent", art.Font, new Vector2(23, 185), PixelText.Align.Center, 1, Order + 2);
+            v.retryBorder = new[]
+            {
+                PixelRect.Create(root, "RetryBorderTop", art.Pixel, Palette.WallWarning, Order + 1),
+                PixelRect.Create(root, "RetryBorderBottom", art.Pixel, Palette.WallWarning, Order + 1),
+                PixelRect.Create(root, "RetryBorderLeft", art.Pixel, Palette.WallWarning, Order + 1),
+                PixelRect.Create(root, "RetryBorderRight", art.Pixel, Palette.WallWarning, Order + 1),
+            };
+            PixelRect.Set(v.retryBorder[0], -125, 217, 125, 218);
+            PixelRect.Set(v.retryBorder[1], -125, 154, 125, 155);
+            PixelRect.Set(v.retryBorder[2], -125, 155, -124, 217);
+            PixelRect.Set(v.retryBorder[3], 124, 155, 125, 217);
+
+            v.retryBannerRoot = new GameObject("RetryBanner");
+            v.retryBannerRoot.transform.SetParent(root, false);
+            var bannerRoot = v.retryBannerRoot.transform;
+            PixelRect.Set(PixelRect.Create(bannerRoot, "BannerBorder", art.Pixel, Palette.WallWarning, Order + 5), -75, -31, 75, 31);
+            PixelRect.Set(PixelRect.Create(bannerRoot, "BannerFill", art.Pixel, Palette.Background, Order + 6), -74, -30, 74, 30);
+            PixelText.Create(bannerRoot, "RetryTitle", art.Font, new Vector2(0, 9), PixelText.Align.Center, 3, Order + 7).Set("RETRY", Palette.WallWarning);
+            PixelText.Create(bannerRoot, "SameFoe", art.Font, new Vector2(0, -8), PixelText.Align.Center, 1, Order + 7).Set("SAME FOE  SAME ARENA", Palette.Text);
+            PixelText.Create(bannerRoot, "LastChance", art.Font, new Vector2(0, -19), PixelText.Align.Center, 1, Order + 7).Set("HP 60%  LAST CHANCE", Palette.WallWarning);
+            v.retryBannerTap = PixelButton.Create(bannerRoot, "DismissRetry", art, new Rect(-135, -240, 270, 480), null, 1,
+                new Color32(0, 0, 0, 0), new Color32(0, 0, 0, 0), Palette.Text, Order + 8);
+            v.retryBannerTap.Clicked += v.DismissRetryBanner;
+            v.retryBannerRoot.SetActive(false);
             v.Hide();
             return v;
         }
@@ -44,6 +74,32 @@ namespace BallBattle.View
         {
             gameObject.SetActive(false);
             lastState = RunFlow.State.Closed;
+            retryBannerLeft = 0f;
+            retryBannerRoot.SetActive(false);
+        }
+
+        public bool RetryBannerActive => retryBannerLeft > 0f;
+
+        public void ShowRetryBanner()
+        {
+            retryBannerLeft = 1.5f;
+            retryBannerRoot.SetActive(true);
+            retryBannerTap.NoteShown();
+        }
+
+        public void DismissRetryBanner()
+        {
+            retryBannerLeft = 0f;
+            retryBannerRoot.SetActive(false);
+        }
+
+        /// <summary>Hold the countdown while the retry notice is readable.</summary>
+        public bool TickRetryBanner(float dt)
+        {
+            if (!RetryBannerActive) return false;
+            retryBannerLeft -= dt;
+            if (retryBannerLeft <= 0f) DismissRetryBanner();
+            return true;
         }
 
         public void Render(RunFlow flow, float dt)
@@ -54,13 +110,21 @@ namespace BallBattle.View
             if (!gameObject.activeSelf) gameObject.SetActive(true);
             retryToken.sprite = flow.Run.RetryCount == 0 ? art.RetryTokenOn : art.RetryTokenOff;
             retryToken.enabled = retryToken.sprite != null;
+            retryCaption.Set(flow.Run.RetryCount == 0 ? "RETRY 1" : "", Palette.WallWarning);
+            var retry = flow.Run.IsRetry;
+            foreach (var edge in retryBorder) edge.enabled = retry;
+            if (!retry) sixtyPercent.Set("", Palette.WallWarning);
 
             if (state != lastState)
             {
                 var run = flow.Run;
                 if (state == RunFlow.State.Countdown)
                     label.Set($"FIGHT {run.FightIndex + 1}/{RunTuning.Fights}" + (run.IsBossFight ? "  GIANT BOSS" : ""), run.IsBossFight ? Palette.WallWarning : Palette.Text);
-                if (state == RunFlow.State.Playing) goTimer = GoSeconds;
+                if (state == RunFlow.State.Playing)
+                {
+                    goTimer = GoSeconds;
+                    sixtyPercentLeft = retry ? 3f : 0f;
+                }
                 var over = state == RunFlow.State.FightOver;
                 band.enabled = over;
                 banner.Set(over ? (flow.LastFightWon ? $"WIN!  +{RunTuning.WinCoins} COINS" : flow.Run.RetryCount == 0 ? "LOST  RETRY" : "RUN OVER") : "",
@@ -77,6 +141,13 @@ namespace BallBattle.View
                 if (goTimer <= 0f) countdown.Set("", default);
             }
             else if (state == RunFlow.State.FightOver && lastCountdown != -1) { lastCountdown = -1; countdown.Set("", default); }
+            if (state == RunFlow.State.Playing && retry && sixtyPercentLeft > 0f)
+            {
+                sixtyPercent.Set("60%", Palette.WallWarning);
+                sixtyPercentLeft -= dt;
+                if (sixtyPercentLeft <= 0f) sixtyPercent.Set("", Palette.WallWarning);
+            }
+            else if (state != RunFlow.State.Playing) sixtyPercent.Set("", Palette.WallWarning);
         }
     }
 }
