@@ -139,6 +139,8 @@ namespace BallBattle.View
         public string CarryText => carry.Text;
         public string NextHeaderText => nextBox.activeSelf ? nextHeader.Text : "";
         public string NextNameText => nextBox.activeSelf ? nextName.Text : "";
+        /// <summary>Top line "FIGHT n/8 ... VS NAME" (tests).</summary>
+        public string FightLineText => fight.Text;
         public string NextStatsText => nextBox.activeSelf ? nextStats.Text : "";
     }
 }

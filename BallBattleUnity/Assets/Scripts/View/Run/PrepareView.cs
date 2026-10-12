@@ -19,9 +19,9 @@ namespace BallBattle.View
         public static Rect CardArea(int i) => new Rect(-125, CardBottoms[i], 250, CardHeight);
         public static readonly Rect RerollArea = new Rect(-125, -130, 110, 30);
         public static readonly Rect FightArea = new Rect(-5, -130, 130, 30);
-        public static readonly Rect ConfirmPanel = new Rect(-112, -66, 224, 92);
-        public static readonly Rect ConfirmYesArea = new Rect(-102, -58, 92, 28);
-        public static readonly Rect ConfirmNoArea = new Rect(10, -58, 92, 28);
+        public static readonly Rect ConfirmPanel = ConfirmDialog.PanelAt(0);   // where SKIP FREE PICK? opens (off FIGHT)
+        public static readonly Rect ConfirmYesArea = ConfirmDialog.YesAt(0);
+        public static readonly Rect ConfirmNoArea = ConfirmDialog.NoAt(0);
 
         const float BlinkSeconds = 0.45f;
         static readonly Color32 TakenFill = new Color32(30, 56, 40, 255);
@@ -59,14 +59,14 @@ namespace BallBattle.View
         static readonly Color32 FrameBlocked = new Color32(120, 120, 132, 255);
         readonly float[] cardBlink = new float[RunTuning.OfferSize];
         float rerollBlink;
-        Transform confirmRoot;
+        ConfirmDialog dialog;
         RunState run;
         /// <summary>Taps are ignored while the SKIP FREE PICK dialog covers the cards.</summary>
         bool TapSwallowed => ConfirmOpen;
         bool onScreen;
 
         /// <summary>On entering the screen every tap is dropped for this long (the tap that closed the fight result).</summary>
-        public const float EntryInputBlockSeconds = 0.3f;
+        public const float EntryInputBlockSeconds = 0.6f;
 
         public static PrepareView Create(Transform parent, ArtLibrary art)
         {
@@ -138,20 +138,9 @@ namespace BallBattle.View
 
         void BuildConfirm(Transform root)
         {
-            const int o = RunUi.Order + 20;   // over the cards and their text
-            confirmRoot = new GameObject("ConfirmSkip").transform;
-            confirmRoot.SetParent(root, false);
-            var p = ConfirmPanel;
-            PixelRect.Set(PixelRect.Create(confirmRoot, "Shade", art.Pixel, new Color32(16, 16, 26, 200), o), -135, -240, 135, 240);
-            PixelRect.Set(PixelRect.Create(confirmRoot, "Border", art.Pixel, Palette.WallWarning, o + 1), p.xMin, p.yMin, p.xMax, p.yMax);
-            PixelRect.Set(PixelRect.Create(confirmRoot, "Fill", art.Pixel, RunUi.Panel, o + 2), p.xMin + 1, p.yMin + 1, p.xMax - 1, p.yMax - 1);
-            PixelText.Create(confirmRoot, "Question", art.Font, new Vector2(0, p.yMax - 22), PixelText.Align.Center, 2, o + 4).Set("SKIP FREE PICK?", Palette.WallWarning);
-            PixelText.Create(confirmRoot, "Info", art.Font, new Vector2(0, p.yMax - 34), PixelText.Align.Center, 1, o + 4).Set("THE FREE CARD IS LOST", Palette.TextDim);
-            PixelButton.Create(confirmRoot, "Yes", art, ConfirmYesArea, "YES", 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, o + 3).Clicked += () => Confirm(true);
-            PixelButton.Create(confirmRoot, "No", art, ConfirmNoArea, "NO", 2, Palette.Floor, Palette.Text, Palette.Text, o + 3).Clicked += () => Confirm(false);
-            confirmRoot.gameObject.SetActive(false);
+            dialog = ConfirmDialog.Create(root, art, RunUi.Order + 20, "Confirm");   // over the cards and their text
+            dialog.Closed += NoteShownUnderDialog;   // the tap on YES/NO must not go on to a card under it
         }
-
         /// <summary>Sprite radius the preview icons are scaled from (the sim radius 24 of a boss = x1.5).</summary>
         float IconNativeRadius => art != null && art.BallFlash != null ? art.BallFlash.rect.width / art.BallFlash.pixelsPerUnit * 0.5f : 16f;
         const float ArenaPreviewX = 92f;
@@ -209,7 +198,6 @@ namespace BallBattle.View
             reroll.SetColors(Palette.Floor, rerollWhy == null ? Palette.TextDim : Palette.HpBack);
             if (rerollWhy != null) rerollReason.Set(rerollWhy, Blocked);
             else rerollReason.Set(RerollAgainText(run), Palette.TextDim);   // reroll is repeatable: say it costs again
-            if (confirmRoot.gameObject.activeSelf && !ShouldConfirmSkip(run)) confirmRoot.gameObject.SetActive(false);
         }
 
         /// <summary>Enemy HP line: the HP the fight really starts with (Heavy, Glass Cannon, boss HP all applied).</summary>
@@ -236,7 +224,7 @@ namespace BallBattle.View
         {
             foreach (var c in cards) c.NoteShown();
             reroll.NoteShown();
-            foreach (var b in GetComponentsInChildren<PixelButton>(false)) if (!b.transform.IsChildOf(confirmRoot)) b.NoteShown();
+            foreach (var b in GetComponentsInChildren<PixelButton>(false)) if (!b.transform.IsChildOf(dialog.Root)) b.NoteShown();
         }
 
         /// <summary>Card look: available (kind color), taken (green fill + TAKEN), blocked (grey + reason in red).</summary>
@@ -405,6 +393,13 @@ namespace BallBattle.View
                 StyleCard(i);
                 return;
             }
+            if (run != null && run.OfferCard(i).Kind == CardKind.SwapWeapon)
+            {
+                // A swap changes the weapon for the rest of the run: ask first. NO costs nothing.
+                var to = WeaponNames.Of(run.OfferCard(i).Id);
+                dialog.Open("SWAP TO " + to + "?", "KEEPS TRAITS AND STATS", CardArea(i), () => CardPicked?.Invoke(i));
+                return;
+            }
             CardPicked?.Invoke(i);
         }
 
@@ -426,19 +421,10 @@ namespace BallBattle.View
             if (ConfirmOpen) return;
             if (ShouldConfirmSkip(run))
             {
-                confirmRoot.gameObject.SetActive(true);
-                PixelButton.NoteShownAll(confirmRoot);   // YES/NO only take taps that start after the dialog opened
+                dialog.Open("SKIP FREE PICK?", "THE FREE CARD IS LOST", FightArea, () => FightRequested?.Invoke());
                 return;
             }
             FightRequested?.Invoke();
-        }
-
-        void Confirm(bool yes)
-        {
-            if (!ConfirmOpen) return;
-            confirmRoot.gameObject.SetActive(false);
-            NoteShownUnderDialog();   // the tap on YES/NO must not go on to a card under it
-            if (yes) FightRequested?.Invoke();
         }
 
         void Update()
@@ -551,7 +537,7 @@ namespace BallBattle.View
 
         public void Hide()
         {
-            if (confirmRoot != null) confirmRoot.gameObject.SetActive(false);
+            dialog?.Close();
             onScreen = false;
             gameObject.SetActive(false);
         }
@@ -560,8 +546,13 @@ namespace BallBattle.View
         public void PressCard(int i) => OnCardClicked(i);
         public void PressReroll() => OnRerollClicked();
         public void PressFight() => OnFightClicked();
-        public void PressConfirm(bool yes) => Confirm(yes);
-        public bool ConfirmOpen => confirmRoot != null && confirmRoot.gameObject.activeSelf;
+        public void PressConfirm(bool yes) => dialog.Press(yes);
+        public bool ConfirmOpen => dialog != null && dialog.IsOpen;
+        /// <summary>Weapon name cells (tests): you and the enemy.</summary>
+        public string YouNameText => youName.Text;
+        public string EnemyNameText => enemyName.Text;
+        /// <summary>The open dialog (tests): question, YES / NO areas.</summary>
+        public ConfirmDialog Dialog => dialog;
         public PixelButton Card(int i) => cards[i];
         public string CardTitle(int i) => cardTitles[i].Text;
         public PixelText CardTag(int i) => cardTags[i];

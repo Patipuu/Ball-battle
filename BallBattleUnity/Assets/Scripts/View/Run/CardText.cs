@@ -86,7 +86,7 @@ namespace BallBattle.View
                 case BubbleTrait.TraitId:
                     return $"SHIELD EVERY {Secs(TraitTuning.BubbleIntervalTicks[i])}S. HOLDS 1";
                 case TwinBladeTrait.TraitId:
-                    return $"2ND EDGE BEHIND  {Pct(TraitTuning.TwinBladeScale[i])}% LONG";
+                    return $"2ND BLADE BEHIND  {Pct(TraitTuning.TwinBladeScale[i])}% LONG";   // "blade" = the weapon's edge here, not the weapon id
                 case PoisonTipTrait.TraitId:
                     return $"HITS POISON {Num(TraitTuning.PoisonTipDps[i])}/S FOR {TraitTuning.PoisonTipSeconds[i]}S";
                 default:

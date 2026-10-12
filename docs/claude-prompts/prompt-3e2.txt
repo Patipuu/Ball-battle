@@ -1,0 +1,14 @@
+Prompt 3e.2: sửa nhỏ sau review 3e (chỉ View/, Tests/)
+
+Luật chạy: KHÔNG sửa Sim/, SimVersion giữ 3. Không commit, không xoá file. Chạy cả SimTests và EditMode; fail thì dừng và ghi lại. Ghi thêm một mục "3e.2" vào cuối docs/claude-runs/3e.md.
+
+1. Chữ mô tả trait: đổi "2ND EDGE BEHIND" về lại "2ND BLADE BEHIND" (blade ở đây là lưỡi vũ khí). Giữ "NOT FOR WRECKER".
+2. Nới test CardTextNeverShowsAnOldWeaponId (Prompt3eTests): không quét cả chuỗi tìm chữ. Chỉ kiểm tên vũ khí ở đúng vị trí tên vũ khí: tiền tố "<TÊN>:" ở đầu dòng mô tả thẻ, ô tên vũ khí, tên đối thủ, tiêu đề thẻ SWAP; các chỗ này phải bằng WeaponNames.Of(id). "TWIN BLADE", "2ND BLADE BEHIND" phải pass.
+3. Thêm test input cho đúng kịch bản click xuyên: màn vừa mở gọi BlockFor(0.3); nhấn chuột lên một nút TRONG lúc khoá (qua PollFrame và qua GuiEvent, 2 biến thể), nhả SAU khi mở khoá ở cùng nút → KHÔNG được ra click, và cú click bình thường kế tiếp vẫn ra đúng 1 click. Làm tương tự với khoá 0.8 s của màn kết quả. Hiện code có vẻ đã đúng vì captureDown được đặt cả khi đang khoá nên cú nhả không bị bù cú nhấn; test này để khoá hành vi đó lại. Nếu test fail thì sửa: chỉ bù cú nhấn cho cú nhả khi trước đó không có cú nhấn nào bị bỏ vì đang khoá.
+4. Màn Prepare: tăng khoá input lúc mở màn từ 0.3 s lên 0.6 s.
+5. Xác nhận thẻ SWAP: click thẻ SWAP không chọn ngay mà mở hộp "SWAP TO <TÊN MỚI>?" (tên qua WeaponNames) với 2 nút YES và NO; NO đóng hộp, không tốn lượt/xu. Các thẻ khác vẫn 1 click như cũ. Dùng lại kiểu hộp của "SKIP FREE PICK?" nếu được.
+6. Nút NEW RUN khi đang có run lưu dở: mở hộp "ABANDON CURRENT RUN?" với YES và NO. Chỉ YES mới ghi đè run cũ; NO giữ nguyên run lưu dở. Không có run lưu dở thì NEW RUN chạy như cũ.
+7. Luật chung cho mọi hộp xác nhận (SWAP, ABANDON, và cả SKIP FREE PICK có sẵn):
+   - Khi hộp hiện, gọi BlockFor(0.3) để khoá input 0.3 s.
+   - Nút YES KHÔNG được chồng lên vùng vừa click để mở hộp (vùng thẻ SWAP, vùng nút NEW RUN, vùng nút FIGHT). Tính vị trí YES theo vùng đó và đặt ở chỗ khác; NO có thể nằm chỗ đó.
+   - Test: spam nhấn/nhả liên tục ~5 lần/giây ở đúng vị trí vừa click trong 2 s → hộp vẫn mở, không có YES nào được chọn, run/vũ khí không đổi. Làm cho cả 3 hộp. Test riêng: YES/NO không chồng hitbox vùng mở hộp ở mọi trường hợp bố trí (thẻ SWAP ở vị trí 1, 2, 3).

@@ -373,40 +373,50 @@ namespace BallBattle.Tests
 
         // ---- 9. No old weapon ids on screen ----
 
-        static readonly Regex OldIds = new Regex(@"\b(BLADE|FANG|PIKE|BRAWLER|VOLLEY|VENOM|AEGIS|RIG)\b");
+        static readonly string[] OldIds = WeaponRegistry.All.Select(w => w.Id.ToUpperInvariant()).ToArray();
+        static readonly Regex NamePrefix = new Regex(@"^([A-Z]+):");
 
+        /// <summary>
+        /// Weapon names only where a weapon name goes: a "<NAME>:" prefix on a card description line, SWAP titles, the
+        /// weapon name cells. Words that merely share an old id elsewhere ("TWIN BLADE", "2ND BLADE BEHIND") are fine.
+        /// </summary>
         [Test]
-        public void CardTextNeverShowsAnOldWeaponId()
+        public void CardTextNamesWeaponsWithTheirNewNames()
         {
+            var names = WeaponRegistry.All.Select(w => WeaponNames.Of(w.Id)).ToArray();
             var cards = new List<Card> { new Card(CardKind.DamageUp), new Card(CardKind.SpeedUp), new Card(CardKind.MaxHp), new Card(CardKind.Heal) };
             foreach (var t in TraitRegistry.All) { cards.Add(new Card(CardKind.Trait, t.Id, 1)); cards.Add(new Card(CardKind.Trait, t.Id, 2)); }
             foreach (var w in WeaponRegistry.All) cards.Add(new Card(CardKind.SwapWeapon, w.Id));
             foreach (var c in cards)
             {
                 foreach (var text in new[] { CardText.Detail(c), CardText.Detail2(c) })
-                    Assert.That(OldIds.IsMatch(text), Is.False, $"{c}: '{text}'");
+                {
+                    var m = NamePrefix.Match(text);
+                    if (!m.Success) continue;
+                    Assert.That(OldIds, Does.Not.Contain(m.Groups[1].Value), $"{c}: '{text}' names a weapon by its old id");   // "UPGRADE:" etc. are not weapons
+                }
                 if (c.Kind == CardKind.SwapWeapon)
                     Assert.That(CardText.Title(c), Is.EqualTo("SWAP TO " + WeaponNames.Of(c.Id)));
             }
-            Assert.That(CardText.Detail2(new Card(CardKind.SpeedUp)), Does.StartWith("WRECKER:"));
+            Assert.That(CardText.Detail2(new Card(CardKind.SpeedUp)), Does.StartWith(WeaponNames.Of(BrawlerRule.WeaponId) + ":"));
+            Assert.That(CardText.Detail(new Card(CardKind.Trait, TwinBladeTrait.TraitId, 1)), Does.StartWith("2ND BLADE BEHIND"), "blade = the weapon's edge here");
+            Assert.That(CardText.Detail2(new Card(CardKind.Trait, ParryMasterTrait.TraitId, 1)), Is.EqualTo("NOT FOR " + WeaponNames.Of(BrawlerRule.WeaponId)));
         }
 
         [Test]
-        public void ScreensNameWeaponsWithTheirNewNames()
+        public void WeaponNameCellsShowTheNewNames()
         {
-            // Prepare (you + enemy), result screen next enemy: display names only.
             var run = RunState.Start(72, FirstChoice(72), new ProgressData());
-            run.OfferCards.Clear();   // trait names (TWIN BLADE) are trait names, not weapon ids: keep to stat cards here
-            foreach (var c in new[] { new Card(CardKind.DamageUp), new Card(CardKind.SpeedUp), new Card(CardKind.SwapWeapon, VenomRule.WeaponId) }) run.OfferCards.Add(OfferSlot.From(c));
             var v = PrepareView.Create(root.transform, art);
             v.Show(run);
-            foreach (var t in v.GetComponentsInChildren<PixelText>(false))
-                Assert.That(OldIds.IsMatch(t.Text), Is.False, $"Prepare: '{t.Text}'");
+            Assert.That(v.YouNameText, Is.EqualTo(WeaponNames.Of(run.Build.WeaponId)), "your weapon cell");
+            Assert.That(v.EnemyNameText, Is.EqualTo(WeaponNames.Of(run.Enemy.WeaponId)), "enemy weapon cell");
+
             var r = new FightReport { EnemyWeaponId = VenomRule.WeaponId, FightNumber = 1, HpLeft = 40f, MaxHpInFight = 100f, Outcome = FightOutcome.Win, NextArenaId = ArenaRegistry.Classic, NextWeaponId = RigRule.WeaponId, NextEnemyHp = 120f, MaxHpNext = 100f, HpNext = 75f };
             var rv = RunResultView.Create(root.transform, art);
             rv.Show(r);
-            foreach (var t in rv.GetComponentsInChildren<PixelText>(false))
-                Assert.That(OldIds.IsMatch(t.Text), Is.False, $"Result: '{t.Text}'");
+            Assert.That(rv.FightLineText, Does.EndWith("VS " + WeaponNames.Of(VenomRule.WeaponId)), "enemy just fought");
+            Assert.That(rv.NextNameText, Is.EqualTo(WeaponNames.Of(RigRule.WeaponId)), "next enemy");
         }
     }
 }

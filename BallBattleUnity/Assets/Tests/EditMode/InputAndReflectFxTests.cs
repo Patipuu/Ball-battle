@@ -88,12 +88,12 @@ namespace BallBattle.Tests
             Tap(Center(PrepareView.CardArea(0)));
             Tap(Center(PrepareView.FightArea));
             Tap(Center(PrepareView.RerollArea));
-            Wait(0.15f);
+            Wait(0.4f);
             Tap(Center(PrepareView.CardArea(1)));
-            Assert.That(picks, Is.Empty, "taps in the first 300 ms do nothing");
+            Assert.That(picks, Is.Empty, "taps in the first 0.6 s do nothing (3e.2: was 0.3 s)");
             Assert.That(other, Is.Empty);
 
-            Wait(0.1f);   // 0.35 s after opening
+            Wait(0.15f);   // 0.65 s after opening
             Tap(Center(PrepareView.CardArea(0)));
             Assert.That(picks, Is.EqualTo(new[] { 0 }));
         }
@@ -110,7 +110,7 @@ namespace BallBattle.Tests
             Press(Center(PrepareView.CardArea(0)));   // the click that dismissed "LOST -1 LIFE": pressed while Prepare is hidden
             Wait(0.5f);
             v.Show(run);                               // Prepare opens while the button is still down
-            Wait(0.5f);
+            Wait(0.7f);                                // past the 0.6 s entry lock
             Release(Center(PrepareView.CardArea(0)));  // released on a card after the entry block
             Assert.That(picks, Is.Empty, "press before the screen opened does not count");
 
@@ -126,7 +126,7 @@ namespace BallBattle.Tests
             var run = NewRun();
             run.Pick(0);   // free pick used: FIGHT does not ask, REROLL is locked, so test REROLL on a fresh run below
             Prepare(run, picks, other);
-            Wait(0.4f);
+            Wait(0.65f);
 
             Press(Center(PrepareView.CardArea(1)));
             Release(Center(PrepareView.CardArea(2)));
@@ -153,7 +153,7 @@ namespace BallBattle.Tests
             var picks = new List<int>();
             var other = new List<string>();
             Prepare(NewRun(), picks, other);
-            Wait(0.4f);
+            Wait(0.65f);
             Press(Center(PrepareView.RerollArea));
             Release(Center(PrepareView.FightArea));
             Assert.That(other, Is.Empty);
@@ -167,9 +167,10 @@ namespace BallBattle.Tests
             var picks = new List<int>();
             var other = new List<string>();
             var v = Prepare(NewRun(), picks, other);
-            Wait(0.4f);
+            Wait(0.65f);
             Tap(Center(PrepareView.FightArea));
             Assert.That(v.ConfirmOpen, Is.True, "free pick unused: asks first");
+            Wait(0.35f);   // the dialog drops taps for 0.3 s after it opens (3e.2)
 
             var yesOverCard = new Vector2(PrepareView.ConfirmYesArea.center.x, -40f);
             Assert.That(PrepareView.ConfirmYesArea.Contains(yesOverCard) && PrepareView.CardArea(1).Contains(yesOverCard), Is.True);
