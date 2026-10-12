@@ -24,10 +24,13 @@ namespace BallBattle.SimTests
             var choices = RunState.StartChoices(seed, UnlockRules.Weapons(progress));
             var rng = new SimRandom(seed ^ 0xB07B07u);
             var run = RunState.Start(seed, choices[(int)(rng.NextUInt() % (uint)choices.Count)], progress);
+            if (policy == Policy.Random) PickRandom(run, rng);
+            else PickGreedyStart(run);
 
             while (!run.Over)
             {
                 if (policy == Policy.Random) PickRandom(run, rng);
+                else if (run.StartPickPending) PickGreedyStart(run); // retry grants one card and goes straight to the fight
                 else PickGreedy(run);
 
                 var m = run.CreateMatch();
@@ -43,6 +46,13 @@ namespace BallBattle.SimTests
             if (options.Length > 0) run.Pick(options[(int)(rng.NextUInt() % (uint)options.Length)]);
         }
 
+        static void PickGreedyStart(RunState run)
+        {
+            var best = Best(run);
+            if (best < 0) best = Enumerable.Range(0, run.OfferCount).Where(run.CanPick).DefaultIfEmpty(-1).First();
+            if (best >= 0) run.Pick(best);
+        }
+
         /// <summary>Heal when low, else upgrade/add traits, else damage, else max HP; rerolls bad hands, buys a second card when rich.</summary>
         static void PickGreedy(RunState run)
         {
@@ -52,7 +62,7 @@ namespace BallBattle.SimTests
                 var best = Best(run);
                 if (best < 0) best = Enumerable.Range(0, run.OfferCount).Where(run.CanPick).DefaultIfEmpty(-1).First();
                 if (best < 0 || !run.CanPick(best)) return;
-                if (pick > 0 && run.Coins < RunTuning.ExtraPickCost + RunTuning.RerollCost) return;
+                if (pick > 0 && run.Coins < RunTuning.ExtraPickCost + run.NextRerollCost) return;
                 run.Pick(best);
             }
         }

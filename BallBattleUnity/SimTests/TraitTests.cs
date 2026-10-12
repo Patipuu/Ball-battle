@@ -29,6 +29,7 @@ namespace BallBattle.SimTests
             m.Step();
             var heal = TraitTuning.SecondWindHeal[level - 1];
             Assert.That(m.Balls[1].Hp, Is.EqualTo(25f + heal).Within(1e-4f));
+            Assert.That(m.Events.Count(e => e.Type == SimEventType.TraitTriggered && e.TraitId == SecondWindTrait.TraitId && e.A == 1 && e.Value == heal), Is.EqualTo(1));
             m.Balls[1].Hp = 10f;
             m.Step();
             Assert.That(m.Balls[1].Hp, Is.EqualTo(10f), "only once");
@@ -43,6 +44,7 @@ namespace BallBattle.SimTests
             m.Step();
             Assert.That(m.Balls[1].Alive);
             Assert.That(m.Balls[1].Hp, Is.EqualTo(TraitTuning.SecondWindHeal[0]).Within(1e-4f));
+            Assert.That(m.Events.Any(e => e.Type == SimEventType.TraitTriggered && e.TraitId == SecondWindTrait.TraitId && e.A == 1), Is.True);
         }
 
         [Test]

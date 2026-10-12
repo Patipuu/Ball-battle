@@ -56,6 +56,7 @@ namespace BallBattle.Tests
         static RunState NewRun()
         {
             var run = RunState.Start(77, "blade", new ProgressData());
+            run.Pick(0);   // Complete CHOOSE YOUR START before showing Prepare.
             run.Coins = 10;
             run.OfferCards.Clear();
             foreach (var c in new[] { new Card(CardKind.DamageUp), new Card(CardKind.SpeedUp), new Card(CardKind.MaxHp) })

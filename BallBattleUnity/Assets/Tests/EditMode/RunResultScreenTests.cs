@@ -81,9 +81,10 @@ namespace BallBattle.Tests
             f.Open();
             f.NewRun(21);
             f.ChooseWeapon(f.StartChoices[0]);
+            f.PickStart(0);
             f.Pick(0);
             var coinsBefore = f.Run.Coins;
-            var livesBefore = f.Run.Lives;
+            var retriesBefore = f.Run.RetryCount;
 
             f.Fight();
             f.Tick(2.1f);
@@ -106,8 +107,8 @@ namespace BallBattle.Tests
             var nextStart = f.Run.CreateMatch().Balls[0];
             Assert.That(r.HpNext, Is.EqualTo(nextStart.Hp), "HP NEXT FIGHT = the next fight's real start HP");
             Assert.That(r.MaxHpNext, Is.EqualTo(nextStart.MaxHp));
-            Assert.That(r.LivesBefore, Is.EqualTo(livesBefore));
-            Assert.That(r.LivesAfter, Is.EqualTo(f.Run.Lives));
+            Assert.That(r.RetriesBefore, Is.EqualTo(retriesBefore));
+            Assert.That(r.RetriesAfter, Is.EqualTo(f.Run.RetryCount));
 
             // Next fight: the exact enemy, HP and arena the next Prepare / fight will use.
             Assert.That(r.NextFightNumber, Is.EqualTo(2));
@@ -128,6 +129,7 @@ namespace BallBattle.Tests
             f.Open();
             f.NewRun(22);
             f.ChooseWeapon(f.StartChoices[0]);
+            f.PickStart(0);
             f.Fight();
             f.Tick(2.1f);
             while (lastMatch.Outcome == MatchOutcome.Ongoing) lastMatch.Step();
@@ -151,7 +153,7 @@ namespace BallBattle.Tests
             FightNumber = 3, WasBoss = true, EnemyWeaponId = BrawlerRule.WeaponId, Outcome = o, EndReason = MatchEndReason.Knockout,
             Seconds = 41.6f, HpLeft = o == FightOutcome.Win ? 12.4f : 0f, MaxHpInFight = 135f, DamageDealt = 87.25f, DamageTaken = 133.4f,
             CoinsGained = o == FightOutcome.Win ? RunTuning.WinCoins : RunTuning.LossCoins, CoinsTotal = 12,
-            HpNext = retry ? 60f : 100f, MaxHpNext = 100f, LivesBefore = 3, LivesAfter = o == FightOutcome.Win ? 3 : 2, IsRetry = retry,
+            HpNext = retry ? 60f : 100f, MaxHpNext = 100f, RetriesBefore = 0, RetriesAfter = retry ? 1 : 0, IsRetry = retry,
             RunOver = over, RunWon = won,
             NextFightNumber = retry ? 3 : 4, NextIsBoss = retry, NextWeaponId = AegisRule.WeaponId, NextTraits = "GLASS CANNON PARRY MASTER",
             NextEnemyHp = 297f, NextArenaId = ArenaRegistry.LowGravity,
@@ -163,8 +165,8 @@ namespace BallBattle.Tests
             Assert.That(Report(FightOutcome.Win).Title, Is.EqualTo("WIN"));
             Assert.That(Report(FightOutcome.Win).ConsequenceLine, Is.EqualTo($"WIN  +{RunTuning.WinCoins} COINS"));
             Assert.That(Report(FightOutcome.Lost).Title, Is.EqualTo("LOST"));
-            Assert.That(Report(FightOutcome.Lost).ConsequenceLine, Is.EqualTo("LOST  -1 LIFE"), "current rule (SimVersion 3): lives");
-            Assert.That(Report(FightOutcome.Lost).CarryLine, Does.EndWith("LIVES 2"));
+            Assert.That(Report(FightOutcome.Lost).ConsequenceLine, Is.EqualTo("LOST  RUN OVER"));
+            Assert.That(Report(FightOutcome.Lost).CarryLine, Does.EndWith("RETRY 1"));
             Assert.That(Report(FightOutcome.Draw).Title, Is.EqualTo("DRAW"));
             Assert.That(Report(FightOutcome.Draw).ConsequenceLine, Does.StartWith("DRAW COUNTS AS LOST"), "a draw counts as lost");
             Assert.That(Report(FightOutcome.Lost, retry: true).ConsequenceLine, Is.EqualTo("LOST - RETRY AT 60% HP"), "v4 retry wording");

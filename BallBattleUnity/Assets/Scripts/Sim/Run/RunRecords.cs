@@ -10,6 +10,7 @@ namespace BallBattle.Sim.Run
         public int FightIndex;
         public bool Won;
         public bool Draw;
+        public bool Retry;
         public string EnemyWeapon;
         public float HpAfter;
     }
@@ -33,7 +34,7 @@ namespace BallBattle.Sim.Run
         public static bool IsValid(RunState run)
         {
             if (run == null || run.Build == null || run.Over) return false;
-            if (run.FightIndex < 0 || run.FightIndex >= RunTuning.Fights || run.Lives <= 0) return false;
+            if (run.FightIndex < 0 || run.FightIndex >= RunTuning.Fights || run.RetryCount < 0 || run.RetryCount > RunTuning.Retries) return false;
             if (!WeaponExists(run.Build.WeaponId) || run.Build.MaxHp <= 0f || run.Build.Hp <= 0f) return false;
             if (run.Build.Traits.Count > RunTuning.MaxTraits) return false;
             foreach (var t in run.Build.Traits)

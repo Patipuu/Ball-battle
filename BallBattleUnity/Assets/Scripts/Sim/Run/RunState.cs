@@ -16,7 +16,9 @@ namespace BallBattle.Sim.Run
     {
         public int SeedBits;
         public int FightIndex;
-        public int Lives = RunTuning.Lives;
+        public int RetryCount;
+        public bool IsRetry;
+        public bool StartPickPending;
         public int Coins = RunTuning.StartCoins;
         public RunBuild Build = new RunBuild();
         public int RerollCount;
@@ -78,6 +80,7 @@ namespace BallBattle.Sim.Run
             foreach (var w in WeaponRegistry.All) run.EnemyWeapons.Add(w.Id);
             foreach (var t in TraitRegistry.All) run.EnemyTraits.Add(t.Id);
             run.Build.WeaponId = weaponId;
+            run.StartPickPending = true;
             run.DealOffer();
             return run;
         }
@@ -92,7 +95,9 @@ namespace BallBattle.Sim.Run
         {
             OfferCards.Clear();
             if (Over) return;
-            foreach (var c in CardOffer.Generate(Seed, FightIndex, RerollCount, Build, Weapons, Traits))
+            var offerSeed = IsRetry && StartPickPending ? RunTuning.Derive(Seed, 4001 + FightIndex, 0)
+                : StartPickPending ? RunTuning.Derive(Seed, 4000, 0) : Seed;
+            foreach (var c in CardOffer.Generate(offerSeed, FightIndex, RerollCount, Build, Weapons, Traits))
                 OfferCards.Add(OfferSlot.From(c));
         }
 
@@ -110,10 +115,11 @@ namespace BallBattle.Sim.Run
             }
         }
 
-        public bool CanReroll => !Over && !FightLocked && PicksTaken == 0 && Coins >= RunTuning.RerollCost;
+        public int NextRerollCost => RunTuning.RerollCost + RerollCount;
+        public bool CanReroll => !Over && !StartPickPending && !FightLocked && PicksTaken == 0 && Coins >= NextRerollCost;
 
         /// <summary>Cost of the next pick: 0, ExtraPickCost, or -1 when no more picks are allowed.</summary>
-        public int NextPickCost => Over || FightLocked || PicksTaken >= RunTuning.MaxPicksPerFight ? -1 : (PicksTaken == 0 ? 0 : RunTuning.ExtraPickCost);
+        public int NextPickCost => Over || FightLocked || PicksTaken >= (StartPickPending ? 1 : RunTuning.MaxPicksPerFight) ? -1 : (PicksTaken == 0 ? 0 : RunTuning.ExtraPickCost);
 
         public bool CanPick(int index)
         {
@@ -124,7 +130,7 @@ namespace BallBattle.Sim.Run
         public void Reroll()
         {
             if (!CanReroll) throw new InvalidOperationException("Cannot reroll now");
-            Coins -= RunTuning.RerollCost;
+            Coins -= NextRerollCost;
             RerollCount++;
             DealOffer();
         }
@@ -137,12 +143,20 @@ namespace BallBattle.Sim.Run
             PicksTaken++;
             PickedMask |= 1 << index;
             card.ApplyTo(Build);
+            if (StartPickPending)
+            {
+                StartPickPending = false;
+                PicksTaken = 0;
+                PickedMask = 0;
+                if (!IsRetry) DealOffer();
+            }
         }
 
-        public uint FightSeed => RunTuning.Derive(Seed, 3000 + FightIndex, 0);
+        public uint ArenaSeed => RunTuning.Derive(Seed, 3000 + FightIndex, 0);
+        public uint FightSeed => RunTuning.Derive(Seed, 3000 + FightIndex, IsRetry ? 1 : 0);
 
         /// <summary>Arena of the current fight, picked by its seed.</summary>
-        public string ArenaId => ArenaRegistry.ForSeed(FightSeed);
+        public string ArenaId => ArenaRegistry.ForSeed(ArenaSeed);
 
         /// <summary>
         /// Fresh match for the current fight (ball 0 = player, ball 1 = enemy) with spawn hooks applied, so the
@@ -158,7 +172,7 @@ namespace BallBattle.Sim.Run
 
         /// <summary>
         /// Win: +coins, keep HP (as a fraction of max, so match-only bonuses like Heavy never leak) + WinHealPct of max.
-        /// Loss or draw: +coins, lose a life, full HP. The run always moves on; it is won by winning the last fight.
+        /// Loss or draw: +coins and use the run's single retry at 60% HP on the same fight; another loss ends the run.
         /// HP is kept in whole points. Clears FightLocked.
         /// </summary>
         public void ApplyResult(MatchSim match)
@@ -167,29 +181,37 @@ namespace BallBattle.Sim.Run
             if (match.Outcome == MatchOutcome.Ongoing) throw new InvalidOperationException("Match is not finished");
 
             var won = match.WinnerIndex == 0;
+            var attemptedRetry = IsRetry;
             if (won)
             {
                 Coins += RunTuning.WinCoins;
                 Build.SetHp(match.Balls[0].HpFraction * Build.MaxHp + Build.MaxHp * RunTuning.WinHealPct);
+                IsRetry = false;
             }
             else
             {
                 Coins += RunTuning.LossCoins;
-                Lives--;
-                Build.Hp = Build.MaxHp;
+                if (RetryCount < RunTuning.Retries)
+                {
+                    RetryCount++;
+                    IsRetry = true;
+                    StartPickPending = true;
+                    Build.SetHp(Build.MaxHp * RunTuning.RetryHealPct);
+                }
+                else Over = true;
             }
 
-            History.Add(new FightRecord { FightIndex = FightIndex, Won = won, Draw = match.WinnerIndex < 0, EnemyWeapon = Enemy.WeaponId, HpAfter = Build.Hp });
+            History.Add(new FightRecord { FightIndex = FightIndex, Won = won, Draw = match.WinnerIndex < 0, Retry = attemptedRetry, EnemyWeapon = Enemy.WeaponId, HpAfter = Build.Hp });
             var last = FightIndex == RunTuning.Fights - 1;
-            FightIndex++;
+            if (won) FightIndex++;
             RerollCount = 0;
             PicksTaken = 0;
             PickedMask = 0;
             FightLocked = false;
-            if (last || Lives <= 0)
+            if (last && won)
             {
                 Over = true;
-                Won = last && won;
+                Won = true;
             }
             DealOffer();
         }

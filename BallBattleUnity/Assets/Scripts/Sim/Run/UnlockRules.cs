@@ -35,7 +35,7 @@ namespace BallBattle.Sim.Run
             (Boss1, new string[0], new[] { "glass-cannon" }),
             (Boss2, new[] { "volley" }, new[] { "poison-tip" }),
             (Boss3, new[] { "venom" }, new[] { "parry-master" }),
-            (Win1, new[] { "aegis" }, new[] { "bubble" }),
+            (Win1, new[] { "aegis", "venom" }, new[] { "bubble", "parry-master" }),
             (Win3, new[] { "rig" }, new[] { "twin-blade" }),
         };
 
@@ -85,7 +85,6 @@ namespace BallBattle.Sim.Run
                 if (last.FightIndex + 1 > p.BestFight) p.BestFight = last.FightIndex + 1;
                 if (last.Won && last.FightIndex == RunTuning.BossFights[0]) Earn(Boss1);
                 if (last.Won && last.FightIndex == RunTuning.BossFights[1]) Earn(Boss2);
-                if (last.Won && last.FightIndex == RunTuning.BossFights[2]) Earn(Boss3);
             }
 
             if (run.Over)

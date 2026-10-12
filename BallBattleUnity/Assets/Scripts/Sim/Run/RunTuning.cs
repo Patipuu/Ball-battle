@@ -7,9 +7,10 @@ namespace BallBattle.Sim.Run
     public static class RunTuning
     {
         public const int Fights = 8;
-        /// <summary>0-based fight indices of the giant bosses (fights 3, 6, 8).</summary>
-        public static readonly int[] BossFights = { 2, 5, 7 };
-        public const int Lives = 3;
+        /// <summary>0-based fight indices of Shell King and Mimic (fights 4 and 8).</summary>
+        public static readonly int[] BossFights = { 3, 7 };
+        public const int Retries = 1;
+        public static float RetryHealPct = 0.6f;
 
         public const int StartCoins = 2;
         public const int WinCoins = 3;

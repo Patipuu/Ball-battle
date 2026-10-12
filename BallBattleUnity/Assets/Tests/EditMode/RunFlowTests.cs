@@ -37,6 +37,46 @@ namespace BallBattle.Tests
         }
 
         [Test]
+        public void FirstFightLossOpensFreeRetryPickThenOnlySecondLossEndsRun()
+        {
+            var f = Open(new MemorySaveStore());
+            f.NewRun(42);
+            f.ChooseWeapon(f.StartChoices[0]);
+            f.Run.OfferCards[0] = OfferSlot.From(new Card(CardKind.DamageUp));
+            f.PickStart(0);
+            Assert.That(f.Run.CanReroll, Is.True, "start card does not lock Prepare reroll");
+            var arenaSeed = f.Run.ArenaSeed;
+            var firstSeed = f.Run.FightSeed;
+            f.Fight();
+            f.Tick(2.1f);
+            lastMatch.DealDamage(null, lastMatch.Balls[0], 1e6f, DamageKind.Hazard);
+            while (lastMatch.Outcome == MatchOutcome.Ongoing) lastMatch.Step();
+            f.OnMatchEnded(lastMatch);
+            f.Tick(2.1f);
+            f.NextAfterResult();
+            Assert.That(f.Current, Is.EqualTo(RunFlow.State.StartPick));
+            Assert.That(f.Run.FightIndex, Is.Zero);
+            Assert.That(f.Run.Build.Hp, Is.EqualTo(f.Run.Build.MaxHp * 0.6f).Within(0.001f));
+            Assert.That(f.Run.CanReroll, Is.False);
+            Assert.That(f.Run.NextPickCost, Is.Zero);
+            Assert.That(f.Run.OfferCount, Is.EqualTo(3));
+            Assert.That(f.Run.ArenaSeed, Is.EqualTo(arenaSeed));
+            Assert.That(f.Run.FightSeed, Is.Not.EqualTo(firstSeed));
+            f.Run.OfferCards[0] = OfferSlot.From(new Card(CardKind.DamageUp));
+            f.PickStart(0);
+            Assert.That(f.Current, Is.EqualTo(RunFlow.State.Countdown));
+            Assert.That(f.Run.CanReroll, Is.False);
+            f.Tick(2.1f);
+            lastMatch.DealDamage(null, lastMatch.Balls[0], 1e6f, DamageKind.Hazard);
+            while (lastMatch.Outcome == MatchOutcome.Ongoing) lastMatch.Step();
+            f.OnMatchEnded(lastMatch);
+            f.Tick(2.1f);
+            f.NextAfterResult();
+            Assert.That(f.Current, Is.EqualTo(RunFlow.State.Summary));
+            Assert.That(f.Run.History.Select(h => h.Retry), Is.EqualTo(new[] { false, true }));
+        }
+
+        [Test]
         public void NewRunPickWeaponFightAndResume()
         {
             var store = new MemorySaveStore();
@@ -48,6 +88,8 @@ namespace BallBattle.Tests
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.PickWeapon));
             Assert.That(f.StartChoices.Count, Is.EqualTo(3));
             f.ChooseWeapon(f.StartChoices[1]);
+            Assert.That(f.Current, Is.EqualTo(RunFlow.State.StartPick));
+            f.PickStart(0);
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.Prepare));
 
             f.Pick(0);
@@ -81,6 +123,7 @@ namespace BallBattle.Tests
             var f = Open(store);
             f.NewRun(7);
             f.ChooseWeapon(f.StartChoices[0]);
+            f.PickStart(0);
             var guard = 0;
             while (f.Current == RunFlow.State.Prepare && guard++ < 20)
             {
@@ -146,6 +189,7 @@ namespace BallBattle.Tests
             var f = Open(store);
             f.NewRun(11);
             f.ChooseWeapon(f.StartChoices[0]);
+            f.PickStart(0);
             var coins = f.Run.Coins;
             f.Fight();
             f.Tick(2.1f);
@@ -191,6 +235,9 @@ namespace BallBattle.Tests
             {
                 var progress = new ProgressData();
                 progress.Achievements.Add(UnlockRules.Boss1);
+                progress.Achievements.Add(UnlockRules.Boss3);
+                progress.RunsPlayed = 9;
+                progress.RunsWon = 2;
                 var old = new SaveData { Version = SaveData.CurrentVersion - 1, Progress = progress, HasRun = true };
                 var file = new FileSaveStore(Path.Combine(dir, "save.json"));
                 File.WriteAllText(file.Path, JsonUtility.ToJson(old));
@@ -199,6 +246,9 @@ namespace BallBattle.Tests
                 Assert.That(loaded.Version, Is.EqualTo(SaveData.CurrentVersion));
                 Assert.That(loaded.HasRun, Is.False);
                 Assert.That(loaded.Progress.Achievements, Is.EqualTo(progress.Achievements));
+                Assert.That(loaded.Progress.RunsPlayed, Is.EqualTo(9));
+                Assert.That(loaded.Progress.RunsWon, Is.EqualTo(2));
+                Assert.That(UnlockRules.Weapons(loaded.Progress), Does.Contain("venom"));
             }
             finally { Directory.Delete(dir, true); }
         }

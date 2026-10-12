@@ -15,6 +15,8 @@ namespace BallBattle.View
         PixelText label, countdown, banner;
         SpriteRenderer band;
         PixelButton speed;
+        SpriteRenderer retryToken;
+        ArtLibrary art;
         RunFlow.State lastState = RunFlow.State.Closed;
         int lastCountdown = -1;
         float goTimer;
@@ -23,6 +25,7 @@ namespace BallBattle.View
         {
             var root = RunUi.Root(parent, "RunOverlay", art, background: false);
             var v = root.gameObject.AddComponent<RunOverlayView>();
+            v.art = art;
             v.label = PixelText.Create(root, "Label", art.Font, new Vector2(0, 128), PixelText.Align.Center, 1, Order);
             v.countdown = PixelText.Create(root, "Countdown", art.Font, new Vector2(0, -15), PixelText.Align.Center, 6, Order + 2);
             v.band = PixelRect.Create(root, "Band", art.Pixel, new Color32(16, 16, 26, 220), Order);
@@ -30,6 +33,7 @@ namespace BallBattle.View
             v.banner = PixelText.Create(root, "Banner", art.Font, new Vector2(0, -5), PixelText.Align.Center, 2, Order + 1);
             v.speed = PixelButton.Create(root, "Speed", art, new Rect(-22, -234, 44, 18), "X1", 1, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             v.speed.Clicked += () => v.SpeedToggled?.Invoke();
+            v.retryToken = RunUi.Icon(root, new Vector2(110, 128), Order + 2);
             v.Hide();
             return v;
         }
@@ -48,6 +52,8 @@ namespace BallBattle.View
             var inFight = state == RunFlow.State.Countdown || state == RunFlow.State.Playing || state == RunFlow.State.FightOver;
             if (!inFight) { if (gameObject.activeSelf) Hide(); return; }
             if (!gameObject.activeSelf) gameObject.SetActive(true);
+            retryToken.sprite = flow.Run.RetryCount == 0 ? art.RetryTokenOn : art.RetryTokenOff;
+            retryToken.enabled = retryToken.sprite != null;
 
             if (state != lastState)
             {
@@ -57,7 +63,7 @@ namespace BallBattle.View
                 if (state == RunFlow.State.Playing) goTimer = GoSeconds;
                 var over = state == RunFlow.State.FightOver;
                 band.enabled = over;
-                banner.Set(over ? (flow.LastFightWon ? $"WIN!  +{RunTuning.WinCoins} COINS" : flow.LastFightDraw ? "DRAW  -1 LIFE" : "LOST  -1 LIFE") : "",
+                banner.Set(over ? (flow.LastFightWon ? $"WIN!  +{RunTuning.WinCoins} COINS" : flow.Run.RetryCount == 0 ? "LOST  RETRY" : "RUN OVER") : "",
                            flow.LastFightWon ? Palette.WallWarning : Palette.HpLost);
                 lastState = state;
             }

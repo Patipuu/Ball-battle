@@ -74,9 +74,12 @@ namespace BallBattle.Tests
         /// <summary>FIGHT (and YES when it asks), then frames until the result screen; NEXT FIGHT.</summary>
         static void PlayOneFight(Rig rig)
         {
-            rig.Flow.Run.Lives = RunTuning.Lives;   // keep the run going whatever happens
-            rig.Run.Prepare.PressFight();
-            if (rig.Run.Prepare.ConfirmOpen) rig.Run.Prepare.PressConfirm(true);
+            if (rig.Flow.Current == RunFlow.State.StartPick) rig.Flow.PickStart(0); // one free retry card, then the retry fight
+            else
+            {
+                rig.Run.Prepare.PressFight();
+                if (rig.Run.Prepare.ConfirmOpen) rig.Run.Prepare.PressConfirm(true);
+            }
             var guard = 0;
             while (rig.Flow.Current != RunFlow.State.FightResult && guard++ < 60 * 400) rig.Step();
             Assert.That(rig.Flow.Current, Is.EqualTo(RunFlow.State.FightResult));
@@ -104,6 +107,8 @@ namespace BallBattle.Tests
             rig.Flow.NewRun(seed);
             rig.Step();
             rig.Flow.ChooseWeapon(rig.Flow.StartChoices[0]);
+            var startSw = Enumerable.Range(0, rig.Flow.Run.OfferCount).First(i => rig.Flow.Run.OfferCard(i).Id == SecondWindTrait.TraitId);
+            rig.Flow.PickStart(startSw);
             rig.Step();
             Assert.That(rig.Flow.Current, Is.EqualTo(RunFlow.State.Prepare));
             if (brawlerThorns)
@@ -112,13 +117,13 @@ namespace BallBattle.Tests
                 rig.Flow.Run.Build.Traits.Add(new TraitSlot(ThornsTrait.TraitId, 1));
                 rig.Run.Prepare.Show(rig.Flow.Run);
             }
-            var sw = Enumerable.Range(0, rig.Flow.Run.OfferCount).First(i => rig.Flow.Run.OfferCard(i).Id == SecondWindTrait.TraitId);
-            rig.Run.Prepare.PressCard(sw);
             rig.Step();
             Assert.That(rig.Flow.Run.Build.TraitLevel(SecondWindTrait.TraitId), Is.EqualTo(1));
 
             rig.Arena.TimeScale = 4f;
-            while (rig.Flow.Run.FightIndex < 3) PlayOneFight(rig);   // fights 1-3, fight 3 is the boss
+            rig.Flow.Run.Build.DamagePct = 10f; // Reach the boss deterministically; restore for the fight under test.
+            while (rig.Flow.Run.FightIndex < 4) PlayOneFight(rig);   // Shell King is fight 4
+            rig.Flow.Run.Build.DamagePct = 0f;
             rig.Arena.TimeScale = 1f;
             Assert.That(rig.Flow.Current, Is.EqualTo(RunFlow.State.Prepare));
             Assert.That(rig.Flow.Run.History.Any(h => RunTuning.IsBoss(h.FightIndex)), Is.True, "the boss was fought");
@@ -130,7 +135,6 @@ namespace BallBattle.Tests
             var shownHp = rig.Run.Prepare.YouStats.Split(' ')[1].Split('/')[0];
 
             // FIGHT -> YES (skip the free pick) -> countdown.
-            rig.Flow.Run.Lives = RunTuning.Lives;
             rig.Run.Prepare.PressFight();
             Assert.That(rig.Run.Prepare.ConfirmOpen, Is.True, "free pick unused: asks first");
             rig.Run.Prepare.PressConfirm(true);
@@ -188,6 +192,7 @@ namespace BallBattle.Tests
             rig.Flow.NewRun(31);
             rig.Step();
             rig.Flow.ChooseWeapon(rig.Flow.StartChoices[0]);
+            rig.Flow.PickStart(0);
             rig.Step();
             rig.Run.Prepare.PressFight();
             if (rig.Run.Prepare.ConfirmOpen) rig.Run.Prepare.PressConfirm(true);
@@ -256,14 +261,15 @@ namespace BallBattle.Tests
         public void RerollCanBeRepeatedAndSaysItCostsAgain()
         {
             var run = RunState.Start(53, BladeRule.WeaponId, new ProgressData());
-            run.Coins = 2;
+            run.Pick(0);   // CHOOSE YOUR START is separate from this Prepare's first pick.
+            run.Coins = 3;
             var v = PrepareView.Create(root.transform, art);
             v.RerollRequested += () => { run.Reroll(); v.Show(run); };
             v.Show(run);
             Assert.That(v.RerollReason, Is.Empty, "before the first reroll: just REROLL 1");
             v.PressReroll();
-            Assert.That(run.Coins, Is.EqualTo(1), "paid");
-            Assert.That(v.RerollReason, Is.EqualTo("AGAIN 1  COINS 1"), "says the next one costs again");
+            Assert.That(run.Coins, Is.EqualTo(2), "paid");
+            Assert.That(v.RerollReason, Is.EqualTo("AGAIN 2  COINS 2"), "says the next one costs again");
             v.PressReroll();
             Assert.That(run.Coins, Is.Zero, "paid again");
             Assert.That(v.RerollReason, Is.EqualTo("NOT ENOUGH COINS"));
@@ -341,8 +347,8 @@ namespace BallBattle.Tests
             Assert.That(fx.ActiveRingPulses, Is.Zero, "a 3.5 heal (vampire, regen) is not Second Wind");
             Assert.That(fx.Popups.ShowingNow().Any(p => p.value == "3.5"), Is.True);
             Assert.That(view.Badges.IsSpent(0, SecondWindTrait.TraitId), Is.False);
-            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.Heal, Tick = 2, A = 0, Value = 20f, Point = sim.Balls[0].Pos } });
-            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.Heal, Tick = 3, A = 0, Value = 20f, Point = sim.Balls[0].Pos } });
+            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.TraitTriggered, TraitId = SecondWindTrait.TraitId, Tick = 2, A = 0, Value = 20f, Point = sim.Balls[0].Pos } });
+            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.TraitTriggered, TraitId = SecondWindTrait.TraitId, Tick = 3, A = 0, Value = 20f, Point = sim.Balls[0].Pos } });
             Assert.That(fx.ActiveRingPulses, Is.EqualTo(1), "once per fight");
             on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.Heal, Tick = 4, A = 1, Value = 20f, Point = sim.Balls[1].Pos } });
             Assert.That(fx.ActiveRingPulses, Is.EqualTo(1), "the enemy has no Second Wind");

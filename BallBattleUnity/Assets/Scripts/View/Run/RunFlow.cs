@@ -13,7 +13,7 @@ namespace BallBattle.View
     /// </summary>
     public sealed class RunFlow
     {
-        public enum State { Closed, Title, PickWeapon, Prepare, Countdown, Playing, FightOver, FightResult, Summary }
+        public enum State { Closed, Title, PickWeapon, StartPick, Prepare, Countdown, Playing, FightOver, FightResult, Summary }
 
         public readonly float CountdownSeconds;
         public readonly float FightOverSeconds;
@@ -100,7 +100,7 @@ namespace BallBattle.View
             UnityEngine.Debug.Log(RunStartLog(pendingSeed, weaponId, ForceTraitId));
             DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
             Persist();
-            Go(State.Prepare);
+            Go(State.StartPick);
         }
 
         /// <summary>Logged when a run starts, so a tester can report the seed and replay the same run.</summary>
@@ -114,7 +114,7 @@ namespace BallBattle.View
             UnityEngine.Debug.Log($"[BallBattle] Run resumed: seed {Run.Seed}, fight {Run.FightIndex + 1}");
             if (DebugOptions.ApplyForcedTrait(Run, ForceTraitId)) Persist();
             if (Run.FightLocked) StartFight();   // quit mid-fight: replay that exact fight, no edits
-            else Go(State.Prepare);
+            else Go(Run.StartPickPending ? State.StartPick : State.Prepare);
         }
 
         public void Reroll()
@@ -132,6 +132,17 @@ namespace BallBattle.View
             Run.Pick(index);
             Persist();
             Changed?.Invoke();
+        }
+
+        public void PickStart(int index)
+        {
+            if (Current != State.StartPick || !Run.CanPick(index)) return;
+            var retry = Run.IsRetry;
+            Run.Pick(index);
+            if (retry) Run.FightLocked = true;
+            Persist();
+            if (retry) StartFight();
+            else Go(State.Prepare);
         }
 
         public void Fight()
@@ -194,7 +205,7 @@ namespace BallBattle.View
         public void NextAfterResult()
         {
             if (Current != State.FightResult) return;
-            Go(Run.Over ? State.Summary : State.Prepare);
+            Go(Run.Over ? State.Summary : Run.StartPickPending ? State.StartPick : State.Prepare);
         }
 
         void Persist()

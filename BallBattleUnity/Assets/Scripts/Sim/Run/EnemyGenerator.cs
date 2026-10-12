@@ -32,8 +32,9 @@ namespace BallBattle.Sim.Run
             int traitCount;
             if (boss)
             {
-                traitCount = RunTuning.BossTraits[stage];
-                e.MaxHp = RunTuning.BossHp[stage];
+                var bossStage = fightIndex == RunTuning.BossFights[0] ? 0 : 2;
+                traitCount = RunTuning.BossTraits[bossStage];
+                e.MaxHp = RunTuning.BossHp[bossStage];
                 e.Radius = RunTuning.BossRadius;
             }
             else

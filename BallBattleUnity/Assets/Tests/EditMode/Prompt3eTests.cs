@@ -255,6 +255,8 @@ namespace BallBattle.Tests
             rc.Flow.NewRun(seed);
             rc.Tick(Frame);
             rc.Flow.ChooseWeapon(weapon);
+            rc.Flow.Run.OfferCards[0] = OfferSlot.From(new Card(CardKind.DamageUp));
+            rc.Flow.PickStart(0);
             rc.Tick(Frame);
             rc.Prepare.PressFight();
             if (rc.Prepare.ConfirmOpen) rc.Prepare.PressConfirm(true);

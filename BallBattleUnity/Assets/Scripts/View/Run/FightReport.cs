@@ -18,6 +18,7 @@ namespace BallBattle.View
         readonly float[] hp = new float[2];
         readonly float[] startHp = new float[2];
         readonly float[] healed = new float[2];
+        readonly bool[] secondWind = new bool[2];
         bool tracking;
 
         /// <summary>Start a fight: totals to zero, HP from the match as it will start (spawn hooks applied).</summary>
@@ -28,6 +29,7 @@ namespace BallBattle.View
             tracking = match != null;
             for (var i = 0; i < 2; i++) startHp[i] = hp[i] = match != null && i < match.Balls.Count ? Mathf0(match.Balls[i].Hp) : 0f;
             healed[0] = healed[1] = 0f;
+            secondWind[0] = secondWind[1] = false;
         }
 
         /// <summary>
@@ -41,6 +43,7 @@ namespace BallBattle.View
 
         /// <summary>HP ball <paramref name="i"/> got back this fight (sum of its Heal events: Aegis regen, Vampire, Second Wind...).</summary>
         public float Healed(int i) => i >= 0 && i < 2 ? healed[i] : 0f;
+        public bool SecondWindTriggered(int i) => i >= 0 && i < 2 && secondWind[i];
 
         /// <summary>HP ball <paramref name="i"/> started the fight with (spawn hooks applied).</summary>
         public float StartHp(int i) => i >= 0 && i < 2 ? startHp[i] : 0f;
@@ -52,6 +55,9 @@ namespace BallBattle.View
         {
             switch (e.Type)
             {
+                case SimEventType.TraitTriggered:
+                    if (e.TraitId == BallBattle.Sim.Traits.SecondWindTrait.TraitId && e.A >= 0 && e.A < 2) secondWind[e.A] = true;
+                    break;
                 case SimEventType.Hit:
                 case SimEventType.ProjectileHit:
                 case SimEventType.Damage:
@@ -121,8 +127,9 @@ namespace BallBattle.View
         public int CoinsTotal;
         public float HpNext;             // run HP carried into the next fight (after win heal / loss refill)
         public float MaxHpNext;
-        public int LivesBefore;
-        public int LivesAfter;
+        public int RetriesBefore;
+        public int RetriesAfter;
+        public bool PlayerSecondWindTriggered;
         /// <summary>The same fight is played again (v4 single-retry rule); false under the current lives rule.</summary>
         public bool IsRetry;
 
@@ -161,8 +168,9 @@ namespace BallBattle.View
                 CoinsTotal = run.Coins,
                 HpNext = run.Build.Hp,
                 MaxHpNext = run.Build.MaxHp,
-                LivesBefore = before.Lives,
-                LivesAfter = run.Lives,
+                RetriesBefore = before.RetryCount,
+                RetriesAfter = run.RetryCount,
+                PlayerSecondWindTriggered = stats != null && stats.SecondWindTriggered(0),
                 RunOver = run.Over,
                 RunWon = run.Won,
             };
@@ -189,9 +197,9 @@ namespace BallBattle.View
         {
             public int FightIndex;
             public int Coins;
-            public int Lives;
+            public int RetryCount;
 
-            public static Snapshot Of(RunState run) => new Snapshot { FightIndex = run.FightIndex, Coins = run.Coins, Lives = run.Lives };
+            public static Snapshot Of(RunState run) => new Snapshot { FightIndex = run.FightIndex, Coins = run.Coins, RetryCount = run.RetryCount };
         }
 
         // ---- Wording (docs/design/boss-and-loss-rules.md: WIN / LOST / DRAW, a draw counts as lost, RETRY) ----
@@ -215,7 +223,7 @@ namespace BallBattle.View
                 if (Outcome == FightOutcome.Win) return $"WIN  +{CoinsGained} COINS";
                 var lost = Outcome == FightOutcome.Draw ? "DRAW COUNTS AS LOST" : "LOST";
                 if (IsRetry) return lost + $" - RETRY AT {Pct(HpNext, MaxHpNext)}% HP";
-                return lost + "  -1 LIFE";
+                return lost + "  RUN OVER";
             }
         }
 
@@ -227,7 +235,7 @@ namespace BallBattle.View
                 if (RunOver) return "";
                 var hp = "HP NEXT FIGHT " + HpText.Pair(HpNext, MaxHpNext);
                 if (Outcome == FightOutcome.Win || IsRetry) return hp;
-                return $"{hp}  LIVES {LivesAfter}";
+                return $"{hp}  RETRY {(RetriesAfter == 0 ? "1" : "USED")}";
             }
         }
 

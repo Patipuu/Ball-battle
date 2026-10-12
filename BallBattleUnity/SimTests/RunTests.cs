@@ -37,7 +37,7 @@ namespace BallBattle.SimTests
                     var m = Finish(run.CreateMatch());
                     log.Add($"{run.FightIndex}:{m.ComputeHash():X16}");
                     run.ApplyResult(m);
-                    log.Add($"hp {run.Build.Hp} coins {run.Coins} lives {run.Lives}");
+                    log.Add($"hp {run.Build.Hp} coins {run.Coins} retries {run.RetryCount}");
                 }
                 return log;
             }
@@ -54,28 +54,39 @@ namespace BallBattle.SimTests
             run.ApplyResult(Forced(run, true, 0.5f));
             Assert.That(run.Build.Hp, Is.EqualTo(50f + 100f * RunTuning.WinHealPct).Within(1e-3f));
             Assert.That(run.Coins, Is.EqualTo(RunTuning.StartCoins + RunTuning.WinCoins));
-            Assert.That(run.Lives, Is.EqualTo(RunTuning.Lives));
+            Assert.That(run.RetryCount, Is.Zero);
 
             run.ApplyResult(Forced(run, true, 0.95f));
             Assert.That(run.Build.Hp, Is.EqualTo(run.Build.MaxHp), "heal never exceeds max HP");
         }
 
         [Test]
-        public void LossCostsALifeAndRefillsHp()
+        public void LossUsesRetryAtSixtyPercentHpOnSameFight()
         {
             var run = NewRun();
             run.ApplyResult(Forced(run, true, 0.3f));
+            var arena = run.ArenaId;
+            var enemy = run.Enemy.WeaponId;
+            var firstSeed = run.FightSeed;
             run.ApplyResult(Forced(run, false));
-            Assert.That(run.Lives, Is.EqualTo(RunTuning.Lives - 1));
-            Assert.That(run.Build.Hp, Is.EqualTo(run.Build.MaxHp));
-            Assert.That(run.FightIndex, Is.EqualTo(2), "the run moves on after a loss");
+            Assert.That(run.RetryCount, Is.EqualTo(1));
+            Assert.That(run.Build.Hp, Is.EqualTo(run.Build.MaxHp * RunTuning.RetryHealPct).Within(0.001f));
+            Assert.That(run.FightIndex, Is.EqualTo(1));
+            Assert.That(run.IsRetry, Is.True);
+            Assert.That(run.ArenaId, Is.EqualTo(arena));
+            Assert.That(run.Enemy.WeaponId, Is.EqualTo(enemy));
+            Assert.That(run.FightSeed, Is.Not.EqualTo(firstSeed));
+            Assert.That(run.History.Last().Retry, Is.False);
+            run.ApplyResult(Forced(run, true));
+            Assert.That(run.History.Last().Retry, Is.True);
+            Assert.That(run.IsRetry, Is.False);
         }
 
         [Test]
-        public void ThreeLossesEndTheRun()
+        public void TwoLossesEndTheRun()
         {
             var run = NewRun();
-            for (var i = 0; i < RunTuning.Lives; i++) run.ApplyResult(Forced(run, false));
+            for (var i = 0; i <= RunTuning.Retries; i++) run.ApplyResult(Forced(run, false));
             Assert.That(run.Over, Is.True);
             Assert.That(run.Won, Is.False);
             Assert.That(run.OfferCount, Is.EqualTo(0));
@@ -86,12 +97,15 @@ namespace BallBattle.SimTests
         public void RunIsWonOnlyByWinningTheLastFight()
         {
             var won = NewRun();
-            for (var i = 0; i < RunTuning.Fights; i++) won.ApplyResult(Forced(won, i != 0));
+            won.ApplyResult(Forced(won, false));
+            for (var i = 0; i < RunTuning.Fights; i++) won.ApplyResult(Forced(won, true));
             Assert.That(won.Over && won.Won, Is.True);
-            Assert.That(won.BossesDefeated, Is.EqualTo(3));
+            Assert.That(won.BossesDefeated, Is.EqualTo(2));
 
             var lost = NewRun();
-            for (var i = 0; i < RunTuning.Fights; i++) lost.ApplyResult(Forced(lost, i != RunTuning.Fights - 1));
+            for (var i = 0; i < RunTuning.Fights - 1; i++) lost.ApplyResult(Forced(lost, true));
+            lost.ApplyResult(Forced(lost, false));
+            lost.ApplyResult(Forced(lost, false));
             Assert.That(lost.Over, Is.True);
             Assert.That(lost.Won, Is.False, "losing the final boss loses the run even with lives left");
         }
@@ -99,9 +113,10 @@ namespace BallBattle.SimTests
         [Test]
         public void BossesAreGiantWithMoreHpAndTraits()
         {
-            for (var stage = 0; stage < 3; stage++)
+            for (var boss = 0; boss < 2; boss++)
             {
-                var e = EnemyGenerator.Generate(9, RunTuning.BossFights[stage]);
+                var stage = boss == 0 ? 0 : 2;
+                var e = EnemyGenerator.Generate(9, RunTuning.BossFights[boss]);
                 Assert.That(e.Radius, Is.EqualTo(RunTuning.BossRadius));
                 Assert.That(e.MaxHp, Is.EqualTo(RunTuning.BossHp[stage]));
                 Assert.That(e.Traits.Count, Is.EqualTo(Math.Min(RunTuning.BossTraits[stage], BallBattle.Sim.Traits.TraitRegistry.All.Count)));
@@ -110,6 +125,21 @@ namespace BallBattle.SimTests
             var normal = EnemyGenerator.Generate(9, 0);
             Assert.That(normal.Radius, Is.LessThanOrEqualTo(0f));
             Assert.That(normal.MaxHp, Is.EqualTo(RunTuning.PlayerStartHp));
+        }
+
+        [Test]
+        public void StartPickIsFreeSingleAndUsesASeparateOffer()
+        {
+            var run = RunState.Start(77, RunState.StartChoices(77, UnlockRules.Weapons(Fresh))[0], Fresh);
+            Assert.That(run.StartPickPending, Is.True);
+            Assert.That(run.CanReroll, Is.False);
+            Assert.That(Enumerable.Range(0, run.OfferCount).Select(run.OfferCard).All(c => c.Kind != CardKind.Heal), Is.True);
+            var coins = run.Coins;
+            run.Pick(0);
+            Assert.That(run.StartPickPending, Is.False);
+            Assert.That(run.Coins, Is.EqualTo(coins));
+            Assert.That(run.PicksTaken, Is.Zero);
+            Assert.That(run.CanReroll, Is.True);
         }
 
         [Test]

@@ -84,6 +84,7 @@ namespace BallBattle.Sim
                 if (!t.TryPreventDeath()) continue;
                 if (b.Hp <= 0f) throw new InvalidOperationException($"Trait '{t.Id}' claimed to prevent death but left HP at {b.Hp}");
                 if (b.Hp > b.MaxHp) b.Hp = b.MaxHp;
+                TriggerTrait(t.Id, b, b.Hp - MathF.Max(before, 0f));
                 Emit(SimEventType.Heal, b.Index, -1, b.Hp - MathF.Max(before, 0f), b.Pos);
                 return true;
             }
@@ -116,6 +117,12 @@ namespace BallBattle.Sim
         void Emit(SimEventType type, int a, int b, float value, Vec2 point, byte variant = 0)
         {
             Events.Add(new SimEvent { Type = type, Tick = Tick, A = a, B = b, Value = value, Point = point, Variant = variant });
+        }
+
+        public void TriggerTrait(string traitId, BallState ball, float value)
+        {
+            Events.Add(new SimEvent { Type = SimEventType.TraitTriggered, Tick = Tick, A = ball.Index, B = -1,
+                Value = value, Point = ball.Pos, TraitId = traitId });
         }
 
         /// <summary>Hash of the whole match state. Equal hashes ⇔ (practically) identical matches.</summary>

@@ -95,6 +95,7 @@ namespace BallBattle.View
             lastShotSoundTick = -1;
             pendingTick.Clear();
             secondWindShown[0] = secondWindShown[1] = false;
+            secondWindTick[0] = secondWindTick[1] = -1;
             foreach (var r in rings) { r.Renderer.enabled = false; r.Age = RingPulseSeconds; }
         }
 
@@ -126,25 +127,13 @@ namespace BallBattle.View
 
         readonly List<RingPulse> rings = new List<RingPulse>();
 
-        /// <summary>
-        /// The Heal of a ball with Second Wind that is the trait firing (at &lt;= 30% or saving a lethal blow), told apart
-        /// from Vampire / regen heals by its amount: the trait heals exactly SecondWindHeal[level] (capped by max HP), and
-        /// fires once per fight.
-        /// </summary>
-        bool IsSecondWindHeal(SimEvent e)
-        {
-            if (arena.Sim == null || e.A < 0 || e.A >= arena.Sim.Balls.Count || e.A >= secondWindShown.Length || secondWindShown[e.A]) return false;
-            var ball = arena.Sim.Balls[e.A];
-            SecondWindTrait sw = null;
-            foreach (var t in ball.Traits) if (t is SecondWindTrait s) { sw = s; break; }
-            if (sw == null) return false;
-            var amount = TraitTuning.SecondWindHeal[sw.Level - 1];
-            return Mathf.Abs(e.Value - amount) < 0.01f || Mathf.Abs(e.Value - Mathf.Min(amount, ball.MaxHp)) < 0.01f;
-        }
+        readonly int[] secondWindTick = { -1, -1 };
 
         void ShowSecondWind(SimEvent e)
         {
+            if (e.A < 0 || e.A >= secondWindShown.Length || secondWindShown[e.A]) return;
             secondWindShown[e.A] = true;
+            secondWindTick[e.A] = e.Tick;
             var ball = arena.Sim.Balls[e.A];
             var at = V(ball.Pos) + new Vector2(0f, ball.Radius + 4f);
             popups.ShowLabelled(at, "+" + popups.Format(e.Value), SecondWindColor, 2, SecondWindLabel, SecondWindLabelColor, arena.Sim.Arena);
@@ -275,13 +264,16 @@ namespace BallBattle.View
                     sfx.Play(Sfx != null ? Sfx.Parry : null, 0.5f, 0.8f);
                     break;
                 case SimEventType.Heal:
-                    if (IsSecondWindHeal(e)) { ShowSecondWind(e); break; }
+                    if (e.A >= 0 && e.A < secondWindTick.Length && secondWindTick[e.A] == e.Tick) break;
                     if (e.Value >= 0.5f)
                     {
                         var healed = arena.Sim.Balls[e.A];
                         ShowPopup(V(healed.Pos) + new Vector2(0f, healed.Radius + 4f), e.Value, StatusHeal);
                         particles.Burst(V(healed.Pos), 3, StatusHeal, 15f, 50f, 0.4f);
                     }
+                    break;
+                case SimEventType.TraitTriggered:
+                    if (e.TraitId == SecondWindTrait.TraitId) ShowSecondWind(e);
                     break;
                 case SimEventType.ObstacleHit:
                     sfx.Play(Sfx != null ? Sfx.Wall : null, 0.25f, e.Value > 0f ? 0.7f : 1.2f);

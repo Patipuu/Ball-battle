@@ -12,6 +12,7 @@ namespace BallBattle.View
         ArenaView arena;
         RunTitleView title;
         PickWeaponView pick;
+        StartPickView startPick;
         PrepareView prepare;
         RunOverlayView overlay;
         RunSummaryView summary;
@@ -43,6 +44,7 @@ namespace BallBattle.View
             Flow.ForceTraitId = DebugOptions.ForceTrait;   // null unless launched with -bbForceTrait
             title = RunTitleView.Create(transform, art);
             pick = PickWeaponView.Create(transform, art);
+            startPick = StartPickView.Create(transform, art);
             prepare = PrepareView.Create(transform, art);
             overlay = RunOverlayView.Create(transform, art);
             summary = RunSummaryView.Create(transform, art);
@@ -52,6 +54,7 @@ namespace BallBattle.View
             title.NewRunRequested += () => Flow.NewRun(NewSeed());
             title.BackRequested += () => Flow.Close();
             pick.WeaponPicked += id => Flow.ChooseWeapon(id);
+            startPick.CardPicked += i => Flow.PickStart(i);
             prepare.CardPicked += i => Flow.Pick(i);
             prepare.RerollRequested += () => Flow.Reroll();
             prepare.FightRequested += () => Flow.Fight();
@@ -125,6 +128,7 @@ namespace BallBattle.View
         {
             title.Hide();
             pick.Hide();
+            startPick.Hide();
             prepare.Hide();
             overlay.Hide();
             summary.Hide();
@@ -152,6 +156,7 @@ namespace BallBattle.View
             {
                 title.Hide();
                 pick.Hide();
+                startPick.Hide();
                 prepare.Hide();
                 summary.Hide();
                 result.Hide();
@@ -162,6 +167,7 @@ namespace BallBattle.View
             {
                 case RunFlow.State.Title: title.Show(Flow); break;
                 case RunFlow.State.PickWeapon: pick.Show(Flow.StartChoices); break;
+                case RunFlow.State.StartPick: startPick.Show(Flow.Run); break;
                 case RunFlow.State.Prepare: prepare.Show(Flow.Run); break;
                 case RunFlow.State.FightResult: result.Show(Flow.LastReport); break;
                 case RunFlow.State.Summary: summary.Show(Flow.Run); break;

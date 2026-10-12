@@ -28,6 +28,7 @@ namespace BallBattle.View
         PixelText fight, title, how;
         PixelText[] labels, values;
         PixelText consequence, carry, runLine;
+        PixelText traitTriggered;
         GameObject nextBox;
         PixelText nextHeader, nextName, nextTraits, nextStats;
         SpriteRenderer nextIcon;
@@ -64,6 +65,7 @@ namespace BallBattle.View
             foeHealed = RunUi.Text(root, art, RowLeft + 8, FoeHealedY, 1, PixelText.Align.Left);
             consequence = RunUi.Text(root, art, 0, 84, 1);
             carry = RunUi.Text(root, art, 0, 72, 1);
+            traitTriggered = RunUi.Text(root, art, 0, 60, 1);
             runLine = RunUi.Text(root, art, 0, 40, 3);
 
             nextBox = new GameObject("Next");
@@ -106,6 +108,7 @@ namespace BallBattle.View
 
             consequence.Set(r.ConsequenceLine, accent);
             carry.Set(r.CarryLine, Palette.Text);
+            traitTriggered.Set(r.PlayerSecondWindTriggered ? "2ND WIND USED" : "", HealColor);
             runLine.Set(r.RunLine, r.RunWon ? Palette.WallWarning : Palette.HpLost);
 
             nextBox.SetActive(!r.RunOver);

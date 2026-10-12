@@ -9,7 +9,7 @@ namespace BallBattle.View
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
         public int Version = CurrentVersion;
         public ProgressData Progress = new ProgressData();
         public bool HasRun;

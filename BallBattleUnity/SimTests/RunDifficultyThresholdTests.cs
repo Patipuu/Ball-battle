@@ -32,21 +32,9 @@ namespace BallBattle.SimTests
         }
 
         [Test]
-        public void RandomBotWins5To20Percent() => Assert.That(WinPct(random), Is.InRange(5.0, 20.0));
+        public void RandomBotWins1To6Percent() => Assert.That(WinPct(random), Is.InRange(1.0, 6.0), $"N={Runs}, measured {WinPct(random):0.0}%");
 
         [Test]
-        public void GreedyBotWins30To60Percent() => Assert.That(WinPct(greedy), Is.InRange(30.0, 60.0));
-
-        [Test]
-        public void ThirdGiantBossBeatsRandomBotAtLeast40Percent()
-        {
-            var reached = random.Count(x => x.BossesDefeated >= 2);
-            var lost = random.Count(x => x.BossesDefeated == 2);
-            var lossPct = reached == 0 ? 0.0 : lost * 100.0 / reached;
-            var bad = new System.Collections.Generic.List<string>();
-            if (reached <= 30) bad.Add($"reached {reached}, requires > 30");
-            if (lossPct < 40.0) bad.Add($"lost {lossPct:0.0}%, requires >= 40%");
-            Assert.That(bad, Is.Empty, $"N={Runs} random runs; reached={reached}, lost={lost}, loss={lossPct:0.0}%");
-        }
+        public void GreedyBotWins25To40Percent() => Assert.That(WinPct(greedy), Is.InRange(25.0, 40.0), $"N={Runs}, measured {WinPct(greedy):0.0}%");
     }
 }

@@ -76,6 +76,7 @@ namespace BallBattle.Tests
             flow.NewRun(seed);
             Step(arena, rc);
             flow.ChooseWeapon(weapon);
+            flow.PickStart(0);
             Step(arena, rc);
             rc.Prepare.PressFight();
             if (rc.Prepare.ConfirmOpen) rc.Prepare.PressConfirm(true);
@@ -288,6 +289,7 @@ namespace BallBattle.Tests
         public void StatCardsShowTheirIconOnPrepareAndAsHudBadges()
         {
             var run = RunState.Start(65, FirstChoice(65), new ProgressData());
+            run.Pick(0);
             run.OfferCards.Clear();
             foreach (var c in new[] { new Card(CardKind.SpeedUp), new Card(CardKind.MaxHp), new Card(CardKind.DamageUp) }) run.OfferCards.Add(OfferSlot.From(c));
             var prepare = PrepareView.Create(root.transform, art);
@@ -305,6 +307,7 @@ namespace BallBattle.Tests
             rc.Open();
             rc.Flow.NewRun(65);
             rc.Flow.ChooseWeapon(FirstChoice(65));
+            rc.Flow.PickStart(0);
             var b = rc.Flow.Run.Build;
             b.SpeedPct += RunTuning.SpeedCardPct;
             b.DamagePct += RunTuning.DamageCardPct;
@@ -339,7 +342,7 @@ namespace BallBattle.Tests
             won.Won = true;
             UnlockRules.Record(p, won);
             Assert.That((p.RunsWon, p.RunsPlayed), Is.EqualTo((1, 2)));
-            Assert.That(SaveData.CurrentVersion, Is.EqualTo(1), "no save version bump");
+            Assert.That(SaveData.CurrentVersion, Is.EqualTo(2));
         }
     }
 }

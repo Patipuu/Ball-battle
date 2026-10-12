@@ -15,7 +15,9 @@ namespace BallBattle.SimTests
         public static RunState NewRun(uint seed = 77)
         {
             var choices = RunState.StartChoices(seed, UnlockRules.Weapons(Fresh));
-            return RunState.Start(seed, choices[0], Fresh);
+            var run = RunState.Start(seed, choices[0], Fresh);
+            run.Pick(0);
+            return run;
         }
 
         public static MatchSim Finish(MatchSim m)

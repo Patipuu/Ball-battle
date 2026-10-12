@@ -92,6 +92,7 @@ namespace BallBattle.Tests
         {
             Assert.That(PrepareView.EntryInputBlockSeconds, Is.EqualTo(0.6f));
             var run = RunState.Start(80, FirstChoice(80), new ProgressData());
+            run.Pick(0);   // CHOOSE YOUR START does not consume Prepare's free card.
             run.Coins = 10;
             run.OfferCards.Clear();
             foreach (var c in new[] { new Card(CardKind.DamageUp), new Card(CardKind.SpeedUp), new Card(CardKind.MaxHp) }) run.OfferCards.Add(OfferSlot.From(c));

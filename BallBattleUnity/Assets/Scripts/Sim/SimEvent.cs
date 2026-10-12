@@ -26,6 +26,8 @@ namespace BallBattle.Sim
         ObstacleHit,
         /// <summary>A=ball, Value=HP actually restored (also emitted when a trait prevents death).</summary>
         Heal,
+        /// <summary>A=ball, TraitId=activated trait, Value=effect amount.</summary>
+        TraitTriggered,
         /// <summary>Non-hit damage from MatchSim.DealDamage (reflect, custom effects). A=source ball (-1 none), B=target, Value=damage, Variant=(byte)DamageKind. Poison pulses use StatusTick; arena hazards ride on ObstacleHit/WallBounce Value.</summary>
         Damage,
         /// <summary>A=owner ball, B=projectile slot, Point=spawn position.</summary>
@@ -47,6 +49,7 @@ namespace BallBattle.Sim
         public Vec2 Point;
         /// <summary>Sub-type for events that need one (see each SimEventType); 0 otherwise.</summary>
         public byte Variant;
+        public string TraitId;
     }
 
     public enum MatchOutcome : byte

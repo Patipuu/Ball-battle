@@ -45,10 +45,24 @@ namespace BallBattle.SimTests
                 run.Reroll();
                 changed |= !Enumerable.Range(0, run.OfferCount).Select(run.OfferCard).SequenceEqual(first);
             }
-            Assert.That(run.Coins, Is.EqualTo(15));
+            Assert.That(run.Coins, Is.EqualTo(5));
+            Assert.That(run.NextRerollCost, Is.EqualTo(6));
             Assert.That(changed, Is.True);
             run.Coins = 0;
             Assert.That(run.CanReroll, Is.False);
+        }
+
+        [Test]
+        public void RerollPriceResetsOnNextFight()
+        {
+            var run = NewRun(31);
+            run.Coins = 10;
+            run.Reroll();
+            run.Reroll();
+            Assert.That(run.Coins, Is.EqualTo(7));
+            Assert.That(run.NextRerollCost, Is.EqualTo(3));
+            run.ApplyResult(Forced(run, true));
+            Assert.That(run.NextRerollCost, Is.EqualTo(1));
         }
 
         [Test]
@@ -70,6 +84,7 @@ namespace BallBattle.SimTests
         public void SecondTraitPickIsBlockedWhenFirstUsedTheLastSlot()
         {
             var run = NewRun();
+            run.Build.Traits.Clear(); // the fixture may already have taken a trait in the start pick
             run.Build.Traits.Add(new TraitSlot("a", 1));
             run.Build.Traits.Add(new TraitSlot("b", 1));
             run.OfferCards.Clear();
@@ -104,6 +119,7 @@ namespace BallBattle.SimTests
         {
             var progress = new ProgressData();
             var run = RunState.Start(77, RunState.StartChoices(77, UnlockRules.Weapons(progress))[0], progress);
+            run.Pick(0);
             var earned = new List<string>();
             for (var i = 0; i < RunTuning.Fights; i++)
             {
@@ -111,7 +127,13 @@ namespace BallBattle.SimTests
                 earned.AddRange(UnlockRules.Record(progress, run));
             }
 
-            Assert.That(earned, Is.EqualTo(new[] { UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Boss3, UnlockRules.Win1 }));
+            Assert.That(earned, Is.EqualTo(new[] { UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Win1 }));
+            Assert.That(UnlockRules.Weapons(progress), Does.Contain("venom"));
+            Assert.That(UnlockRules.Traits(progress), Does.Contain("parry-master"));
+            var old = new ProgressData();
+            old.Achievements.Add(UnlockRules.Boss3);
+            Assert.That(UnlockRules.Weapons(old), Does.Contain("venom"));
+            Assert.That(UnlockRules.Traits(old), Does.Contain("parry-master"));
             Assert.That((progress.RunsPlayed, progress.RunsWon, progress.BestFight), Is.EqualTo((1, 1, 8)));
             Assert.That(run.Weapons, Is.EqualTo(UnlockRules.Weapons(new ProgressData())), "this run keeps its start snapshot");
         }
@@ -161,6 +183,7 @@ namespace BallBattle.SimTests
         {
             var run = NewRun();
             run.Build.Hp = 60f;
+            run.Build.Traits.Clear(); // isolate the carried trait from the start pick
             run.Build.Traits.Add(new TraitSlot("vampire", 2));
             var m = run.CreateMatch();
             Assert.That(m.Balls[0].Hp, Is.EqualTo(60f));

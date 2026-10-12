@@ -360,8 +360,9 @@ namespace BallBattle.Tests
             f.NewRun(seed);
             f.ChooseWeapon(f.StartChoices[0]);
             var sw = Enumerable.Range(0, f.Run.OfferCount).First(i => f.Run.OfferCard(i).Id == SecondWindTrait.TraitId);
-            f.Pick(sw);
+            f.PickStart(sw);
             Assert.That(f.Run.Build.TraitLevel(SecondWindTrait.TraitId), Is.EqualTo(1));
+            f.Run.Build.DamagePct = 10f; // This fixture must reach Shell King to test trait persistence through the boss.
 
             var fired = new List<int>();
             var bossSeen = false;
@@ -369,12 +370,13 @@ namespace BallBattle.Tests
             {
                 var index = f.Run.FightIndex;
                 bossSeen |= f.Run.IsBossFight;
+                if (index > RunTuning.BossFights[0]) f.Run.Build.DamagePct = 0f;
                 if (fight > 0)
                 {
                     if (f.Run.CanPick(0)) f.Pick(0);   // keep taking cards like a player (swap, heal, max HP, traits)
-                    f.Run.Build.SetHp(41f * f.Run.Build.MaxHp / 100f);   // enter like the tester: 41% HP
+                    f.Run.Build.SetHp((index > RunTuning.BossFights[0] ? 25f : 41f) * f.Run.Build.MaxHp / 100f);
                 }
-                f.Run.Lives = RunTuning.Lives;   // keep the run going whatever the result
+                // The run now has one retry; this sequence must win to advance.
                 Assert.That(f.Run.Build.TraitLevel(SecondWindTrait.TraitId), Is.GreaterThanOrEqualTo(1), $"fight {index + 1}: still in the build");
                 Assert.That(SecondWindOf(f.Run.CreateMatch().Balls[0]), Is.Not.Null, $"fight {index + 1}: in CreateMatch's loadout");
 
@@ -421,6 +423,7 @@ namespace BallBattle.Tests
             var f = OpenFlow(store, null);
             f.NewRun(44);
             f.ChooseWeapon(f.StartChoices[0]);
+            f.PickStart(0);
             var v = PrepareView.Create(root.transform, art);
             v.FightRequested += () => f.Fight();
             AssertPrepareMatchesFight(v, f, "no card yet");
@@ -445,6 +448,7 @@ namespace BallBattle.Tests
             var g = OpenFlow(new MemorySaveStore(), null);
             g.NewRun(45);
             g.ChooseWeapon(g.StartChoices[0]);
+            g.PickStart(0);
             g.Run.OfferCards[0] = OfferSlot.From(new Card(CardKind.DamageUp));   // at least one card can be taken: the dialog shows
             var w = PrepareView.Create(root.transform, art);
             w.FightRequested += () => g.Fight();
@@ -462,11 +466,13 @@ namespace BallBattle.Tests
             var h = OpenFlow(new MemorySaveStore(), null);
             h.NewRun(46);
             h.ChooseWeapon(h.StartChoices[0]);
+            h.PickStart(0);
             h.Run.Build.Traits.Add(new TraitSlot(HeavyTrait.TraitId, 2));
+            h.Run.Build.DamagePct = 10f; // Reach the boss before checking carried HP after it.
             while (h.Run.FightIndex <= RunTuning.BossFights[0] && h.Current == RunFlow.State.Prepare)
             {
                 var wasBoss = h.Run.IsBossFight;
-                h.Run.Lives = RunTuning.Lives;
+                // The run now has one retry; this sequence must win to advance.
                 AssertPrepareMatchesFight(v, h, $"before fight {h.Run.FightIndex + 1}");
                 h.Fight();
                 h.Tick(2.1f);

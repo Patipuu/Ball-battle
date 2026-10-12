@@ -33,6 +33,7 @@ namespace BallBattle.Tests
         static RunState NewRun(string weapon = "blade")
         {
             var run = RunState.Start(77, weapon, new ProgressData());
+            run.Pick(0);   // Complete CHOOSE YOUR START before showing Prepare.
             run.Coins = 10;
             return run;
         }
@@ -51,6 +52,18 @@ namespace BallBattle.Tests
         }
 
         // ---- 1. A tap on a card or REROLL that cannot be used shows why ----
+
+        [Test]
+        public void StartPickShowsAllThreeCardTitles()
+        {
+            var run = RunState.Start(77, "blade", new ProgressData());
+            var view = StartPickView.Create(root.transform, art);
+            view.Show(run);
+            var buttons = view.GetComponentsInChildren<PixelButton>(false);
+            Assert.That(buttons.Length, Is.EqualTo(3));
+            for (var i = 0; i < buttons.Length; i++)
+                Assert.That(buttons[i].LabelText, Is.EqualTo(CardText.Title(run.OfferCard(i))));
+        }
 
         [Test]
         public void BlockedCardsAndRerollSayWhy()
@@ -375,7 +388,8 @@ namespace BallBattle.Tests
             title.Hide();
 
             var run = NewRun();
-            run.FightIndex = RunTuning.BossFights[2];
+            run.FightIndex = RunTuning.BossFights[1];
+            run.Build.Traits.Clear(); // The start card may have granted a trait; build this three-trait layout explicitly.
             run.Build.Traits.Add(new TraitSlot("glass-cannon", 2));
             run.Build.Traits.Add(new TraitSlot("parry-master", 2));
             run.Build.Traits.Add(new TraitSlot("second-wind", 2));

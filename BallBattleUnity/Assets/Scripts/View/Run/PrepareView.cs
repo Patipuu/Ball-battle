@@ -162,7 +162,7 @@ namespace BallBattle.View
             if (entering) OnEnter();
             var boss = run.IsBossFight;
             header.Set($"FIGHT {run.FightIndex + 1}/{RunTuning.Fights}" + (boss ? "  BOSS" : ""), boss ? Palette.WallWarning : Palette.Text);
-            purse.Set($"LIVES {run.Lives}   COINS {run.Coins}", Palette.Text);
+            purse.Set($"RETRY {(run.RetryCount == 0 ? "1" : "USED")}   COINS {run.Coins}", Palette.Text);
 
             // Numbers exactly as the fight starts: the same match RunFlow will create, spawn hooks (Heavy, Glass Cannon) applied.
             var preview = run.Over ? null : run.CreateMatch();
@@ -194,7 +194,7 @@ namespace BallBattle.View
             }
 
             var rerollWhy = RerollBlockReason(run);
-            reroll.SetText($"REROLL {RunTuning.RerollCost}", rerollWhy == null ? Palette.Text : Palette.HpBack);
+            reroll.SetText($"REROLL {run.NextRerollCost}", rerollWhy == null ? Palette.Text : Palette.HpBack);
             reroll.SetColors(Palette.Floor, rerollWhy == null ? Palette.TextDim : Palette.HpBack);
             if (rerollWhy != null) rerollReason.Set(rerollWhy, Blocked);
             else rerollReason.Set(RerollAgainText(run), Palette.TextDim);   // reroll is repeatable: say it costs again
@@ -365,7 +365,7 @@ namespace BallBattle.View
             if (run == null || run.CanReroll) return null;
             if (run.Over || run.FightLocked) return "FIGHT STARTED";
             if (run.PicksTaken > 0) return "ONLY BEFORE FIRST PICK";
-            if (run.Coins < RunTuning.RerollCost) return "NOT ENOUGH COINS";
+            if (run.Coins < run.NextRerollCost) return "NOT ENOUGH COINS";
             return "LOCKED";
         }
 
@@ -374,7 +374,7 @@ namespace BallBattle.View
         /// the first pick), so the line says so with the coins left. Empty before the first reroll.
         /// </summary>
         public static string RerollAgainText(RunState run) =>
-            run == null || run.RerollCount == 0 ? "" : $"AGAIN {RunTuning.RerollCost}  COINS {run.Coins}";
+            run == null || run.RerollCount == 0 ? "" : $"AGAIN {run.NextRerollCost}  COINS {run.Coins}";
         /// <summary>True when FIGHT would throw away the free pick (none taken yet and at least one card can be taken).</summary>
         public static bool ShouldConfirmSkip(RunState run)
         {
