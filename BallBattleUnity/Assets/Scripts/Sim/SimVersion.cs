@@ -7,6 +7,6 @@ namespace BallBattle.Sim
     /// </summary>
     public static class SimVersion
     {
-        public const int Rules = 4;
+        public const int Rules = 5;   // 5: spike-walls hurt only in corner zones (BB-FIX1a), 3 damage, max 1 per ball per tick
     }
 }

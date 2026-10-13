@@ -17,6 +17,48 @@ namespace BallBattle.View
         /// <summary>Music / SFX volume steps 0..10 (BB-03). Older saves have no such fields and load the defaults; no version bump.</summary>
         public int musicVol = VolumeSettings.DefaultMusic;
         public int sfxVol = VolumeSettings.DefaultSfx;
+        /// <summary>Set by SaveMigration when it had to drop a run from an older save; the menu shows a one-time notice, OK clears it.</summary>
+        public bool oldRunNotice;
+    }
+
+    /// <summary>
+    /// Upgrades an older save in place (both stores call it on Load). v1 → v2: the run in progress cannot be converted (the sim
+    /// changed under it), so it is dropped; as compensation it counts as having reached its current fight (BestFight), it is NOT
+    /// counted as played/won/lost, and oldRunNotice is set so the player is told once. Achievements, unlocks and every other
+    /// record stay as they were (unlocks come from achievements; the next goal is recomputed from progress on demand).
+    /// </summary>
+    public static class SaveMigration
+    {
+        public static SaveData Upgrade(SaveData data)
+        {
+            if (data == null || data.Version >= SaveData.CurrentVersion) return data;
+            if (data.Progress == null) data.Progress = new ProgressData();
+            if (data.HasRun && data.Run != null)
+            {
+                var reached = Math.Min(Math.Max(data.Run.FightIndex + 1, 1), RunTuning.Fights);
+                if (reached > data.Progress.BestFight) data.Progress.BestFight = reached;
+                data.oldRunNotice = true;
+            }
+            data.Version = SaveData.CurrentVersion;
+            data.HasRun = false;
+            data.Run = new RunState();
+            return data;
+        }
+    }
+
+    /// <summary>The one-time "OLD RUN ENDED BY UPDATE" notice, read and cleared through the save store.</summary>
+    public static class OldRunNotice
+    {
+        public static bool Pending(ISaveStore store) => store?.Load()?.oldRunNotice == true;
+
+        /// <summary>OK: clear the flag and save, so it never shows again.</summary>
+        public static void Dismiss(ISaveStore store)
+        {
+            var d = store?.Load();
+            if (d == null || !d.oldRunNotice) return;
+            d.oldRunNotice = false;
+            store.Save(d);
+        }
     }
 
     public interface ISaveStore
@@ -41,13 +83,7 @@ namespace BallBattle.View
             {
                 var data = JsonUtility.FromJson<SaveData>(File.ReadAllText(Path));
                 if (data == null || data.Version > SaveData.CurrentVersion) return Reset("unknown version");
-                if (data.Version < SaveData.CurrentVersion)
-                {
-                    // Older save: keep long-term progress (JsonUtility tolerates new fields), drop the run in progress.
-                    data.Version = SaveData.CurrentVersion;
-                    data.HasRun = false;
-                    data.Run = new RunState();
-                }
+                SaveMigration.Upgrade(data);   // older save: keep progress, drop the run (with compensation + notice)
                 if (data.Progress == null) data.Progress = new ProgressData();
                 return data;
             }
@@ -94,7 +130,7 @@ namespace BallBattle.View
         public string Json;
         public int Saves;
 
-        public SaveData Load() => string.IsNullOrEmpty(Json) ? new SaveData() : JsonUtility.FromJson<SaveData>(Json);
+        public SaveData Load() => string.IsNullOrEmpty(Json) ? new SaveData() : SaveMigration.Upgrade(JsonUtility.FromJson<SaveData>(Json));
 
         public void Save(SaveData data)
         {

@@ -52,6 +52,48 @@ namespace BallBattle.View
     }
 
     /// <summary>
+    /// Writes the volumes to the save only when they differ from what was last saved (BB-FIX1a: not on every slider step).
+    /// </summary>
+    public sealed class VolumeSaver
+    {
+        readonly ISaveStore store;
+        int savedMusic, savedSfx;
+
+        public VolumeSaver(ISaveStore store, int music, int sfx)
+        {
+            this.store = store;
+            savedMusic = music;
+            savedSfx = sfx;
+        }
+
+        /// <summary>True when it wrote the save.</summary>
+        public bool Commit(int music, int sfx)
+        {
+            if (music == savedMusic && sfx == savedSfx) return false;
+            VolumeSettings.Save(store, music, sfx);
+            savedMusic = music;
+            savedSfx = sfx;
+            return true;
+        }
+    }
+
+    /// <summary>Settings page ↔ audio: sliders change the volume live; the save is written on pointer release and when Settings closes.</summary>
+    public static class SettingsAudio
+    {
+        public static VolumeSaver Bind(MenuView menu, AudioDirector audio, ISaveStore store)
+        {
+            var saver = new VolumeSaver(store, audio.MusicVolume, audio.SfxVolume);
+            var s = menu.Settings;
+            s.SetValues(audio.MusicVolume, audio.SfxVolume);
+            s.MusicChanged += v => audio.SetMusicVolume(v);
+            s.SfxChanged += v => audio.SetSfxVolume(v);
+            s.Released += () => saver.Commit(audio.MusicVolume, audio.SfxVolume);
+            menu.SettingsClosed += () => saver.Commit(audio.MusicVolume, audio.SfxVolume);
+            return saver;
+        }
+    }
+
+    /// <summary>
     /// Music duck envelope in dB over real (unscaled) time: 0 → DepthDb in Attack, hold, back to 0 in Release.
     /// A new trigger restarts the hold from the current level; it never goes below DepthDb.
     /// </summary>

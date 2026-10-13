@@ -18,6 +18,8 @@ namespace BallBattle.View
         public RunController Run { get; private set; }
         public AudioDirector Audio { get; private set; }
 
+        ISaveStore store;
+
         void Awake()
         {
             if (Arena == null) Arena = FindAnyObjectByType<ArenaView>();
@@ -27,7 +29,7 @@ namespace BallBattle.View
             Flow = new MatchFlow();
             Menu = MenuView.Create(transform, Arena.Art);
             Overlay = OverlayView.Create(transform, Arena.Art);
-            var store = FileSaveStore.Default();
+            store = FileSaveStore.Default();
             Run = RunController.Create(transform, Arena, store);
             var fx = Arena.GetComponent<FxView>();
             Audio = AudioDirector.Create(transform, fx != null ? fx.Sfx : null, store);
@@ -47,6 +49,7 @@ namespace BallBattle.View
                 var (progress, resumable) = Run.Flow.PeekSave();
                 Menu.SetRunInfo(progress, resumable);
                 Menu.Show(true);
+                if (OldRunNotice.Pending(store)) Menu.ShowOldRunNotice(() => OldRunNotice.Dismiss(store));   // once: OK clears the flag
             };
 
             Menu.StartRequested += (a, b) =>
@@ -74,9 +77,7 @@ namespace BallBattle.View
         /// <summary>Flow and screen events → AudioDirector (the arena's own events are hooked in OnEnable).</summary>
         void WireAudio()
         {
-            Menu.Settings.SetValues(Audio.MusicVolume, Audio.SfxVolume);
-            Menu.Settings.MusicChanged += v => Audio.SetMusicVolume(v, true);
-            Menu.Settings.SfxChanged += v => Audio.SetSfxVolume(v, true);
+            SettingsAudio.Bind(Menu, Audio, store);   // live volume; saved on release / when Settings closes
             Flow.RoundBegan += () => Audio.RequestUiCue(AudioIds.FightStart);
             Run.Flow.FightBegan += () => Audio.RequestUiCue(AudioIds.FightStart);
             Run.Flow.CardTaken += () => Audio.RequestUiCue(AudioIds.CardPick);

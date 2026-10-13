@@ -9,7 +9,15 @@ namespace BallBattle.Sim
         public const float BumperOffset = 95f;
         public const float BumperBoost = 0.15f;
 
-        public const float SpikeWallDamage = 2f;
+        /// <summary>Spike-walls arena: damage of one bounce inside a spike zone. At most one per ball per tick.</summary>
+        public const int SpikeWallDamage = 3;
+
+        /// <summary>Corners whose two walls carry a spike zone. TL + BR now; SpikeCorner.All spikes all four corners.</summary>
+        public const SpikeCorner SpikeCorners = SpikeCorner.TopLeft | SpikeCorner.BottomRight;
+
+        /// <summary>A spike zone covers SpikeZoneNum/SpikeZoneDen of the CURRENT wall length from its corner (follows the shrink).</summary>
+        public const int SpikeZoneNum = 1;
+        public const int SpikeZoneDen = 5;
 
         public const float LowGravity = 0.02f;
 

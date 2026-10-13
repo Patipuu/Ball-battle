@@ -2,6 +2,55 @@ using System;
 
 namespace BallBattle.Sim
 {
+    /// <summary>Arena corners that can carry spike zones (flags).</summary>
+    [Flags]
+    public enum SpikeCorner : byte
+    {
+        None = 0,
+        TopLeft = 1,
+        TopRight = 2,
+        BottomLeft = 4,
+        BottomRight = 8,
+        All = TopLeft | TopRight | BottomLeft | BottomRight
+    }
+
+    public enum ArenaWall : byte { Left, Right, Bottom, Top }
+
+    /// <summary>
+    /// Spike zones of the spike-walls arena: from each spiked corner, ArenaTuning.SpikeZoneNum/SpikeZoneDen of the CURRENT
+    /// wall length along both walls meeting there. Integer fraction, compared by cross-multiplying (no division).
+    /// </summary>
+    public static class SpikeZones
+    {
+        /// <summary>
+        /// Is a wall contact inside a spike zone? <paramref name="along"/> = contact coordinate along that wall
+        /// (Y for Left/Right, X for Bottom/Top), inside the current rect <paramref name="r"/>.
+        /// </summary>
+        public static bool Contains(in ArenaRect r, ArenaWall wall, float along, SpikeCorner corners)
+        {
+            const int num = ArenaTuning.SpikeZoneNum, den = ArenaTuning.SpikeZoneDen;
+            var w = r.Width * num;
+            var h = r.Height * num;
+            switch (wall)
+            {
+                case ArenaWall.Left:
+                    return (Has(corners, SpikeCorner.TopLeft) && (r.Top - along) * den <= h)
+                        || (Has(corners, SpikeCorner.BottomLeft) && (along - r.Bottom) * den <= h);
+                case ArenaWall.Right:
+                    return (Has(corners, SpikeCorner.TopRight) && (r.Top - along) * den <= h)
+                        || (Has(corners, SpikeCorner.BottomRight) && (along - r.Bottom) * den <= h);
+                case ArenaWall.Top:
+                    return (Has(corners, SpikeCorner.TopLeft) && (along - r.Left) * den <= w)
+                        || (Has(corners, SpikeCorner.TopRight) && (r.Right - along) * den <= w);
+                default:
+                    return (Has(corners, SpikeCorner.BottomLeft) && (along - r.Left) * den <= w)
+                        || (Has(corners, SpikeCorner.BottomRight) && (r.Right - along) * den <= w);
+            }
+        }
+
+        public static bool Has(SpikeCorner set, SpikeCorner c) => (set & c) != 0;
+    }
+
     public enum ObstacleShape : byte
     {
         /// <summary>Disc at A with Radius.</summary>
@@ -66,13 +115,17 @@ namespace BallBattle.Sim
         /// <summary>Smallest obstacle radius / half-thickness (float.MaxValue when there are none).</summary>
         public readonly float MinObstacleRadius = float.MaxValue;
 
-        /// <summary>Damage to a ball each time it bounces off an arena wall (spike walls). 0 = none.</summary>
+        /// <summary>Damage to a ball bouncing off an arena wall inside a spike zone (spike walls). 0 = none.</summary>
         public readonly float WallDamage;
 
-        public ArenaLayout(Obstacle[] obstacles, float wallDamage = 0f)
+        /// <summary>Corners with spike zones (SpikeZones); only used when WallDamage &gt; 0.</summary>
+        public readonly SpikeCorner SpikeCorners;
+
+        public ArenaLayout(Obstacle[] obstacles, float wallDamage = 0f, SpikeCorner spikeCorners = ArenaTuning.SpikeCorners)
         {
             this.obstacles = obstacles != null ? (Obstacle[])obstacles.Clone() : Array.Empty<Obstacle>();
             WallDamage = wallDamage;
+            SpikeCorners = spikeCorners;
             foreach (var o in this.obstacles)
                 if (o.Radius < MinObstacleRadius) MinObstacleRadius = o.Radius;
         }
@@ -82,6 +135,7 @@ namespace BallBattle.Sim
         public ulong HashInto(ulong h)
         {
             h = SimHash.Mix(h, WallDamage);
+            if (WallDamage > 0f) h = SimHash.Mix(h, (int)SpikeCorners);   // only spike layouts: every other layout hash is unchanged
             h = SimHash.Mix(h, obstacles.Length);
             for (var i = 0; i < obstacles.Length; i++) h = obstacles[i].HashInto(h);
             return h;

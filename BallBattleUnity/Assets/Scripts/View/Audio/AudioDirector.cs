@@ -29,8 +29,11 @@ namespace BallBattle.View
             public float Pitch;
         }
 
-        /// <summary>Every cue the director decided to play, in order (tests and debugging).</summary>
-        public readonly List<PlayedCue> Played = new List<PlayedCue>();
+        /// <summary>Most entries kept in <see cref="Played"/>.</summary>
+        public const int PlayedCap = 256;
+
+        /// <summary>The last <see cref="PlayedCap"/> cues the director decided to play, oldest first (tests and debugging). Always on, bounded.</summary>
+        public readonly List<PlayedCue> Played = new List<PlayedCue>(PlayedCap);
 
         /// <summary>Real time in seconds; tests replace it.</summary>
         public Func<float> Clock = () => Time.unscaledTime;
@@ -125,6 +128,7 @@ namespace BallBattle.View
             if (AudioIds.Jittered(id)) pitch *= 1f + PitchJitter * (float)(rng.NextDouble() * 2.0 - 1.0);
             var now = Clock();
             var v = volume * VolumeCurve.Linear(SfxVolume);
+            if (Played.Count >= PlayedCap) Played.RemoveRange(0, Played.Count - PlayedCap + 1);   // drop the oldest
             Played.Add(new PlayedCue { Id = id, Time = now, Volume = v, Pitch = pitch });
             if (cues != null && v > 0f) cues.Play(library != null ? library.Get(id) : null, v, pitch);
             if (AudioIds.Ducks(id)) Duck.Trigger(now);
@@ -163,7 +167,7 @@ namespace BallBattle.View
                     RequestCue(AudioIds.Wall, e.Tick, 0.12f, 1.7f);   // six turrets fire together: one sound
                     break;
                 case SimEventType.WallBounce:
-                    RequestCue(AudioIds.Wall, e.Tick, 0.2f);
+                    RequestCue(WallBounceCue(e.Value, Has), e.Tick, 0.2f);
                     break;
                 case SimEventType.BallBounce:
                     RequestCue(AudioIds.Wall, e.Tick, 0.35f, 0.8f);
@@ -181,6 +185,10 @@ namespace BallBattle.View
         }
 
         bool Has(string id) => library != null && library.Has(id);
+
+        /// <summary>A bounce that took spike damage plays spike_hit when that clip exists, else the plain wall sound (never both).</summary>
+        public static string WallBounceCue(float spikeDamage, Func<string, bool> hasClip) =>
+            spikeDamage > 0f && hasClip != null && hasClip(AudioIds.SpikeHit) ? AudioIds.SpikeHit : AudioIds.Wall;
 
         /// <summary>A new match on the arena: tick numbers restart; a fight track faded by the last knockout comes back.</summary>
         public void OnMatchStarted()

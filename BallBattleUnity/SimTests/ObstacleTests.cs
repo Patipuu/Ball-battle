@@ -84,14 +84,20 @@ namespace BallBattle.SimTests
         }
 
         [Test]
-        public void SpikeWallsDamageOnWallBounce()
+        public void SpikeWallsDamageOnlyInSpikeZones()
         {
+            // BB-FIX1a: only the corner zones hurt (layout default corners: TL + BR). Mid-wall bounce is harmless now.
             var cfg = Stage.StillConfig();
             cfg.Layout = new ArenaLayout(null, wallDamage: 2f);
             var m = Stage.Build(cfg, (Stage.L(new HarmlessRule()), new Vec2(80f, 0f), 0f), (Stage.L(new HarmlessRule()), new Vec2(-80f, 80f), 0f));
             m.Balls[0].Vel = new Vec2(5f, 0f);
             for (var i = 0; i < 10; i++) m.Step();
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(98f));
+            Assert.That(m.Balls[0].Hp, Is.EqualTo(100f), "right wall midpoint");
+
+            var n = Stage.Build(cfg, (Stage.L(new HarmlessRule()), new Vec2(80f, -95f), 0f), (Stage.L(new HarmlessRule()), new Vec2(-80f, 80f), 0f));
+            n.Balls[0].Vel = new Vec2(5f, 0f);
+            for (var i = 0; i < 10; i++) n.Step();
+            Assert.That(n.Balls[0].Hp, Is.EqualTo(98f), "right wall inside the bottom-right zone");
         }
 
         [Test]

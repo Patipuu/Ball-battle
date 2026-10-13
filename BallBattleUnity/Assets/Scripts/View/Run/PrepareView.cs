@@ -472,7 +472,7 @@ namespace BallBattle.View
             var halfH = Mathf.Round(config.ArenaHeight * scale * 0.5f);
             // Same colors and floor tile as the fight (arena_colors.json, floor_<id>), the tile drawn at half size.
             var hasArt = art.TryArena(arenaId, out var look);
-            var wall = hasArt ? look.WallColor : (layout.WallDamage > 0f ? new Color32(210, 60, 60, 255) : Palette.Wall);
+            var wall = hasArt ? look.WallColor : (Color32)Palette.Wall;
             Rect(wall, -halfW - 1, -halfH - 1, halfW + 1, halfH + 1, 3);
             Rect(hasArt ? look.FloorColor : (Color32)Palette.Floor, -halfW, -halfH, halfW, halfH, 4);
             if (hasArt && look.Floor != null)
@@ -490,11 +490,20 @@ namespace BallBattle.View
             }
             if (layout.WallDamage > 0f)
             {
-                var tooth = new Color32(255, 70, 50, 255);   // spike_tooth color: a 1 px band of teeth inside the walls
-                Rect(tooth, -halfW, halfH - 1, halfW, halfH, 5);
-                Rect(tooth, -halfW, -halfH, halfW, -halfH + 1, 5);
-                Rect(tooth, -halfW, -halfH, -halfW + 1, halfH, 5);
-                Rect(tooth, halfW - 1, -halfH, halfW, halfH, 5);
+                // spike_tooth color: a 1 px band inside the walls, only along the corner spike zones (as in the fight)
+                var tooth = new Color32(255, 70, 50, 255);
+                foreach (var z in ArenaFrameView.ZoneSegments(layout.SpikeCorners, -halfW, -halfH, halfW, halfH))
+                {
+                    var from = Mathf.Round(z.From);
+                    var to = Mathf.Round(z.To);
+                    switch (z.Wall)
+                    {
+                        case ArenaWall.Top: Rect(tooth, from, halfH - 1, to, halfH, 5); break;
+                        case ArenaWall.Bottom: Rect(tooth, from, -halfH, to, -halfH + 1, 5); break;
+                        case ArenaWall.Left: Rect(tooth, -halfW, from, -halfW + 1, to, 5); break;
+                        default: Rect(tooth, halfW - 1, from, halfW, to, 5); break;
+                    }
+                }
             }
             if (config.MinArenaWidth < config.ArenaWidth && arenaId == ArenaRegistry.Tight)
             {

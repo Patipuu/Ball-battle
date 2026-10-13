@@ -20,8 +20,11 @@ namespace BallBattle.View
         public static readonly Rect ViArea = ScreenRect(85, 248, 40, 20);
         public static readonly Rect BackArea = ScreenRect(75, 330, 120, 22);
 
+        /// <summary>Live value changes while tapping/dragging (volume changes at once; nothing is saved here).</summary>
         public event Action<int> MusicChanged, SfxChanged;
         public event Action BackRequested;
+        /// <summary>The pointer was released after pressing a slider: the moment to save (SettingsAudio).</summary>
+        public event Action Released;
 
         Slider musicSlider, sfxSlider;
 
@@ -44,9 +47,9 @@ namespace BallBattle.View
         {
             Label(art, RunStrings.Settings, 0, 60, 3, PixelText.Align.Center, Palette.Text, order);
             Label(art, RunStrings.Music, MusicArea.xMin, 120, 2, PixelText.Align.Left, Palette.Text, order);
-            musicSlider = new Slider(this, art, MusicArea, order, x => MusicChanged?.Invoke(x));
+            musicSlider = new Slider(this, art, MusicArea, order, x => MusicChanged?.Invoke(x), () => Released?.Invoke());
             Label(art, RunStrings.Sfx, SfxArea.xMin, 176, 2, PixelText.Align.Left, Palette.Text, order);
-            sfxSlider = new Slider(this, art, SfxArea, order, x => SfxChanged?.Invoke(x));
+            sfxSlider = new Slider(this, art, SfxArea, order, x => SfxChanged?.Invoke(x), () => Released?.Invoke());
 
             Label(art, RunStrings.Language, EnArea.xMin, 232, 2, PixelText.Align.Left, Palette.Text, order);
             LanguageBox(art, EnArea, RunStrings.En, true, order);
@@ -88,6 +91,9 @@ namespace BallBattle.View
         public void DragMusicTo(float nativeX) => musicSlider.SetFromX(nativeX);
         public void DragSfxTo(float nativeX) => sfxSlider.SetFromX(nativeX);
 
+        /// <summary>Tests / automation: the pointer is lifted after a drag.</summary>
+        public void ReleasePointer() => Released?.Invoke();
+
         void Update()
         {
             musicSlider.Follow();
@@ -108,14 +114,22 @@ namespace BallBattle.View
             readonly SpriteRenderer[] cells = new SpriteRenderer[Steps];
             readonly PixelText value;
             readonly Action<int> changed;
+            readonly Action released;
+            bool dragging;
             public int Value { get; private set; } = -1;
 
-            public Slider(SettingsView owner, ArtLibrary art, Rect area, int order, Action<int> onChanged)
+            public Slider(SettingsView owner, ArtLibrary art, Rect area, int order, Action<int> onChanged, Action onReleased)
             {
                 changed = onChanged;
+                released = onReleased;
                 Track = PixelButton.Create(owner.transform, "Slider", art, area, null, 1, Palette.Floor, Palette.Wall, Palette.Text, order + 2);
                 Track.ClickCue = null;   // the slider's own feedback is the SFX click at the new volume
-                Track.Clicked += () => SetFromX(Track.LastPressNative.x);
+                Track.Clicked += () =>
+                {
+                    SetFromX(Track.LastPressNative.x);   // a tap (or a drag released on the track)
+                    dragging = false;
+                    released?.Invoke();
+                };
                 for (var i = 0; i < Steps; i++)
                 {
                     cells[i] = PixelRect.Create(Track.transform, "Cell", art.Pixel, Palette.HpBack, Track.IconOrder);
@@ -126,9 +140,19 @@ namespace BallBattle.View
                     new Vector2(area.xMax + 6, Mathf.Floor(area.center.y - PixelFontData.GlyphHeight)), PixelText.Align.Left, 2, order + 4);
             }
 
+            /// <summary>Each frame: follow the pointer while the slider is held; a release off the track also counts as a release.</summary>
             public void Follow()
             {
-                if (Track.IsHeld && PixelInput.Held) SetFromX(PixelInput.Current.x);
+                if (Track.IsHeld)
+                {
+                    dragging = true;
+                    if (PixelInput.Held) SetFromX(PixelInput.Current.x);
+                }
+                else if (dragging)
+                {
+                    dragging = false;
+                    released?.Invoke();
+                }
             }
 
             public void SetFromX(float nativeX) => Set(StepAt(Track.Area, nativeX), true);

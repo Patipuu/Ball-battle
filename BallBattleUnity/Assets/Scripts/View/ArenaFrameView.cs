@@ -37,6 +37,18 @@ namespace BallBattle.View
         SpriteRenderer floor;
         readonly SpriteRenderer[] masks = new SpriteRenderer[4];
         readonly SpriteRenderer[] walls = new SpriteRenderer[4];
+        /// <summary>Red wall strips over the spike zones, used only when there is no spike_tooth art.</summary>
+        readonly System.Collections.Generic.List<SpriteRenderer> zoneStrips = new System.Collections.Generic.List<SpriteRenderer>();
+        int activeStrips;
+
+        /// <summary>One spike zone along one wall: [From, To] along it, wall line At, tooth angle, horizontal wall?</summary>
+        public struct ZoneSegment
+        {
+            public ArenaWall Wall;
+            public float From, To, At, Angle;
+            public bool Horizontal;
+            public float Length => To - From;
+        }
 
         static void DestroyNow(GameObject go)
 
@@ -133,9 +145,12 @@ namespace BallBattle.View
             DrawObstacles(config.Layout ?? ArenaLayout.Empty);
 
             var spikes = config.Layout != null && config.Layout.WallDamage > 0f;
-            var baseColor = hasArt ? look.WallColor : (spikes ? SpikeColor : (Color32)Palette.Wall);
+            var baseColor = hasArt ? look.WallColor : (Color32)Palette.Wall;   // spike arena: normal walls, spikes only in the corner zones
             var closing = art != null ? art.ClosingWallColor : (Color32)Palette.WallWarning;
-            DrawTeeth(spikes && hasArt && art.SpikeTooth != null, l, b, r, t);
+            var zones = spikes ? ZoneSegments(config.Layout.SpikeCorners, l, b, r, t) : NoZones;
+            var teethArt = hasArt && art.SpikeTooth != null;
+            DrawTeeth(teethArt ? zones : NoZones);
+            DrawZoneStrips(teethArt ? NoZones : zones);
             var color = baseColor;
             var untilShrink = config.ShrinkStartTick - activeTick;
             if (untilShrink > 0 && untilShrink <= WarnTicks)
@@ -155,22 +170,61 @@ namespace BallBattle.View
         /// <summary>Spike teeth shown now (tests).</summary>
         public int TeethShown => activeTeeth;
 
+        /// <summary>Spike zone strips shown now when there is no tooth art (tests).</summary>
+        public int ZoneStripsShown => activeStrips;
+
+        static readonly ZoneSegment[] NoZones = new ZoneSegment[0];
+
         /// <summary>
-        /// spike_tooth (6x4, pointing down, pivot top-centre) every ToothSpacing px along the inside of the 4 walls, pointing
-        /// into the arena; follows the walls when they close in.
+        /// Spike zones of the rect (l,b,r,t) for the given corners: SpikeZoneNum/SpikeZoneDen of each wall from the corner, on both
+        /// walls meeting there (same rule as the sim's SpikeZones, drawn from the current, shrinking rect).
         /// </summary>
-        void DrawTeeth(bool show, float l, float b, float r, float t)
+        public static ZoneSegment[] ZoneSegments(SpikeCorner corners, float l, float b, float r, float t)
+        {
+            var zx = (r - l) * ArenaTuning.SpikeZoneNum / ArenaTuning.SpikeZoneDen;
+            var zy = (t - b) * ArenaTuning.SpikeZoneNum / ArenaTuning.SpikeZoneDen;
+            var list = new System.Collections.Generic.List<ZoneSegment>();
+            void Add(ArenaWall wall, float from, float to, float at, float angle, bool horizontal) =>
+                list.Add(new ZoneSegment { Wall = wall, From = from, To = to, At = at, Angle = angle, Horizontal = horizontal });
+            if (SpikeZones.Has(corners, SpikeCorner.TopLeft)) { Add(ArenaWall.Top, l, l + zx, t, 0f, true); Add(ArenaWall.Left, t - zy, t, l, 90f, false); }
+            if (SpikeZones.Has(corners, SpikeCorner.TopRight)) { Add(ArenaWall.Top, r - zx, r, t, 0f, true); Add(ArenaWall.Right, t - zy, t, r, -90f, false); }
+            if (SpikeZones.Has(corners, SpikeCorner.BottomLeft)) { Add(ArenaWall.Bottom, l, l + zx, b, 180f, true); Add(ArenaWall.Left, b, b + zy, l, 90f, false); }
+            if (SpikeZones.Has(corners, SpikeCorner.BottomRight)) { Add(ArenaWall.Bottom, r - zx, r, b, 180f, true); Add(ArenaWall.Right, b, b + zy, r, -90f, false); }
+            return list.ToArray();
+        }
+
+        /// <summary>
+        /// spike_tooth (6x4, pointing down, pivot top-centre) every ToothSpacing px along the inside of each spike zone, pointing
+        /// into the arena; follows the walls when they close in. The rest of the walls keep the arena's normal look.
+        /// </summary>
+        void DrawTeeth(ZoneSegment[] zones)
         {
             var n = 0;
-            if (show)
-            {
-                n = Edge(n, l, r, t, 0f, horizontal: true);      // top: pointing down
-                n = Edge(n, l, r, b, 180f, horizontal: true);    // bottom: pointing up
-                n = Edge(n, b, t, l, 90f, horizontal: false);    // left: pointing right
-                n = Edge(n, b, t, r, -90f, horizontal: false);   // right: pointing left
-            }
+            foreach (var z in zones) n = Edge(n, z.From, z.To, z.At, z.Angle, z.Horizontal);
             for (var i = n; i < activeTeeth; i++) teeth[i].enabled = false;
             activeTeeth = n;
+        }
+
+        /// <summary>No tooth art: the zones are drawn as red strips over the wall.</summary>
+        void DrawZoneStrips(ZoneSegment[] zones)
+        {
+            var w = WallThickness;
+            for (var i = 0; i < zones.Length; i++)
+            {
+                if (i >= zoneStrips.Count) zoneStrips.Add(Quad(transform, "SpikeZone", pixelSprite, SpikeColor, WallOrder + 1));
+                var s = zoneStrips[i];
+                s.enabled = true;
+                var z = zones[i];
+                switch (z.Wall)
+                {
+                    case ArenaWall.Top: Box(s, z.From, z.At, z.To, z.At + w); break;
+                    case ArenaWall.Bottom: Box(s, z.From, z.At - w, z.To, z.At); break;
+                    case ArenaWall.Left: Box(s, z.At - w, z.From, z.At, z.To); break;
+                    default: Box(s, z.At, z.From, z.At + w, z.To); break;
+                }
+            }
+            for (var i = zones.Length; i < activeStrips; i++) zoneStrips[i].enabled = false;
+            activeStrips = zones.Length;
         }
 
         int Edge(int n, float from, float to, float at, float angle, bool horizontal)

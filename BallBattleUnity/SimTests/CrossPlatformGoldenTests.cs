@@ -12,13 +12,16 @@ namespace BallBattle.SimTests
             "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig"
         };
 
-        // Each digest combines all eight matches for the corresponding seed, 1001 through 1020.
+        // Each digest combines all eight matches for the corresponding seed, 1001 through 1020 (classic arena only).
+        // SimVersion 5 (BB-FIX1a): ComputeHash mixes SimVersion.Rules, so every value changed with the 4 -> 5 bump alone.
+        // Proof the physics did not: with Rules temporarily set back to 4 and the spike change in place, all 20 v4 values
+        // (0xD2A88D3A96477721 ... 0x2E6F293A3DBD6F44, see git history) still matched; VersusGoldenTests is unchanged.
         static readonly ulong[] ExpectedBySeed =
         {
-            0xD2A88D3A96477721UL, 0xE41DE80F5673FEE4UL, 0x0FBF8A985272AAA8UL, 0x7DECC41486EFF74AUL, 0x4E3026B530577565UL,
-            0x97F88E0485EA4B17UL, 0x0023568BD318A85CUL, 0x4E832E97BAE519C2UL, 0xE96FF8CD4002AEBDUL, 0xBD0175ED4EA5802BUL,
-            0x4BF78EC9088D4ACAUL, 0xA812849A6309EC3CUL, 0xDA5499B6F3353975UL, 0xBEDF963BA1E32256UL, 0x6903CCE4D91DAB4DUL,
-            0xDC5C8AE2ECE8F330UL, 0xF4D3BDA889E1AE31UL, 0xEBEF9835A4E5C86AUL, 0xC9352F26E5AFCC83UL, 0x2E6F293A3DBD6F44UL
+            0xEEF73442912C5F45UL, 0x6C9CB1F3F47585BCUL, 0x0D583A4B652498D4UL, 0xE10BE86758682CAAUL, 0x615720C12CA952DDUL,
+            0x5CC4EF5B8454F3C7UL, 0x77D845F46A6EED88UL, 0xA5809087BE6321EEUL, 0x0939F4085273C6D9UL, 0xBCBB361DF229BEC7UL,
+            0x7539F734E141493EUL, 0xE4625F6355701BE0UL, 0xE1FDD36872D3E8ADUL, 0x0451B5F480D2F852UL, 0x39EED389C95D132DUL,
+            0xDC267EEC4A98C1E8UL, 0xDEAA56E5352B12FDUL, 0x49A9C47C5F4DFE72UL, 0x838AED19B6A6037FUL, 0x0F586DA5838887A4UL
         };
 
         [Test]

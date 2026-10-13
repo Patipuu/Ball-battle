@@ -62,6 +62,8 @@ namespace BallBattle.Sim
             layout = config.Layout ?? ArenaLayout.Empty;
             balls = new BallState[loadouts.Count];
             parryCooldown = new int[loadouts.Count, loadouts.Count];
+            spikeTick = new int[loadouts.Count];
+            for (var i = 0; i < spikeTick.Length; i++) spikeTick[i] = -1;
             Arena = config.ArenaAt(0);
             tuningFingerprint = unchecked(Weapons.WeaponTuning.Fingerprint() * 1099511628211UL ^ Traits.TraitTuning.Fingerprint());
 

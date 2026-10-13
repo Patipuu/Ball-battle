@@ -21,6 +21,8 @@ namespace BallBattle.View
         /// <summary>Generic match sounds (Assets/Audio/Generated, SfxLibrary fields).</summary>
         public const string Hit = "hit", Parry = "parry", Wall = "wall", Death = "death";
         public const string HitPrefix = "hit_";
+        /// <summary>Optional clip for a bounce inside a spike zone; when absent the plain wall sound plays.</summary>
+        public const string SpikeHit = "spike_hit";
 
         /// <summary>Weapon ids with their own hit clip.</summary>
         public static readonly string[] HitWeapons = { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig" };
@@ -49,7 +51,7 @@ namespace BallBattle.View
             IsHit(id) || id == Parry || id == Death || id == FightStart || id == FightWin || id == RetryBanner || id == RunWin || id == SecondWind;
 
         /// <summary>Cues that get the small random pitch (never music or UI).</summary>
-        public static bool Jittered(string id) => IsHit(id) || id == Parry || id == Wall;
+        public static bool Jittered(string id) => IsHit(id) || id == Parry || id == Wall || id == SpikeHit;
 
         /// <summary>Result cues that stop the fight music (fade) instead of ducking it.</summary>
         public static bool EndsFightMusic(string id) => id == FightWin || id == FightLose || id == RunWin || id == RunOver;

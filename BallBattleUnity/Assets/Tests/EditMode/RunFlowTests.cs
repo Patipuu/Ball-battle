@@ -22,9 +22,10 @@ namespace BallBattle.Tests
             return f;
         }
 
-        static void PlayFight(RunFlow f)
+        /// <summary>Prepare → FIGHT → result. <paramref name="started"/>: the fight already started (retry pick starts it).</summary>
+        static void PlayFight(RunFlow f, bool started = false)
         {
-            f.Fight();
+            if (!started) f.Fight();
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.Countdown));
             f.Tick(2.1f);
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.Playing));
@@ -125,8 +126,15 @@ namespace BallBattle.Tests
             f.ChooseWeapon(f.StartChoices[0]);
             f.PickStart(0);
             var guard = 0;
-            while (f.Current == RunFlow.State.Prepare && guard++ < 20)
+            // BB-FIX1a: also play through a retry (lost fight → free pick → same fight), whatever the seed's outcomes are.
+            while ((f.Current == RunFlow.State.Prepare || f.Current == RunFlow.State.StartPick) && guard++ < 20)
             {
+                if (f.Current == RunFlow.State.StartPick)
+                {
+                    f.PickStart(0);   // retry pick starts the fight
+                    PlayFight(f, started: true);
+                    continue;
+                }
                 if (f.Run.CanPick(0)) f.Pick(0);
                 PlayFight(f);
             }

@@ -64,7 +64,7 @@ namespace BallBattle.Sim
                     });
                     break;
                 case SpikeWalls:
-                    c.Layout = new ArenaLayout(null, ArenaTuning.SpikeWallDamage);
+                    c.Layout = new ArenaLayout(null, ArenaTuning.SpikeWallDamage, ArenaTuning.SpikeCorners);
                     break;
                 case LowGravity:
                     c.Gravity = ArenaTuning.LowGravity;

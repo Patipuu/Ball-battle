@@ -304,8 +304,10 @@ namespace BallBattle.Tests
                 var spikes = sim.Config.Layout != null && sim.Config.Layout.WallDamage > 0f;
                 if (spikes)
                 {
-                    var expected = 2 * Mathf.FloorToInt(sim.Arena.Width / ArenaFrameView.ToothSpacing) + 2 * Mathf.FloorToInt(sim.Arena.Height / ArenaFrameView.ToothSpacing);
-                    Assert.That(view.Frame.TeethShown, Is.EqualTo(expected), "teeth along the 4 walls");
+                    // BB-FIX1a: teeth only along the corner spike zones (1/5 of each wall at TL and BR).
+                    var zones = ArenaFrameView.ZoneSegments(sim.Config.Layout.SpikeCorners, Mathf.Round(sim.Arena.Left), Mathf.Round(sim.Arena.Bottom), Mathf.Round(sim.Arena.Right), Mathf.Round(sim.Arena.Top));
+                    var expected = zones.Sum(z => Mathf.FloorToInt(z.Length / ArenaFrameView.ToothSpacing));
+                    Assert.That(view.Frame.TeethShown, Is.EqualTo(expected), "teeth along the spike zones only");
                 }
                 else Assert.That(view.Frame.TeethShown, Is.Zero);
                 Object.DestroyImmediate(view);

@@ -23,6 +23,9 @@ namespace BallBattle.View
         public const string Unlocks = "UNLOCKS: ";
         public const string Unlocked = "UNLOCKED: ";
         public const string AppearLater = "THEY CAN APPEAR IN LATER RUNS";
+        /// <summary>One-time notice after a save update dropped an old run (VI later: "RUN CŨ ĐÃ HUỶ DO CẬP NHẬT").</summary>
+        public const string OldRunEnded = "OLD RUN ENDED BY UPDATE";
+        public const string Ok = "OK";
         public const string Settings = "SETTINGS";
         public const string Music = "MUSIC";
         public const string Sfx = "SFX";

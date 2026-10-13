@@ -40,7 +40,11 @@ namespace BallBattle.Sim
             ResolveDeaths();
         }
 
-        /// <summary>Clamp every ball inside the arena. A bounce (event + OnWall) counts only when the ball was moving into the wall, so a wall sliding onto a ball does not spam it.</summary>
+        /// <summary>
+        /// Clamp every ball inside the arena. A bounce (event + OnWall) counts only when the ball was moving into the wall, so a wall
+        /// sliding onto a ball does not spam it. Spike walls: damage only when a wall it bounced off is touched inside a spike zone
+        /// (SpikeZones, from the current rect); a corner touching both spiked walls is one hit; at most one spike hit per ball per tick.
+        /// </summary>
         void ResolveWalls()
         {
             if (!Ongoing) return;
@@ -51,37 +55,54 @@ namespace BallBattle.Sim
                 if (!b.Alive) continue;
                 var r = b.Radius;
                 var bounced = false;
+                ArenaWall? xWall = null, yWall = null;
 
                 if (b.Pos.X - r < arena.Left)
                 {
                     b.Pos.X = arena.Left + r;
-                    if (b.Vel.X < 0f) { b.Vel.X = -b.Vel.X; bounced = true; }
+                    if (b.Vel.X < 0f) { b.Vel.X = -b.Vel.X; bounced = true; xWall = ArenaWall.Left; }
                 }
                 else if (b.Pos.X + r > arena.Right)
                 {
                     b.Pos.X = arena.Right - r;
-                    if (b.Vel.X > 0f) { b.Vel.X = -b.Vel.X; bounced = true; }
+                    if (b.Vel.X > 0f) { b.Vel.X = -b.Vel.X; bounced = true; xWall = ArenaWall.Right; }
                 }
 
                 if (b.Pos.Y - r < arena.Bottom)
                 {
                     b.Pos.Y = arena.Bottom + r;
-                    if (b.Vel.Y < 0f) { b.Vel.Y = -b.Vel.Y; bounced = true; }
+                    if (b.Vel.Y < 0f) { b.Vel.Y = -b.Vel.Y; bounced = true; yWall = ArenaWall.Bottom; }
                     if (b.Vel.Y < Config.MinFloorBounce) b.Vel.Y = Config.MinFloorBounce;
                 }
                 else if (b.Pos.Y + r > arena.Top)
                 {
                     b.Pos.Y = arena.Top - r;
-                    if (b.Vel.Y > 0f) { b.Vel.Y = -b.Vel.Y; bounced = true; }
+                    if (b.Vel.Y > 0f) { b.Vel.Y = -b.Vel.Y; bounced = true; yWall = ArenaWall.Top; }
                 }
 
                 if (!bounced || !Active(b)) continue;
                 if (b.Weapon.WallSpeedBoost > 0f) b.Vel = b.Vel * (1f + b.Weapon.WallSpeedBoost);
-                var dealt = wallDamage > 0f ? DealDamage(null, b, wallDamage, DamageKind.Hazard, false) : 0f;
+                var dealt = 0f;
+                if (wallDamage > 0f && spikeTick[b.Index] != Tick && HitsSpikeZone(arena, b.Pos, xWall, yWall))
+                {
+                    spikeTick[b.Index] = Tick;
+                    dealt = DealDamage(null, b, wallDamage, DamageKind.Hazard, false);
+                }
                 Emit(SimEventType.WallBounce, b.Index, -1, dealt, b.Pos);
                 if (Active(b)) OnBallBounced(b);
             }
             ResolveDeaths();
+        }
+
+        /// <summary>Tick of each ball's last spike hit (max one per ball per tick); -1 = none yet. Not part of the state hash.</summary>
+        int[] spikeTick;
+
+        /// <summary>Contact points on the walls bounced off (ball centre projected on the wall) inside a spike zone?</summary>
+        bool HitsSpikeZone(in ArenaRect arena, Vec2 pos, ArenaWall? xWall, ArenaWall? yWall)
+        {
+            var corners = layout.SpikeCorners;
+            return (xWall.HasValue && SpikeZones.Contains(arena, xWall.Value, pos.Y, corners))
+                || (yWall.HasValue && SpikeZones.Contains(arena, yWall.Value, pos.X, corners));
         }
 
         /// <summary>Weapon then trait OnWall: obstacles count as walls (Brawler gains from pillars too).</summary>

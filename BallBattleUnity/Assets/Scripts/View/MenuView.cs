@@ -44,6 +44,14 @@ namespace BallBattle.View
         NextGoalBox goal;
         RunState savedRun;
         SettingsView settings;
+        Transform noticePage;
+        Action noticeOk;
+
+        /// <summary>Settings page closed (BACK, Esc, any other page): volumes are saved then, if they changed.</summary>
+        public event Action SettingsClosed;
+
+        /// <summary>One-time "OLD RUN ENDED BY UPDATE" panel: box (8,200) 254x64, OK button 80x22.</summary>
+        public static readonly Rect NoticeOkArea = new Rect(-40, 240 - 200 - 52, 80, 22);
 
         /// <summary>Arena picked for Versus (ArenaRegistry id).</summary>
         public string ArenaId => ArenaRegistry.All[arenaIndex].Id;
@@ -68,6 +76,7 @@ namespace BallBattle.View
             BuildVersus(art);
             settings = SettingsView.Create(transform, art, Order);
             settings.BackRequested += ShowHub;
+            BuildNotice(art);
             SetRunInfo(new ProgressData(), null);
             ShowHub();
         }
@@ -242,7 +251,8 @@ namespace BallBattle.View
 
         public void ShowHub()
         {
-            settings.gameObject.SetActive(false);
+            CloseSettings();
+            noticePage.gameObject.SetActive(false);
             versusPage.gameObject.SetActive(false);
             hub.gameObject.SetActive(true);
             PixelButton.NoteShownAll(hub);
@@ -250,7 +260,8 @@ namespace BallBattle.View
 
         public void ShowVersus()
         {
-            settings.gameObject.SetActive(false);
+            CloseSettings();
+            noticePage.gameObject.SetActive(false);
             hub.gameObject.SetActive(false);
             versusPage.gameObject.SetActive(true);
             PixelButton.NoteShownAll(versusPage);
@@ -267,6 +278,55 @@ namespace BallBattle.View
         }
 
         public bool SettingsOpen => settings.gameObject.activeSelf;
+
+        void CloseSettings()
+        {
+            if (!settings.gameObject.activeSelf) return;
+            settings.gameObject.SetActive(false);
+            SettingsClosed?.Invoke();
+        }
+
+        // ---- one-time notice (old run dropped by a save update) ----
+
+        void BuildNotice(ArtLibrary art)
+        {
+            var go = new GameObject("NoticePage");
+            go.transform.SetParent(transform, false);
+            noticePage = go.transform;
+            var left = NextGoalBox.LocalX(8);
+            var top = NextGoalBox.LocalTop(200);
+            PixelRect.Set(PixelRect.Create(noticePage, "NoticeBorder", art.Pixel, Palette.WallWarning, Order + 1), left, top - 64, left + NextGoalBox.Width, top);
+            PixelRect.Set(PixelRect.Create(noticePage, "NoticeFill", art.Pixel, RunUi.Panel, Order + 2), left + 1, top - 63, left + NextGoalBox.Width - 1, top - 1);
+            var text = PixelText.Create(noticePage, "NoticeText", art.Font, new Vector2(0, top - 10 - 2 * PixelFontData.GlyphHeight), PixelText.Align.Center, 2, Order + 4);
+            text.Set(RunStrings.OldRunEnded, Palette.Text);
+            var ok = PixelButton.Create(noticePage, "NoticeOk", art, NoticeOkArea, RunStrings.Ok, 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 3);
+            ok.Clicked += PressNoticeOk;
+            NoticeOkButton = ok;
+            go.SetActive(false);
+        }
+
+        /// <summary>Shows the notice over everything else of the menu; OK closes it, returns to the hub and calls <paramref name="onOk"/>.</summary>
+        public void ShowOldRunNotice(Action onOk)
+        {
+            noticeOk = onOk;
+            CloseSettings();
+            hub.gameObject.SetActive(false);
+            versusPage.gameObject.SetActive(false);
+            noticePage.gameObject.SetActive(true);
+            PixelButton.NoteShownAll(noticePage);
+        }
+
+        public void PressNoticeOk()
+        {
+            if (!NoticeOpen) return;
+            var ok = noticeOk;
+            noticeOk = null;
+            ShowHub();
+            ok?.Invoke();
+        }
+
+        public bool NoticeOpen => noticePage.gameObject.activeSelf;
+        public PixelButton NoticeOkButton { get; private set; }
         public SettingsView Settings => settings;
         public PixelButton GearButton { get; private set; }
 
