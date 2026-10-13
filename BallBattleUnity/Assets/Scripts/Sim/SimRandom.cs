@@ -1,3 +1,5 @@
+using System;
+
 namespace BallBattle.Sim
 {
     /// <summary>
@@ -22,6 +24,30 @@ namespace BallBattle.Sim
             x ^= x << 5;
             State = x;
             return x;
+        }
+
+        /// <summary>Uniform integer in [min, max); rejection removes modulo bias.</summary>
+        public int RangeInt(int min, int max)
+        {
+            if (min >= max) throw new ArgumentOutOfRangeException(nameof(max));
+            var width = (uint)((long)max - min);
+            return (int)((long)min + SampleBelow(width));
+        }
+
+        /// <summary>Uniform Q16.16 raw value in [min, max); all arithmetic is integer.</summary>
+        public Fix RangeFix(Fix min, Fix max)
+        {
+            if (min >= max) throw new ArgumentOutOfRangeException(nameof(max));
+            var width = (uint)((long)max.Raw - min.Raw);
+            return Fix.FromRaw((int)((long)min.Raw + SampleBelow(width)));
+        }
+
+        uint SampleBelow(uint width)
+        {
+            var threshold = unchecked(0u - width) % width;
+            uint value;
+            do value = NextUInt(); while (value < threshold);
+            return value % width;
         }
 
         /// <summary>Uniform in [0, 1) with 24-bit resolution (exact in float).</summary>

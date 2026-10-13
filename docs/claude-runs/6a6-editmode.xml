@@ -1,0 +1,1509 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="190" result="Skipped:Ignored" total="190" passed="189" failed="0" inconclusive="0" skipped="1" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-12 17:58:11Z" end-time="2026-10-12 17:58:24Z" duration="12.4281803">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="190" result="Skipped" label="Ignored" start-time="2026-10-12 17:58:11Z" end-time="2026-10-12 17:58:24Z" duration="12.428180" total="190" passed="189" failed="0" inconclusive="0" skipped="1" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <reason>
+      <message><![CDATA[One or more child tests were ignored]]></message>
+    </reason>
+    <test-suite type="Assembly" id="1221" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="190" result="Skipped" label="Ignored" start-time="2026-10-12 17:58:11Z" end-time="2026-10-12 17:58:24Z" duration="12.400317" total="190" passed="189" failed="0" inconclusive="0" skipped="1" asserts="0">
+      <properties>
+        <property name="_PID" value="64564" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <reason>
+        <message><![CDATA[One or more child tests were ignored]]></message>
+      </reason>
+      <test-suite type="TestSuite" id="1222" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="190" result="Skipped" label="Ignored" start-time="2026-10-12 17:58:11Z" end-time="2026-10-12 17:58:24Z" duration="12.399297" total="190" passed="189" failed="0" inconclusive="0" skipped="1" asserts="0">
+        <properties />
+        <reason>
+          <message><![CDATA[One or more child tests were ignored]]></message>
+        </reason>
+        <test-suite type="TestSuite" id="1223" name="Tests" fullname="BallBattle.Tests" runstate="Runnable" testcasecount="190" result="Skipped" label="Ignored" start-time="2026-10-12 17:58:11Z" end-time="2026-10-12 17:58:24Z" duration="12.398794" total="190" passed="189" failed="0" inconclusive="0" skipped="1" asserts="0">
+          <properties />
+          <reason>
+            <message><![CDATA[One or more child tests were ignored]]></message>
+          </reason>
+          <test-suite type="TestFixture" id="1001" name="ArtV1CardsBossArenaTests" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-10-12 17:58:11Z" end-time="2026-10-12 17:58:13Z" duration="1.894676" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1013" name="ArenaFloorIsTiledAndWallsUseTheJsonColors" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.ArenaFloorIsTiledAndWallsUseTheJsonColors" methodname="ArenaFloorIsTiledAndWallsUseTheJsonColors" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1858871187" result="Passed" start-time="2026-10-12 17:58:11Z" end-time="2026-10-12 17:58:13Z" duration="1.482933" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1014" name="ArenaWallsTurnTheClosingColorWhileClosing" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.ArenaWallsTurnTheClosingColorWhileClosing" methodname="ArenaWallsTurnTheClosingColorWhileClosing" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1860006835" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.002567" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="BadgesUseTheTraitIcons" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.BadgesUseTheTraitIcons" methodname="BadgesUseTheTraitIcons" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="584182498" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.035280" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="CardFramesAreNineSliceWithFourPixelBorders" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.CardFramesAreNineSliceWithFourPixelBorders" methodname="CardFramesAreNineSliceWithFourPixelBorders" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="946365704" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.003210" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="CardsHaveRarityFrameTraitStripeIconAndGoldNumbers" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.CardsHaveRarityFrameTraitStripeIconAndGoldNumbers" methodname="CardsHaveRarityFrameTraitStripeIconAndGoldNumbers" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1166848548" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.097412" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="CounterCardStyleIsReady" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.CounterCardStyleIsReady" methodname="CounterCardStyleIsReady" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="336209539" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.034888" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="EveryArenaHasAFloorTileAndColors" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.EveryArenaHasAFloorTileAndColors" methodname="EveryArenaHasAFloorTileAndColors" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="264502408" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.022191" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="EveryBossStateHasASprite" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.EveryBossStateHasASprite" methodname="EveryBossStateHasASprite" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="401648549" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.002928" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="EveryTraitHasAnIcon" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.EveryTraitHasAnIcon" methodname="EveryTraitHasAnIcon" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1887959045" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.003599" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="LongestCardTextsStayInsideTheCard" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.LongestCardTextsStayInsideTheCard" methodname="LongestCardTextsStayInsideTheCard" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1835846696" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.052622" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="MimicStartsIdleAndChangesWithWhatItAdaptedTo" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.MimicStartsIdleAndChangesWithWhatItAdaptedTo" methodname="MimicStartsIdleAndChangesWithWhatItAdaptedTo" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="996243495" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.029875" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1015" name="PrepareArenaPreviewUsesTheSameTileAndColors" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.PrepareArenaPreviewUsesTheSameTileAndColors" methodname="PrepareArenaPreviewUsesTheSameTileAndColors" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1133959229" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.029414" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="RunPicksShellKingForEarlierBossesAndMimicForTheLast" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.RunPicksShellKingForEarlierBossesAndMimicForTheLast" methodname="RunPicksShellKingForEarlierBossesAndMimicForTheLast" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1350133974" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.002364" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="ShellKingUsesItsSpriteAtItsOwnSizeAndGlows" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.ShellKingUsesItsSpriteAtItsOwnSizeAndGlows" methodname="ShellKingUsesItsSpriteAtItsOwnSizeAndGlows" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1130644677" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.024324" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1016" name="ArtV1Tests" fullname="BallBattle.Tests.ArtV1Tests" classname="BallBattle.Tests.ArtV1Tests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.268903" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1019" name="BladesStretchOnlyTheCoreAndAreAtLeastSevenPixels" fullname="BallBattle.Tests.ArtV1Tests.BladesStretchOnlyTheCoreAndAreAtLeastSevenPixels" methodname="BladesStretchOnlyTheCoreAndAreAtLeastSevenPixels" classname="BallBattle.Tests.ArtV1Tests" runstate="Runnable" seed="41009862" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.026654" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1018" name="BossAndHudSpritesAreImported" fullname="BallBattle.Tests.ArtV1Tests.BossAndHudSpritesAreImported" methodname="BossAndHudSpritesAreImported" classname="BallBattle.Tests.ArtV1Tests" runstate="Runnable" seed="1131336119" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.012493" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1021" name="DisplayNamesChangeButIdsAndSimNamesDoNot" fullname="BallBattle.Tests.ArtV1Tests.DisplayNamesChangeButIdsAndSimNamesDoNot" methodname="DisplayNamesChangeButIdsAndSimNamesDoNot" classname="BallBattle.Tests.ArtV1Tests" runstate="Runnable" seed="1587891742" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.019240" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1017" name="EveryWeaponUsesTheRealSpritesImportedAsPixelArt" fullname="BallBattle.Tests.ArtV1Tests.EveryWeaponUsesTheRealSpritesImportedAsPixelArt" methodname="EveryWeaponUsesTheRealSpritesImportedAsPixelArt" classname="BallBattle.Tests.ArtV1Tests" runstate="Runnable" seed="451622247" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.023317" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1020" name="MantisHasOneBladeUnlessTwinBlade" fullname="BallBattle.Tests.ArtV1Tests.MantisHasOneBladeUnlessTwinBlade" methodname="MantisHasOneBladeUnlessTwinBlade" classname="BallBattle.Tests.ArtV1Tests" runstate="Runnable" seed="139167580" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.023804" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1022" name="OutlineFlashRecolorsExactlyTheSpritesOwnRim" fullname="BallBattle.Tests.ArtV1Tests.OutlineFlashRecolorsExactlyTheSpritesOwnRim" methodname="OutlineFlashRecolorsExactlyTheSpritesOwnRim" classname="BallBattle.Tests.ArtV1Tests" runstate="Runnable" seed="2053138469" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.157663" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1023" name="FixedMathTests" fullname="BallBattle.Tests.FixedMathTests" classname="BallBattle.Tests.FixedMathTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.084080" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1024" name="ArithmeticUsesDocumentedRoundingAndChecksOverflow" fullname="BallBattle.Tests.FixedMathTests.ArithmeticUsesDocumentedRoundingAndChecksOverflow" methodname="ArithmeticUsesDocumentedRoundingAndChecksOverflow" classname="BallBattle.Tests.FixedMathTests" runstate="Runnable" seed="1099669077" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.011706" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1029" name="FixedOperationsHaveCrossPlatformGoldenHash" fullname="BallBattle.Tests.FixedMathTests.FixedOperationsHaveCrossPlatformGoldenHash" methodname="FixedOperationsHaveCrossPlatformGoldenHash" classname="BallBattle.Tests.FixedMathTests" runstate="Runnable" seed="4358296" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.012962" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Fix 10000 hash: 0xB938B2578807CC32
+]]></output>
+            </test-case>
+            <test-case id="1025" name="IntegerSquareRootHandlesZeroOneLargeAndNonSquare" fullname="BallBattle.Tests.FixedMathTests.IntegerSquareRootHandlesZeroOneLargeAndNonSquare" methodname="IntegerSquareRootHandlesZeroOneLargeAndNonSquare" classname="BallBattle.Tests.FixedMathTests" runstate="Runnable" seed="1068764024" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.004031" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1028" name="RandomIntegerAndFixedRangesAreHalfOpen" fullname="BallBattle.Tests.FixedMathTests.RandomIntegerAndFixedRangesAreHalfOpen" methodname="RandomIntegerAndFixedRangesAreHalfOpen" classname="BallBattle.Tests.FixedMathTests" runstate="Runnable" seed="1388159417" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.045654" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1027" name="SquaredDistanceAndDotFitRealArenaAndRunSpeedLimits" fullname="BallBattle.Tests.FixedMathTests.SquaredDistanceAndDotFitRealArenaAndRunSpeedLimits" methodname="SquaredDistanceAndDotFitRealArenaAndRunSpeedLimits" classname="BallBattle.Tests.FixedMathTests" runstate="Runnable" seed="1518714768" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.002729" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[arena=230x230; diagonalSqRaw=454407539916800; speedCapConservative=40; speedSqRaw=13743895347200; arenaMargin=20297; speedMargin=671088
+]]></output>
+            </test-case>
+            <test-case id="1026" name="TrigUsesTenthsAndAtan2CoversAxesAndQuadrants" fullname="BallBattle.Tests.FixedMathTests.TrigUsesTenthsAndAtan2CoversAxesAndQuadrants" methodname="TrigUsesTenthsAndAtan2CoversAxesAndQuadrants" classname="BallBattle.Tests.FixedMathTests" runstate="Runnable" seed="245395473" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.002164" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1030" name="InputAndReflectFxTests" fullname="BallBattle.Tests.InputAndReflectFxTests" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:14Z" duration="0.331256" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1036" name="AButtonIgnoresAPressFromBeforeItWasShown" fullname="BallBattle.Tests.InputAndReflectFxTests.AButtonIgnoresAPressFromBeforeItWasShown" methodname="AButtonIgnoresAPressFromBeforeItWasShown" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="1655570161" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.006289" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1032" name="APressFromBeforeTheScreenOpenedNeverPicksACard" fullname="BallBattle.Tests.InputAndReflectFxTests.APressFromBeforeTheScreenOpenedNeverPicksACard" methodname="APressFromBeforeTheScreenOpenedNeverPicksACard" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="1378754338" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.035723" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1040" name="EdgeSpriteIsExactlyOnePixelThick" fullname="BallBattle.Tests.InputAndReflectFxTests.EdgeSpriteIsExactlyOnePixelThick" methodname="EdgeSpriteIsExactlyOnePixelThick" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="1670061033" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.008021" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1038" name="EveryVersusTileIsReachableAndOnlyItself" fullname="BallBattle.Tests.InputAndReflectFxTests.EveryVersusTileIsReachableAndOnlyItself" methodname="EveryVersusTileIsReachableAndOnlyItself" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="174231732" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:13Z" duration="0.030650" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1044" name="ForcedTraitIsInTheFirstOfferOnlyAndNormalPlayIsUntouched" fullname="BallBattle.Tests.InputAndReflectFxTests.ForcedTraitIsInTheFirstOfferOnlyAndNormalPlayIsUntouched" methodname="ForcedTraitIsInTheFirstOfferOnlyAndNormalPlayIsUntouched" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="485332207" result="Passed" start-time="2026-10-12 17:58:13Z" end-time="2026-10-12 17:58:14Z" duration="0.017691" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 2, weapon fang
+[BallBattle] Run started: seed 2, weapon fang, -bbForceTrait second-wind
+]]></output>
+            </test-case>
+            <test-case id="1043" name="ForceTraitArgumentIsParsedAndOffByDefault" fullname="BallBattle.Tests.InputAndReflectFxTests.ForceTraitArgumentIsParsedAndOffByDefault" methodname="ForceTraitArgumentIsParsedAndOffByDefault" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="317324361" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.005627" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] -bbForceTrait: the offer before fight 1 will contain second-wind
+[BallBattle] -bbForceTrait: the offer before fight 1 will contain second-wind
+[BallBattle] -bbForceTrait: unknown trait 'not-a-trait', ignored
+]]></output>
+            </test-case>
+            <test-case id="1041" name="NumbersShownTogetherStackAndStayInTheArena" fullname="BallBattle.Tests.InputAndReflectFxTests.NumbersShownTogetherStackAndStayInTheArena" methodname="NumbersShownTogetherStackAndStayInTheArena" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="373425456" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.021275" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1031" name="PrepareDropsEveryTapForThreeHundredMillisecondsAfterOpening" fullname="BallBattle.Tests.InputAndReflectFxTests.PrepareDropsEveryTapForThreeHundredMillisecondsAfterOpening" methodname="PrepareDropsEveryTapForThreeHundredMillisecondsAfterOpening" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="1552103591" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.028240" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1033" name="PressAndReleaseMustBeOnTheSameCardOrButton" fullname="BallBattle.Tests.InputAndReflectFxTests.PressAndReleaseMustBeOnTheSameCardOrButton" methodname="PressAndReleaseMustBeOnTheSameCardOrButton" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="388465855" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.031670" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1039" name="ReflectFlashesOnlyTheOuterPixelOfTheBallHitBack" fullname="BallBattle.Tests.InputAndReflectFxTests.ReflectFlashesOnlyTheOuterPixelOfTheBallHitBack" methodname="ReflectFlashesOnlyTheOuterPixelOfTheBallHitBack" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="74838750" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.062403" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1034" name="RerollNeedsPressAndReleaseOnIt" fullname="BallBattle.Tests.InputAndReflectFxTests.RerollNeedsPressAndReleaseOnIt" methodname="RerollNeedsPressAndReleaseOnIt" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="635867731" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.025282" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1035" name="TheTapOnYesNeverAlsoPicksTheCardUnderIt" fullname="BallBattle.Tests.InputAndReflectFxTests.TheTapOnYesNeverAlsoPicksTheCardUnderIt" methodname="TheTapOnYesNeverAlsoPicksTheCardUnderIt" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="351825290" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.025691" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1042" name="ThornSpikesAreTwoPixelsThickAndFiveLong" fullname="BallBattle.Tests.InputAndReflectFxTests.ThornSpikesAreTwoPixelsThickAndFiveLong" methodname="ThornSpikesAreTwoPixelsThickAndFiveLong" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="14654176" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.001306" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1037" name="VersusPickThenStartInOneFrameStartsWithThePickedWeapon" fullname="BallBattle.Tests.InputAndReflectFxTests.VersusPickThenStartInOneFrameStartsWithThePickedWeapon" methodname="VersusPickThenStartInOneFrameStartsWithThePickedWeapon" classname="BallBattle.Tests.InputAndReflectFxTests" runstate="Runnable" seed="269814358" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.025435" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1045" name="MarkerSecondWindAndPopupTests" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" testcasecount="18" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:16Z" duration="2.052708" total="18" passed="18" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1062" name="ANumberShownLaterNeverCatchesUpWithOneStillRising" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.ANumberShownLaterNeverCatchesUpWithOneStillRising" methodname="ANumberShownLaterNeverCatchesUpWithOneStillRising" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="605218655" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.009339" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="ArrowSpriteIsTheMockupArrow" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.ArrowSpriteIsTheMockupArrow" methodname="ArrowSpriteIsTheMockupArrow" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="1584749540" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.003273" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1049" name="ArrowTipIsFiveRowsAboveTheBallTopRowAndCentred" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.ArrowTipIsFiveRowsAboveTheBallTopRowAndCentred" methodname="ArrowTipIsFiveRowsAboveTheBallTopRowAndCentred" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="889122536" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.057038" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1052" name="FlashUsesTheConfiguredEdgeSource" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.FlashUsesTheConfiguredEdgeSource" methodname="FlashUsesTheConfiguredEdgeSource" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="1295526779" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.018334" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1046" name="HeavyLevelTwoFlashesOnlyItsOutline" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.HeavyLevelTwoFlashesOnlyItsOutline" methodname="HeavyLevelTwoFlashesOnlyItsOutline" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="522892394" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.030532" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1051" name="HudShowsTheArrowBeforeYouOnlyInRunMode" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.HudShowsTheArrowBeforeYouOnlyInRunMode" methodname="HudShowsTheArrowBeforeYouOnlyInRunMode" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="235352129" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.021142" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1048" name="MockupHasThisArrowFivePixelRowsAboveTheBall" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.MockupHasThisArrowFivePixelRowsAboveTheBall" methodname="MockupHasThisArrowFivePixelRowsAboveTheBall" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="1820783302" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.052512" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1061" name="NumbersAtTheTopWallStackDownAndStayInside" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.NumbersAtTheTopWallStackDownAndStayInside" methodname="NumbersAtTheTopWallStackDownAndStayInside" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="169847943" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.008220" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1063" name="NumbersFollowAWallThatClosesIn" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.NumbersFollowAWallThatClosesIn" methodname="NumbersFollowAWallThatClosesIn" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="1250822011" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.002971" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1058" name="PrepareHpEqualsTheHpTheFightStartsWith" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.PrepareHpEqualsTheHpTheFightStartsWith" methodname="PrepareHpEqualsTheHpTheFightStartsWith" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="2127050718" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.227380" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 44, weapon brawler
+[BallBattle] Run started: seed 45, weapon pike
+[BallBattle] Run started: seed 46, weapon fang
+[BallBattle] Fight 1 ended: seed 46 (match 3778675379), outcome Win, tick 795, you fang HP start 229.50 heal 0.00 end 150.60, enemy rig HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 2 ended: seed 46 (match 2747068105), outcome Win, tick 587, you fang HP start 229.50 heal 0.00 end 204.97, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 3 ended: seed 46 (match 3281414318), outcome Win, tick 1078, you fang HP start 229.50 heal 0.00 end 217.95, enemy aegis HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 4 ended: seed 46 (match 3648975174), outcome Win, tick 561, you fang HP start 229.50 heal 0.00 end 217.50, enemy fang HP start 160.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+]]></output>
+            </test-case>
+            <test-case id="1050" name="RingIsOnePixelDashedSixDegreesAndNeverRotates" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.RingIsOnePixelDashedSixDegreesAndNeverRotates" methodname="RingIsOnePixelDashedSixDegreesAndNeverRotates" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="1882815902" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.037694" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1059" name="RunStartLogsTheSeed" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.RunStartLogsTheSeed" methodname="RunStartLogsTheSeed" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="849026730" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:14Z" duration="0.006194" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 12345, weapon brawler
+]]></output>
+            </test-case>
+            <test-case id="1054" name="SecondWindFiresFromFortyOneOfAHundredAgainstEveryEnemy" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.SecondWindFiresFromFortyOneOfAHundredAgainstEveryEnemy" methodname="SecondWindFiresFromFortyOneOfAHundredAgainstEveryEnemy" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="738968978" result="Passed" start-time="2026-10-12 17:58:14Z" end-time="2026-10-12 17:58:16Z" duration="1.392920" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1057" name="SecondWindStaysAndFiresThroughABossAndASaveLoad" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.SecondWindStaysAndFiresThroughABossAndASaveLoad" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.144369" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1055" name="SecondWindStaysAndFiresThroughABossAndASaveLoad(True)" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.SecondWindStaysAndFiresThroughABossAndASaveLoad(True)" methodname="SecondWindStaysAndFiresThroughABossAndASaveLoad" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="2056603481" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.053917" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 31, weapon pike, -bbForceTrait second-wind
+[BallBattle] Fight 1 ended: seed 31 (match 2439468027), outcome Win, tick 509, you pike HP start 100.00 heal 0.00 end 45.81, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 2 ended: seed 31 (match 3560974113), outcome Win, tick 1165, you fang HP start 41.00 heal 0.00 end 40.93, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 3 ended: seed 31 (match 1453997350), outcome Win, tick 972, you fang HP start 41.00 heal 0.00 end 34.10, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 4 ended: seed 31 (match 1778128132), outcome Lost, tick 561, you brawler HP start 41.00 heal 0.00 end 0.00, enemy aegis HP start 160.00 heal 0.00 end 37.27, DMG DEALT 0.00 TAKEN 0.00
+]]></output>
+              </test-case>
+              <test-case id="1056" name="SecondWindStaysAndFiresThroughABossAndASaveLoad(False)" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.SecondWindStaysAndFiresThroughABossAndASaveLoad(False)" methodname="SecondWindStaysAndFiresThroughABossAndASaveLoad" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="1202869365" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.086846" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 1, weapon blade
+[BallBattle] Fight 1 ended: seed 1 (match 3154357315), outcome Win, tick 1853, you blade HP start 100.00 heal 0.00 end 82.91, enemy aegis HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 2 ended: seed 1 (match 2484369155), outcome Win, tick 733, you brawler HP start 41.00 heal 0.00 end 45.60, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 3 ended: seed 1 (match 1408424090), outcome Win, tick 460, you brawler HP start 41.00 heal 0.00 end 22.00, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 4 ended: seed 1 (match 1402126604), outcome Win, tick 756, you brawler HP start 41.00 heal 0.00 end 22.59, enemy aegis HP start 160.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Run resumed: seed 1, fight 5
+[BallBattle] Fight 5 ended: seed 1 (match 2082182900), outcome Lost, tick 2179, you brawler HP start 25.00 heal 0.00 end 0.00, enemy aegis HP start 100.00 heal 0.00 end 20.74, DMG DEALT 0.00 TAKEN 0.00
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-case id="1053" name="SpriteOutlineSourceLightsExactlyTheSpritesDarkRim" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.SpriteOutlineSourceLightsExactlyTheSpritesDarkRim" methodname="SpriteOutlineSourceLightsExactlyTheSpritesDarkRim" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="213370262" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.007892" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle]  is not readable: outline flash uses the procedural ring
+]]></output>
+            </test-case>
+            <test-case id="1060" name="TwoAndThreeNumbersInOneTickAtOnePointAreTwelvePixelsApart" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.TwoAndThreeNumbersInOneTickAtOnePointAreTwelvePixelsApart" methodname="TwoAndThreeNumbersInOneTickAtOnePointAreTwelvePixelsApart" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="940192069" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.006818" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1064" name="VersusHidesTheRoundLineOnceDecidedAndTheResultIgnoresEarlyTaps" fullname="BallBattle.Tests.MarkerSecondWindAndPopupTests.VersusHidesTheRoundLineOnceDecidedAndTheResultIgnoresEarlyTaps" methodname="VersusHidesTheRoundLineOnceDecidedAndTheResultIgnoresEarlyTaps" classname="BallBattle.Tests.MarkerSecondWindAndPopupTests" runstate="Runnable" seed="825058272" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.016551" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1065" name="MatchFlowTests" fullname="BallBattle.Tests.MatchFlowTests" classname="BallBattle.Tests.MatchFlowTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.013935" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1070" name="CommandsInTheWrongStateAreIgnored" fullname="BallBattle.Tests.MatchFlowTests.CommandsInTheWrongStateAreIgnored" methodname="CommandsInTheWrongStateAreIgnored" classname="BallBattle.Tests.MatchFlowTests" runstate="Runnable" seed="1145780606" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.002002" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1066" name="FullSeriesWalksEveryState" fullname="BallBattle.Tests.MatchFlowTests.FullSeriesWalksEveryState" methodname="FullSeriesWalksEveryState" classname="BallBattle.Tests.MatchFlowTests" runstate="Runnable" seed="1988748830" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.004491" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1067" name="RematchReusesSeedsNewMatchDoesNot" fullname="BallBattle.Tests.MatchFlowTests.RematchReusesSeedsNewMatchDoesNot" methodname="RematchReusesSeedsNewMatchDoesNot" classname="BallBattle.Tests.MatchFlowTests" runstate="Runnable" seed="92058436" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.001015" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1069" name="ScreenToNativeMatchesWindowboxZoom" fullname="BallBattle.Tests.MatchFlowTests.ScreenToNativeMatchesWindowboxZoom" methodname="ScreenToNativeMatchesWindowboxZoom" classname="BallBattle.Tests.MatchFlowTests" runstate="Runnable" seed="1461572798" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.001796" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1068" name="ToMenuRaisesEvent" fullname="BallBattle.Tests.MatchFlowTests.ToMenuRaisesEvent" methodname="ToMenuRaisesEvent" classname="BallBattle.Tests.MatchFlowTests" runstate="Runnable" seed="180480257" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.001258" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1071" name="PrepareAndFightUiTests" fullname="BallBattle.Tests.PrepareAndFightUiTests" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.352542" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1073" name="BlockedCardsAndRerollSayWhy" fullname="BallBattle.Tests.PrepareAndFightUiTests.BlockedCardsAndRerollSayWhy" methodname="BlockedCardsAndRerollSayWhy" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1892606770" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.004752" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1082" name="BossIsDrawnAtItsRealSizeAndFlashesOnlyItsOutline" fullname="BallBattle.Tests.PrepareAndFightUiTests.BossIsDrawnAtItsRealSizeAndFlashesOnlyItsOutline" methodname="BossIsDrawnAtItsRealSizeAndFlashesOnlyItsOutline" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="2076032293" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.023988" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1077" name="CardsNeverOverlapFightOrRerollAndAllButtonsAreOnScreen" fullname="BallBattle.Tests.PrepareAndFightUiTests.CardsNeverOverlapFightOrRerollAndAllButtonsAreOnScreen" methodname="CardsNeverOverlapFightOrRerollAndAllButtonsAreOnScreen" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1346713936" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.029827" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1083" name="DamageNumbersDrawAboveEveryBallSprite" fullname="BallBattle.Tests.PrepareAndFightUiTests.DamageNumbersDrawAboveEveryBallSprite" methodname="DamageNumbersDrawAboveEveryBallSprite" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1291346538" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.024518" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1084" name="DamageNumbersStayFourPixelsInsideTheArena" fullname="BallBattle.Tests.PrepareAndFightUiTests.DamageNumbersStayFourPixelsInsideTheArena" methodname="DamageNumbersStayFourPixelsInsideTheArena" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1721391854" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.004843" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1075" name="FightWithAnUnusedFreePickAsksToConfirm" fullname="BallBattle.Tests.PrepareAndFightUiTests.FightWithAnUnusedFreePickAsksToConfirm" methodname="FightWithAnUnusedFreePickAsksToConfirm" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1406685156" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.036085" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1076" name="NoConfirmWhenNoCardCanBeTaken" fullname="BallBattle.Tests.PrepareAndFightUiTests.NoConfirmWhenNoCardCanBeTaken" methodname="NoConfirmWhenNoCardCanBeTaken" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1900885012" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.001154" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1080" name="PlayerBallHasArrowAndRingTheEnemyDoesNot" fullname="BallBattle.Tests.PrepareAndFightUiTests.PlayerBallHasArrowAndRingTheEnemyDoesNot" methodname="PlayerBallHasArrowAndRingTheEnemyDoesNot" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="424792763" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.022448" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1078" name="PrepareShowsTheHpTheFightReallyStartsWithBossIncluded" fullname="BallBattle.Tests.PrepareAndFightUiTests.PrepareShowsTheHpTheFightReallyStartsWithBossIncluded" methodname="PrepareShowsTheHpTheFightReallyStartsWithBossIncluded" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1555357672" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.027753" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1087" name="RunScreensFitTheScreen" fullname="BallBattle.Tests.PrepareAndFightUiTests.RunScreensFitTheScreen" methodname="RunScreensFitTheScreen" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1050823820" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.045493" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1072" name="StartPickShowsAllThreeCardTitles" fullname="BallBattle.Tests.PrepareAndFightUiTests.StartPickShowsAllThreeCardTitles" methodname="StartPickShowsAllThreeCardTitles" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="857095650" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.022524" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1085" name="SummaryWithEveryUnlockFitsTheScreen" fullname="BallBattle.Tests.PrepareAndFightUiTests.SummaryWithEveryUnlockFitsTheScreen" methodname="SummaryWithEveryUnlockFitsTheScreen" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="8604997" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.014955" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1079" name="TakenCardHasItsOwnStyle" fullname="BallBattle.Tests.PrepareAndFightUiTests.TakenCardHasItsOwnStyle" methodname="TakenCardHasItsOwnStyle" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1857230190" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.026915" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1074" name="TappingABlockedCardShowsTheReasonInsteadOfNothing" fullname="BallBattle.Tests.PrepareAndFightUiTests.TappingABlockedCardShowsTheReasonInsteadOfNothing" methodname="TappingABlockedCardShowsTheReasonInsteadOfNothing" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="459012965" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.030645" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1086" name="UnlockTextNeverCutsAndSaysHowManyMore" fullname="BallBattle.Tests.PrepareAndFightUiTests.UnlockTextNeverCutsAndSaysHowManyMore" methodname="UnlockTextNeverCutsAndSaysHowManyMore" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="1085313852" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.004072" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1081" name="VersusHasNoMarker" fullname="BallBattle.Tests.PrepareAndFightUiTests.VersusHasNoMarker" methodname="VersusHasNoMarker" classname="BallBattle.Tests.PrepareAndFightUiTests" runstate="Runnable" seed="921277140" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.026865" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1088" name="ProjectSetupTests" fullname="BallBattle.Tests.ProjectSetupTests" classname="BallBattle.Tests.ProjectSetupTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.006686" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1090" name="EveryQualityLevelUsesUrp" fullname="BallBattle.Tests.ProjectSetupTests.EveryQualityLevelUsesUrp" methodname="EveryQualityLevelUsesUrp" classname="BallBattle.Tests.ProjectSetupTests" runstate="Runnable" seed="224618249" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.001870" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1091" name="SimAssemblyHasNoUnityEngineReference" fullname="BallBattle.Tests.ProjectSetupTests.SimAssemblyHasNoUnityEngineReference" methodname="SimAssemblyHasNoUnityEngineReference" classname="BallBattle.Tests.ProjectSetupTests" runstate="Runnable" seed="473455384" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.000606" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1089" name="UrpIsActiveRenderPipeline" fullname="BallBattle.Tests.ProjectSetupTests.UrpIsActiveRenderPipeline" methodname="UrpIsActiveRenderPipeline" classname="BallBattle.Tests.ProjectSetupTests" runstate="Runnable" seed="2068914242" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.000467" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1092" name="Prompt3dTests" fullname="BallBattle.Tests.Prompt3dTests" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:17Z" duration="1.299461" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1106" name="BossIsItsWeaponsPreDrawnBallOnPrepareAndInTheArena" fullname="BallBattle.Tests.Prompt3dTests.BossIsItsWeaponsPreDrawnBallOnPrepareAndInTheArena" methodname="BossIsItsWeaponsPreDrawnBallOnPrepareAndInTheArena" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="1662826236" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.044474" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1107" name="EveryCardInThePoolHasAnIcon" fullname="BallBattle.Tests.Prompt3dTests.EveryCardInThePoolHasAnIcon" methodname="EveryCardInThePoolHasAnIcon" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="1752950973" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.006038" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1105" name="EveryWeaponHasTheThreeSizes" fullname="BallBattle.Tests.Prompt3dTests.EveryWeaponHasTheThreeSizes" methodname="EveryWeaponHasTheThreeSizes" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="1224033942" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.005743" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1102" name="HpIsShownRoundedDownAndAtLeastOneWhileAlive" fullname="BallBattle.Tests.Prompt3dTests.HpIsShownRoundedDownAndAtLeastOneWhileAlive" methodname="HpIsShownRoundedDownAndAtLeastOneWhileAlive" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="454808438" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.036574" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1104" name="OtherSizesScaleTheBaseSpriteAndMissingSizesFallBack" fullname="BallBattle.Tests.Prompt3dTests.OtherSizesScaleTheBaseSpriteAndMissingSizesFallBack" methodname="OtherSizesScaleTheBaseSpriteAndMissingSizesFallBack" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="1785687094" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.020872" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1100" name="ResultDamageEqualsTheHpBarsOfFightOne" fullname="BallBattle.Tests.Prompt3dTests.ResultDamageEqualsTheHpBarsOfFightOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:17Z" duration="1.069468" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1093" name="ResultDamageEqualsTheHpBarsOfFightOne(1791713962,&quot;blade&quot;)" fullname="BallBattle.Tests.Prompt3dTests.ResultDamageEqualsTheHpBarsOfFightOne(1791713962,&quot;blade&quot;)" methodname="ResultDamageEqualsTheHpBarsOfFightOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="1911744792" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:16Z" duration="0.189293" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 1791713962, weapon blade
+[BallBattle] Fight 1 prepared: seed 3706534382, tick 0, you blade HP 100/100 [], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 began: seed 3706534382, tick 0, you blade HP 100/100 [], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 ended: seed 1791713962 (match 3706534382), outcome Win, tick 2845, you blade HP start 100.00 heal 0.00 end 9.59, enemy aegis HP start 100.00 heal 10.25 end 0.00, DMG DEALT 110.25 TAKEN 90.41
+[3d] seed 1791713962 blade vs aegis: enemy start 100 healed 10.25 end 0 -> DMG DEALT 110.25; you start 100 healed 0 end 9.59 -> DMG TAKEN 90.41
+]]></output>
+              </test-case>
+              <test-case id="1094" name="ResultDamageEqualsTheHpBarsOfFightOne(1791713962,&quot;pike&quot;)" fullname="BallBattle.Tests.Prompt3dTests.ResultDamageEqualsTheHpBarsOfFightOne(1791713962,&quot;pike&quot;)" methodname="ResultDamageEqualsTheHpBarsOfFightOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="1240485917" result="Passed" start-time="2026-10-12 17:58:16Z" end-time="2026-10-12 17:58:17Z" duration="0.140834" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 1791713962, weapon pike
+[BallBattle] Fight 1 prepared: seed 3706534382, tick 0, you pike HP 100/100 [], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 began: seed 3706534382, tick 0, you pike HP 100/100 [], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 ended: seed 1791713962 (match 3706534382), outcome Win, tick 2340, you pike HP start 100.00 heal 0.00 end 50.82, enemy aegis HP start 100.00 heal 7.75 end 0.00, DMG DEALT 107.75 TAKEN 49.18
+[3d] seed 1791713962 pike vs aegis: enemy start 100 healed 7.75 end 0 -> DMG DEALT 107.75; you start 100 healed 0 end 50.82 -> DMG TAKEN 49.18
+]]></output>
+              </test-case>
+              <test-case id="1095" name="ResultDamageEqualsTheHpBarsOfFightOne(1791713962,&quot;brawler&quot;)" fullname="BallBattle.Tests.Prompt3dTests.ResultDamageEqualsTheHpBarsOfFightOne(1791713962,&quot;brawler&quot;)" methodname="ResultDamageEqualsTheHpBarsOfFightOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="1249487445" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.100092" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 1791713962, weapon brawler
+[BallBattle] Fight 1 prepared: seed 3706534382, tick 0, you brawler HP 100/100 [], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 began: seed 3706534382, tick 0, you brawler HP 100/100 [], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 ended: seed 1791713962 (match 3706534382), outcome Win, tick 1978, you brawler HP start 100.00 heal 0.00 end 24.20, enemy aegis HP start 100.00 heal 7.50 end 0.00, DMG DEALT 107.50 TAKEN 75.80
+[3d] seed 1791713962 brawler vs aegis: enemy start 100 healed 7.5 end 0 -> DMG DEALT 107.5; you start 100 healed 0 end 24.2 -> DMG TAKEN 75.8
+]]></output>
+              </test-case>
+              <test-case id="1096" name="ResultDamageEqualsTheHpBarsOfFightOne(7,&quot;brawler&quot;)" fullname="BallBattle.Tests.Prompt3dTests.ResultDamageEqualsTheHpBarsOfFightOne(7,&quot;brawler&quot;)" methodname="ResultDamageEqualsTheHpBarsOfFightOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="846141042" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.141747" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 7, weapon brawler
+[BallBattle] Fight 1 prepared: seed 1897127210, tick 0, you brawler HP 100/100 [], enemy pike HP 100/100 []
+[BallBattle] Fight 1 began: seed 1897127210, tick 0, you brawler HP 100/100 [], enemy pike HP 100/100 []
+[BallBattle] Fight 1 ended: seed 7 (match 1897127210), outcome Win, tick 3327, you brawler HP start 100.00 heal 0.00 end 56.25, enemy pike HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 43.75
+[3d] seed 7 brawler vs pike: enemy start 100 healed 0 end 0 -> DMG DEALT 100; you start 100 healed 0 end 56.25 -> DMG TAKEN 43.75
+]]></output>
+              </test-case>
+              <test-case id="1097" name="ResultDamageEqualsTheHpBarsOfFightOne(4242,&quot;blade&quot;)" fullname="BallBattle.Tests.Prompt3dTests.ResultDamageEqualsTheHpBarsOfFightOne(4242,&quot;blade&quot;)" methodname="ResultDamageEqualsTheHpBarsOfFightOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="1896588435" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.200088" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 4242, weapon blade
+[BallBattle] Fight 1 prepared: seed 2292332940, tick 0, you blade HP 100/100 [spiky1], enemy blade HP 100/100 []
+[BallBattle] Fight 1 began: seed 2292332940, tick 0, you blade HP 100/100 [spiky1], enemy blade HP 100/100 []
+[BallBattle] Fight 1 ended: seed 4242 (match 2292332940), outcome Win, tick 2934, you blade HP start 100.00 heal 0.00 end 45.00, enemy blade HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 55.00
+[3d] seed 4242 blade vs blade: enemy start 100 healed 0 end 0 -> DMG DEALT 100; you start 100 healed 0 end 45 -> DMG TAKEN 55
+]]></output>
+              </test-case>
+              <test-case id="1098" name="ResultDamageEqualsTheHpBarsOfFightOne(90001,&quot;fang&quot;)" fullname="BallBattle.Tests.Prompt3dTests.ResultDamageEqualsTheHpBarsOfFightOne(90001,&quot;fang&quot;)" methodname="ResultDamageEqualsTheHpBarsOfFightOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="916637687" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.141702" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 90001, weapon fang
+[BallBattle] Fight 1 prepared: seed 691712158, tick 0, you fang HP 100/100 [spiky1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 began: seed 691712158, tick 0, you fang HP 100/100 [spiky1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 ended: seed 90001 (match 691712158), outcome Win, tick 2244, you fang HP start 100.00 heal 0.00 end 36.02, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 63.98
+[3d] seed 90001 fang vs brawler: enemy start 100 healed 0 end 0 -> DMG DEALT 100; you start 100 healed 0 end 36.02 -> DMG TAKEN 63.98
+]]></output>
+              </test-case>
+              <test-case id="1099" name="ResultDamageEqualsTheHpBarsOfFightOne(123456789,&quot;brawler&quot;)" fullname="BallBattle.Tests.Prompt3dTests.ResultDamageEqualsTheHpBarsOfFightOne(123456789,&quot;brawler&quot;)" methodname="ResultDamageEqualsTheHpBarsOfFightOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="2117873854" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.152472" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 123456789, weapon brawler
+[BallBattle] Fight 1 prepared: seed 4109084944, tick 0, you brawler HP 100/100 [thorns1], enemy fang HP 100/100 []
+[BallBattle] Fight 1 began: seed 4109084944, tick 0, you brawler HP 100/100 [thorns1], enemy fang HP 100/100 []
+[BallBattle] Fight 1 ended: seed 123456789 (match 4109084944), outcome Win, tick 2952, you brawler HP start 100.00 heal 0.00 end 43.00, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 57.00
+[3d] seed 123456789 brawler vs fang: enemy start 100 healed 0 end 0 -> DMG DEALT 100; you start 100 healed 0 end 43 -> DMG TAKEN 57
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-case id="1109" name="RunTitleShowsWinsOutOfPlayed" fullname="BallBattle.Tests.Prompt3dTests.RunTitleShowsWinsOutOfPlayed" methodname="RunTitleShowsWinsOutOfPlayed" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="626403828" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.002728" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1101" name="ScreenShakeStopsSafelyWhenTheCameraIsGone" fullname="BallBattle.Tests.Prompt3dTests.ScreenShakeStopsSafelyWhenTheCameraIsGone" methodname="ScreenShakeStopsSafelyWhenTheCameraIsGone" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="777313679" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.003712" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1103" name="SizedBallsUseTheirPreDrawnSpriteAtScaleOne" fullname="BallBattle.Tests.Prompt3dTests.SizedBallsUseTheirPreDrawnSpriteAtScaleOne" methodname="SizedBallsUseTheirPreDrawnSpriteAtScaleOne" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="464998526" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.030120" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1108" name="StatCardsShowTheirIconOnPrepareAndAsHudBadges" fullname="BallBattle.Tests.Prompt3dTests.StatCardsShowTheirIconOnPrepareAndAsHudBadges" methodname="StatCardsShowTheirIconOnPrepareAndAsHudBadges" classname="BallBattle.Tests.Prompt3dTests" runstate="Runnable" seed="991769865" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.075317" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 65, weapon fang
+[BallBattle] Fight 1 prepared: seed 35477464, tick 0, you fang HP 100/115 [thorns1], enemy venom HP 100/100 []
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1110" name="Prompt3e2Tests" fullname="BallBattle.Tests.Prompt3e2Tests" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" testcasecount="18" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:18Z" duration="0.385334" total="18" passed="18" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1123" name="ADialogLocksInputForThreeHundredMillisecondsWhenItOpens" fullname="BallBattle.Tests.Prompt3e2Tests.ADialogLocksInputForThreeHundredMillisecondsWhenItOpens" methodname="ADialogLocksInputForThreeHundredMillisecondsWhenItOpens" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="927828144" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.026955" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1113" name="APressDuringALockNeverClicksAndTheNextClickWorks" fullname="BallBattle.Tests.Prompt3e2Tests.APressDuringALockNeverClicksAndTheNextClickWorks" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.003906" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1111" name="APressDuringALockNeverClicksAndTheNextClickWorks(Polling)" fullname="BallBattle.Tests.Prompt3e2Tests.APressDuringALockNeverClicksAndTheNextClickWorks(Polling)" methodname="APressDuringALockNeverClicksAndTheNextClickWorks" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="1918562661" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.001740" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1112" name="APressDuringALockNeverClicksAndTheNextClickWorks(Imgui)" fullname="BallBattle.Tests.Prompt3e2Tests.APressDuringALockNeverClicksAndTheNextClickWorks(Imgui)" methodname="APressDuringALockNeverClicksAndTheNextClickWorks" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="611870911" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:17Z" duration="0.000538" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1121" name="NewRunOverASavedRunAsksAbandonAndOnlyYesStartsOver" fullname="BallBattle.Tests.Prompt3e2Tests.NewRunOverASavedRunAsksAbandonAndOnlyYesStartsOver" methodname="NewRunOverASavedRunAsksAbandonAndOnlyYesStartsOver" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="1748412826" result="Passed" start-time="2026-10-12 17:58:17Z" end-time="2026-10-12 17:58:18Z" duration="0.013845" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 82, weapon fang
+]]></output>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1116" name="PrepareLocksForSixHundredMillisecondsAndAPressInsideNeverFights" fullname="BallBattle.Tests.Prompt3e2Tests.PrepareLocksForSixHundredMillisecondsAndAPressInsideNeverFights" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.046290" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1114" name="PrepareLocksForSixHundredMillisecondsAndAPressInsideNeverFights(Polling)" fullname="BallBattle.Tests.Prompt3e2Tests.PrepareLocksForSixHundredMillisecondsAndAPressInsideNeverFights(Polling)" methodname="PrepareLocksForSixHundredMillisecondsAndAPressInsideNeverFights" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="977445377" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.021258" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1115" name="PrepareLocksForSixHundredMillisecondsAndAPressInsideNeverFights(Imgui)" fullname="BallBattle.Tests.Prompt3e2Tests.PrepareLocksForSixHundredMillisecondsAndAPressInsideNeverFights(Imgui)" methodname="PrepareLocksForSixHundredMillisecondsAndAPressInsideNeverFights" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="780279710" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.023703" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="ParameterizedMethod" id="1119" name="ResultScreenLockOfEightHundredMillisecondsWorksTheSameWay" fullname="BallBattle.Tests.Prompt3e2Tests.ResultScreenLockOfEightHundredMillisecondsWorksTheSameWay" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.023506" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1117" name="ResultScreenLockOfEightHundredMillisecondsWorksTheSameWay(Polling)" fullname="BallBattle.Tests.Prompt3e2Tests.ResultScreenLockOfEightHundredMillisecondsWorksTheSameWay(Polling)" methodname="ResultScreenLockOfEightHundredMillisecondsWorksTheSameWay" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="1568052404" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.011070" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1118" name="ResultScreenLockOfEightHundredMillisecondsWorksTheSameWay(Imgui)" fullname="BallBattle.Tests.Prompt3e2Tests.ResultScreenLockOfEightHundredMillisecondsWorksTheSameWay(Imgui)" methodname="ResultScreenLockOfEightHundredMillisecondsWorksTheSameWay" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="2004323755" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.010646" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="ParameterizedMethod" id="1131" name="SpammingFightNeverAnswersSkipFreePick" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingFightNeverAnswersSkipFreePick" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.044219" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1129" name="SpammingFightNeverAnswersSkipFreePick(Imgui)" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingFightNeverAnswersSkipFreePick(Imgui)" methodname="SpammingFightNeverAnswersSkipFreePick" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="165900486" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.020520" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1130" name="SpammingFightNeverAnswersSkipFreePick(Polling)" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingFightNeverAnswersSkipFreePick(Polling)" methodname="SpammingFightNeverAnswersSkipFreePick" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="1086985813" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.022221" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="ParameterizedMethod" id="1134" name="SpammingNewRunNeverAnswersAbandon" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingNewRunNeverAnswersAbandon" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.025397" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1132" name="SpammingNewRunNeverAnswersAbandon(Imgui)" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingNewRunNeverAnswersAbandon(Imgui)" methodname="SpammingNewRunNeverAnswersAbandon" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="1571083328" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.012786" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 82, weapon fang
+]]></output>
+              </test-case>
+              <test-case id="1133" name="SpammingNewRunNeverAnswersAbandon(Polling)" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingNewRunNeverAnswersAbandon(Polling)" methodname="SpammingNewRunNeverAnswersAbandon" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="747126937" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.011248" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 82, weapon fang
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="ParameterizedMethod" id="1128" name="SpammingTheSwapCardNeverAnswersTheDialog" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingTheSwapCardNeverAnswersTheDialog" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.099943" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1124" name="SpammingTheSwapCardNeverAnswersTheDialog(0,Imgui)" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingTheSwapCardNeverAnswersTheDialog(0,Imgui)" methodname="SpammingTheSwapCardNeverAnswersTheDialog" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="1850349" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.023542" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1125" name="SpammingTheSwapCardNeverAnswersTheDialog(1,Imgui)" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingTheSwapCardNeverAnswersTheDialog(1,Imgui)" methodname="SpammingTheSwapCardNeverAnswersTheDialog" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="67648247" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.025048" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1126" name="SpammingTheSwapCardNeverAnswersTheDialog(2,Imgui)" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingTheSwapCardNeverAnswersTheDialog(2,Imgui)" methodname="SpammingTheSwapCardNeverAnswersTheDialog" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="2094212216" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.023523" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1127" name="SpammingTheSwapCardNeverAnswersTheDialog(1,Polling)" fullname="BallBattle.Tests.Prompt3e2Tests.SpammingTheSwapCardNeverAnswersTheDialog(1,Polling)" methodname="SpammingTheSwapCardNeverAnswersTheDialog" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="1317134652" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.025804" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1120" name="SwapAsksSwapToTheNewNameAndNoCostsNothing" fullname="BallBattle.Tests.Prompt3e2Tests.SwapAsksSwapToTheNewNameAndNoCostsNothing" methodname="SwapAsksSwapToTheNewNameAndNoCostsNothing" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="2091147923" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.024915" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1122" name="YesAndNoNeverOverlapTheAreaThatOpenedTheDialog" fullname="BallBattle.Tests.Prompt3e2Tests.YesAndNoNeverOverlapTheAreaThatOpenedTheDialog" methodname="YesAndNoNeverOverlapTheAreaThatOpenedTheDialog" classname="BallBattle.Tests.Prompt3e2Tests" runstate="Runnable" seed="1455666605" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.070035" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1135" name="Prompt3eTests" fullname="BallBattle.Tests.Prompt3eTests" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" testcasecount="18" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.360287" total="18" passed="18" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1146" name="AHealingEnemyGetsAFoeHealedLineAndTheEndOfFightLog" fullname="BallBattle.Tests.Prompt3eTests.AHealingEnemyGetsAFoeHealedLineAndTheEndOfFightLog" methodname="AHealingEnemyGetsAFoeHealedLineAndTheEndOfFightLog" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="565306461" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.112913" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 1791713962, weapon brawler
+[BallBattle] Fight 1 prepared: seed 3706534382, tick 0, you brawler HP 100/100 [], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 began: seed 3706534382, tick 0, you brawler HP 100/100 [], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 ended: seed 1791713962 (match 3706534382), outcome Win, tick 1666, you brawler HP start 100.00 heal 0.00 end 25.49, enemy aegis HP start 100.00 heal 6.25 end 0.00, DMG DEALT 106.25 TAKEN 74.51
+]]></output>
+            </test-case>
+            <test-case id="1143" name="APressBeforeAnUnlockDoesNotEatTheNextClick" fullname="BallBattle.Tests.Prompt3eTests.APressBeforeAnUnlockDoesNotEatTheNextClick" methodname="APressBeforeAnUnlockDoesNotEatTheNextClick" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="1337359336" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.001524" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1152" name="CardTextNamesWeaponsWithTheirNewNames" fullname="BallBattle.Tests.Prompt3eTests.CardTextNamesWeaponsWithTheirNewNames" methodname="CardTextNamesWeaponsWithTheirNewNames" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="2032520262" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.004121" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1149" name="EndOfFightLogUsesRealValues" fullname="BallBattle.Tests.Prompt3eTests.EndOfFightLogUsesRealValues" methodname="EndOfFightLogUsesRealValues" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="987764337" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.001241" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1140" name="FirstClickWhenSwitchingToImguiIsNeverLost" fullname="BallBattle.Tests.Prompt3eTests.FirstClickWhenSwitchingToImguiIsNeverLost" methodname="FirstClickWhenSwitchingToImguiIsNeverLost" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="1708345493" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.001009" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1144" name="HealAndSwapCardsShowTheirIcons" fullname="BallBattle.Tests.Prompt3eTests.HealAndSwapCardsShowTheirIcons" methodname="HealAndSwapCardsShowTheirIcons" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="413397788" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.022304" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1139" name="ImguiPressAndReleaseInOneFrameIsOneClick" fullname="BallBattle.Tests.Prompt3eTests.ImguiPressAndReleaseInOneFrameIsOneClick" methodname="ImguiPressAndReleaseInOneFrameIsOneClick" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="1255617539" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.001161" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1141" name="NoDoubleClickWhenPollingAndImguiSeeTheSameClick" fullname="BallBattle.Tests.Prompt3eTests.NoDoubleClickWhenPollingAndImguiSeeTheSameClick" methodname="NoDoubleClickWhenPollingAndImguiSeeTheSameClick" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="680571552" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.000820" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1147" name="NoFoeHealedLineWhenTheEnemyNeverHealed" fullname="BallBattle.Tests.Prompt3eTests.NoFoeHealedLineWhenTheEnemyNeverHealed" methodname="NoFoeHealedLineWhenTheEnemyNeverHealed" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="680996625" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.122287" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 7, weapon brawler
+[BallBattle] Fight 1 prepared: seed 1897127210, tick 0, you brawler HP 100/100 [], enemy pike HP 100/100 []
+[BallBattle] Fight 1 began: seed 1897127210, tick 0, you brawler HP 100/100 [], enemy pike HP 100/100 []
+[BallBattle] Fight 1 ended: seed 7 (match 1897127210), outcome Win, tick 2703, you brawler HP start 100.00 heal 0.00 end 28.50, enemy pike HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 71.50
+]]></output>
+            </test-case>
+            <test-case id="1136" name="PollingPressAndReleaseInOneFrameIsOneClick" fullname="BallBattle.Tests.Prompt3eTests.PollingPressAndReleaseInOneFrameIsOneClick" methodname="PollingPressAndReleaseInOneFrameIsOneClick" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="1278518347" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.001584" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1137" name="PollingReleaseWithoutTheMissedPressStillClicks" fullname="BallBattle.Tests.Prompt3eTests.PollingReleaseWithoutTheMissedPressStillClicks" methodname="PollingReleaseWithoutTheMissedPressStillClicks" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="1251761128" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.000823" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1138" name="PressAndReleaseInConsecutiveFramesIsOneClick" fullname="BallBattle.Tests.Prompt3eTests.PressAndReleaseInConsecutiveFramesIsOneClick" methodname="PressAndReleaseInConsecutiveFramesIsOneClick" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="1730726442" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.000829" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1148" name="ResultDamageIsAWholeNumberRoundedDown" fullname="BallBattle.Tests.Prompt3eTests.ResultDamageIsAWholeNumberRoundedDown" methodname="ResultDamageIsAWholeNumberRoundedDown" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="707185596" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.009638" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1150" name="SeedArgumentIsParsedAndForcesNewRuns" fullname="BallBattle.Tests.Prompt3eTests.SeedArgumentIsParsedAndForcesNewRuns" methodname="SeedArgumentIsParsedAndForcesNewRuns" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="818418325" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.005473" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] -bbSeed: expected a number from 0 to 4294967295, ignored
+[BallBattle] -bbSeed: expected a number from 0 to 4294967295, ignored
+[BallBattle] Run seed forced: 777
+]]></output>
+            </test-case>
+            <test-case id="1142" name="SlidingOffStillCancelsAndAPressFromAnotherButtonNeverClicks" fullname="BallBattle.Tests.Prompt3eTests.SlidingOffStillCancelsAndAPressFromAnotherButtonNeverClicks" methodname="SlidingOffStillCancelsAndAPressFromAnotherButtonNeverClicks" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="1902437225" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.001051" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1151" name="StatCardStripesMatchTheirIconSymbol" fullname="BallBattle.Tests.Prompt3eTests.StatCardStripesMatchTheirIconSymbol" methodname="StatCardStripesMatchTheirIconSymbol" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="80729104" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.001086" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1145" name="TheLongestSwapTitleWrapsInsteadOfTouchingTheReasonTag" fullname="BallBattle.Tests.Prompt3eTests.TheLongestSwapTitleWrapsInsteadOfTouchingTheReasonTag" methodname="TheLongestSwapTitleWrapsInsteadOfTouchingTheReasonTag" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="24857835" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.027593" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1153" name="WeaponNameCellsShowTheNewNames" fullname="BallBattle.Tests.Prompt3eTests.WeaponNameCellsShowTheNewNames" methodname="WeaponNameCellsShowTheNewNames" classname="BallBattle.Tests.Prompt3eTests" runstate="Runnable" seed="1349568115" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.035763" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1154" name="ReflectSourceClassifierTests" fullname="BallBattle.Tests.ReflectSourceClassifierTests" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:19Z" duration="0.432053" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1158" name="BallBounceIsSpikyAtTheMidpointOfTheCentres" fullname="BallBattle.Tests.ReflectSourceClassifierTests.BallBounceIsSpikyAtTheMidpointOfTheCentres" methodname="BallBounceIsSpikyAtTheMidpointOfTheCentres" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" seed="253979614" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.002406" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1159" name="BallWithThornsAndSpikyGetsOneOfEachFromABodyBlow" fullname="BallBattle.Tests.ReflectSourceClassifierTests.BallWithThornsAndSpikyGetsOneOfEachFromABodyBlow" methodname="BallWithThornsAndSpikyGetsOneOfEachFromABodyBlow" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" seed="278493454" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.001417" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1157" name="BodyHitOnAnAegisBallIsAegisBodyReflect" fullname="BallBattle.Tests.ReflectSourceClassifierTests.BodyHitOnAnAegisBallIsAegisBodyReflect" methodname="BodyHitOnAnAegisBallIsAegisBodyReflect" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" seed="194841057" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.000779" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1156" name="HitOnTheReflectorIsThornsAtTheHitPoint" fullname="BallBattle.Tests.ReflectSourceClassifierTests.HitOnTheReflectorIsThornsAtTheHitPoint" methodname="HitOnTheReflectorIsThornsAtTheHitPoint" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" seed="1400685218" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.000551" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1160" name="NoEvidenceFallsBackAegisThenThornsThenSpikyAtTheDamagePoint" fullname="BallBattle.Tests.ReflectSourceClassifierTests.NoEvidenceFallsBackAegisThenThornsThenSpikyAtTheDamagePoint" methodname="NoEvidenceFallsBackAegisThenThornsThenSpikyAtTheDamagePoint" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" seed="2095199586" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.000653" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1161" name="OnlyReflectDamageIsClassified" fullname="BallBattle.Tests.ReflectSourceClassifierTests.OnlyReflectDamageIsClassified" methodname="OnlyReflectDamageIsClassified" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" seed="1945052595" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.000616" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1155" name="ParryEmittedAfterTheDamageIsAegisAtTheParryPoint" fullname="BallBattle.Tests.ReflectSourceClassifierTests.ParryEmittedAfterTheDamageIsAegisAtTheParryPoint" methodname="ParryEmittedAfterTheDamageIsAegisAtTheParryPoint" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" seed="1361686658" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:18Z" duration="0.000714" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1162" name="RealAegisParryReflectsUseTheParryEmittedLater" fullname="BallBattle.Tests.ReflectSourceClassifierTests.RealAegisParryReflectsUseTheParryEmittedLater" methodname="RealAegisParryReflectsUseTheParryEmittedLater" classname="BallBattle.Tests.ReflectSourceClassifierTests" runstate="Runnable" seed="434736411" result="Passed" start-time="2026-10-12 17:58:18Z" end-time="2026-10-12 17:58:19Z" duration="0.420605" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1163" name="RunArenaChainTests" fullname="BallBattle.Tests.RunArenaChainTests" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:21Z" duration="2.315103" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1177" name="ALethalBlowSavedBySecondWindShowsTheSameFeedback" fullname="BallBattle.Tests.RunArenaChainTests.ALethalBlowSavedBySecondWindShowsTheSameFeedback" methodname="ALethalBlowSavedBySecondWindShowsTheSameFeedback" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="1024215189" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:19Z" duration="0.046663" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1170" name="IfAnotherMatchEverReplacesTheFightItIsLogged" fullname="BallBattle.Tests.RunArenaChainTests.IfAnotherMatchEverReplacesTheFightItIsLogged" methodname="IfAnotherMatchEverReplacesTheFightItIsLogged" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="643802558" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:19Z" duration="0.079863" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 31, weapon pike, -bbForceTrait second-wind
+[BallBattle] Fight 1 prepared: seed 2439468027, tick 0, you pike HP 100/100 [], enemy brawler HP 100/100 []
+[BallBattle] The arena is not showing the Run fight. [BallBattle] Fight 1 expected: seed 2439468027, tick 0, you pike HP 100/100 [], enemy brawler HP 100/100 [] | [BallBattle] Fight 1 shown: seed 99, tick 0, you blade HP 100/100 [], enemy fang HP 100/100 []
+]]></output>
+            </test-case>
+            <test-case id="1176" name="OtherHealsKeepTheirOwnLookAndSecondWindShowsOnce" fullname="BallBattle.Tests.RunArenaChainTests.OtherHealsKeepTheirOwnLookAndSecondWindShowsOnce" methodname="OtherHealsKeepTheirOwnLookAndSecondWindShowsOnce" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="1615117051" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:19Z" duration="0.028359" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1174" name="RerollCanBeRepeatedAndSaysItCostsAgain" fullname="BallBattle.Tests.RunArenaChainTests.RerollCanBeRepeatedAndSaysItCostsAgain" methodname="RerollCanBeRepeatedAndSaysItCostsAgain" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="1875126429" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:19Z" duration="0.033059" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1178" name="ResultDamageNeverCountsTheOverkill" fullname="BallBattle.Tests.RunArenaChainTests.ResultDamageNeverCountsTheOverkill" methodname="ResultDamageNeverCountsTheOverkill" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="1709860348" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:19Z" duration="0.002559" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1171" name="ResultUsesTheEnemysWholeLossAndTheNextFightsRealMaxHp" fullname="BallBattle.Tests.RunArenaChainTests.ResultUsesTheEnemysWholeLossAndTheNextFightsRealMaxHp" methodname="ResultUsesTheEnemysWholeLossAndTheNextFightsRealMaxHp" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="995191782" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:19Z" duration="0.024634" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1175" name="SecondWindShowsATurquoisePlusNumberCaptionRingAndSpentBadge" fullname="BallBattle.Tests.RunArenaChainTests.SecondWindShowsATurquoisePlusNumberCaptionRingAndSpentBadge" methodname="SecondWindShowsATurquoisePlusNumberCaptionRingAndSpentBadge" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="25618194" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:19Z" duration="0.032098" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1169" name="TheMatchShownInTheCountdownIsTheOneThatRuns" fullname="BallBattle.Tests.RunArenaChainTests.TheMatchShownInTheCountdownIsTheOneThatRuns" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:21Z" duration="2.038488" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1164" name="TheMatchShownInTheCountdownIsTheOneThatRuns(True,True,False)" fullname="BallBattle.Tests.RunArenaChainTests.TheMatchShownInTheCountdownIsTheOneThatRuns(True,True,False)" methodname="TheMatchShownInTheCountdownIsTheOneThatRuns" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="289688329" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:19Z" duration="0.403487" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 31, weapon pike, -bbForceTrait second-wind
+[BallBattle] Fight 1 prepared: seed 2439468027, tick 0, you pike HP 100/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 began: seed 2439468027, tick 0, you pike HP 100/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 ended: seed 31 (match 2439468027), outcome Win, tick 509, you pike HP start 100.00 heal 0.00 end 45.81, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 54.19
+[BallBattle] Fight 2 prepared: seed 3560974113, tick 0, you pike HP 81/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 2 began: seed 3560974113, tick 0, you pike HP 81/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 2 ended: seed 31 (match 3560974113), outcome Win, tick 1142, you pike HP start 81.00 heal 0.00 end 57.78, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 23.22
+[BallBattle] Fight 3 prepared: seed 1453997350, tick 0, you pike HP 93/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 3 began: seed 1453997350, tick 0, you pike HP 93/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 3 ended: seed 31 (match 1453997350), outcome Win, tick 1213, you pike HP start 93.00 heal 0.00 end 66.99, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 26.01
+[BallBattle] Fight 4 prepared: seed 1778128132, tick 0, you pike HP 100/100 [second-wind1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 began: seed 1778128132, tick 0, you pike HP 100/100 [second-wind1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 ended: seed 31 (match 1778128132), outcome Win, tick 670, you pike HP start 100.00 heal 0.00 end 92.81, enemy aegis HP start 160.00 heal 2.00 end 0.00, DMG DEALT 162.00 TAKEN 7.19
+[BallBattle] Fight 5 prepared: seed 4019381443, tick 0, you pike HP 41/100 [second-wind1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 began: seed 4019381443, tick 0, you pike HP 41/100 [second-wind1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 ended: seed 31 (match 4019381443), outcome Lost, tick 3628, you pike HP start 41.00 heal 20.00 end 0.00, enemy aegis HP start 100.00 heal 9.00 end 86.25, DMG DEALT 22.75 TAKEN 61.00
+]]></output>
+              </test-case>
+              <test-case id="1165" name="TheMatchShownInTheCountdownIsTheOneThatRuns(False,True,False)" fullname="BallBattle.Tests.RunArenaChainTests.TheMatchShownInTheCountdownIsTheOneThatRuns(False,True,False)" methodname="TheMatchShownInTheCountdownIsTheOneThatRuns" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="87100943" result="Passed" start-time="2026-10-12 17:58:19Z" end-time="2026-10-12 17:58:20Z" duration="0.388489" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 31, weapon pike, -bbForceTrait second-wind
+[BallBattle] Fight 1 prepared: seed 2439468027, tick 0, you pike HP 100/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 began: seed 2439468027, tick 0, you pike HP 100/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 ended: seed 31 (match 2439468027), outcome Win, tick 509, you pike HP start 100.00 heal 0.00 end 45.81, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 54.19
+[BallBattle] Fight 2 prepared: seed 3560974113, tick 0, you pike HP 81/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 2 began: seed 3560974113, tick 0, you pike HP 81/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 2 ended: seed 31 (match 3560974113), outcome Win, tick 1142, you pike HP start 81.00 heal 0.00 end 57.78, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 23.22
+[BallBattle] Fight 3 prepared: seed 1453997350, tick 0, you pike HP 93/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 3 began: seed 1453997350, tick 0, you pike HP 93/100 [second-wind1], enemy brawler HP 100/100 []
+[BallBattle] Fight 3 ended: seed 31 (match 1453997350), outcome Win, tick 1213, you pike HP start 93.00 heal 0.00 end 66.99, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 26.01
+[BallBattle] Fight 4 prepared: seed 1778128132, tick 0, you pike HP 100/100 [second-wind1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 began: seed 1778128132, tick 0, you pike HP 100/100 [second-wind1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 ended: seed 31 (match 1778128132), outcome Win, tick 670, you pike HP start 100.00 heal 0.00 end 92.81, enemy aegis HP start 160.00 heal 2.00 end 0.00, DMG DEALT 162.00 TAKEN 7.19
+[BallBattle] Fight 5 prepared: seed 4019381443, tick 0, you pike HP 41/100 [second-wind1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 began: seed 4019381443, tick 0, you pike HP 41/100 [second-wind1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 ended: seed 31 (match 4019381443), outcome Lost, tick 3628, you pike HP start 41.00 heal 20.00 end 0.00, enemy aegis HP start 100.00 heal 9.00 end 86.25, DMG DEALT 22.75 TAKEN 61.00
+]]></output>
+              </test-case>
+              <test-case id="1166" name="TheMatchShownInTheCountdownIsTheOneThatRuns(True,False,False)" fullname="BallBattle.Tests.RunArenaChainTests.TheMatchShownInTheCountdownIsTheOneThatRuns(True,False,False)" methodname="TheMatchShownInTheCountdownIsTheOneThatRuns" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="608929556" result="Passed" start-time="2026-10-12 17:58:20Z" end-time="2026-10-12 17:58:20Z" duration="0.646204" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 1, weapon blade
+[BallBattle] Fight 1 prepared: seed 3154357315, tick 0, you blade HP 100/100 [second-wind1], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 began: seed 3154357315, tick 0, you blade HP 100/100 [second-wind1], enemy aegis HP 100/100 []
+[BallBattle] Fight 1 ended: seed 1 (match 3154357315), outcome Win, tick 1853, you blade HP start 100.00 heal 0.00 end 82.91, enemy aegis HP start 100.00 heal 5.50 end 0.00, DMG DEALT 105.50 TAKEN 17.09
+[BallBattle] Fight 2 prepared: seed 2484369155, tick 0, you blade HP 100/100 [second-wind1], enemy fang HP 100/100 []
+[BallBattle] Fight 2 began: seed 2484369155, tick 0, you blade HP 100/100 [second-wind1], enemy fang HP 100/100 []
+[BallBattle] Fight 2 ended: seed 1 (match 2484369155), outcome Win, tick 1361, you blade HP start 100.00 heal 0.00 end 93.60, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 6.40
+[BallBattle] Fight 3 prepared: seed 1408424090, tick 0, you blade HP 100/100 [second-wind1], enemy fang HP 100/100 []
+[BallBattle] Fight 3 began: seed 1408424090, tick 0, you blade HP 100/100 [second-wind1], enemy fang HP 100/100 []
+[BallBattle] Fight 3 ended: seed 1 (match 1408424090), outcome Win, tick 868, you blade HP start 100.00 heal 0.00 end 32.00, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 68.00
+[BallBattle] Fight 4 prepared: seed 1402126604, tick 0, you blade HP 67/100 [second-wind1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 began: seed 1402126604, tick 0, you blade HP 67/100 [second-wind1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 ended: seed 1 (match 1402126604), outcome Win, tick 2369, you blade HP start 67.00 heal 0.00 end 40.04, enemy aegis HP start 160.00 heal 9.25 end 0.00, DMG DEALT 169.25 TAKEN 26.96
+[BallBattle] Fight 5 prepared: seed 2082182900, tick 0, you blade HP 41/100 [second-wind1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 began: seed 2082182900, tick 0, you blade HP 41/100 [second-wind1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 ended: seed 1 (match 2082182900), outcome Lost, tick 3539, you blade HP start 41.00 heal 20.00 end 0.00, enemy aegis HP start 100.00 heal 13.25 end 47.25, DMG DEALT 66.00 TAKEN 61.00
+]]></output>
+              </test-case>
+              <test-case id="1167" name="TheMatchShownInTheCountdownIsTheOneThatRuns(True,True,True)" fullname="BallBattle.Tests.RunArenaChainTests.TheMatchShownInTheCountdownIsTheOneThatRuns(True,True,True)" methodname="TheMatchShownInTheCountdownIsTheOneThatRuns" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="829647471" result="Passed" start-time="2026-10-12 17:58:20Z" end-time="2026-10-12 17:58:21Z" duration="0.305396" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 31, weapon pike, -bbForceTrait second-wind
+[BallBattle] Fight 1 prepared: seed 2439468027, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 began: seed 2439468027, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 ended: seed 31 (match 2439468027), outcome Win, tick 454, you brawler HP start 100.00 heal 0.00 end 49.34, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 50.66
+[BallBattle] Fight 2 prepared: seed 3560974113, tick 0, you brawler HP 84/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 2 began: seed 3560974113, tick 0, you brawler HP 84/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 2 ended: seed 31 (match 3560974113), outcome Win, tick 538, you brawler HP start 84.00 heal 0.00 end 81.63, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 2.37
+[BallBattle] Fight 3 prepared: seed 1453997350, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 3 began: seed 1453997350, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 3 ended: seed 31 (match 1453997350), outcome Win, tick 405, you brawler HP start 100.00 heal 0.00 end 97.98, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 2.02
+[BallBattle] Fight 4 prepared: seed 1778128132, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 began: seed 1778128132, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 ended: seed 31 (match 1778128132), outcome Win, tick 663, you brawler HP start 100.00 heal 20.00 end 43.31, enemy aegis HP start 160.00 heal 2.50 end 0.00, DMG DEALT 162.50 TAKEN 76.69
+[BallBattle] Fight 5 prepared: seed 4019381443, tick 0, you brawler HP 41/100 [second-wind1,thorns1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 began: seed 4019381443, tick 0, you brawler HP 41/100 [second-wind1,thorns1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 ended: seed 31 (match 4019381443), outcome Lost, tick 1765, you brawler HP start 41.00 heal 20.00 end 0.00, enemy aegis HP start 100.00 heal 6.50 end 39.94, DMG DEALT 66.56 TAKEN 61.00
+]]></output>
+              </test-case>
+              <test-case id="1168" name="TheMatchShownInTheCountdownIsTheOneThatRuns(False,True,True)" fullname="BallBattle.Tests.RunArenaChainTests.TheMatchShownInTheCountdownIsTheOneThatRuns(False,True,True)" methodname="TheMatchShownInTheCountdownIsTheOneThatRuns" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="2066336112" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:21Z" duration="0.291305" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[BallBattle] Run started: seed 31, weapon pike, -bbForceTrait second-wind
+[BallBattle] Fight 1 prepared: seed 2439468027, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 began: seed 2439468027, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 1 ended: seed 31 (match 2439468027), outcome Win, tick 454, you brawler HP start 100.00 heal 0.00 end 49.34, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 50.66
+[BallBattle] Fight 2 prepared: seed 3560974113, tick 0, you brawler HP 84/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 2 began: seed 3560974113, tick 0, you brawler HP 84/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 2 ended: seed 31 (match 3560974113), outcome Win, tick 538, you brawler HP start 84.00 heal 0.00 end 81.63, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 2.37
+[BallBattle] Fight 3 prepared: seed 1453997350, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 3 began: seed 1453997350, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy brawler HP 100/100 []
+[BallBattle] Fight 3 ended: seed 31 (match 1453997350), outcome Win, tick 405, you brawler HP start 100.00 heal 0.00 end 97.98, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 2.02
+[BallBattle] Fight 4 prepared: seed 1778128132, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 began: seed 1778128132, tick 0, you brawler HP 100/100 [second-wind1,thorns1], enemy aegis HP 160/160 []
+[BallBattle] Fight 4 ended: seed 31 (match 1778128132), outcome Win, tick 663, you brawler HP start 100.00 heal 20.00 end 43.31, enemy aegis HP start 160.00 heal 2.50 end 0.00, DMG DEALT 162.50 TAKEN 76.69
+[BallBattle] Fight 5 prepared: seed 4019381443, tick 0, you brawler HP 41/100 [second-wind1,thorns1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 began: seed 4019381443, tick 0, you brawler HP 41/100 [second-wind1,thorns1], enemy aegis HP 100/100 []
+[BallBattle] Fight 5 ended: seed 31 (match 4019381443), outcome Lost, tick 1765, you brawler HP start 41.00 heal 20.00 end 0.00, enemy aegis HP start 100.00 heal 6.50 end 39.94, DMG DEALT 66.56 TAKEN 61.00
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-case id="1173" name="TheRedLostSegmentStartsAtTheCurrentHp" fullname="BallBattle.Tests.RunArenaChainTests.TheRedLostSegmentStartsAtTheCurrentHp" methodname="TheRedLostSegmentStartsAtTheCurrentHp" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="179151051" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:21Z" duration="0.023648" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1172" name="TraitLevelsHaveASpace" fullname="BallBattle.Tests.RunArenaChainTests.TraitLevelsHaveASpace" methodname="TraitLevelsHaveASpace" classname="BallBattle.Tests.RunArenaChainTests" runstate="Runnable" seed="668350692" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:21Z" duration="0.001399" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1179" name="RunFlowTests" fullname="BallBattle.Tests.RunFlowTests" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:22Z" duration="0.919173" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1188" name="FailedSaveIsLoggedAndNeverThrows" fullname="BallBattle.Tests.RunFlowTests.FailedSaveIsLoggedAndNeverThrows" methodname="FailedSaveIsLoggedAndNeverThrows" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="1347056246" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:21Z" duration="0.015265" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Could not save to C:\Users\Admin\AppData\Local\Temp\bb-save-blocker-275f7a7f98dd4d229e8f6e5dea167369\save.json: Cannot create 'C:\Users\Admin\AppData\Local\Temp\bb-save-blocker-275f7a7f98dd4d229e8f6e5dea167369' because a file or directory with the same name already exists.
+]]></output>
+            </test-case>
+            <test-case id="1180" name="FirstFightLossOpensFreeRetryPickThenOnlySecondLossEndsRun" fullname="BallBattle.Tests.RunFlowTests.FirstFightLossOpensFreeRetryPickThenOnlySecondLossEndsRun" methodname="FirstFightLossOpensFreeRetryPickThenOnlySecondLossEndsRun" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="377127299" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:21Z" duration="0.013499" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 42, weapon brawler
+[BallBattle] Fight 1 ended: seed 42 (match 282666524), outcome Lost, tick 1, you brawler HP start 100.00 heal 0.00 end 0.00, enemy venom HP start 100.00 heal 0.00 end 100.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 1 ended: seed 42 (match 3172760353), outcome Lost, tick 1, you brawler HP start 60.00 heal 0.00 end 0.00, enemy venom HP start 100.00 heal 0.00 end 100.00, DMG DEALT 0.00 TAKEN 0.00
+]]></output>
+            </test-case>
+            <test-case id="1182" name="FullRunEndsInSummaryAndClearsTheSavedRun" fullname="BallBattle.Tests.RunFlowTests.FullRunEndsInSummaryAndClearsTheSavedRun" methodname="FullRunEndsInSummaryAndClearsTheSavedRun" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="331077530" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:21Z" duration="0.449370" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 7, weapon brawler
+[BallBattle] Fight 1 ended: seed 7 (match 1897127210), outcome Win, tick 3327, you brawler HP start 115.00 heal 0.00 end 71.25, enemy pike HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 2 ended: seed 7 (match 72850403), outcome Win, tick 658, you brawler HP start 111.00 heal 0.00 end 33.25, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 3 ended: seed 7 (match 1214255331), outcome Win, tick 2526, you fang HP start 73.00 heal 0.00 end 38.00, enemy blade HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 4 ended: seed 7 (match 3833447759), outcome Win, tick 3464, you fang HP start 93.00 heal 0.00 end 53.43, enemy aegis HP start 160.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 5 ended: seed 7 (match 4174431119), outcome Win, tick 1844, you fang HP start 99.00 heal 0.00 end 92.88, enemy pike HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 6 ended: seed 7 (match 911017183), outcome Win, tick 2867, you brawler HP start 130.00 heal 0.00 end 72.85, enemy aegis HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 7 ended: seed 7 (match 1000608781), outcome Win, tick 2987, you brawler HP start 133.00 heal 0.00 end 40.25, enemy pike HP start 110.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Fight 8 ended: seed 7 (match 4028168359), outcome Win, tick 2193, you brawler HP start 145.00 heal 0.00 end 12.12, enemy aegis HP start 300.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+]]></output>
+            </test-case>
+            <test-case id="1186" name="InvalidSavedRunIsDroppedButProgressKept" fullname="BallBattle.Tests.RunFlowTests.InvalidSavedRunIsDroppedButProgressKept" methodname="InvalidSavedRunIsDroppedButProgressKept" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="191884096" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:21Z" duration="0.001198" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1181" name="NewRunPickWeaponFightAndResume" fullname="BallBattle.Tests.RunFlowTests.NewRunPickWeaponFightAndResume" methodname="NewRunPickWeaponFightAndResume" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="1682198031" result="Passed" start-time="2026-10-12 17:58:21Z" end-time="2026-10-12 17:58:22Z" duration="0.113701" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 42, weapon fang
+[BallBattle] Fight 1 ended: seed 42 (match 282666524), outcome Win, tick 2891, you fang HP start 100.00 heal 0.00 end 37.75, enemy venom HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Run resumed: seed 42, fight 2
+]]></output>
+            </test-case>
+            <test-case id="1187" name="OlderSaveVersionKeepsProgressAndDropsTheRun" fullname="BallBattle.Tests.RunFlowTests.OlderSaveVersionKeepsProgressAndDropsTheRun" methodname="OlderSaveVersionKeepsProgressAndDropsTheRun" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="1529102482" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.025760" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1185" name="QuittingAfterSeeingTheResultReplaysTheSameFight" fullname="BallBattle.Tests.RunFlowTests.QuittingAfterSeeingTheResultReplaysTheSameFight" methodname="QuittingAfterSeeingTheResultReplaysTheSameFight" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="1333362323" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.254449" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 11, weapon fang
+[BallBattle] Fight 1 ended: seed 11 (match 3125311617), outcome Win, tick 2987, you fang HP start 135.00 heal 0.00 end 41.25, enemy pike HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Run resumed: seed 11, fight 1
+]]></output>
+            </test-case>
+            <test-case id="1184" name="SaveRoundTripKeepsEveryRunField" fullname="BallBattle.Tests.RunFlowTests.SaveRoundTripKeepsEveryRunField" methodname="SaveRoundTripKeepsEveryRunField" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="428115525" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.033929" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1183" name="StaleInputIsIgnored" fullname="BallBattle.Tests.RunFlowTests.StaleInputIsIgnored" methodname="StaleInputIsIgnored" classname="BallBattle.Tests.RunFlowTests" runstate="Runnable" seed="659292073" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.000610" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1189" name="RunResultScreenTests" fullname="BallBattle.Tests.RunResultScreenTests" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.556738" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1198" name="ContinueIgnoresTheBannerTapAndThenWorks" fullname="BallBattle.Tests.RunResultScreenTests.ContinueIgnoresTheBannerTapAndThenWorks" methodname="ContinueIgnoresTheBannerTapAndThenWorks" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" seed="340540216" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.018619" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1193" name="DamageTotalsMatchTheHpTheSimRemoved" fullname="BallBattle.Tests.RunResultScreenTests.DamageTotalsMatchTheHpTheSimRemoved" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.262194" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1190" name="DamageTotalsMatchTheHpTheSimRemoved(&quot;blade&quot;,&quot;thorns&quot;,&quot;venom&quot;,&quot;spike-walls&quot;,3)" fullname="BallBattle.Tests.RunResultScreenTests.DamageTotalsMatchTheHpTheSimRemoved(&quot;blade&quot;,&quot;thorns&quot;,&quot;venom&quot;,&quot;spike-walls&quot;,3)" methodname="DamageTotalsMatchTheHpTheSimRemoved" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" seed="1584073460" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.030651" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1191" name="DamageTotalsMatchTheHpTheSimRemoved(&quot;volley&quot;,&quot;vampire&quot;,&quot;aegis&quot;,&quot;bumpers&quot;,5)" fullname="BallBattle.Tests.RunResultScreenTests.DamageTotalsMatchTheHpTheSimRemoved(&quot;volley&quot;,&quot;vampire&quot;,&quot;aegis&quot;,&quot;bumpers&quot;,5)" methodname="DamageTotalsMatchTheHpTheSimRemoved" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" seed="463655616" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.189859" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1192" name="DamageTotalsMatchTheHpTheSimRemoved(&quot;brawler&quot;,&quot;spiky&quot;,&quot;rig&quot;,&quot;classic&quot;,8)" fullname="BallBattle.Tests.RunResultScreenTests.DamageTotalsMatchTheHpTheSimRemoved(&quot;brawler&quot;,&quot;spiky&quot;,&quot;rig&quot;,&quot;classic&quot;,8)" methodname="DamageTotalsMatchTheHpTheSimRemoved" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" seed="154018475" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.039382" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1194" name="EveryFightShowsAResultBeforeTheNextPrepare" fullname="BallBattle.Tests.RunResultScreenTests.EveryFightShowsAResultBeforeTheNextPrepare" methodname="EveryFightShowsAResultBeforeTheNextPrepare" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" seed="653096843" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.016707" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 21, weapon pike
+[BallBattle] Fight 1 ended: seed 21 (match 139468780), outcome Win, tick 779, you pike HP start 100.00 heal 20.00 end 36.78, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 83.22
+]]></output>
+            </test-case>
+            <test-case id="1195" name="QuittingOnTheResultScreenResumesAtPrepare" fullname="BallBattle.Tests.RunResultScreenTests.QuittingOnTheResultScreenResumesAtPrepare" methodname="QuittingOnTheResultScreenResumesAtPrepare" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" seed="404048622" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.222014" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 22, weapon fang
+[BallBattle] Fight 1 ended: seed 22 (match 529518801), outcome Win, tick 5407, you fang HP start 115.00 heal 0.00 end 21.25, enemy pike HP start 100.00 heal 0.00 end 0.00, DMG DEALT 0.00 TAKEN 0.00
+[BallBattle] Run resumed: seed 22, fight 2
+]]></output>
+            </test-case>
+            <test-case id="1197" name="ResultScreenShowsTheReportAndFitsTheScreen" fullname="BallBattle.Tests.RunResultScreenTests.ResultScreenShowsTheReportAndFitsTheScreen" methodname="ResultScreenShowsTheReportAndFitsTheScreen" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" seed="2055036034" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.026148" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1196" name="WordsFollowTheLossRulesDoc" fullname="BallBattle.Tests.RunResultScreenTests.WordsFollowTheLossRulesDoc" methodname="WordsFollowTheLossRulesDoc" classname="BallBattle.Tests.RunResultScreenTests" runstate="Runnable" seed="1367016056" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.002847" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1199" name="SfxSynthTests" fullname="BallBattle.Tests.SfxSynthTests" classname="BallBattle.Tests.SfxSynthTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:23Z" duration="0.206842" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1201" name="ClipsStartAndEndSilentSoTheyNeverClick" fullname="BallBattle.Tests.SfxSynthTests.ClipsStartAndEndSilentSoTheyNeverClick" methodname="ClipsStartAndEndSilentSoTheyNeverClick" classname="BallBattle.Tests.SfxSynthTests" runstate="Runnable" seed="1119902355" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:22Z" duration="0.018631" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1204" name="SfxLibraryHasEveryClip" fullname="BallBattle.Tests.SfxSynthTests.SfxLibraryHasEveryClip" methodname="SfxLibraryHasEveryClip" classname="BallBattle.Tests.SfxSynthTests" runstate="Runnable" seed="1967544938" result="Passed" start-time="2026-10-12 17:58:22Z" end-time="2026-10-12 17:58:23Z" duration="0.138241" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1200" name="SoundsAreShortNonSilentAndNeverClip" fullname="BallBattle.Tests.SfxSynthTests.SoundsAreShortNonSilentAndNeverClip" methodname="SoundsAreShortNonSilentAndNeverClip" classname="BallBattle.Tests.SfxSynthTests" runstate="Runnable" seed="178502217" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.016498" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1202" name="SynthIsDeterministic" fullname="BallBattle.Tests.SfxSynthTests.SynthIsDeterministic" methodname="SynthIsDeterministic" classname="BallBattle.Tests.SfxSynthTests" runstate="Runnable" seed="1911970562" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.006121" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1203" name="WavHeaderIsValidPcm16Mono" fullname="BallBattle.Tests.SfxSynthTests.WavHeaderIsValidPcm16Mono" methodname="WavHeaderIsValidPcm16Mono" classname="BallBattle.Tests.SfxSynthTests" runstate="Runnable" seed="459920475" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.006429" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1205" name="VersusTraceTests" fullname="BallBattle.Tests.VersusTraceTests" classname="BallBattle.Tests.VersusTraceTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.566659" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1206" name="VersusRoundLogHasExactSeedTickAndHpBits" fullname="BallBattle.Tests.VersusTraceTests.VersusRoundLogHasExactSeedTickAndHpBits" methodname="VersusRoundLogHasExactSeedTickAndHpBits" classname="BallBattle.Tests.VersusTraceTests" runstate="Runnable" seed="592271319" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.003684" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Versus seed forced: 1454667
+]]></output>
+            </test-case>
+            <test-case id="1207" name="VersusTraceDump" fullname="BallBattle.Tests.VersusTraceTests.VersusTraceDump" methodname="VersusTraceDump" classname="BallBattle.Tests.VersusTraceTests" runstate="Runnable" seed="1045292378" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.544058" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] EditMode trace match seed 1454667, round seed 4134000519, ticks 3875, winner 0: E:\ball-battle\docs\claude-runs\trace-unity-4134000519.txt
+[BallBattle] EditMode trace match seed 1454667, round seed 2686071142, ticks 3724, winner 1: E:\ball-battle\docs\claude-runs\trace-unity-2686071142.txt
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1208" name="ViewDataTests" fullname="BallBattle.Tests.ViewDataTests" classname="BallBattle.Tests.ViewDataTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.045174" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1212" name="EveryCardTextFitsTheCard" fullname="BallBattle.Tests.ViewDataTests.EveryCardTextFitsTheCard" methodname="EveryCardTextFitsTheCard" classname="BallBattle.Tests.ViewDataTests" runstate="Runnable" seed="196714957" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.013505" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1213" name="EveryWeaponHasPaletteAndArt" fullname="BallBattle.Tests.ViewDataTests.EveryWeaponHasPaletteAndArt" methodname="EveryWeaponHasPaletteAndArt" classname="BallBattle.Tests.ViewDataTests" runstate="Runnable" seed="308452821" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.002898" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1209" name="FontGlyphsAreWellFormedAndUnique" fullname="BallBattle.Tests.ViewDataTests.FontGlyphsAreWellFormedAndUnique" methodname="FontGlyphsAreWellFormedAndUnique" classname="BallBattle.Tests.ViewDataTests" runstate="Runnable" seed="1726658626" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.005017" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1214" name="HeatGoesFromColdToHot" fullname="BallBattle.Tests.ViewDataTests.HeatGoesFromColdToHot" methodname="HeatGoesFromColdToHot" classname="BallBattle.Tests.ViewDataTests" runstate="Runnable" seed="1695929247" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.000483" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1210" name="HudCharactersAreAllInTheFont" fullname="BallBattle.Tests.ViewDataTests.HudCharactersAreAllInTheFont" methodname="HudCharactersAreAllInTheFont" classname="BallBattle.Tests.ViewDataTests" runstate="Runnable" seed="1893439584" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.000938" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1211" name="TraitAndArenaTextIsInTheFontAndEveryTraitHasABadge" fullname="BallBattle.Tests.ViewDataTests.TraitAndArenaTextIsInTheFontAndEveryTraitHasABadge" methodname="TraitAndArenaTextIsInTheFontAndEveryTraitHasABadge" classname="BallBattle.Tests.ViewDataTests" runstate="Runnable" seed="888497813" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.001524" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1215" name="ViewSmokeTests" fullname="BallBattle.Tests.ViewSmokeTests" classname="BallBattle.Tests.ViewSmokeTests" runstate="Runnable" testcasecount="4" result="Skipped" label="Ignored" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:24Z" duration="0.297866" total="4" passed="3" failed="0" inconclusive="0" skipped="1" asserts="0">
+            <properties />
+            <reason>
+              <message><![CDATA[One or more child tests were ignored]]></message>
+            </reason>
+            <test-case id="1220" name="CaptureScreens" fullname="BallBattle.Tests.ViewSmokeTests.CaptureScreens" methodname="CaptureScreens" classname="BallBattle.Tests.ViewSmokeTests" runstate="Runnable" seed="1081454250" result="Skipped" label="Ignored" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.009659" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <reason>
+                <message><![CDATA[BB_CAPTURE not set]]></message>
+              </reason>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1219" name="DrawsEveryEffectWithoutErrors" fullname="BallBattle.Tests.ViewSmokeTests.DrawsEveryEffectWithoutErrors" classname="BallBattle.Tests.ViewSmokeTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:24Z" duration="0.270207" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1216" name="DrawsEveryEffectWithoutErrors(&quot;rig&quot;,&quot;venom&quot;,&quot;bumpers&quot;)" fullname="BallBattle.Tests.ViewSmokeTests.DrawsEveryEffectWithoutErrors(&quot;rig&quot;,&quot;venom&quot;,&quot;bumpers&quot;)" methodname="DrawsEveryEffectWithoutErrors" classname="BallBattle.Tests.ViewSmokeTests" runstate="Runnable" seed="564007713" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.090160" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <reason>
+                  <message><![CDATA[]]></message>
+                </reason>
+              </test-case>
+              <test-case id="1217" name="DrawsEveryEffectWithoutErrors(&quot;volley&quot;,&quot;aegis&quot;,&quot;pillar&quot;)" fullname="BallBattle.Tests.ViewSmokeTests.DrawsEveryEffectWithoutErrors(&quot;volley&quot;,&quot;aegis&quot;,&quot;pillar&quot;)" methodname="DrawsEveryEffectWithoutErrors" classname="BallBattle.Tests.ViewSmokeTests" runstate="Runnable" seed="1809506454" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:23Z" duration="0.090493" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <reason>
+                  <message><![CDATA[]]></message>
+                </reason>
+              </test-case>
+              <test-case id="1218" name="DrawsEveryEffectWithoutErrors(&quot;blade&quot;,&quot;fang&quot;,&quot;spike-walls&quot;)" fullname="BallBattle.Tests.ViewSmokeTests.DrawsEveryEffectWithoutErrors(&quot;blade&quot;,&quot;fang&quot;,&quot;spike-walls&quot;)" methodname="DrawsEveryEffectWithoutErrors" classname="BallBattle.Tests.ViewSmokeTests" runstate="Runnable" seed="36592960" result="Passed" start-time="2026-10-12 17:58:23Z" end-time="2026-10-12 17:58:24Z" duration="0.088247" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <reason>
+                  <message><![CDATA[]]></message>
+                </reason>
+                <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

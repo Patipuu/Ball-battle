@@ -6,7 +6,7 @@ namespace BallBattle.Sim
     /// Fixed 0.1-degree trigonometry. Values are checked-in IEEE 754 float bits,
     /// never calculated with platform math at runtime.
     /// </summary>
-    public static class FixedTrig
+    public static partial class FixedTrig
     {
         const int QuarterSteps = 900;
         const int FullSteps = QuarterSteps * 4;

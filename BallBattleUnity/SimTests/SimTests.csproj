@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Assets/Scripts/Sim/**/*.cs" />
+    <Compile Include="../Assets/Tests/EditMode/FixedMathTests.cs" />
   </ItemGroup>
 </Project>
