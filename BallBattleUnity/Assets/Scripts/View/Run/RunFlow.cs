@@ -54,6 +54,8 @@ namespace BallBattle.View
         public event Action Changed;
         /// <summary>Player left Run mode.</summary>
         public event Action Closed;
+        /// <summary>A card was taken (Prepare or the start/retry pick) / the offer was rerolled. Audio cues only.</summary>
+        public event Action CardTaken, Rerolled;
 
         public RunFlow(ISaveStore store, float countdownSeconds = 2f, float fightOverSeconds = 2f)
         {
@@ -134,6 +136,7 @@ namespace BallBattle.View
             Run.Reroll();
             DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
             Persist();
+            Rerolled?.Invoke();
             Changed?.Invoke();
         }
 
@@ -142,6 +145,7 @@ namespace BallBattle.View
             if (Current != State.Prepare || !Run.CanPick(index)) return;
             Run.Pick(index);
             Persist();
+            CardTaken?.Invoke();
             Changed?.Invoke();
         }
 
@@ -152,6 +156,7 @@ namespace BallBattle.View
             Run.Pick(index);
             if (retry) Run.FightLocked = true;
             Persist();
+            CardTaken?.Invoke();
             if (retry) StartFight();
             else Go(State.Prepare);
         }

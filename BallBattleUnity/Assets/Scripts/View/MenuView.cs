@@ -10,6 +10,7 @@ namespace BallBattle.View
     /// Main menu. Hub page: RUN (or CONTINUE RUN when a run is saved) as the main button, the Run rules line,
     /// the NEXT GOAL box and a smaller VERSUS button. VERSUS opens the Versus page: pick a weapon for ball 1 and
     /// ball 2 (mirror allowed), arena, RANDOM, START (raises StartRequested(weaponA, weaponB)), BACK to the hub.
+    /// The gear (12x12 at (250,8)) opens the Settings page (SettingsView: volumes, language row, BACK).
     /// Positions in comments are 270x480 screen pixels, origin top-left.
     /// </summary>
     public sealed class MenuView : MonoBehaviour
@@ -42,6 +43,7 @@ namespace BallBattle.View
         PixelText runLabel, continueLabel, continueLine;
         NextGoalBox goal;
         RunState savedRun;
+        SettingsView settings;
 
         /// <summary>Arena picked for Versus (ArenaRegistry id).</summary>
         public string ArenaId => ArenaRegistry.All[arenaIndex].Id;
@@ -64,6 +66,8 @@ namespace BallBattle.View
             versusPage = Page("VersusPage");
             BuildHub(art);
             BuildVersus(art);
+            settings = SettingsView.Create(transform, art, Order);
+            settings.BackRequested += ShowHub;
             SetRunInfo(new ProgressData(), null);
             ShowHub();
         }
@@ -93,7 +97,25 @@ namespace BallBattle.View
             var vs = PixelButton.Create(hub, "Versus", art, VersusArea, RunStrings.Versus, 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             vs.Clicked += ShowVersus;
             VersusButton = vs;
+            BuildGear(art);
         }
+        /// <summary>12x12 gear: 1 px frame, a 6x6 ring with a 2x2 hole and four teeth (whole pixels).</summary>
+        void BuildGear(ArtLibrary art)
+        {
+            var a = SettingsView.GearArea;
+            GearButton = PixelButton.Create(hub, "Gear", art, a, null, 1, Palette.Floor, Palette.TextDim, Palette.TextDim, Order + 2);
+            GearButton.Clicked += ShowSettings;
+            var o = GearButton.IconOrder;
+            void Px(string n, Color32 c, int order, float x0, float y0, float x1, float y1) =>
+                PixelRect.Set(PixelRect.Create(GearButton.transform, n, art.Pixel, c, order), a.xMin + x0, a.yMin + y0, a.xMin + x1, a.yMin + y1);
+            Px("Ring", Palette.TextDim, o, 3, 3, 9, 9);
+            Px("ToothN", Palette.TextDim, o, 5, 9, 7, 10);
+            Px("ToothS", Palette.TextDim, o, 5, 2, 7, 3);
+            Px("ToothW", Palette.TextDim, o, 2, 5, 3, 7);
+            Px("ToothE", Palette.TextDim, o, 9, 5, 10, 7);
+            Px("Hole", Palette.Floor, o + 1, 5, 5, 7, 7);
+        }
+
         void BuildVersus(ArtLibrary art)
         {
             var p = versusPage;
@@ -124,6 +146,7 @@ namespace BallBattle.View
             StartButton = start;
 
             var backBtn = PixelButton.Create(p, "Back", art, VersusBackArea, RunStrings.Back, 1, Palette.Floor, Palette.TextDim, Palette.TextDim, Order + 2);
+            backBtn.ClickCue = AudioIds.UiBack;
             backBtn.Clicked += ShowHub;
             Refresh();
         }
@@ -219,6 +242,7 @@ namespace BallBattle.View
 
         public void ShowHub()
         {
+            settings.gameObject.SetActive(false);
             versusPage.gameObject.SetActive(false);
             hub.gameObject.SetActive(true);
             PixelButton.NoteShownAll(hub);
@@ -226,12 +250,25 @@ namespace BallBattle.View
 
         public void ShowVersus()
         {
+            settings.gameObject.SetActive(false);
             hub.gameObject.SetActive(false);
             versusPage.gameObject.SetActive(true);
             PixelButton.NoteShownAll(versusPage);
         }
 
         public bool VersusOpen => versusPage.gameObject.activeSelf;
+
+        public void ShowSettings()
+        {
+            hub.gameObject.SetActive(false);
+            versusPage.gameObject.SetActive(false);
+            settings.gameObject.SetActive(true);
+            PixelButton.NoteShownAll(settings.transform);
+        }
+
+        public bool SettingsOpen => settings.gameObject.activeSelf;
+        public SettingsView Settings => settings;
+        public PixelButton GearButton { get; private set; }
 
         /// <summary>Weapon picked for a side (0 = ball 1, 1 = ball 2).</summary>
         public string Selected(int side) => selected[side];

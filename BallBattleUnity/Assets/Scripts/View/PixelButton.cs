@@ -14,6 +14,15 @@ namespace BallBattle.View
 
         public Rect Area { get; private set; }
 
+        /// <summary>
+        /// Cue (AudioIds) played through UiAudio on a real tap, before Clicked. Default ui_click; BACK-style buttons use
+        /// ui_back; null when the screen plays its own sound (cards: card_pick / ui_denied, sliders).
+        /// </summary>
+        public string ClickCue = AudioIds.UiClick;
+
+        /// <summary>Native point of the last press that started inside this button.</summary>
+        public Vector2 LastPressNative { get; private set; }
+
         SpriteRenderer border, fill;
         PixelText label;
         Color32 fillColor, borderColor;
@@ -107,12 +116,15 @@ namespace BallBattle.View
             if (e.Down)
             {
                 SetHeld(Contains(e.Native));
+                if (held) LastPressNative = e.Native;
                 return;
             }
             if (!held) return;
             var inside = Contains(e.Native);
             SetHeld(false);
-            if (inside) Clicked?.Invoke();
+            if (!inside) return;
+            UiAudio.Play(ClickCue);
+            Clicked?.Invoke();
         }
 
         /// <summary>True while a press that started inside is still down.</summary>

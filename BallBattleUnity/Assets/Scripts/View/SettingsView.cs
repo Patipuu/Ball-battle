@@ -1,0 +1,147 @@
+using System;
+using UnityEngine;
+
+namespace BallBattle.View
+{
+    /// <summary>
+    /// Settings page of the main menu (BB-03): MUSIC and SFX sliders (10 steps, tap or drag), an EN/VI language row that is
+    /// drawn only (no behaviour yet), BACK. Text from RunStrings. Positions in comments are 270x480 screen pixels, top-left origin.
+    /// </summary>
+    public sealed class SettingsView : MonoBehaviour
+    {
+        public const int Steps = VolumeCurve.Max;
+        public const int CellWidth = 20;
+
+        /// <summary>Gear button on the menu hub: (250,8), 12x12.</summary>
+        public static readonly Rect GearArea = ScreenRect(250, 8, 12, 12);
+        public static readonly Rect MusicArea = ScreenRect(35, 136, Steps * CellWidth, 16);
+        public static readonly Rect SfxArea = ScreenRect(35, 192, Steps * CellWidth, 16);
+        public static readonly Rect EnArea = ScreenRect(35, 248, 40, 20);
+        public static readonly Rect ViArea = ScreenRect(85, 248, 40, 20);
+        public static readonly Rect BackArea = ScreenRect(75, 330, 120, 22);
+
+        public event Action<int> MusicChanged, SfxChanged;
+        public event Action BackRequested;
+
+        Slider musicSlider, sfxSlider;
+
+        /// <summary>Screen rect (top-left origin, y down) to the menu's local space (centre origin, y up).</summary>
+        public static Rect ScreenRect(float x, float y, float w, float h) =>
+            new Rect(x - TextWrap.ScreenWidth / 2f, TextWrap.ScreenHeight / 2f - y - h, w, h);
+
+        static float LocalTop(float screenY) => TextWrap.ScreenHeight / 2f - screenY;
+
+        public static SettingsView Create(Transform parent, ArtLibrary art, int order)
+        {
+            var go = new GameObject("SettingsPage");
+            go.transform.SetParent(parent, false);
+            var v = go.AddComponent<SettingsView>();
+            v.Build(art, order);
+            return v;
+        }
+
+        void Build(ArtLibrary art, int order)
+        {
+            Label(art, RunStrings.Settings, 0, 60, 3, PixelText.Align.Center, Palette.Text, order);
+            Label(art, RunStrings.Music, MusicArea.xMin, 120, 2, PixelText.Align.Left, Palette.Text, order);
+            musicSlider = new Slider(this, art, MusicArea, order, x => MusicChanged?.Invoke(x));
+            Label(art, RunStrings.Sfx, SfxArea.xMin, 176, 2, PixelText.Align.Left, Palette.Text, order);
+            sfxSlider = new Slider(this, art, SfxArea, order, x => SfxChanged?.Invoke(x));
+
+            Label(art, RunStrings.Language, EnArea.xMin, 232, 2, PixelText.Align.Left, Palette.Text, order);
+            LanguageBox(art, EnArea, RunStrings.En, true, order);
+            LanguageBox(art, ViArea, RunStrings.Vi, false, order);
+
+            var back = PixelButton.Create(transform, "Back", art, BackArea, RunStrings.Back, 1, Palette.Floor, Palette.TextDim, Palette.TextDim, order + 2);
+            back.ClickCue = AudioIds.UiBack;
+            back.Clicked += () => BackRequested?.Invoke();
+        }
+
+        PixelText Label(ArtLibrary art, string s, float x, float screenTop, int scale, PixelText.Align align, Color32 c, int order)
+        {
+            var t = PixelText.Create(transform, s, art.Font, new Vector2(x, LocalTop(screenTop) - PixelFontData.GlyphHeight * scale), align, scale, order + 4);
+            t.Set(s, c);
+            return t;
+        }
+
+        /// <summary>Drawn only: the language switch arrives with the i18n task.</summary>
+        void LanguageBox(ArtLibrary art, Rect r, string text, bool selected, int order)
+        {
+            PixelRect.Set(PixelRect.Create(transform, "LangBorder", art.Pixel, selected ? Palette.WallWarning : Palette.Wall, order + 1), r);
+            PixelRect.Set(PixelRect.Create(transform, "LangFill", art.Pixel, selected ? Palette.HpBack : Palette.Floor, order + 2), r.xMin + 1, r.yMin + 1, r.xMax - 1, r.yMax - 1);
+            var t = PixelText.Create(transform, text, art.Font, new Vector2(r.center.x, Mathf.Floor(r.center.y - PixelFontData.GlyphHeight)), PixelText.Align.Center, 2, order + 4);
+            t.Set(text, selected ? Palette.WallWarning : Palette.TextDim);
+        }
+
+        public void SetValues(int music, int sfx)
+        {
+            musicSlider.Set(music, false);
+            sfxSlider.Set(sfx, false);
+        }
+
+        public int MusicValue => musicSlider.Value;
+        public int SfxValue => sfxSlider.Value;
+        public PixelButton MusicTrack => musicSlider.Track;
+        public PixelButton SfxTrack => sfxSlider.Track;
+
+        /// <summary>Automation / tests: drag a slider to native x.</summary>
+        public void DragMusicTo(float nativeX) => musicSlider.SetFromX(nativeX);
+        public void DragSfxTo(float nativeX) => sfxSlider.SetFromX(nativeX);
+
+        void Update()
+        {
+            musicSlider.Follow();
+            sfxSlider.Follow();
+        }
+
+        /// <summary>Step from a native x on a track: cell i (0-based) = step i+1; left of the first cell's first 4 px = 0.</summary>
+        public static int StepAt(Rect track, float nativeX)
+        {
+            var x = nativeX - track.xMin;
+            if (x < 4f) return 0;
+            return Mathf.Clamp(Mathf.FloorToInt(x / CellWidth) + 1, 0, Steps);
+        }
+
+        sealed class Slider
+        {
+            public readonly PixelButton Track;
+            readonly SpriteRenderer[] cells = new SpriteRenderer[Steps];
+            readonly PixelText value;
+            readonly Action<int> changed;
+            public int Value { get; private set; } = -1;
+
+            public Slider(SettingsView owner, ArtLibrary art, Rect area, int order, Action<int> onChanged)
+            {
+                changed = onChanged;
+                Track = PixelButton.Create(owner.transform, "Slider", art, area, null, 1, Palette.Floor, Palette.Wall, Palette.Text, order + 2);
+                Track.ClickCue = null;   // the slider's own feedback is the SFX click at the new volume
+                Track.Clicked += () => SetFromX(Track.LastPressNative.x);
+                for (var i = 0; i < Steps; i++)
+                {
+                    cells[i] = PixelRect.Create(Track.transform, "Cell", art.Pixel, Palette.HpBack, Track.IconOrder);
+                    var x0 = area.xMin + i * CellWidth + 2;
+                    PixelRect.Set(cells[i], x0, area.yMin + 3, x0 + CellWidth - 3, area.yMax - 3);
+                }
+                value = PixelText.Create(owner.transform, "Value", art.Font,
+                    new Vector2(area.xMax + 6, Mathf.Floor(area.center.y - PixelFontData.GlyphHeight)), PixelText.Align.Left, 2, order + 4);
+            }
+
+            public void Follow()
+            {
+                if (Track.IsHeld && PixelInput.Held) SetFromX(PixelInput.Current.x);
+            }
+
+            public void SetFromX(float nativeX) => Set(StepAt(Track.Area, nativeX), true);
+
+            public void Set(int v, bool notify)
+            {
+                v = Mathf.Clamp(v, 0, Steps);
+                if (v == Value) return;
+                Value = v;
+                for (var i = 0; i < Steps; i++) cells[i].color = i < v ? Palette.WallWarning : Palette.HpBack;
+                value.Set(v.ToString(), Palette.Text);
+                if (notify) changed?.Invoke(v);
+            }
+        }
+    }
+}

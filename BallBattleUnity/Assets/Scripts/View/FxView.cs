@@ -8,12 +8,13 @@ namespace BallBattle.View
 {
     /// <summary>
     /// Turns sim events into feel: hit flash, damage numbers, pixel sparks, integer-pixel screen shake,
-    /// sounds, and a short slow-motion of the effects on a knockout. View-only: never touches the sim.
+    /// and a short slow-motion of the effects on a knockout. View-only: never touches the sim.
     /// Lives next to ArenaView and listens to its events.
     /// </summary>
     [RequireComponent(typeof(ArenaView))]
     public sealed class FxView : MonoBehaviour
     {
+        /// <summary>Clips for AudioDirector (BB-03 moved all sound playing there; FxView only draws).</summary>
         public SfxLibrary Sfx;
 
         const float FlashSeconds = 0.06f;
@@ -47,11 +48,8 @@ namespace BallBattle.View
         ArenaView arena;
         PixelParticles particles;
         DamagePopups popups;
-        SfxPlayer sfx;
         ScreenShake shake;
         float slowMoRemaining;
-        bool winPending;
-        int lastShotSoundTick = -1;
 
         // Reflect damage is shown once its whole tick is known (Parry comes after the Damage it caused).
         readonly List<SimEvent> pendingTick = new List<SimEvent>();
@@ -65,7 +63,6 @@ namespace BallBattle.View
             arena = GetComponent<ArenaView>();
             particles = PixelParticles.Create(transform, arena.Art.Pixel, 96);
             popups = DamagePopups.Create(transform, arena.Art.Font, 8);
-            sfx = SfxPlayer.Create(transform, 8);
             var cam = Camera.main;
             if (cam != null) shake = new ScreenShake(cam.transform);
         }
@@ -91,8 +88,6 @@ namespace BallBattle.View
             popups?.Clear();
             shake?.Stop();
             slowMoRemaining = 0f;
-            winPending = false;
-            lastShotSoundTick = -1;
             pendingTick.Clear();
             secondWindShown[0] = secondWindShown[1] = false;
             secondWindTick[0] = secondWindTick[1] = -1;
@@ -139,7 +134,6 @@ namespace BallBattle.View
             popups.ShowLabelled(at, "+" + popups.Format(e.Value), SecondWindColor, 2, SecondWindLabel, SecondWindLabelColor, arena.Sim.Arena);
             StartRing(e.A);
             arena.Badges?.SetSpent(e.A, SecondWindTrait.TraitId, true);
-            sfx.Play(Sfx != null ? Sfx.Parry : null, 0.5f, 1.6f);
         }
 
         void StartRing(int ballIndex)
@@ -213,29 +207,20 @@ namespace BallBattle.View
             {
                 case SimEventType.Hit:
                 {
-                    var attacker = arena.Sim.Balls[e.A];
                     var target = arena.Sim.Balls[e.B];
                     arena.GetBallView(e.B)?.Flash(FlashSeconds);
                     particles.Burst(V(e.Point), e.Value >= 5f ? 7 : 5, BallColor(e.A), 50f, 110f, 0.35f, e.Value >= 5f ? 2 : 1);
                     ShowPopup(V(target.Pos) + new Vector2(0f, target.Radius + 4f), e.Value, Palette.Text);
                     shake?.Add(Mathf.Clamp(1f + e.Value / 6f, 1f, ScreenShake.MaxAmplitude), 0.15f);
-                    var heat = Palette.Heat(attacker.Weapon.Id, attacker.Weapon.StatValue);
-                    sfx.Play(Sfx != null ? Sfx.Hit : null, 0.6f, 1f + heat * 0.5f);
                     break;
                 }
                 case SimEventType.Parry:
                     particles.Burst(V(e.Point), 6, Palette.Text, 80f, 150f, 0.25f);
                     particles.Burst(V(e.Point), 3, Palette.WallWarning, 60f, 120f, 0.3f);
                     shake?.Add(1f, 0.08f);
-                    sfx.Play(Sfx != null ? Sfx.Parry : null, 0.6f, Random.Range(0.95f, 1.05f));
                     break;
                 case SimEventType.ProjectileFired:
                     particles.Burst(V(e.Point), 2, BallColor(e.A), 20f, 50f, 0.15f);
-                    if (e.Tick != lastShotSoundTick)   // six turrets fire together: one sound
-                    {
-                        lastShotSoundTick = e.Tick;
-                        sfx.Play(Sfx != null ? Sfx.Wall : null, 0.12f, 1.7f);
-                    }
                     break;
                 case SimEventType.ProjectileHit:
                     if (e.Value > 0f)
@@ -244,12 +229,10 @@ namespace BallBattle.View
                         arena.GetBallView(e.B)?.Flash(FlashSeconds);
                         particles.Burst(V(e.Point), 4, BallColor(e.A), 40f, 90f, 0.25f);
                         ShowPopup(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), e.Value, Palette.Text);
-                        sfx.Play(Sfx != null ? Sfx.Hit : null, 0.35f, 1.35f);
                     }
                     break;
                 case SimEventType.ProjectileDeflected:
                     particles.Burst(V(e.Point), 4, Palette.Text, 60f, 120f, 0.2f);
-                    sfx.Play(Sfx != null ? Sfx.Parry : null, 0.3f, 1.3f);
                     break;
                 case SimEventType.StatusTick:
                 {
@@ -261,7 +244,6 @@ namespace BallBattle.View
                 case SimEventType.ShieldBlocked:
                     if (e.A == arena.BossBall) arena.PlayBossGlow();   // Shell King glows 1 s when its shield takes a hit
                     particles.Burst(V(e.Point), 6, Palette.Text, 60f, 130f, 0.3f);
-                    sfx.Play(Sfx != null ? Sfx.Parry : null, 0.5f, 0.8f);
                     break;
                 case SimEventType.Heal:
                     if (e.A >= 0 && e.A < secondWindTick.Length && secondWindTick[e.A] == e.Tick) break;
@@ -276,7 +258,6 @@ namespace BallBattle.View
                     if (e.TraitId == SecondWindTrait.TraitId) ShowSecondWind(e);
                     break;
                 case SimEventType.ObstacleHit:
-                    sfx.Play(Sfx != null ? Sfx.Wall : null, 0.25f, e.Value > 0f ? 0.7f : 1.2f);
                     if (e.Value > 0f)
                     {
                         particles.Burst(V(e.Point), 4, Palette.Hot, 40f, 100f, 0.25f);
@@ -285,23 +266,17 @@ namespace BallBattle.View
                     break;
                 case SimEventType.WallBounce:
                     if (e.Value > 0f) ShowPopup(V(arena.Sim.Balls[e.A].Pos), e.Value, Palette.Hot);
-                    sfx.Play(Sfx != null ? Sfx.Wall : null, 0.2f, Random.Range(0.9f, 1.1f));
                     break;
                 case SimEventType.BallBounce:
-                    sfx.Play(Sfx != null ? Sfx.Wall : null, 0.35f, 0.8f);
                     break;
                 case SimEventType.Death:
                     particles.Burst(V(e.Point), 18, BallColor(e.A), 40f, 160f, 0.8f, 2);
                     particles.Burst(V(e.Point), 10, Palette.Text, 60f, 140f, 0.5f);
                     shake?.Add(ScreenShake.MaxAmplitude, 0.4f);
                     slowMoRemaining = KoSlowMoSeconds;
-                    sfx.Play(Sfx != null ? Sfx.Death : null, 0.9f);
                     break;
                 case SimEventType.Damage:
                     break;   // Reflect damage: shown by FlushReflects once the tick is complete
-                case SimEventType.MatchEnd:
-                    winPending = e.A >= 0;   // played when the knockout slow-mo ends, not on top of the death sound
-                    break;
             }
         }
 
@@ -316,11 +291,6 @@ namespace BallBattle.View
                 fxDt *= KoSlowMoScale;
             }
             FlushReflects();
-            if (winPending && slowMoRemaining <= 0f)
-            {
-                winPending = false;
-                sfx.Play(Sfx != null ? Sfx.Win : null, 0.6f);
-            }
             particles.Tick(fxDt);
             TickRings(fxDt);
             popups.SetBounds(arena.Sim != null ? arena.Sim.Arena : (ArenaRect?)null);

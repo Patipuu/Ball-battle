@@ -12,6 +12,11 @@ namespace BallBattle.View
     public sealed class RunSummaryView : MonoBehaviour
     {
         public event Action NewRunRequested, MenuRequested;
+        /// <summary>Raised when the summary appears (not on a redraw): AudioDirector plays run_win / run_over and the unlocks.</summary>
+        public event Action Shown;
+
+        /// <summary>Milestone rows shown in the green frame by the last Show (each gets one unlock cue).</summary>
+        public int MilestonesShown { get; private set; }
 
         /// <summary>Most lines UnlockText returns (scale 1, wrapped between names so nothing is cut at 270 px).</summary>
         public const int UnlockLines = 3;
@@ -55,7 +60,7 @@ namespace BallBattle.View
 
             v.goal = NextGoalBox.Create(root, art, 8, 248, RunUi.Order);
             RunUi.Button(root, art, NewRunArea, "NEW RUN", 2, Palette.WallWarning, () => v.NewRunRequested?.Invoke());
-            RunUi.Button(root, art, MenuArea, "MENU", 2, Palette.TextDim, () => v.MenuRequested?.Invoke());
+            RunUi.Button(root, art, MenuArea, "MENU", 2, Palette.TextDim, () => v.MenuRequested?.Invoke()).ClickCue = AudioIds.UiBack;
             return v;
         }
 
@@ -67,6 +72,7 @@ namespace BallBattle.View
         {
             var after = progress ?? ProgressOf(run);
             var before = ProgressBefore(after, run);
+            var appearing = !gameObject.activeSelf;
             gameObject.SetActive(true);
 
             title.Set(run.Won ? RunStrings.RunWon : RunStrings.RunOver, run.Won ? Palette.WallWarning : Palette.HpLost);
@@ -85,6 +91,8 @@ namespace BallBattle.View
             retry.Set(retryAt > 0 ? RunStrings.RetryUsedAt(retryAt) : "", Palette.WallWarning);
 
             var lines = MilestoneLines(Reached(before, after));
+            MilestonesShown = 0;
+            foreach (var l in lines) if (l.color.Equals(NextGoalBox.Green)) MilestonesShown++;   // goal-name rows (green)
             BoxText.Clear();
             for (var i = 0; i < BoxLines; i++)
             {
@@ -104,7 +112,9 @@ namespace BallBattle.View
                 PixelRect.Set(boxFill, left + 1, bottom + 1, left + NextGoalBox.Width - 1, top - 1);
             }
             goal.Show(after);
+            if (appearing) Shown?.Invoke();
         }
+
         public struct Milestone
         {
             public string GoalId;

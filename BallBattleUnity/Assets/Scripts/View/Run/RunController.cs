@@ -24,6 +24,7 @@ namespace BallBattle.View
         public bool IsOpen => Flow.Current != RunFlow.State.Closed;
         public PrepareView Prepare => prepare;
         public RunResultView Result => result;
+        public RunSummaryView Summary => summary;
 
         public event Action Closed;
 

@@ -35,7 +35,7 @@ namespace BallBattle.View
             v.goal = NextGoalBox.Create(root, art, 8, 96, RunUi.Order);
             v.continueButton = RunUi.Button(root, art, ContinueArea, "CONTINUE", 2, Palette.WallWarning, () => { if (!v.DialogOpen) v.ContinueRequested?.Invoke(); });
             RunUi.Button(root, art, NewRunArea, "NEW RUN", 2, Palette.Text, () => { if (!v.DialogOpen) v.OnNewRun(); });
-            RunUi.Button(root, art, BackArea, RunStrings.Back, 1, Palette.TextDim, () => { if (!v.DialogOpen) v.BackRequested?.Invoke(); });
+            RunUi.Button(root, art, BackArea, RunStrings.Back, 1, Palette.TextDim, () => { if (!v.DialogOpen) v.BackRequested?.Invoke(); }).ClickCue = AudioIds.UiBack;
 
             var bandTop = NextGoalBox.LocalTop(FooterTop);
             var bandLeft = NextGoalBox.LocalX(8);

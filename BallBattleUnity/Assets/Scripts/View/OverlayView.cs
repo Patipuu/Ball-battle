@@ -72,6 +72,7 @@ namespace BallBattle.View
         {
             var b = PixelButton.Create(parent, name, art, r, label, 2, Palette.Floor, accent, accent, ResultOrder + 2);
             b.Clicked += onClick;
+            if (label == "MENU") b.ClickCue = AudioIds.UiBack;
         }
 
         static void Text(Transform parent, ArtLibrary art, string s, float y, Color32 c)

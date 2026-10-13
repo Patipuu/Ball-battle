@@ -23,6 +23,12 @@ namespace BallBattle.View
         public const string Unlocks = "UNLOCKS: ";
         public const string Unlocked = "UNLOCKED: ";
         public const string AppearLater = "THEY CAN APPEAR IN LATER RUNS";
+        public const string Settings = "SETTINGS";
+        public const string Music = "MUSIC";
+        public const string Sfx = "SFX";
+        public const string Language = "LANGUAGE";
+        public const string En = "EN";
+        public const string Vi = "VI";
         public const string PickOneCard = "PICK 1 CARD BEFORE EACH FIGHT";
         public const string RunWon = "RUN WON!";
         public const string RunOver = "RUN OVER";

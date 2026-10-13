@@ -17,3 +17,29 @@ MonoBehaviour:
   Wall: {fileID: 8300000, guid: 86f30e71d7fc392438559230ad867ad4, type: 3}
   Death: {fileID: 8300000, guid: e3c070f909853134d9b1ec01907b78c8, type: 3}
   Win: {fileID: 8300000, guid: 1bd33d8b137e7a44ba2556f73e192197, type: 3}
+  Clips:
+  - {fileID: 8300000, guid: 1c97a08ea36731743a54813076e09f48, type: 3}
+  - {fileID: 8300000, guid: d5af802a63b7aab4c998e2ab92cac8bd, type: 3}
+  - {fileID: 8300000, guid: dda4a38271060664b98965b142e66faa, type: 3}
+  - {fileID: 8300000, guid: 3ed2de2e922216b4fb47b14e823bd2ae, type: 3}
+  - {fileID: 8300000, guid: cc5c810e8b12cc446940b79f52138c9d, type: 3}
+  - {fileID: 8300000, guid: 6267f5e1d121aaa45a6898a9486952da, type: 3}
+  - {fileID: 8300000, guid: 706e1a622d74214458cba02f4894ef1c, type: 3}
+  - {fileID: 8300000, guid: 1fd86750fb6c8a645945e62482b902db, type: 3}
+  - {fileID: 8300000, guid: a3e1f42177c3b4847b3e90c8a9f5a9dc, type: 3}
+  - {fileID: 8300000, guid: 4f62acfe9fd009d409474f9a75fb1a8f, type: 3}
+  - {fileID: 8300000, guid: 88e738818eda98f45a839ce164020ee1, type: 3}
+  - {fileID: 8300000, guid: a9e57394274e34f4c896575958593cd4, type: 3}
+  - {fileID: 8300000, guid: f096ed66c2b2d974fbe4e225648e414c, type: 3}
+  - {fileID: 8300000, guid: 11c6da8d844e5344385f739d464bda80, type: 3}
+  - {fileID: 8300000, guid: 5845493aff6e178408a6a945d064b5ec, type: 3}
+  - {fileID: 8300000, guid: e31d60ea819e120488a2edd5accb19e9, type: 3}
+  - {fileID: 8300000, guid: 4610646b0f5c4a1449dab87e64070560, type: 3}
+  - {fileID: 8300000, guid: 9b69586357556154a8216b8416efabc3, type: 3}
+  - {fileID: 8300000, guid: a8f2f4652b7be1042afa5d332580796d, type: 3}
+  - {fileID: 8300000, guid: 7ab836ffba3fee14395af36e64f23450, type: 3}
+  - {fileID: 8300000, guid: d4e1b8d0da328c54789351e55cf23133, type: 3}
+  - {fileID: 8300000, guid: 6bd426b815a38f447804663b44c50485, type: 3}
+  - {fileID: 8300000, guid: 4174380a303b49d46bd94fd2191ce20f, type: 3}
+  - {fileID: 8300000, guid: 884f869e37c1dc34698b6466b920ed50, type: 3}
+  - {fileID: 8300000, guid: 65b89a55e7e85d64a8b19c2e50ad2d3e, type: 3}

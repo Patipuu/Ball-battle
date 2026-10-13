@@ -38,6 +38,7 @@ namespace BallBattle.View
                 var index = i;
                 var area = CardArea(i);
                 view.cards[i] = RunUi.Button(root, art, area, " ", 1, Palette.Wall, () => view.CardPicked?.Invoke(index));
+                view.cards[i].ClickCue = null;   // a taken card plays card_pick (RunFlow.CardTaken)
                 var card = view.cards[i].transform;
                 card.Find("Label").gameObject.SetActive(false); // PixelButton retains its accessible title; the card face draws it.
                 var frameGo = new GameObject("Frame");

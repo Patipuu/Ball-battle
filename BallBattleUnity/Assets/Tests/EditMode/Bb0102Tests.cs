@@ -207,7 +207,7 @@ namespace BallBattle.Tests
         }
 
         /// <summary>Every non-empty text inside 270x480 and no two texts overlapping.</summary>
-        static void AssertTextFitsAndNoOverlap(Transform screen)
+        public static void AssertTextFitsAndNoOverlap(Transform screen)
         {
             var texts = screen.GetComponentsInChildren<PixelText>(false).Where(t => t.Text.Trim().Length > 0).ToList();
             Assert.That(texts, Is.Not.Empty, "nothing drawn");

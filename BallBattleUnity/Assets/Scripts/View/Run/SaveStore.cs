@@ -14,6 +14,9 @@ namespace BallBattle.View
         public ProgressData Progress = new ProgressData();
         public bool HasRun;
         public RunState Run = new RunState();
+        /// <summary>Music / SFX volume steps 0..10 (BB-03). Older saves have no such fields and load the defaults; no version bump.</summary>
+        public int musicVol = VolumeSettings.DefaultMusic;
+        public int sfxVol = VolumeSettings.DefaultSfx;
     }
 
     public interface ISaveStore

@@ -68,7 +68,9 @@ namespace BallBattle.View
                 l.Question = PixelText.Create(t, "Question", art.Font, new Vector2(0, p.yMax - 22), PixelText.Align.Center, 2, order + 4);
                 l.Info = PixelText.Create(t, "Info", art.Font, new Vector2(0, p.yMax - 34), PixelText.Align.Center, 1, order + 4);
                 PixelButton.Create(t, "Yes", art, YesAt(i), "YES", 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, order + 3).Clicked += () => d.Press(true);
-                PixelButton.Create(t, "No", art, NoAt(i), "NO", 2, Palette.Floor, Palette.Text, Palette.Text, order + 3).Clicked += () => d.Press(false);
+                var no = PixelButton.Create(t, "No", art, NoAt(i), "NO", 2, Palette.Floor, Palette.Text, Palette.Text, order + 3);
+                no.ClickCue = AudioIds.UiBack;
+                no.Clicked += () => d.Press(false);
                 l.Root.SetActive(false);
                 d.layouts[i] = l;
             }

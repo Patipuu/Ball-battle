@@ -40,6 +40,7 @@ namespace BallBattle.EditorTools
             lib.Win = Load("win");
             EditorUtility.SetDirty(lib);
             AssetDatabase.SaveAssets();
+            AudioLibraryLinker.Link();   // BB-03 music and cues
             Debug.Log("[BallBattle] Placeholder sfx generated");
         }
 

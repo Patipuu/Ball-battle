@@ -105,6 +105,7 @@ namespace BallBattle.View
                 var index = i;
                 var area = CardArea(i);
                 cards[i] = RunUi.Button(root, art, area, null, 1, Palette.Wall, () => { if (!TapSwallowed) OnCardClicked(index); });
+                cards[i].ClickCue = null;   // card_pick (RunFlow.CardTaken) or ui_denied, decided in OnCardClicked
                 // Art v1: 9-slice frame over the button fill, 4 px stripe on the left, trait icon at 2x, then the text.
                 var frameGo = new GameObject("Frame");
                 frameGo.transform.SetParent(cards[i].transform, false);
@@ -129,6 +130,7 @@ namespace BallBattle.View
             }
 
             reroll = RunUi.Button(root, art, RerollArea, $"REROLL {RunTuning.RerollCost}", 1, Palette.TextDim, () => { if (!TapSwallowed) OnRerollClicked(); });
+            reroll.ClickCue = null;   // card_reroll (RunFlow.Rerolled) or ui_denied
             rerollReason = PixelText.Create(reroll.transform, "Reason", art.Font, new Vector2(RerollArea.center.x, RerollArea.yMin + 3), PixelText.Align.Center, 1, reroll.IconOrder + 1);
             RunUi.Button(root, art, FightArea, "FIGHT!", 3, Palette.WallWarning, () => { if (!TapSwallowed) OnFightClicked(); });
             RunUi.Text(root, art, 0, -150, 1, initial: "ESC: MENU   THE RUN IS SAVED", color: Palette.TextDim);
@@ -391,12 +393,14 @@ namespace BallBattle.View
             {
                 cardBlink[i] = BlinkSeconds;   // taken or blocked: blink the card and its reason instead of doing nothing
                 StyleCard(i);
+                UiAudio.Play(AudioIds.UiDenied);
                 return;
             }
             if (run != null && run.OfferCard(i).Kind == CardKind.SwapWeapon)
             {
                 // A swap changes the weapon for the rest of the run: ask first. NO costs nothing.
                 var to = WeaponNames.Of(run.OfferCard(i).Id);
+                UiAudio.Play(AudioIds.UiClick);   // the card itself: card_pick comes on YES
                 dialog.Open("SWAP TO " + to + "?", "KEEPS TRAITS AND STATS", CardArea(i), () => CardPicked?.Invoke(i));
                 return;
             }
@@ -411,6 +415,7 @@ namespace BallBattle.View
                 rerollBlink = BlinkSeconds;
                 rerollReason.Set(RerollBlockReason(run) ?? "", Palette.Text);
                 reroll.SetColors(Palette.Floor, Blocked);
+                UiAudio.Play(AudioIds.UiDenied);
                 return;
             }
             RerollRequested?.Invoke();
