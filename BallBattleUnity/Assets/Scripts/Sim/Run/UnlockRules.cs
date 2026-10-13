@@ -103,6 +103,70 @@ namespace BallBattle.Sim.Run
         /// <summary>A saved run replaced by a new one still counts as played (and lost).</summary>
         public static void RecordAbandoned(ProgressData p) => p.RunsPlayed++;
 
+        // ---- Next goal (BB-02): the milestones shown to the player, in order. Change milestones in GoalTable only. ----
+
+        /// <summary>
+        /// Goal rows, first not-yet-reached row = the next goal. Beating the Mimic in the last fight always wins the run,
+        /// so boss2 and win1 are one goal (either achievement reaches it; its reward is both). Legacy boss3 (no longer
+        /// earned) has no row: it never counts as progress and never blocks AllDone.
+        /// </summary>
+        public static readonly GoalRow[] GoalTable =
+        {
+            new GoalRow(Boss1, new[] { Boss1 }, new[] { Boss1 }, GoalProgress.FightsCleared, RunTuning.BossFights[0] + 1),
+            new GoalRow(Win1, new[] { Win1, Boss2 }, new[] { Boss2, Win1 }, GoalProgress.FightsCleared, RunTuning.Fights),
+            new GoalRow(Win3, new[] { Win3 }, new[] { Win3 }, GoalProgress.RunsWon, 3),
+        };
+
+        public static GoalRow GoalRowOf(string goalId)
+        {
+            foreach (var row in GoalTable)
+                if (row.Id == goalId) return row;
+            return null;
+        }
+
+        /// <summary>The next goal for this progress: plain data, no display strings.</summary>
+        public static NextGoalInfo NextGoal(ProgressData p)
+        {
+            foreach (var row in GoalTable)
+            {
+                if (row.Done(p)) continue;
+                var progress = row.Progress == GoalProgress.RunsWon ? p.RunsWon : FightsCleared(p);
+                return new NextGoalInfo
+                {
+                    GoalId = row.Id,
+                    RewardIds = NewRewards(row, p),
+                    // Never a full bar before the goal is actually reached.
+                    Current = Math.Max(0, Math.Min(progress, row.Max - 1)),
+                    Max = row.Max,
+                };
+            }
+            return new NextGoalInfo { RewardIds = new List<string>(), AllDone = true };
+        }
+
+        /// <summary>
+        /// Fights cleared in the best run so far. BestFight is the furthest fight reached, 1-based, counted when that
+        /// fight's result is recorded whether won or lost; so cleared = BestFight - 1 (an under-count of one only when
+        /// the furthest fight recorded was a win and the run was then left).
+        /// </summary>
+        public static int FightsCleared(ProgressData p) => Math.Max(p.BestFight - 1, 0);
+
+        /// <summary>Weapon/trait ids the row grants that exist in this build and are not unlocked in <paramref name="p"/> yet.</summary>
+        public static List<string> NewRewards(GoalRow row, ProgressData p)
+        {
+            var have = Weapons(p);
+            have.AddRange(Traits(p));
+            var ids = new List<string>();
+            foreach (var a in row.Rewards)
+                foreach (var t in Table)
+                {
+                    if (t.achievement != a) continue;
+                    foreach (var w in t.weapons)
+                        if (WeaponExists(w) && !have.Contains(w) && !ids.Contains(w)) ids.Add(w);
+                    foreach (var tr in t.traits)
+                        if (TraitRegistry.Exists(tr) && !have.Contains(tr) && !ids.Contains(tr)) ids.Add(tr);
+                }
+            return ids;
+        }
         /// <summary>Display names of the weapons/traits an achievement unlocks that exist in this build.</summary>
         public static List<string> UnlockedNames(string achievement)
         {
@@ -118,5 +182,45 @@ namespace BallBattle.Sim.Run
             }
             return names;
         }
+    }
+
+    public enum GoalProgress { FightsCleared, RunsWon }
+
+    /// <summary>One row of <see cref="UnlockRules.GoalTable"/>.</summary>
+    public sealed class GoalRow
+    {
+        public readonly string Id;
+        /// <summary>Having any one of these achievements means the goal is reached.</summary>
+        public readonly string[] DoneWhen;
+        /// <summary>Achievements whose unlocks this goal grants (merged).</summary>
+        public readonly string[] Rewards;
+        public readonly GoalProgress Progress;
+        public readonly int Max;
+
+        public GoalRow(string id, string[] doneWhen, string[] rewards, GoalProgress progress, int max)
+        {
+            Id = id;
+            DoneWhen = doneWhen;
+            Rewards = rewards;
+            Progress = progress;
+            Max = max;
+        }
+
+        public bool Done(ProgressData p)
+        {
+            foreach (var a in DoneWhen)
+                if (p.Has(a)) return true;
+            return false;
+        }
+    }
+
+    /// <summary>Result of <see cref="UnlockRules.NextGoal"/>: plain data, the view turns it into text.</summary>
+    public struct NextGoalInfo
+    {
+        public string GoalId;
+        public List<string> RewardIds;
+        public int Current;
+        public int Max;
+        public bool AllDone;
     }
 }

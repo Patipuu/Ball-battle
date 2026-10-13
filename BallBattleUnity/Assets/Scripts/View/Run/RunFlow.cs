@@ -74,6 +74,17 @@ namespace BallBattle.View
             Go(State.Title);
         }
 
+        /// <summary>
+        /// Progress and the run CONTINUE would resume (null when none or no longer valid), for the main menu.
+        /// Reads the save without opening Run mode and without writing anything.
+        /// </summary>
+        public (ProgressData progress, RunState resumable) PeekSave()
+        {
+            var data = store.Load() ?? new SaveData();
+            var run = data.HasRun && RunValidation.IsValid(data.Run) ? data.Run : null;
+            return (data.Progress ?? new ProgressData(), run);
+        }
+
         public void Close()
         {
             if (Current == State.Closed) return;

@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace BallBattle.View
 {
-    /// <summary>Run mode entry: progress line, CONTINUE (when a run is saved), NEW RUN, BACK.</summary>
+    /// <summary>
+    /// Run mode entry: rules line, progress line, NEXT GOAL box, CONTINUE (when a run is saved), NEW RUN, BACK,
+    /// and the rules footer (pick, bosses, retry, run over). Every rule number comes from RunTuning via RunStrings.
+    /// </summary>
     public sealed class RunTitleView : MonoBehaviour
     {
         public event Action ContinueRequested, NewRunRequested, BackRequested;
@@ -11,24 +14,38 @@ namespace BallBattle.View
         PixelText stats;
         PixelButton continueButton;
         ConfirmDialog dialog;
+        NextGoalBox goal;
         bool hasSavedRun;
 
         public static readonly Rect ContinueArea = new Rect(-80, 30, 160, 32);
         public static readonly Rect NewRunArea = new Rect(-80, -20, 160, 32);
         public static readonly Rect BackArea = new Rect(-60, -90, 120, 22);
 
+        /// <summary>Footer band (8,380), 254 wide: four rule lines.</summary>
+        const int FooterTop = 380;
+        const int FooterLinePitch = 10;
+
         public static RunTitleView Create(Transform parent, ArtLibrary art)
         {
             var root = RunUi.Root(parent, "RunTitle", art);
             var v = root.gameObject.AddComponent<RunTitleView>();
-            RunUi.Text(root, art, 0, 170, 3, initial: "RUN MODE");
-            RunUi.Text(root, art, 0, 150, 1, initial: "8 FIGHTS  3 BOSSES  3 LIVES", color: Palette.TextDim);
-            v.stats = RunUi.Text(root, art, 0, 120, 1);
+            RunUi.Text(root, art, 0, 189, 3, initial: RunStrings.RunMode);                                   // top 36
+            RunUi.Text(root, art, 0, 173, 1, initial: RunStrings.RulesSummary, color: Palette.TextDim);       // top 62
+            v.stats = RunUi.Text(root, art, 0, 155, 1);                                                       // top 80
+            v.goal = NextGoalBox.Create(root, art, 8, 96, RunUi.Order);
             v.continueButton = RunUi.Button(root, art, ContinueArea, "CONTINUE", 2, Palette.WallWarning, () => { if (!v.DialogOpen) v.ContinueRequested?.Invoke(); });
             RunUi.Button(root, art, NewRunArea, "NEW RUN", 2, Palette.Text, () => { if (!v.DialogOpen) v.OnNewRun(); });
-            RunUi.Button(root, art, BackArea, "BACK", 1, Palette.TextDim, () => { if (!v.DialogOpen) v.BackRequested?.Invoke(); });
-            RunUi.Text(root, art, 0, -140, 1, initial: "PICK CARDS BEFORE EACH FIGHT", color: Palette.TextDim);
-            RunUi.Text(root, art, 0, -150, 1, initial: "FIGHTS PLAY THEMSELVES", color: Palette.TextDim);
+            RunUi.Button(root, art, BackArea, RunStrings.Back, 1, Palette.TextDim, () => { if (!v.DialogOpen) v.BackRequested?.Invoke(); });
+
+            var bandTop = NextGoalBox.LocalTop(FooterTop);
+            var bandLeft = NextGoalBox.LocalX(8);
+            PixelRect.Set(PixelRect.Create(root, "RulesBand", art.Pixel, RunUi.Panel, RunUi.Order + 1),
+                          bandLeft, bandTop - (4 * FooterLinePitch + 5), bandLeft + NextGoalBox.Width, bandTop);
+            string[] lines = { RunStrings.PickOneCard, RunStrings.BossAt, RunStrings.LoseOnce, RunStrings.LoseAgain };
+            Color32[] colors = { Palette.TextDim, Palette.TextDim, Palette.WallWarning, Palette.HpLost };
+            for (var i = 0; i < lines.Length; i++)
+                RunUi.Text(root, art, 0, bandTop - 5 - i * FooterLinePitch - PixelFontData.GlyphHeight, 1, initial: lines[i], color: colors[i]);
+
             v.dialog = ConfirmDialog.Create(root, art, RunUi.Order + 20, "ConfirmAbandon");
             v.dialog.Closed += () => PixelButton.NoteShownAll(root);   // the tap on YES/NO never reaches NEW RUN / CONTINUE under it
             return v;
@@ -39,10 +56,13 @@ namespace BallBattle.View
             gameObject.SetActive(true);
             var p = flow.Progress;
             stats.Set(StatsLine(p), Palette.Text);
+            goal.Show(p);
             hasSavedRun = flow.HasSavedRun;
             continueButton.gameObject.SetActive(hasSavedRun);
             dialog.Close();
         }
+
+        public NextGoalBox Goal => goal;
 
         /// <summary>
         /// "BEST FIGHT b/8   WINS w/p": runs won (ended by beating the last boss) out of runs played (as counted today:

@@ -38,6 +38,8 @@ namespace BallBattle.View
             Flow.MenuShown += () =>
             {
                 Arena.Paused = true;
+                var (progress, resumable) = Run.Flow.PeekSave();
+                Menu.SetRunInfo(progress, resumable);
                 Menu.Show(true);
             };
 
@@ -46,16 +48,21 @@ namespace BallBattle.View
                 Arena.ArenaId = Menu.ArenaId;
                 Flow.Begin(a, b, NewVersusSeed(DebugOptions.ForceSeed));
             };
-            Menu.RunRequested += () =>
-            {
-                if (Flow.Current != MatchFlow.State.Menu) return;
-                Menu.Show(false);
-                Run.Open();
-            };
+            Menu.RunRequested += () => OpenRun(false);
+            Menu.ContinueRequested += () => OpenRun(true);
             Run.Closed += () => Flow.ToMenu();
             Overlay.RematchRequested += () => Flow.Rematch();
             Overlay.NewMatchRequested += () => Flow.NewMatch(NewVersusSeed(DebugOptions.ForceSeed));
             Overlay.MenuRequested += () => Flow.ToMenu();
+        }
+
+        /// <summary>RUN opens Run mode on its title screen; CONTINUE RUN opens it and resumes the saved run at once.</summary>
+        void OpenRun(bool resume)
+        {
+            if (Flow.Current != MatchFlow.State.Menu) return;
+            Menu.Show(false);
+            Run.Open();
+            if (resume && Run.Flow.HasSavedRun) Run.Flow.Continue();
         }
 
         void OnEnable()
@@ -97,6 +104,7 @@ namespace BallBattle.View
             {
                 if (Run.IsOpen) Run.Flow.Close();
                 else if (Flow.Current != MatchFlow.State.Menu) Flow.ToMenu();
+                else if (Menu.VersusOpen) Menu.ShowHub();
             }
 
             var dt = Time.deltaTime;

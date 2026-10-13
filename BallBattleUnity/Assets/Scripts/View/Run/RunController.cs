@@ -172,7 +172,7 @@ namespace BallBattle.View
                 case RunFlow.State.StartPick: startPick.Show(Flow.Run); break;
                 case RunFlow.State.Prepare: prepare.Show(Flow.Run); break;
                 case RunFlow.State.FightResult: result.Show(Flow.LastReport); break;
-                case RunFlow.State.Summary: summary.Show(Flow.Run); break;
+                case RunFlow.State.Summary: summary.Show(Flow.Run, Flow.Progress); break;
             }
         }
 

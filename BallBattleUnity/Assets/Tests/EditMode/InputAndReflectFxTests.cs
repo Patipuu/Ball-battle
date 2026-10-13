@@ -202,6 +202,7 @@ namespace BallBattle.Tests
         {
             var menu = MenuView.Create(root.transform, art);
             menu.Show(true);
+            menu.ShowVersus();   // the weapon tiles live on the Versus page (BB-01 hub)
             var started = new List<(string a, string b)>();
             menu.StartRequested += (a, b) => started.Add((a, b));
             Assert.That(menu.Selected(1), Is.Not.EqualTo(BladeRule.WeaponId));
@@ -220,6 +221,7 @@ namespace BallBattle.Tests
         {
             var menu = MenuView.Create(root.transform, art);
             menu.Show(true);
+            menu.ShowVersus();   // the weapon tiles live on the Versus page (BB-01 hub)
             foreach (var side in new[] { 0, 1 })
                 foreach (var w in WeaponRegistry.All)
                 {
