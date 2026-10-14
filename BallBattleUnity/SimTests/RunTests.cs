@@ -28,7 +28,7 @@ namespace BallBattle.SimTests
         {
             List<string> Play()
             {
-                var run = NewRun(1234);
+                var run = NewRun(1236);   // BB-6c: Rules 7 ends seed 1234 after 2 fights; 1236 plays 8
                 var log = new List<string>();
                 while (!run.Over)
                 {

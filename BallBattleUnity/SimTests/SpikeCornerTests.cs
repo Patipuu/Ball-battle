@@ -8,7 +8,7 @@ namespace BallBattle.SimTests
 {
     /// <summary>
     /// BB-FIX1a spike-walls: damage only inside the corner spike zones (1/5 of the current wall length from each spiked corner,
-    /// TL + BR), 3 per hit, one per ball per tick; zones follow the shrink. Plus per-arena outcome digests proving every
+    /// TL + BR), ArenaTuning.SpikeWallDamage per hit (BB-6c: 2.5), one per ball per tick; zones follow the shrink. Plus per-arena outcome digests proving every
     /// non-spike arena plays exactly as before the change.
     /// </summary>
     public class SpikeCornerTests
@@ -55,10 +55,10 @@ namespace BallBattle.SimTests
             var cfg = SpikeConfig();
             var r = Rect(cfg);
             Fix Lost(FixVec2 start, FixVec2 vel) => Bounce(cfg, start, vel, out _);
-            Assert.That(Lost(FT.V(r.Left + R + FT.X(3f), r.Top - FT.X(20f)), FT.V(-FT.X(5f), FT.X(0f))), Is.EqualTo(FT.X(3f)), "TL zone, left wall");
-            Assert.That(Lost(FT.V(r.Left + FT.X(20f), r.Top - R - FT.X(3f)), FT.V(FT.X(0f), FT.X(5f))), Is.EqualTo(FT.X(3f)), "TL zone, top wall");
-            Assert.That(Lost(FT.V(r.Right - R - FT.X(3f), r.Bottom + FT.X(20f)), FT.V(FT.X(5f), FT.X(0f))), Is.EqualTo(FT.X(3f)), "BR zone, right wall");
-            Assert.That(Lost(FT.V(r.Right - FT.X(20f), r.Bottom + R + FT.X(3f)), FT.V(FT.X(0f), -FT.X(5f))), Is.EqualTo(FT.X(3f)), "BR zone, floor");
+            Assert.That(Lost(FT.V(r.Left + R + FT.X(3f), r.Top - FT.X(20f)), FT.V(-FT.X(5f), FT.X(0f))), Is.EqualTo(ArenaTuning.SpikeWallDamage), "TL zone, left wall");
+            Assert.That(Lost(FT.V(r.Left + FT.X(20f), r.Top - R - FT.X(3f)), FT.V(FT.X(0f), FT.X(5f))), Is.EqualTo(ArenaTuning.SpikeWallDamage), "TL zone, top wall");
+            Assert.That(Lost(FT.V(r.Right - R - FT.X(3f), r.Bottom + FT.X(20f)), FT.V(FT.X(5f), FT.X(0f))), Is.EqualTo(ArenaTuning.SpikeWallDamage), "BR zone, right wall");
+            Assert.That(Lost(FT.V(r.Right - FT.X(20f), r.Bottom + R + FT.X(3f)), FT.V(FT.X(0f), -FT.X(5f))), Is.EqualTo(ArenaTuning.SpikeWallDamage), "BR zone, floor");
             Assert.That(Lost(FT.V(r.Right - R - FT.X(3f), r.Top - FT.X(20f)), FT.V(FT.X(5f), FT.X(0f))), Is.EqualTo(FT.X(0f)), "TR corner");
             Assert.That(Lost(FT.V(r.Left + R + FT.X(3f), r.Bottom + FT.X(20f)), FT.V(-FT.X(5f), FT.X(0f))), Is.EqualTo(FT.X(0f)), "BL corner");
         }
@@ -69,12 +69,12 @@ namespace BallBattle.SimTests
             var cfg = SpikeConfig();
             var r = Rect(cfg);
             var lost = Bounce(cfg, FT.V(r.Left + R + FT.X(2f), r.Top - R - FT.X(2f)), FT.V(-FT.X(5f), FT.X(5f)), out var hits);
-            Assert.That(lost.F(), Is.EqualTo(3f));
+            Assert.That(lost, Is.EqualTo(ArenaTuning.SpikeWallDamage));
             Assert.That(hits, Is.EqualTo(1));
         }
 
         [Test]
-        public void ZonesStayOneFifthOfTheShrunkWalls()
+        public void ZonesStayTheirFractionOfTheShrunkWalls()
         {
             var cfg = SpikeConfig();
             cfg.ShrinkStartTick = 1;
@@ -85,8 +85,9 @@ namespace BallBattle.SimTests
             var r = m.Arena;
             Assert.That(r.Width, Is.LessThan(before.Width));
             Assert.That(r.Height, Is.LessThan(before.Height));
-            var zx = r.Width / FT.X(5f);
-            var zy = r.Height / FT.X(5f);
+            // BB-6c: zones are SpikeZoneNum/SpikeZoneDen (3/20) of the current wall, no longer 1/5.
+            var zx = r.Width * FT.X(ArenaTuning.SpikeZoneNum) / FT.X(ArenaTuning.SpikeZoneDen);
+            var zy = r.Height * FT.X(ArenaTuning.SpikeZoneNum) / FT.X(ArenaTuning.SpikeZoneDen);
             var e = FT.X(0.25);
             var c = ArenaTuning.SpikeCorners;
             // TL: left wall from the top, top wall from the left.
@@ -109,8 +110,8 @@ namespace BallBattle.SimTests
             Assert.That(SpikeZones.Contains(r, ArenaWall.Right, r.Top - FT.X(20f), SpikeCorner.All), Is.True);
             Assert.That(SpikeZones.Contains(r, ArenaWall.Left, r.Bottom + FT.X(20f), SpikeCorner.All), Is.True);
             var all = SpikeConfig(SpikeCorner.All);
-            Assert.That(Bounce(all, FT.V(r.Right - R - FT.X(3f), r.Top - FT.X(20f)), FT.V(FT.X(5f), FT.X(0f)), out _), Is.EqualTo(FT.X(3f)), "TR with All");
-            Assert.That(Bounce(all, FT.V(r.Left + R + FT.X(3f), r.Bottom + FT.X(20f)), FT.V(-FT.X(5f), FT.X(0f)), out _), Is.EqualTo(FT.X(3f)), "BL with All");
+            Assert.That(Bounce(all, FT.V(r.Right - R - FT.X(3f), r.Top - FT.X(20f)), FT.V(FT.X(5f), FT.X(0f)), out _), Is.EqualTo(ArenaTuning.SpikeWallDamage), "TR with All");
+            Assert.That(Bounce(all, FT.V(r.Left + R + FT.X(3f), r.Bottom + FT.X(20f)), FT.V(-FT.X(5f), FT.X(0f)), out _), Is.EqualTo(ArenaTuning.SpikeWallDamage), "BL with All");
             Assert.That(Bounce(all, FT.V(r.Right - R - FT.X(3f), FT.X(0f)), FT.V(FT.X(5f), FT.X(0f)), out _), Is.EqualTo(FT.X(0f)), "midpoint still harmless");
         }
 
@@ -134,16 +135,17 @@ namespace BallBattle.SimTests
         /// <summary>
         /// Per-arena digests, re-pinned for the fixed-point sim (6a.6b/c; the digest now mixes the Fix raw HP values). Every
         /// arena is pinned exactly; old (float, BB-FIX1a) → new values are listed in docs/claude-runs/6a6bc-fix.md.
+        /// Re-pinned for Rules 7 (BB-6c spike immunity + balance pass); old → new in docs/claude-runs/bb6c.md.
         /// </summary>
         static readonly (string arena, ulong digest)[] ExpectedByArena =
         {
-            ("classic", 0x7BEA200668ED5694UL),
-            ("pillar", 0x9BAA96D99356D870UL),
-            ("bumpers", 0xB76BDBC50DCFB6D0UL),
-            ("spike-walls", 0x81D75579528D171BUL),
-            ("low-gravity", 0x265057B248B104E2UL),
-            ("tight", 0x87CD89A941BEDBEAUL),
-            ("wide", 0xBBFD43849E96D984UL),
+            ("classic", 0x786EB4ED8E600275UL),
+            ("pillar", 0x8BAD41929FA62F8DUL),
+            ("bumpers", 0x49524358E9163D8BUL),
+            ("spike-walls", 0x59CFF559865DCA94UL),
+            ("low-gravity", 0x95930D9564206FD7UL),
+            ("tight", 0xCDB2F85B20F4826DUL),
+            ("wide", 0x322577563C60A74AUL),
         };
 
         /// <summary>Winner, length and both final HPs of 8 weapons vs blade, seeds 1-2, on one arena.</summary>

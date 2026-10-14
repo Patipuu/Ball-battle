@@ -34,7 +34,8 @@ namespace BallBattle.View
             try
             {
                 var o = RoundRobin.Parse(args);
-                stdout.WriteLine($"[BallBattle] round-robin: arena {o.Arena}, {o.Seeds} seeds per pair" + (o.MaxTicks > 0 ? $", maxTicks {o.MaxTicks}" : ""));
+                stdout.WriteLine($"[BallBattle] round-robin: arena {o.Arena}, {o.Seeds} seeds per pair" + (o.MaxTicks > 0 ? $", maxTicks {o.MaxTicks}" : "") +
+                                 (o.SeedOffset > 0 ? $", seedOffset {o.SeedOffset}" : ""));
                 var started = DateTime.UtcNow;
                 var r = RoundRobin.Run(o);
                 var outPath = Path.GetFullPath(o.Out);
@@ -43,6 +44,7 @@ namespace BallBattle.View
                 File.WriteAllText(outPath, r.MainCsv);
                 var weaponsPath = RoundRobin.WeaponPath(outPath);
                 File.WriteAllText(weaponsPath, r.WeaponCsv);
+                File.WriteAllText(RoundRobin.ArenaPath(outPath), r.ArenaCsv);
                 stdout.WriteLine($"[BallBattle] {r.Pairs.Count} pairs, {r.Pairs.Count * o.Seeds} matches in {(DateTime.UtcNow - started).TotalSeconds:0.0} s");
                 stdout.WriteLine($"[BallBattle] wrote {outPath}");
                 stdout.WriteLine($"[BallBattle] wrote {weaponsPath}");

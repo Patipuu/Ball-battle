@@ -152,6 +152,7 @@ namespace BallBattle.Sim
             for (var i = 0; i < n; i++)
                 for (var j = 0; j < n; j++)
                     h = SimHash.Mix(h, parryCooldown[i, j]);
+            for (var i = 0; i < n; i++) h = SimHash.Mix(h, spikeActiveTick[i]);
             return projectiles.HashInto(h);
         }
     }

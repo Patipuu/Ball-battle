@@ -14,8 +14,8 @@ namespace BallBattle.SimTests
     /// </summary>
     public class VersusGoldenTests
     {
-        /// <summary>Recomputed for SimVersion 4 with fixed trigonometry.</summary>
-        const ulong ExpectedDigest = 0xDA949C380918B81DUL;
+        /// <summary>Recomputed for SimVersion 7 (BB-6c: spike immunity + Fang/Brawler tuning). Was 0xDA949C380918B81DUL.</summary>
+        const ulong ExpectedDigest = 0x6EBF6B88AB6F72B3UL;
 
         /// <summary>The four Step 1 weapons only: later weapons have their own balance gate.</summary>
         static readonly string[] Step1Ids = { "blade", "fang", "pike", "brawler" };

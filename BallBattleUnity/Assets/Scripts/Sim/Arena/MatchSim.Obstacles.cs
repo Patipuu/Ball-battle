@@ -43,7 +43,8 @@ namespace BallBattle.Sim
         /// <summary>
         /// Clamp every ball inside the arena. A bounce (event + OnWall) counts only when the ball was moving into the wall, so a wall
         /// sliding onto a ball does not spam it. Spike walls: damage only when a wall it bounced off is touched inside a spike zone
-        /// (SpikeZones, from the current rect); a corner touching both spiked walls is one hit; at most one spike hit per ball per tick.
+        /// (SpikeZones, from the current rect); a corner touching both spiked walls is one hit; after a spike hit the ball is immune to
+        /// spikes for ArenaTuning.SpikeImmunityTicks active ticks (so also at most one per tick).
         /// </summary>
         void ResolveWalls()
         {
@@ -83,9 +84,9 @@ namespace BallBattle.Sim
                 if (!bounced || !Active(b)) continue;
                 if (b.Weapon.WallSpeedBoost > Fix.Zero) b.Vel = b.Vel * (Fix.One + b.Weapon.WallSpeedBoost);
                 var dealt = Fix.Zero;
-                if (wallDamage > Fix.Zero && spikeTick[b.Index] != Tick && HitsSpikeZone(arena, b.Pos, xWall, yWall))
+                if (wallDamage > Fix.Zero && !SpikeImmune(b.Index) && HitsSpikeZone(arena, b.Pos, xWall, yWall))
                 {
-                    spikeTick[b.Index] = Tick;
+                    spikeActiveTick[b.Index] = ActiveTick;
                     dealt = DealDamage(null, b, wallDamage, DamageKind.Hazard, false);
                 }
                 Emit(SimEventType.WallBounce, b.Index, -1, dealt, b.Pos);
@@ -94,8 +95,12 @@ namespace BallBattle.Sim
             ResolveDeaths();
         }
 
-        /// <summary>Tick of each ball's last spike hit (max one per ball per tick); -1 = none yet. Not part of the state hash.</summary>
-        int[] spikeTick;
+        /// <summary>ActiveTick of each ball's last spike hit; -1 = none yet. Part of the state hash (it carries over ticks).</summary>
+        int[] spikeActiveTick;
+
+        /// <summary>True while ball <paramref name="index"/> is within SpikeImmunityTicks active ticks of its last spike hit.</summary>
+        internal bool SpikeImmune(int index) =>
+            spikeActiveTick[index] >= 0 && ActiveTick - spikeActiveTick[index] < ArenaTuning.SpikeImmunityTicks;
 
         /// <summary>Contact points on the walls bounced off (ball centre projected on the wall) inside a spike zone?</summary>
         bool HitsSpikeZone(in ArenaRect arena, FixVec2 pos, ArenaWall? xWall, ArenaWall? yWall)

@@ -151,7 +151,7 @@ namespace BallBattle.Tests
         // ---- D. spike zones in the view ----
 
         [Test]
-        public void ZoneSegmentsAreOneFifthOfTheCurrentWalls()
+        public void ZoneSegmentsAreTheirFractionOfTheCurrentWalls()   // BB-6c: zone 1/5 -> SpikeZoneNum/SpikeZoneDen (3/20)
         {
             var config = ArenaRegistry.Create(ArenaRegistry.SpikeWalls);
             foreach (var tick in new[] { 0, config.ShrinkStartTick + config.ShrinkDurationTicks / 2, config.ShrinkStartTick + config.ShrinkDurationTicks })
@@ -162,7 +162,8 @@ namespace BallBattle.Tests
                 foreach (var z in zones)
                 {
                     var wall = z.Horizontal ? r.Width : r.Height;
-                    Assert.That(z.Length, Is.EqualTo((wall / 5).ToFloat()).Within(1e-3f), $"{z.Wall} at tick {tick}");
+                    Assert.That(z.Length, Is.EqualTo(SpikeZones.ZoneLength(wall).ToFloat()).Within(1e-3f), $"{z.Wall} at tick {tick}");
+                    Assert.That(z.Length, Is.EqualTo(wall.ToFloat() * ArenaTuning.SpikeZoneNum / ArenaTuning.SpikeZoneDen).Within(0.01f), $"{z.Wall} fraction at tick {tick}");
                 }
                 Assert.That(zones.Any(z => z.Wall == ArenaWall.Top && Mathf.Approximately(z.From, r.Left.ToFloat())), "TL on the top wall");
                 Assert.That(zones.Any(z => z.Wall == ArenaWall.Left && Mathf.Approximately(z.To, r.Top.ToFloat())), "TL on the left wall");

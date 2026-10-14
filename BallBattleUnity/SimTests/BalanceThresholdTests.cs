@@ -18,11 +18,11 @@ namespace BallBattle.SimTests
         public void PlayMatrix() => rows = MatchupReport.PlayAll(SeedsPerSide);
 
         [Test]
-        public void NonMirrorPairsWinBetween30And70Percent()
+        public void NonMirrorPairsWinBetween20And80Percent()
         {
-            // tạm, xét lại ở 6c
-            var bad = rows.Where(r => r.A != r.B && (r.WinPctA < 30f ||
-                r.WinPctA > (r.A == "fang" && r.B == "rig" ? 72f : 70f)))
+            // BB-6c: band = the 6c target "no weapon pair above 80% (both sides combined)"; replaces the
+            // temporary 30-70 band with its fang-vs-rig 72% exception.
+            var bad = rows.Where(r => r.A != r.B && (r.WinPctA < 20f || r.WinPctA > 80f))
                           .Select(r => $"{r.A} vs {r.B}: {r.WinPctA:0.0}%").ToList();
             Assert.That(bad, Is.Empty, MatchupReport.Table(rows));
         }

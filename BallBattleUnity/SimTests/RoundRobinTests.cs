@@ -148,7 +148,8 @@ namespace BallBattle.SimTests
             var path = Path.GetFullPath(o.Out);
             File.WriteAllText(path, r.MainCsv);
             File.WriteAllText(RoundRobin.WeaponPath(path), r.WeaponCsv);
-            TestContext.Progress.WriteLine($"wrote {path} and {RoundRobin.WeaponPath(path)}");
+            File.WriteAllText(RoundRobin.ArenaPath(path), r.ArenaCsv);
+            TestContext.Progress.WriteLine($"wrote {path}, {RoundRobin.WeaponPath(path)} and {RoundRobin.ArenaPath(path)}");
             TestContext.Progress.Write(r.WeaponCsv);
         }
     }

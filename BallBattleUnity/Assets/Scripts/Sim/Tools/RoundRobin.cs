@@ -20,6 +20,8 @@ namespace BallBattle.Sim.Tools
         /// shrink start), added by BB-FONT1 after the existing tick columns. Output only: no match result changes.</summary>
         public const string MainHeader = "arena,weaponA,weaponB,matches,winsA,winsB,draws,winRateA,avgTicks,medianTicks,maxTicks,avgActiveTicks,medianActiveTicks,maxActiveTicks";
         public const string WeaponHeader = "weapon,matches,wins,draws,winRate,avgTicks,avgActiveTicks,medianActiveTicks,maxActiveTicks";
+        /// <summary>Per-arena summary (BB-6c): every match on the arena, mirrors included; winsA/winsB = spawn side.</summary>
+        public const string ArenaHeader = "arena,matches,winsA,winsB,draws,avgActiveTicks,medianActiveTicks,maxActiveTicks";
 
         public sealed class Options
         {
@@ -29,6 +31,8 @@ namespace BallBattle.Sim.Tools
             public string Out = "results.csv";
             /// <summary>Stop a match after this many ticks and count it as a draw; 0 = no extra limit (the match's own time cap decides).</summary>
             public int MaxTicks;
+            /// <summary>Match i of a pair uses seed index i + SeedOffset (BB-6c holdout runs: a disjoint seed set). Default 0.</summary>
+            public int SeedOffset;
         }
 
         public sealed class PairResult
@@ -45,10 +49,10 @@ namespace BallBattle.Sim.Tools
         public sealed class Result
         {
             public readonly List<PairResult> Pairs = new List<PairResult>();
-            public string MainCsv, WeaponCsv;
+            public string MainCsv, WeaponCsv, ArenaCsv;
         }
 
-        /// <summary>Parses "-seeds N -arena id|all -out path -maxTicks N" (any order; other arguments are ignored). Throws ArgumentException on bad values.</summary>
+        /// <summary>Parses "-seeds N -arena id|all -out path -maxTicks N -seedOffset N" (any order; other arguments are ignored). Throws ArgumentException on bad values.</summary>
         public static Options Parse(IReadOnlyList<string> args)
         {
             var o = new Options();
@@ -65,6 +69,7 @@ namespace BallBattle.Sim.Tools
                     case "-arena": o.Arena = Next(); break;
                     case "-out": o.Out = Next(); break;
                     case "-maxTicks": o.MaxTicks = PositiveInt(Next(), "-maxTicks"); break;
+                    case "-seedOffset": o.SeedOffset = NonNegativeInt(Next(), "-seedOffset"); break;
                 }
             }
             if (o.Arena != "all") ArenaRegistry.Get(o.Arena);   // throws for an unknown id
@@ -77,6 +82,23 @@ namespace BallBattle.Sim.Tools
             if (!int.TryParse(s, NumberStyles.None, CultureInfo.InvariantCulture, out var v) || v <= 0)
                 throw new ArgumentException($"{name} must be a positive integer, got '{s}'");
             return v;
+        }
+
+        static int NonNegativeInt(string s, string name)
+        {
+            if (!int.TryParse(s, NumberStyles.None, CultureInfo.InvariantCulture, out var v) || v < 0)
+                throw new ArgumentException($"{name} must be a non-negative integer, got '{s}'");
+            return v;
+        }
+
+        /// <summary>The per-arena file next to the main one: results.csv → results-arenas.csv.</summary>
+        public static string ArenaPath(string mainPath) => Suffixed(mainPath, "-arenas");
+
+        static string Suffixed(string mainPath, string suffix)
+        {
+            var dot = mainPath.LastIndexOf('.');
+            var slash = Math2.Max(mainPath.LastIndexOf('/'), mainPath.LastIndexOf('\\'));
+            return dot > slash ? mainPath.Substring(0, dot) + suffix + mainPath.Substring(dot) : mainPath + suffix;
         }
 
         /// <summary>The per-weapon file next to the main one: results.csv → results-weapons.csv.</summary>
@@ -142,7 +164,7 @@ namespace BallBattle.Sim.Tools
                 var active = new int[o.Seeds];
                 for (var i = 0; i < o.Seeds; i++)
                 {
-                    var (winner, t, at) = PlayDetailed(p.Arena, p.WeaponA, p.WeaponB, Seed(p.WeaponA, p.WeaponB, i), o.MaxTicks);
+                    var (winner, t, at) = PlayDetailed(p.Arena, p.WeaponA, p.WeaponB, Seed(p.WeaponA, p.WeaponB, i + o.SeedOffset), o.MaxTicks);
                     if (winner == 0) p.WinsA++;
                     else if (winner == 1) p.WinsB++;
                     else p.Draws++;
@@ -169,7 +191,33 @@ namespace BallBattle.Sim.Tools
             r.Pairs.AddRange(jobs);
             r.MainCsv = MainCsv(jobs);
             r.WeaponCsv = WeaponCsv(jobs, weapons);
+            r.ArenaCsv = ArenaCsv(jobs, arenas);
             return r;
+        }
+
+        /// <summary>Per arena over every pair (mirrors included): matches, wins by spawn side, draws, ActiveTick avg / median / max.</summary>
+        static string ArenaCsv(List<PairResult> pairs, List<string> arenas)
+        {
+            var sb = new StringBuilder(ArenaHeader).Append('\n');
+            foreach (var arena in arenas)
+            {
+                long matches = 0, winsA = 0, winsB = 0, draws = 0, active = 0;
+                var maxActive = 0;
+                var all = new List<int>();
+                foreach (var p in pairs)
+                {
+                    if (p.Arena != arena) continue;
+                    matches += p.Matches; winsA += p.WinsA; winsB += p.WinsB; draws += p.Draws; active += p.TotalActiveTicks;
+                    if (p.MaxActiveTicks > maxActive) maxActive = p.MaxActiveTicks;
+                    all.AddRange(p.ActiveTicksSorted);
+                }
+                var sorted = all.ToArray();
+                Array.Sort(sorted);
+                sb.Append(arena).Append(',').Append(L(matches)).Append(',').Append(L(winsA)).Append(',').Append(L(winsB)).Append(',')
+                  .Append(L(draws)).Append(',').Append(Decimal(active, matches, 1)).Append(',').Append(Decimal(Median2(sorted), 2, 1)).Append(',')
+                  .Append(I(maxActive)).Append('\n');
+            }
+            return sb.ToString();
         }
 
         static string MainCsv(List<PairResult> pairs)

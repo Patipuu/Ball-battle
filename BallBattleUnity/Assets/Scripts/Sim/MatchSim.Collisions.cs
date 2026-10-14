@@ -70,7 +70,7 @@ namespace BallBattle.Sim
             b.SpinDir = -b.SpinDir;
             parryCooldown[a.Index, b.Index] = Config.ParryCooldownTicks;
             parryCooldown[b.Index, a.Index] = Config.ParryCooldownTicks;
-            if (Config.ParryHitstopTicks > HitstopRemaining) HitstopRemaining = Config.ParryHitstopTicks;
+            ExtendHitstop(Config.ParryHitstopTicks);
 
             // Push the balls apart so the blades do not stay locked together.
             var normal = (b.Pos - a.Pos).NormalizedOr(FallbackNormal);
@@ -129,11 +129,17 @@ namespace BallBattle.Sim
         /// Cooldown, hitstop and knockback happen either way. A shield-blocked hit deals no damage, does not
         /// count for the weapon's growth (no OnHit) and emits ShieldBlocked instead of Hit. Hit hooks run later.
         /// </summary>
+        /// <summary>Hit-stop of at least <paramref name="ticks"/> from now (never shortens one in progress). Hits, parries and tests.</summary>
+        internal void ExtendHitstop(int ticks)
+        {
+            if (ticks > HitstopRemaining) HitstopRemaining = ticks;
+        }
+
         void ApplyHit(BallState attacker, BallState target, Fix damage, bool blocked, in HitContext ctx, FixVec2 contact)
         {
             var cooldown = attacker.Weapon.HitCooldownTicks >= 0 ? attacker.Weapon.HitCooldownTicks : Config.HitCooldownTicks;
             attacker.HitCooldown[target.Index] = cooldown;
-            if (Config.HitHitstopTicks > HitstopRemaining) HitstopRemaining = Config.HitHitstopTicks;
+            ExtendHitstop(Config.HitHitstopTicks);
 
             // Push away from the contact point (a long blade tip pushes along the swing, not center-to-center).
             var centerDir = (target.Pos - attacker.Pos).NormalizedOr(FallbackNormal);

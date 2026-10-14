@@ -27,7 +27,7 @@ namespace BallBattle.Sim.Traits
         public static readonly Fix[] SecondWindHeal = { 20, 28 };
 
         // Glass Cannon: damage dealt up, max HP down (never below the floor).
-        public static readonly Fix[] GlassCannonDamageMul = { Fix.Ratio(3, 2), Fix.Ratio(19, 10) };
+        public static readonly Fix[] GlassCannonDamageMul = { Fix.Ratio(31, 20), Fix.Ratio(19, 10) };   // BB-6c: L1 1.5 -> 1.55
         public static readonly Fix[] GlassCannonHpLoss = { 25, 35 };
         public static readonly Fix GlassCannonMinHp = 20;
 
