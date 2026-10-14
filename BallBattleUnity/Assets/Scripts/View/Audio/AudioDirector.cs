@@ -106,12 +106,30 @@ namespace BallBattle.View
 
         // ---------------- cues ----------------
 
-        /// <summary>A match cue for Sim tick <paramref name="tick"/> (deduped per tick, max 3 hit cues per tick).</summary>
-        public bool RequestCue(string id, int tick, float volume = 0.8f, float pitch = 1f) =>
-            simGate.Allow(id, tick) && PlayNow(id, volume, pitch);
+        /// <summary>A match cue for Sim tick <paramref name="tick"/> (deduped per tick, max 3 hit cues per tick).
+        /// <paramref name="maxPitch"/> caps the pitch after the random jitter.</summary>
+        public bool RequestCue(string id, int tick, float volume = 0.8f, float pitch = 1f, float maxPitch = float.PositiveInfinity) =>
+            simGate.Allow(id, tick) && PlayNow(id, volume, pitch, maxPitch);
 
-        /// <summary>Hit of <paramref name="weaponId"/> on Sim tick <paramref name="tick"/>.</summary>
-        public bool RequestHit(string weaponId, int tick, float volume = 0.6f) => RequestCue(HitCueFor(weaponId), tick, volume);
+        /// <summary>Hit of <paramref name="weaponId"/> on Sim tick <paramref name="tick"/>; <paramref name="heat"/> (0..1) raises the
+        /// pitch of the weapon's own clip by up to AudioIds.HeatPitchCapFor (jitter included, never above the cap).</summary>
+        public bool RequestHit(string weaponId, int tick, float volume = 0.6f, float heat = 0f) =>
+            RequestCue(HitCueFor(weaponId), tick, volume, AudioIds.HeatPitch(weaponId, heat), 1f + AudioIds.HeatPitchCapFor(weaponId));
+
+        /// <summary>Heat (0..1) of the ball that owns a Hit / ProjectileHit (same ball as <see cref="HitCueFor(SimEvent, MatchSim, Func{string, bool})"/>),
+        /// from its weapon stat as the blade tint uses it (Palette.Heat). 0 when unknown.</summary>
+        public static float HeatOf(SimEvent e, MatchSim sim)
+        {
+            if (sim == null || e.A < 0 || e.A >= sim.Balls.Count) return 0f;
+            var w = sim.Balls[e.A].Weapon;
+            return Palette.Heat(w.Id, w.StatValue.ToFloat());
+        }
+
+        void RequestHitEvent(SimEvent e, MatchSim sim, float volume)
+        {
+            var weaponId = sim != null && e.A >= 0 && e.A < sim.Balls.Count ? sim.Balls[e.A].Weapon.Id : null;
+            RequestCue(HitCueFor(e, sim, Has), e.Tick, volume, AudioIds.HeatPitch(weaponId, HeatOf(e, sim)), 1f + AudioIds.HeatPitchCapFor(weaponId));
+        }
 
         /// <summary>A UI / flow cue (deduped per frame).</summary>
         public bool RequestUiCue(string id, float volume = 0.7f)
@@ -123,9 +141,10 @@ namespace BallBattle.View
 
         void OnUiRequested(string id) => RequestUiCue(id);
 
-        bool PlayNow(string id, float volume, float pitch)
+        bool PlayNow(string id, float volume, float pitch, float maxPitch = float.PositiveInfinity)
         {
             if (AudioIds.Jittered(id)) pitch *= 1f + PitchJitter * (float)(rng.NextDouble() * 2.0 - 1.0);
+            if (pitch > maxPitch) pitch = maxPitch;
             var now = Clock();
             var v = volume * VolumeCurve.Linear(SfxVolume);
             if (Played.Count >= PlayedCap) Played.RemoveRange(0, Played.Count - PlayedCap + 1);   // drop the oldest
@@ -149,10 +168,10 @@ namespace BallBattle.View
             switch (e.Type)
             {
                 case SimEventType.Hit:
-                    RequestCue(HitCueFor(e, sim, Has), e.Tick, 0.6f);
+                    RequestHitEvent(e, sim, 0.6f);
                     break;
                 case SimEventType.ProjectileHit:
-                    if (e.Value.ToFloat() > 0f) RequestCue(HitCueFor(e, sim, Has), e.Tick, 0.35f);
+                    if (e.Value.ToFloat() > 0f) RequestHitEvent(e, sim, 0.35f);
                     break;
                 case SimEventType.Parry:
                     RequestCue(AudioIds.Parry, e.Tick, 0.6f);
@@ -201,10 +220,16 @@ namespace BallBattle.View
 
         /// <summary>
         /// Arena match over. <paramref name="playerBall"/> = the marked ball (Run: 0) or -1 (Versus): with a player the cue is
-        /// fight_win / fight_lose from their side; in Versus a decided round is fight_win, a draw fight_lose. Plays after the KO slow-mo.
+        /// fight_win / fight_lose from their side; in Versus a decided round is fight_win and a draw plays no cue at all (the
+        /// result screen's music_result is the only sound). Plays after the KO slow-mo.
         /// </summary>
         public void OnMatchEnded(int winner, int playerBall)
         {
+            if (playerBall < 0 && winner < 0)
+            {
+                pendingResult = null;   // Versus draw: neither win nor lose
+                return;
+            }
             pendingResult = (playerBall >= 0 ? winner == playerBall : winner >= 0) ? AudioIds.FightWin : AudioIds.FightLose;
             pendingResultAt = Clock() + ResultCueDelay;
         }

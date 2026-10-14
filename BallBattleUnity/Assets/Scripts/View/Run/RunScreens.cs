@@ -9,6 +9,8 @@ namespace BallBattle.View
     {
         public const int Order = 60;
         public static readonly Color32 Panel = new Color32(24, 24, 38, 255);
+        /// <summary>Text scale of every BACK button (Settings, Versus pick, Run title): 2 = 10 px tall, readable.</summary>
+        public const int BackTextScale = 2;
 
         public static Transform Root(Transform parent, string name, ArtLibrary art, bool background = true)
         {

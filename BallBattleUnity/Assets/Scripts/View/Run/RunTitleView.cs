@@ -35,7 +35,8 @@ namespace BallBattle.View
             v.goal = NextGoalBox.Create(root, art, 8, 96, RunUi.Order);
             v.continueButton = RunUi.Button(root, art, ContinueArea, "CONTINUE", 2, Palette.WallWarning, () => { if (!v.DialogOpen) v.ContinueRequested?.Invoke(); });
             RunUi.Button(root, art, NewRunArea, "NEW RUN", 2, Palette.Text, () => { if (!v.DialogOpen) v.OnNewRun(); });
-            RunUi.Button(root, art, BackArea, RunStrings.Back, 1, Palette.TextDim, () => { if (!v.DialogOpen) v.BackRequested?.Invoke(); }).ClickCue = AudioIds.UiBack;
+            v.BackButton = RunUi.Button(root, art, BackArea, RunStrings.Back, RunUi.BackTextScale, Palette.TextDim, () => { if (!v.DialogOpen) v.BackRequested?.Invoke(); });
+            v.BackButton.ClickCue = AudioIds.UiBack;
 
             var bandTop = NextGoalBox.LocalTop(FooterTop);
             var bandLeft = NextGoalBox.LocalX(8);
@@ -63,6 +64,8 @@ namespace BallBattle.View
         }
 
         public NextGoalBox Goal => goal;
+        /// <summary>The BACK button (tests).</summary>
+        public PixelButton BackButton { get; private set; }
 
         /// <summary>
         /// "BEST FIGHT b/8   WINS w/p": runs won (ended by beating the last boss) out of runs played (as counted today:

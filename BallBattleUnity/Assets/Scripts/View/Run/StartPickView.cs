@@ -9,7 +9,10 @@ namespace BallBattle.View
     {
         public event Action<int> CardPicked;
         ArtLibrary art;
-        PixelText title1, title2, nextFight, weapon;
+        PixelText title1, title2, nextFight, weapon, noReroll;
+
+        /// <summary>Footer hint "NO REROLL ON START PICK" (tests).</summary>
+        public PixelText NoRerollText => noReroll;
         SpriteRenderer weaponIcon;
         readonly PixelButton[] cards = new PixelButton[RunTuning.OfferSize];
         readonly SpriteRenderer[] frames = new SpriteRenderer[RunTuning.OfferSize];
@@ -62,7 +65,7 @@ namespace BallBattle.View
                 PixelText.Create(card, "TapToPick", art.Font, new Vector2(35, area.yMin + 7), PixelText.Align.Left, 1, order).Set("TAP TO PICK", Palette.TextDim);
             }
             PixelRect.Set(PixelRect.Create(root, "FooterBand", art.Pixel, RunUi.Panel, RunUi.Order + 2), -127, -122, 127, -99);
-            RunUi.Text(root, art, -119, -107, 1, PixelText.Align.Left, "NO COINS  NO REROLL", Palette.TextDim);
+            view.noReroll = RunUi.Text(root, art, -119, -107, 1, PixelText.Align.Left, RunStrings.StartPickNoReroll, Palette.TextDim);
             view.nextFight = RunUi.Text(root, art, -119, -116, 1, PixelText.Align.Left, "YOUR FIRST FIGHT STARTS AFTER THIS", Palette.TextDim);
             view.Hide();
             return view;

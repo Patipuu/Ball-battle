@@ -18,6 +18,9 @@ namespace BallBattle.View
         public static readonly Color32 HpBack = new Color32(48, 40, 56, 255);
         public static readonly Color32 HpLost = new Color32(120, 40, 48, 255);
         public static readonly Color32 Hot = new Color32(255, 70, 50, 255);
+        /// <summary>Primary button fill #F4C542 with dark text (Settings BACK).</summary>
+        public static readonly Color32 PrimaryFill = new Color32(0xF4, 0xC5, 0x42, 255);
+        public static readonly Color32 PrimaryText = new Color32(30, 30, 46, 255);
 
         public static readonly Color32 Metal = new Color32(200, 205, 220, 255);
         public static readonly Color32 MetalDark = new Color32(120, 126, 150, 255);

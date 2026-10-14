@@ -356,7 +356,7 @@ namespace BallBattle.Tests
             AssertAllTextOnScreen(v.transform);
 
             var names = new List<string>();
-            foreach (var a in run.Achievements) names.AddRange(UnlockRules.UnlockedNames(a));
+            foreach (var a in run.Achievements) names.AddRange(RunStrings.UnlockedNames(a));
             var lines = RunSummaryView.UnlockText(names);
             Assert.That(lines.Count, Is.InRange(1, RunSummaryView.UnlockLines));
             var joined = string.Join(" ", lines);

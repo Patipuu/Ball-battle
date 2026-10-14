@@ -52,6 +52,8 @@ namespace BallBattle.View
 
         /// <summary>One-time "OLD RUN ENDED BY UPDATE" panel: box (8,200) 254x64, OK button 80x22.</summary>
         public static readonly Rect NoticeOkArea = new Rect(-40, 240 - 200 - 52, 80, 22);
+        /// <summary>Sorting base of the notice: above everything on the hub (which tops out at Order + 5).</summary>
+        public const int NoticeOrder = Order + 10;
 
         /// <summary>Arena picked for Versus (ArenaRegistry id).</summary>
         public string ArenaId => ArenaRegistry.All[arenaIndex].Id;
@@ -154,8 +156,9 @@ namespace BallBattle.View
             start.Clicked += () => StartRequested?.Invoke(selected[0], selected[1]);
             StartButton = start;
 
-            var backBtn = PixelButton.Create(p, "Back", art, VersusBackArea, RunStrings.Back, 1, Palette.Floor, Palette.TextDim, Palette.TextDim, Order + 2);
+            var backBtn = PixelButton.Create(p, "Back", art, VersusBackArea, RunStrings.Back, RunUi.BackTextScale, Palette.Floor, Palette.TextDim, Palette.TextDim, Order + 2);
             backBtn.ClickCue = AudioIds.UiBack;
+            VersusBackButton = backBtn;
             backBtn.Clicked += ShowHub;
             Refresh();
         }
@@ -253,6 +256,7 @@ namespace BallBattle.View
         {
             CloseSettings();
             noticePage.gameObject.SetActive(false);
+            SetHubInput(true);
             versusPage.gameObject.SetActive(false);
             hub.gameObject.SetActive(true);
             PixelButton.NoteShownAll(hub);
@@ -262,6 +266,7 @@ namespace BallBattle.View
         {
             CloseSettings();
             noticePage.gameObject.SetActive(false);
+            SetHubInput(true);
             hub.gameObject.SetActive(false);
             versusPage.gameObject.SetActive(true);
             PixelButton.NoteShownAll(versusPage);
@@ -295,26 +300,43 @@ namespace BallBattle.View
             noticePage = go.transform;
             var left = NextGoalBox.LocalX(8);
             var top = NextGoalBox.LocalTop(200);
-            PixelRect.Set(PixelRect.Create(noticePage, "NoticeBorder", art.Pixel, Palette.WallWarning, Order + 1), left, top - 64, left + NextGoalBox.Width, top);
-            PixelRect.Set(PixelRect.Create(noticePage, "NoticeFill", art.Pixel, RunUi.Panel, Order + 2), left + 1, top - 63, left + NextGoalBox.Width - 1, top - 1);
-            var text = PixelText.Create(noticePage, "NoticeText", art.Font, new Vector2(0, top - 10 - 2 * PixelFontData.GlyphHeight), PixelText.Align.Center, 2, Order + 4);
+            PixelRect.Set(PixelRect.Create(noticePage, "NoticeBorder", art.Pixel, Palette.WallWarning, NoticeOrder + 1), left, top - 64, left + NextGoalBox.Width, top);
+            PixelRect.Set(PixelRect.Create(noticePage, "NoticeFill", art.Pixel, RunUi.Panel, NoticeOrder + 2), left + 1, top - 63, left + NextGoalBox.Width - 1, top - 1);
+            var text = PixelText.Create(noticePage, "NoticeText", art.Font, new Vector2(0, top - 10 - 2 * PixelFontData.GlyphHeight), PixelText.Align.Center, 2, NoticeOrder + 4);
             text.Set(RunStrings.OldRunEnded, Palette.Text);
-            var ok = PixelButton.Create(noticePage, "NoticeOk", art, NoticeOkArea, RunStrings.Ok, 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 3);
+            var ok = PixelButton.Create(noticePage, "NoticeOk", art, NoticeOkArea, RunStrings.Ok, 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, NoticeOrder + 3);
             ok.Clicked += PressNoticeOk;
             NoticeOkButton = ok;
             go.SetActive(false);
         }
 
-        /// <summary>Shows the notice over everything else of the menu; OK closes it, returns to the hub and calls <paramref name="onOk"/>.</summary>
+        /// <summary>
+        /// Shows the notice over the hub: the hub stays drawn as usual behind it (sorted below NoticeOrder) but its buttons
+        /// take no input until OK. OK closes it, returns to the hub and calls <paramref name="onOk"/>.
+        /// </summary>
         public void ShowOldRunNotice(Action onOk)
         {
             noticeOk = onOk;
             CloseSettings();
-            hub.gameObject.SetActive(false);
             versusPage.gameObject.SetActive(false);
+            hub.gameObject.SetActive(true);
+            SetHubInput(false);
             noticePage.gameObject.SetActive(true);
             PixelButton.NoteShownAll(noticePage);
         }
+
+        /// <summary>Hub buttons react to taps (true) or not (false, while the notice covers the hub). Drawing is unaffected.</summary>
+        void SetHubInput(bool on)
+        {
+            foreach (var b in hub.GetComponentsInChildren<PixelButton>(true)) b.enabled = on;
+        }
+
+        /// <summary>True when the hub page is drawn (tests).</summary>
+        public bool HubVisible => hub.gameObject.activeInHierarchy;
+        /// <summary>The notice page (tests).</summary>
+        public Transform NoticePage => noticePage;
+        /// <summary>The hub page (tests).</summary>
+        public Transform Hub => hub;
 
         public void PressNoticeOk()
         {
@@ -337,6 +359,7 @@ namespace BallBattle.View
         public PixelButton Tile(int side, string weaponId) => tiles[side][Array.IndexOf(ids, weaponId)];
 
         public PixelButton StartButton { get; private set; }
+        public PixelButton VersusBackButton { get; private set; }
         public PixelButton RunButton => runButton;
         public PixelButton VersusButton { get; private set; }
         public NextGoalBox Goal => goal;

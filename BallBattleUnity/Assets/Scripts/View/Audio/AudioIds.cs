@@ -33,6 +33,7 @@ namespace BallBattle.View
         public static readonly string[] Cues =
         {
             UiClick, UiBack, CardPick, CardReroll, UiDenied, FightStart, FightWin, FightLose, RetryBanner, Unlock, RunWin, RunOver, SecondWind,
+            SpikeHit,   // BB-FIX1b: Assets/Audio/spike_hit.wav (a missing file is skipped by the linker with a warning)
             "hit_blade", "hit_fang", "hit_pike", "hit_brawler", "hit_volley", "hit_venom", "hit_aegis", "hit_rig",
         };
 
@@ -43,6 +44,17 @@ namespace BallBattle.View
             var id = HitPrefix + weaponId;
             return hasClip != null && hasClip(id) ? id : Hit;
         }
+
+        /// <summary>Most a hit cue's pitch rises with the attacker's heat (+12%).</summary>
+        public const float HeatPitchCap = 0.12f;
+        /// <summary>Lower cap for the rapid-fire weapons (SPARKLER = volley, HIVE = rig): +8%.</summary>
+        public const float HeatPitchCapRapid = 0.08f;
+
+        /// <summary>Heat pitch cap of a weapon: +8% for volley and rig, +12% for every other weapon.</summary>
+        public static float HeatPitchCapFor(string weaponId) => weaponId == "volley" || weaponId == "rig" ? HeatPitchCapRapid : HeatPitchCap;
+
+        /// <summary>Pitch of a hit cue from the attacker's heat (0 = cold .. 1 = hot, clamped): 1 + cap * heat.</summary>
+        public static float HeatPitch(string weaponId, float heat) => 1f + HeatPitchCapFor(weaponId) * Math.Max(0f, Math.Min(1f, heat));
 
         public static bool IsHit(string id) => id == Hit || (id != null && id.StartsWith(HitPrefix, StringComparison.Ordinal));
 

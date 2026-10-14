@@ -69,6 +69,9 @@ namespace BallBattle.View
         public Color32 FillColor => fillColor;
         public Color32 BorderColor => borderColor;
         public string LabelText => label != null ? label.Text : string.Empty;
+        /// <summary>Label scale (0 without a label) and color (tests).</summary>
+        public int LabelScale => label != null ? label.TextScale : 0;
+        public Color32 LabelColor => label != null ? label.TextColor : default;
 
         public bool Contains(Vector2 nativePoint) => Area.Contains(nativePoint);
 

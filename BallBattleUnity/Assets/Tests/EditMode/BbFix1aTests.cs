@@ -82,7 +82,7 @@ namespace BallBattle.Tests
             menu.ShowOldRunNotice(() => OldRunNotice.Dismiss(store));
             Assert.That(menu.NoticeOpen, Is.True);
             Assert.That(menu.GetComponentsInChildren<PixelText>(false).Select(t => t.Text), Does.Contain(RunStrings.OldRunEnded));
-            Bb0102Tests.AssertTextFitsAndNoOverlap(menu.transform);
+            Bb0102Tests.AssertTextFitsAndNoOverlap(menu.NoticePage);   // BB-FIX1b: the hub stays drawn under the notice box on purpose
 
             menu.NoticeOkButton.SimulateClick();
             Assert.That(menu.NoticeOpen, Is.False);
@@ -198,10 +198,14 @@ namespace BallBattle.Tests
             Assert.That(AudioDirector.WallBounceCue(3f, id => id == AudioIds.SpikeHit), Is.EqualTo(AudioIds.SpikeHit));
             Assert.That(AudioDirector.WallBounceCue(3f, id => false), Is.EqualTo(AudioIds.Wall), "no clip: plain wall");
             Assert.That(AudioDirector.WallBounceCue(0f, id => true), Is.EqualTo(AudioIds.Wall), "harmless bounce");
-            Assert.That(lib.Has(AudioIds.SpikeHit), Is.False, "no spike_hit clip added");
+            // BB-FIX1b linked spike_hit.wav: with the library a spike bounce plays spike_hit only; without the clip, wall only.
+            Assert.That(lib.Has(AudioIds.SpikeHit), Is.True, "spike_hit clip linked (BB-FIX1b)");
             var d = AudioDirector.Create(root.transform, lib, new MemorySaveStore());
             d.OnSimEvent(new SimEvent { Type = SimEventType.WallBounce, Tick = 4, A = 0, B = -1, Value = TFix.X(3f) }, null);
-            Assert.That(d.Played.Select(p => p.Id), Is.EqualTo(new[] { AudioIds.Wall }), "one cue, never both");
+            Assert.That(d.Played.Select(p => p.Id), Is.EqualTo(new[] { AudioIds.SpikeHit }), "one cue, never both");
+            var noClip = AudioDirector.Create(root.transform, null, new MemorySaveStore());
+            noClip.OnSimEvent(new SimEvent { Type = SimEventType.WallBounce, Tick = 4, A = 0, B = -1, Value = TFix.X(3f) }, null);
+            Assert.That(noClip.Played.Select(p => p.Id), Is.EqualTo(new[] { AudioIds.Wall }), "no clip: wall, one cue, never both");
         }
     }
 }

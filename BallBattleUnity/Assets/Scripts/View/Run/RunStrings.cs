@@ -41,26 +41,34 @@ namespace BallBattle.View
         public static string RulesSummary =>
             $"{RunTuning.Fights} FIGHTS  {RunTuning.BossFights.Length} {(RunTuning.BossFights.Length == 1 ? "BOSS" : "BOSSES")}  {RunTuning.Retries} {(RunTuning.Retries == 1 ? "RETRY" : "RETRIES")}";
 
-        /// <summary>"BOSS AT FIGHT 4 AND 8"; three or more: "BOSS AT FIGHT 4  6 AND 8".</summary>
-        public static string BossAt
+        /// <summary>Boss line from RunTuning.BossFights in the current language (see <see cref="BossAtFor"/>).</summary>
+        public static string BossAt => BossAtFor(RunTuning.BossFights, StringTable.Current);
+
+        /// <summary>
+        /// Boss line built from a boss fight list (0-based fight indices, shown 1-based). One boss: "BOSS AT FIGHT 4";
+        /// two: "BOSS AT FIGHTS 4 AND 8"; three or more: "BOSS AT FIGHTS 4  6  8" (two spaces, no AND, never "/").
+        /// VI: "BOSS Ở TRẬN 4", "BOSS Ở TRẬN 4 VÀ 8", "BOSS Ở TRẬN 4  6  8". Empty list: "".
+        /// </summary>
+        public static string BossAtFor(IReadOnlyList<int> bossFights, Lang lang)
         {
-            get
-            {
-                var b = RunTuning.BossFights;
-                var s = "BOSS AT FIGHT ";
-                for (var i = 0; i < b.Length; i++)
-                {
-                    if (i > 0) s += i == b.Length - 1 ? " AND " : ListSep;
-                    s += (b[i] + 1).ToString();
-                }
-                return s;
-            }
+            if (bossFights == null || bossFights.Count == 0) return "";
+            if (bossFights.Count == 1) return StringTable.Format(StringKeys.BossAtOne, lang, bossFights[0] + 1);
+            if (bossFights.Count == 2) return StringTable.Format(StringKeys.BossAtTwo, lang, bossFights[0] + 1, bossFights[1] + 1);
+            var numbers = "";
+            for (var i = 0; i < bossFights.Count; i++) numbers += (i > 0 ? ListSep : "") + (bossFights[i] + 1);
+            return StringTable.Format(StringKeys.BossAtMany, lang, numbers);
         }
 
         public static int RetryHealPercent => Mathf.RoundToInt(RunTuning.RetryHealPct.ToFloat() * 100f);
 
-        /// <summary>"LOSE ONCE: FREE PICK  RETRY AT 60% HP".</summary>
-        public static string LoseOnce => $"LOSE ONCE: FREE PICK{ListSep}RETRY AT {RetryHealPercent}% HP";
+        /// <summary>"LOSE ONCE: FREE PICK  RETRY AT 60% HP" in the current language.</summary>
+        public static string LoseOnce => LoseOnceIn(StringTable.Current);
+
+        /// <summary>EN "LOSE ONCE: FREE PICK  RETRY AT 60% HP"; VI "THUA LẦN 1: CHỌN THẺ MIỄN PHÍ  ĐẤU LẠI VỚI 60% HP".</summary>
+        public static string LoseOnceIn(Lang lang) => StringTable.Format(StringKeys.LoseOnce, lang, RetryHealPercent);
+
+        /// <summary>Start pick footer: "NO REROLL ON START PICK".</summary>
+        public static string StartPickNoReroll => StringTable.Get(StringKeys.StartPickNoReroll);
 
         public static string LoseAgain => RunTuning.Retries == 1 ? "LOSE AGAIN: RUN OVER" : "OUT OF RETRIES: RUN OVER";
 
@@ -75,8 +83,8 @@ namespace BallBattle.View
                 case UnlockRules.Boss1: return "BEAT SHELL KING";
                 case UnlockRules.Win1: return "WIN A RUN";
                 case UnlockRules.Win3:
-                    var row = UnlockRules.GoalRowOf(goalId);
-                    return $"WIN {(row != null ? row.Max : 3)} RUNS";
+                    var row = UnlockRules.GoalRowOf(goalId);   // the run count is the row's Max (GoalTable), never typed here
+                    return row != null ? $"WIN {row.Max} RUNS" : goalId.ToUpperInvariant();
                 default: return (goalId ?? "").ToUpperInvariant();
             }
         }
@@ -94,6 +102,20 @@ namespace BallBattle.View
             foreach (var w in WeaponRegistry.All)
                 if (w.Id == id) return WeaponNames.Of(id);
             return TraitRegistry.Exists(id) ? TraitRegistry.Get(id).DisplayName : (id ?? "").ToUpperInvariant();
+        }
+
+        /// <summary>
+        /// On-screen names of what an achievement unlocks, in table order (weapons, then traits): the current ball names
+        /// (WeaponNames: EMBER, MANTIS, ... HIVE), not the sim registry names. View-side replacement for
+        /// UnlockRules.UnlockedNames, which reads WeaponRegistry.DisplayName (Sim stays untouched).
+        /// </summary>
+        public static List<string> UnlockedNames(string achievement)
+        {
+            var names = new List<string>();
+            if (string.IsNullOrEmpty(achievement)) return names;
+            var row = new GoalRow(achievement, new[] { achievement }, new[] { achievement }, GoalProgress.RunsWon, 1);
+            foreach (var id in UnlockRules.NewRewards(row, new ProgressData())) names.Add(RewardName(id));
+            return names;
         }
 
         /// <summary>"UNLOCKS: A  B +N": at most two names, the rest counted. Empty when there is nothing to unlock.</summary>

@@ -28,6 +28,9 @@ namespace BallBattle.View
 
         Slider musicSlider, sfxSlider;
 
+        /// <summary>The BACK button (tests).</summary>
+        public PixelButton BackButton { get; private set; }
+
         /// <summary>Screen rect (top-left origin, y down) to the menu's local space (centre origin, y up).</summary>
         public static Rect ScreenRect(float x, float y, float w, float h) =>
             new Rect(x - TextWrap.ScreenWidth / 2f, TextWrap.ScreenHeight / 2f - y - h, w, h);
@@ -55,8 +58,10 @@ namespace BallBattle.View
             LanguageBox(art, EnArea, RunStrings.En, true, order);
             LanguageBox(art, ViArea, RunStrings.Vi, false, order);
 
-            var back = PixelButton.Create(transform, "Back", art, BackArea, RunStrings.Back, 1, Palette.Floor, Palette.TextDim, Palette.TextDim, order + 2);
+            // Primary button: #F4C542 fill, dark text, the shared BACK text size.
+            var back = PixelButton.Create(transform, "Back", art, BackArea, RunStrings.Back, RunUi.BackTextScale, Palette.PrimaryFill, Palette.PrimaryFill, Palette.PrimaryText, order + 2);
             back.ClickCue = AudioIds.UiBack;
+            BackButton = back;
             back.Clicked += () => BackRequested?.Invoke();
         }
 

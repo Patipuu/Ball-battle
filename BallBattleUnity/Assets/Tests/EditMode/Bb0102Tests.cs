@@ -95,7 +95,7 @@ namespace BallBattle.Tests
         public void RulesLinesComeFromRunTuning()
         {
             Assert.That(RunStrings.RulesSummary, Is.EqualTo("8 FIGHTS  2 BOSSES  1 RETRY"));
-            Assert.That(RunStrings.BossAt, Is.EqualTo("BOSS AT FIGHT 4 AND 8"));
+            Assert.That(RunStrings.BossAt, Is.EqualTo("BOSS AT FIGHTS 4 AND 8"));   // BB-FIX1b wording: plural FIGHTS for two bosses
             Assert.That(RunStrings.LoseOnce, Is.EqualTo("LOSE ONCE: FREE PICK  RETRY AT 60% HP"));
             Assert.That(RunStrings.LoseAgain, Is.EqualTo("LOSE AGAIN: RUN OVER"));
         }

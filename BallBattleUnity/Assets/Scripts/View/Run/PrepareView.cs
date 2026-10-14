@@ -19,6 +19,10 @@ namespace BallBattle.View
         public static Rect CardArea(int i) => new Rect(-125, CardBottoms[i], 250, CardHeight);
         public static readonly Rect RerollArea = new Rect(-125, -130, 110, 30);
         public static readonly Rect FightArea = new Rect(-5, -130, 130, 30);
+        /// <summary>Gap between the REROLL button and the reason line under it.</summary>
+        public const float RerollReasonGap = 2f;
+        /// <summary>Bottom of the scale-1 reason line: its top is RerollReasonGap below the button.</summary>
+        public static readonly float RerollReasonY = RerollArea.yMin - RerollReasonGap - PixelFontData.GlyphHeight;
         public static readonly Rect ConfirmPanel = ConfirmDialog.PanelAt(0);   // where SKIP FREE PICK? opens (off FIGHT)
         public static readonly Rect ConfirmYesArea = ConfirmDialog.YesAt(0);
         public static readonly Rect ConfirmNoArea = ConfirmDialog.NoAt(0);
@@ -131,7 +135,8 @@ namespace BallBattle.View
 
             reroll = RunUi.Button(root, art, RerollArea, $"REROLL {RunTuning.RerollCost}", 1, Palette.TextDim, () => { if (!TapSwallowed) OnRerollClicked(); });
             reroll.ClickCue = null;   // card_reroll (RunFlow.Rerolled) or ui_denied
-            rerollReason = PixelText.Create(reroll.transform, "Reason", art.Font, new Vector2(RerollArea.center.x, RerollArea.yMin + 3), PixelText.Align.Center, 1, reroll.IconOrder + 1);
+            // One small line 2 px under the button (it used to sit inside it, over the label).
+            rerollReason = PixelText.Create(reroll.transform, "Reason", art.Font, new Vector2(RerollArea.center.x, RerollReasonY), PixelText.Align.Center, 1, reroll.IconOrder + 1);
             RunUi.Button(root, art, FightArea, "FIGHT!", 3, Palette.WallWarning, () => { if (!TapSwallowed) OnFightClicked(); });
             RunUi.Text(root, art, 0, -150, 1, initial: "ESC: MENU   THE RUN IS SAVED", color: Palette.TextDim);
 
@@ -203,6 +208,10 @@ namespace BallBattle.View
         }
 
         /// <summary>Enemy HP line: the HP the fight really starts with (Heavy, Glass Cannon, boss HP all applied).</summary>
+        /// <summary>The line under REROLL ("NOT ENOUGH COINS" in red, or the dim "AGAIN ..." note; tests).</summary>
+        public PixelText RerollReasonText => rerollReason;
+        public PixelButton RerollButton => reroll;
+
         public static string EnemyHpText(float hp, float maxHp)
         {
             var h = HpText.Of(hp);
