@@ -1,0 +1,4 @@
+run's own arena: spike-walls
+forced: tight
+NEXT: FIGHT 1/8  RETRY
+HP 100   ARENA TIGHT

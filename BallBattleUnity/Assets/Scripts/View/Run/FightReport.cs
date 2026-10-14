@@ -139,6 +139,10 @@ namespace BallBattle.View
         // Next fight (when the run goes on).
         public int NextFightNumber;
         public bool NextIsBoss;
+        /// <summary>BB-VIEW3: boss of the fight just played (null for a normal fight).</summary>
+        public string BossId;
+        /// <summary>BB-VIEW3: boss of the next fight (the run's real roll, or a forced boss); null for a normal fight.</summary>
+        public string NextBossId;
         public string NextWeaponId;
         public string NextTraits;
         /// <summary>Next enemy's trait names (with level), one entry per trait, for wrapping between traits (BB-FONT1). Null: split NextTraits.</summary>
@@ -150,7 +154,11 @@ namespace BallBattle.View
         /// Build the report. <paramref name="before"/> is a snapshot taken just before ApplyResult; <paramref name="run"/> is the
         /// run after it; <paramref name="match"/> the finished fight; <paramref name="stats"/> its event totals.
         /// </summary>
-        public static FightReport Build(MatchSim match, FightStats stats, Snapshot before, RunState run)
+        public static FightReport Build(MatchSim match, FightStats stats, Snapshot before, RunState run) => Build(match, stats, before, run, null);
+
+        /// <summary>BB-VIEW3: <paramref name="nextArenaOverride"/> = the arena the next fight is actually played in when it is not the
+        /// run's own (-bbForceArena, RunFlow.ForceArenaId); null = RunState.ArenaId.</summary>
+        public static FightReport Build(MatchSim match, FightStats stats, Snapshot before, RunState run, string nextArenaOverride)
         {
             var you = match.Balls[0];
             var r = new FightReport
@@ -175,6 +183,7 @@ namespace BallBattle.View
                 PlayerSecondWindTriggered = stats != null && stats.SecondWindTriggered(0),
                 RunOver = run.Over,
                 RunWon = run.Won,
+                BossId = before.BossId,
             };
             r.IsRetry = r.Outcome != FightOutcome.Win && !run.Over && run.FightIndex == before.FightIndex;
 
@@ -186,11 +195,12 @@ namespace BallBattle.View
                 r.MaxHpNext = next.Balls[0].MaxHp.ToFloat();
                 r.NextFightNumber = run.FightIndex + 1;
                 r.NextIsBoss = run.IsBossFight;
+                r.NextBossId = run.CurrentBossId;
                 r.NextWeaponId = enemy.WeaponId;
                 r.NextTraits = CardText.Traits(enemy);
                 r.NextTraitNames = CardText.TraitNames(enemy);
                 r.NextEnemyHp = next.Balls[1].MaxHp.ToFloat();
-                r.NextArenaId = run.ArenaId;
+                r.NextArenaId = nextArenaOverride ?? run.ArenaId;
             }
             return r;
         }
@@ -201,8 +211,11 @@ namespace BallBattle.View
             public int FightIndex;
             public int Coins;
             public int RetryCount;
+            /// <summary>BB-VIEW3: boss of the fight about to be applied (null for a normal fight).</summary>
+            public string BossId;
 
-            public static Snapshot Of(RunState run) => new Snapshot { FightIndex = run.FightIndex, Coins = run.Coins, RetryCount = run.RetryCount };
+            public static Snapshot Of(RunState run) =>
+                new Snapshot { FightIndex = run.FightIndex, Coins = run.Coins, RetryCount = run.RetryCount, BossId = run.CurrentBossId };
         }
 
         // ---- Wording (docs/design/boss-and-loss-rules.md: WIN / LOST / DRAW, a draw counts as lost, RETRY) ----
@@ -244,7 +257,9 @@ namespace BallBattle.View
 
         public string RunLine => !RunOver ? "" : RunWon ? "RUN WON!" : "RUN OVER";
 
-        public string NextHeader => $"NEXT: FIGHT {NextFightNumber}/{RunTuning.Fights}" + (NextIsBoss ? "  GIANT BOSS" : "") + (IsRetry ? "  RETRY" : "");
+        /// <summary>"NEXT: FIGHT 4/8  SHELL KING  RETRY" (BB-VIEW3: the real boss name; "GIANT BOSS" only when the id is unknown).</summary>
+        public string NextHeader => $"NEXT: FIGHT {NextFightNumber}/{RunTuning.Fights}" +
+            (NextIsBoss ? "  " + (string.IsNullOrEmpty(NextBossId) ? "GIANT BOSS" : BossText.Name(NextBossId)) : "") + (IsRetry ? "  RETRY" : "");
 
         public string NextStats => $"HP {HpText.Of(NextEnemyHp)}   ARENA {ArenaRegistry.Get(NextArenaId).DisplayName}";
 

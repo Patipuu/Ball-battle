@@ -37,6 +37,31 @@ namespace BallBattle.View
         public static float LocalX(float screenX) => screenX - TextWrap.ScreenWidth / 2f;
         public static float LocalTop(float screenY) => TextWrap.ScreenHeight / 2f - screenY;
 
+        /// <summary>
+        /// BB-VIEW3: boss behind a boss goal (boss1 = fight 4, win1 = fight 8), or null. A run in progress: the boss it actually meets
+        /// there (RunState.BossFor: its roll, or a forced boss). No run: the next run's boss when the progress already decides it
+        /// (BossSelection: the first run gets the slot's first boss; later runs never repeat the last run's boss, so with two bosses
+        /// per slot it is the other one); null when the run seed would still decide it.
+        /// </summary>
+        public static string GoalBoss(string goalId, ProgressData progress, RunState run)
+        {
+            var slot = goalId == UnlockRules.Boss1 ? 0 : goalId == UnlockRules.Win1 ? 1 : -1;
+            if (slot < 0) return null;
+            if (run != null && !run.Over) return run.BossFor(RunTuning.BossFights[slot]);
+            var pool = BallBattle.Sim.Boss.BossIds.Slots[slot];
+            if (BossSelection.IsFirstRun(progress)) return pool[0];
+            var last = progress.LastBossOf(slot);
+            string only = null;
+            var count = 0;
+            foreach (var id in pool)
+            {
+                if (id == last) continue;
+                only = id;
+                count++;
+            }
+            return count == 1 ? only : null;
+        }
+
         public static NextGoalBox Create(Transform parent, ArtLibrary art, int screenX, int screenY, int order)
         {
             var go = new GameObject("NextGoal");
@@ -69,7 +94,11 @@ namespace BallBattle.View
         PixelText TextAt(ArtLibrary art, float x, int dy, int scale, PixelText.Align align, int order) =>
             PixelText.Create(transform, "Text", art.Font, new Vector2(x, top - dy - PixelFont.CellHeight * scale), align, scale, order);
 
-        public void Show(ProgressData progress)
+        public void Show(ProgressData progress) => Show(progress, null);
+
+        /// <summary>BB-VIEW3: <paramref name="run"/> = the run in progress (resumable), whose rolled bosses name the fight-4 / fight-8
+        /// goal; null = the next run's bosses, as far as they are already decided by the progress (GoalBoss).</summary>
+        public void Show(ProgressData progress, RunState run)
         {
             var p = progress ?? new ProgressData();
             var g = UnlockRules.NextGoal(p);
@@ -83,7 +112,7 @@ namespace BallBattle.View
                 barFill.gameObject.SetActive(false);
                 return;
             }
-            title.Set(RunStrings.GoalTitle(g.GoalId), Palette.WallWarning);
+            title.Set(RunStrings.GoalTitle(g.GoalId, GoalBoss(g.GoalId, p, run)), Palette.WallWarning);
             sub.Set(RunStrings.UnlocksLine(g.RewardIds), Palette.TextDim);   // empty (hidden) when nothing new
             count.Set(RunStrings.Progress(g.Current, g.Max), Palette.Text);
             barBack.gameObject.SetActive(true);

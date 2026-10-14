@@ -72,6 +72,11 @@ namespace BallBattle.View
         /// <summary>Without saved progress (tests): progress is rebuilt from the run alone.</summary>
         public void Show(RunState run) => Show(run, null);
 
+        /// <summary>Fight-4 boss the finished <paramref name="run"/> beat, for its boss1 milestone ("BEAT MAGNET"). Reaching win1 means
+        /// the run was won, so that milestone keeps "WIN A RUN".</summary>
+        static string RunBossOf(string goalId, RunState run) =>
+            run != null && goalId == UnlockRules.Boss1 ? run.BossFor(RunTuning.BossFights[0]) : null;
+
         /// <summary><paramref name="progress"/> = long-term progress after this run was recorded.</summary>
         public void Show(RunState run, ProgressData progress)
         {
@@ -96,7 +101,7 @@ namespace BallBattle.View
             var retryAt = RetryUsedAtFight(run);
             retry.Set(retryAt > 0 ? RunStrings.RetryUsedAt(retryAt) : "", Palette.WallWarning);
 
-            var lines = MilestoneLines(Reached(before, after));
+            var lines = MilestoneLines(Reached(before, after), run);
             MilestonesShown = 0;
             foreach (var l in lines) if (l.color.Equals(NextGoalBox.Green)) MilestonesShown++;   // goal-name rows (green)
             BoxText.Clear();
@@ -169,14 +174,17 @@ namespace BallBattle.View
         }
 
         /// <summary>Frame lines: goal name (green), "UNLOCKED: ..." wrapped (yellow), then a dim hint when anything unlocked.</summary>
-        public static List<(string text, Color32 color)> MilestoneLines(List<Milestone> reached)
+        public static List<(string text, Color32 color)> MilestoneLines(List<Milestone> reached) => MilestoneLines(reached, null);
+
+        /// <summary>BB-VIEW3: <paramref name="run"/> (the finished run) names the boss behind a boss goal it reached ("BEAT MAGNET").</summary>
+        public static List<(string text, Color32 color)> MilestoneLines(List<Milestone> reached, RunState run)
         {
             var lines = new List<(string, Color32)>();
             var max = NextGoalBox.Width - 2 * BoxPad;   // pixels (scale 1)
             var any = false;
             foreach (var m in reached)
             {
-                lines.Add((RunStrings.GoalTitle(m.GoalId), NextGoalBox.Green));
+                lines.Add((RunStrings.GoalTitle(m.GoalId, RunBossOf(m.GoalId, run)), NextGoalBox.Green));
                 var names = new List<string>();
                 foreach (var id in m.RewardIds) names.Add(RunStrings.RewardName(id));
                 foreach (var l in TextWrap.Items(names, RunStrings.Unlocked, "  ", max, true)) lines.Add((l, Palette.WallWarning));

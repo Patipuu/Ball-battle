@@ -136,7 +136,7 @@ namespace BallBattle.View
         public bool RequestUiCue(string id, float volume = 0.7f)
         {
             if (!uiGate.Allow(id, uiFrame)) return false;
-            if (AudioIds.EndsFightMusic(id)) EndFightMusic();
+            if (AudioIds.EndsFightMusic(id)) EndFightMusic(id);
             return PlayNow(id, volume, 1f);
         }
 
@@ -150,17 +150,29 @@ namespace BallBattle.View
             var v = volume * VolumeCurve.Linear(SfxVolume);
             if (Played.Count >= PlayedCap) Played.RemoveRange(0, Played.Count - PlayedCap + 1);   // drop the oldest
             Played.Add(new PlayedCue { Id = id, Time = now, Volume = v, Pitch = pitch });
-            if (cues != null && v > 0f) cues.Play(library != null ? library.Get(id) : null, v, pitch);
+            lastVoice = cues != null && v > 0f ? cues.Play(library != null ? library.Get(id) : null, v, pitch) : -1;
             if (AudioIds.Ducks(id)) Duck.Trigger(now);
             return true;
         }
 
         /// <summary>fight_win / fight_lose / run_win / run_over: the fight track fades out over 0.4 s (a stronger drop than the duck);
         /// the next screen's track then follows the normal mapping. A non-fight track (result music on the Summary) keeps playing.</summary>
-        void EndFightMusic()
+        void EndFightMusic(string cue = null)
         {
-            if (AudioIds.IsFightTrack(Music.Current)) Music.FadeOut(MusicMixer.FadeOutSeconds);
+            if (!AudioIds.IsFightTrack(Music.Current)) return;
+            if (AudioLog.Enabled) AudioLog.Write(AudioLog.MusicLine("fadeout", $"track={Music.Current} cue={cue ?? "-"}", Clock()), this);
+            Music.FadeOut(MusicMixer.FadeOutSeconds);
         }
+
+        /// <summary>BB-VIEW3: every music track request goes through here so -bbAudioLog shows it (start or same track).</summary>
+        void RequestTrack(string track, string reason)
+        {
+            var started = Music.Request(track);
+            if (AudioLog.Enabled) AudioLog.Write(AudioLog.MusicLine("track", $"track={track ?? "none"} {reason} result={(started ? "start" : "same")}", Clock()), this);
+        }
+
+        // Track each music slot is playing, for the stop line (MusicMixer clears its own before SlotStopped).
+        readonly string[] slotTrack = new string[2];
 
         // ---------------- match events ----------------
 
@@ -264,20 +276,35 @@ namespace BallBattle.View
 
         // BB-6d: per ball, the tick of its last spike_hit, so the same contact never also plays a wall cue in that tick.
         readonly System.Collections.Generic.Dictionary<int, int> spikeTickByBall = new System.Collections.Generic.Dictionary<int, int>();
+        // BB-VIEW3: per ball, the tick and voice of its last wall cue: a spike_hit later in that same tick replaces it.
+        readonly System.Collections.Generic.Dictionary<int, (int tick, int voice)> wallByBall = new System.Collections.Generic.Dictionary<int, (int, int)>();
+        int lastVoice = -1;   // voice of the last PlayNow (-1: none)
 
         void RequestHazard(SimEvent e, MatchSim sim, float volume, float pitch)
         {
             var damage = e.Value.ToFloat();
             var id = HazardCue(e.Type, damage, Has);
             bool allowed;
+            var replaced = false;
             if (id == AudioIds.Wall && spikeTickByBall.TryGetValue(e.A, out var spikeTick) && spikeTick == e.Tick)
                 allowed = false;   // this ball already played spike_hit this tick: one contact = one cue
             else
             {
                 allowed = RequestCue(id, e.Tick, volume, pitch);
+                if (allowed && id == AudioIds.SpikeHit && wallByBall.TryGetValue(e.A, out var wall) && wall.tick == e.Tick)
+                {
+                    // BB-VIEW3: a plain wall bounce came first in this tick (two contacts, e.g. side wall then a spiked corner): the
+                    // spike_hit replaces that wall cue (same frame, so the wall is never heard), one hazard cue per ball per tick.
+                    if (cues != null) cues.Stop(wall.voice, library != null ? library.Get(AudioIds.Wall) : null);
+                    var i = Played.FindLastIndex(p => p.Id == AudioIds.Wall);
+                    if (i >= 0) Played.RemoveAt(i);
+                    wallByBall.Remove(e.A);
+                    replaced = true;
+                }
                 if (id == AudioIds.SpikeHit) spikeTickByBall[e.A] = e.Tick;
+                if (id == AudioIds.Wall && allowed) wallByBall[e.A] = (e.Tick, lastVoice);
             }
-            if (AudioLog.Enabled) AudioLog.Write(AudioLog.Line(e, sim, damage, LastHpChangeTick(e.A), id, allowed), this);
+            if (AudioLog.Enabled) AudioLog.Write(AudioLog.Line(e, sim, damage, LastHpChangeTick(e.A), id, allowed) + (replaced ? " replaced=wall" : ""), this);
         }
 
         // HP as the View last saw it, per ball: the tick it last changed (for the audio log).
@@ -314,11 +341,12 @@ namespace BallBattle.View
         {
             simGate.Reset();
             spikeTickByBall.Clear();
+            wallByBall.Clear();
             seenHp = new float[0];
             hpChangedAt = new int[0];
             pendingResult = null;
             var track = AudioIds.TrackFor(screen);
-            if (AudioIds.IsFightTrack(track)) Music.Request(track);
+            if (AudioIds.IsFightTrack(track)) RequestTrack(track, "reason=match-start");
         }
 
         /// <summary>
@@ -353,7 +381,7 @@ namespace BallBattle.View
         {
             if (s == MusicScreen.None || s == screen) return;
             screen = s;
-            Music.Request(AudioIds.TrackFor(s));
+            RequestTrack(AudioIds.TrackFor(s), "screen=" + s);
         }
 
         public void SetMusicVolume(int step, bool save = false)
@@ -380,6 +408,8 @@ namespace BallBattle.View
 
         void OnSlotStarted(int slot, string track)
         {
+            slotTrack[slot] = track;
+            if (AudioLog.Enabled) AudioLog.Write(AudioLog.MusicLine("start", $"track={track} slot={slot}", Clock()), this);
             var src = music[slot];
             if (src == null) return;
             src.clip = library != null ? library.Get(track) : null;
@@ -390,6 +420,8 @@ namespace BallBattle.View
 
         void OnSlotStopped(int slot)
         {
+            if (AudioLog.Enabled) AudioLog.Write(AudioLog.MusicLine("stop", $"track={slotTrack[slot] ?? "-"} slot={slot}", Clock()), this);
+            slotTrack[slot] = null;
             var src = music[slot];
             if (src == null) return;
             src.Stop();

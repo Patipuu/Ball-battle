@@ -62,8 +62,8 @@ namespace BallBattle.View
             gameObject.SetActive(true);
             var p = flow.Progress;
             stats.Set(StatsLine(p), Palette.Text);
-            goal.Show(p);
             hasSavedRun = flow.HasSavedRun;
+            goal.Show(p, hasSavedRun ? flow.PeekSave().resumable : null);   // BB-VIEW3: the saved run's bosses name the boss goals
             continueButton.gameObject.SetActive(hasSavedRun);
             dialog.Close();
         }

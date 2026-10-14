@@ -79,11 +79,23 @@ namespace BallBattle.View
         public static string ContinueLine(RunState run) =>
             $"FIGHT {run.FightIndex + 1}/{RunTuning.Fights}{ListSep}RETRY {Mathf.Max(0, RunTuning.Retries - run.RetryCount)}";
 
+        /// <summary>
+        /// BB-VIEW3: the fight-4 goal (boss1) and the fight-8 goal (win1: beating the last boss wins the run) name the boss that run
+        /// meets, "BEAT MAGNET" / "BEAT WARDEN", when it is known (<paramref name="bossId"/>, see NextGoalBox.GoalBoss); otherwise the
+        /// generic title.
+        /// </summary>
+        public static string GoalTitle(string goalId, string bossId)
+        {
+            if (!string.IsNullOrEmpty(bossId) && (goalId == UnlockRules.Boss1 || goalId == UnlockRules.Win1)) return "BEAT " + BossText.Name(bossId);
+            if (goalId == UnlockRules.Boss1) return "BEAT THE BOSS";   // the boss is not decided yet (pre-BB-04 save)
+            return GoalTitle(goalId);
+        }
+
         public static string GoalTitle(string goalId)
         {
             switch (goalId)
             {
-                case UnlockRules.Boss1: return "BEAT SHELL KING";
+                case UnlockRules.Boss1: return "BEAT THE BOSS";   // BB-VIEW3: never a fixed boss name (see GoalTitle(goalId, bossId))
                 case UnlockRules.Win1: return "WIN A RUN";
                 case UnlockRules.Win3:
                     var row = UnlockRules.GoalRowOf(goalId);   // the run count is the row's Max (GoalTable), never typed here

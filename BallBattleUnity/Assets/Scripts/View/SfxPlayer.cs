@@ -32,11 +32,12 @@ namespace BallBattle.View
             return p;
         }
 
-        public void Play(AudioClip clip, float volume = 1f, float pitch = 1f)
+        /// <summary>Plays <paramref name="clip"/> on a free (or the oldest) voice. Returns that voice, or -1 when nothing played.</summary>
+        public int Play(AudioClip clip, float volume = 1f, float pitch = 1f)
         {
-            if (clip == null) return;
+            if (clip == null) return -1;
             var now = Time.unscaledTime;
-            if (clip == lastClip && now - lastClipTime < SameClipGap) return;
+            if (clip == lastClip && now - lastClipTime < SameClipGap) return -1;
             lastClip = clip;
             lastClipTime = now;
 
@@ -52,6 +53,14 @@ namespace BallBattle.View
             v.pitch = pitch;
             v.Play();
             startedAt[best] = now;
+            return best;
+        }
+
+        /// <summary>BB-VIEW3: stops <paramref name="voice"/> if it is still playing <paramref name="clip"/> (a replaced cue).</summary>
+        public void Stop(int voice, AudioClip clip)
+        {
+            if (voice < 0 || voice >= voices.Length || clip == null || voices[voice].clip != clip) return;
+            voices[voice].Stop();
         }
     }
 }

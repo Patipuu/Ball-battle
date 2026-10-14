@@ -99,7 +99,9 @@ namespace BallBattle.View
 
             var win = r.Outcome == FightOutcome.Win;
             var accent = win ? Palette.WallWarning : Palette.HpLost;
-            fight.Set($"FIGHT {r.FightNumber}/{Sim.Run.RunTuning.Fights}" + (r.WasBoss ? "  GIANT BOSS" : "") + "  VS " + RunUi.WeaponName(r.EnemyWeaponId), Palette.TextDim);
+            // BB-VIEW3: the boss's real name ("GIANT BOSS" only for an old report without a boss id).
+            var boss = !string.IsNullOrEmpty(r.BossId) ? "  " + BossText.Name(r.BossId) : r.WasBoss ? "  GIANT BOSS" : "";
+            fight.Set($"FIGHT {r.FightNumber}/{Sim.Run.RunTuning.Fights}" + boss + "  VS " + RunUi.WeaponName(r.EnemyWeaponId), Palette.TextDim);
             title.Set(r.Title, accent);
             how.Set(r.HowLine, Palette.TextDim);
 

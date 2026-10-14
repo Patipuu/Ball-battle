@@ -1,0 +1,1 @@
+HAZARD VERIFY matches=120 hazardEvents=27473 ballTicks=27210 ballTicksWithMoreThanOneCue=0 maxCuesPerBallTick=1 wallThenSpikeSameBallTick=6 wallCuesReplaced=6

@@ -249,7 +249,7 @@ namespace BallBattle.View
                 continueLabel.Set("", Palette.Background);
                 continueLine.Set("", Palette.Background);
             }
-            goal.Show(progress);
+            goal.Show(progress, savedRun);   // BB-VIEW3: the saved run's bosses name the boss goals
         }
 
         public bool HasSavedRun => savedRun != null;

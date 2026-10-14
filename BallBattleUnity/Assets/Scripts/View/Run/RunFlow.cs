@@ -143,10 +143,21 @@ namespace BallBattle.View
             Run.SkillOverride = ForceSkill;
             UnityEngine.Debug.Log($"[BallBattle] Run resumed: seed {Run.Seed}, fight {Run.FightIndex + 1}");
             var changed = DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
-            if (ForceBossId != null && Run.ForcedBossId != ForceBossId) changed |= Run.ApplyForcedBoss(ForceBossId);
+            changed |= ApplyForceBossToNewFight();
             if (changed) Persist();
             if (Run.FightLocked) StartFight();   // quit mid-fight: replay that exact fight, no edits
             else Go(Run.StartPickPending ? State.StartPick : State.Prepare);
+        }
+
+        /// <summary>
+        /// BB-VIEW3: -bbForceBoss applies only when a NEW fight comes up. A saved retry (Run.IsRetry: the same fight again, boss or
+        /// not) keeps its saved enemy, so the force waits until that retry has been played; FinishFight then applies it to the next
+        /// fight. Returns true when the run changed (to save it).
+        /// </summary>
+        bool ApplyForceBossToNewFight()
+        {
+            if (ForceBossId == null || Run == null || Run.Over || Run.IsRetry || Run.ForcedBossId == ForceBossId) return false;
+            return Run.ApplyForcedBoss(ForceBossId);
         }
 
         public void Reroll()
@@ -231,7 +242,8 @@ namespace BallBattle.View
             var before = FightReport.Snapshot.Of(Run);
             Run.ApplyResult(finished);
             UnlockRules.Record(save.Progress, Run);
-            LastReport = FightReport.Build(finished, Stats, before, Run);
+            ApplyForceBossToNewFight();   // BB-VIEW3: a force deferred by a resumed retry starts with the next new fight
+            LastReport = FightReport.Build(finished, Stats, before, Run, ForceArenaId);
             Go(State.FightResult);   // result screen first, then Prepare (or the summary)
             Persist();
         }

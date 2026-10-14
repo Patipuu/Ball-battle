@@ -66,6 +66,14 @@ namespace BallBattle.View
                 e.Tick, sim != null ? sim.ActiveTick.ToString(CultureInfo.InvariantCulture) : "-", (BallBattle.Sim.Boss.BossEvent)e.Variant, cue,
                 result.ToString().ToLowerInvariant());
 
+        /// <summary>
+        /// BB-VIEW3 music line: "[Music] start track=music_battle slot=0 t=12.34", "[Music] stop track=music_menu slot=1 t=12.94",
+        /// "[Music] track=music_result screen=VersusResult result=start|same t=..", "[Music] fadeout track=music_battle cue=fight_win t=..".
+        /// t = the director's clock (real seconds).
+        /// </summary>
+        public static string MusicLine(string kind, string fields, float time) =>
+            string.Format(CultureInfo.InvariantCulture, "[Music] {0} {1} t={2:0.00}", kind, fields, time);
+
         public static void Write(string line, AudioDirector director)
         {
             if (director != null)
