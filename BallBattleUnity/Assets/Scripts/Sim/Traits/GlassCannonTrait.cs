@@ -1,4 +1,3 @@
-using System;
 
 namespace BallBattle.Sim.Traits
 {
@@ -11,12 +10,12 @@ namespace BallBattle.Sim.Traits
 
         public override void OnSpawn()
         {
-            var scale = Math.Min(Self.MaxHp, Math.Max(Self.MaxHp - TraitTuning.GlassCannonHpLoss[Level - 1], TraitTuning.GlassCannonMinHp)) / Self.MaxHp;
+            var scale = FixMath.Min(Self.MaxHp, FixMath.Max(Self.MaxHp - TraitTuning.GlassCannonHpLoss[Level - 1], TraitTuning.GlassCannonMinHp)) / Self.MaxHp;
             Self.MaxHp *= scale;
             Self.Hp *= scale; // keeps the HP fraction (Run mode carries it between fights)
         }
 
-        public override float ModifyOutgoingDamage(BallState target, float damage, DamageKind kind)
+        public override Fix ModifyOutgoingDamage(BallState target, Fix damage, DamageKind kind)
             => kind == DamageKind.Weapon || kind == DamageKind.Projectile ? damage * TraitTuning.GlassCannonDamageMul[Level - 1] : damage;
 
         protected override ulong HashState(ulong h) => h;

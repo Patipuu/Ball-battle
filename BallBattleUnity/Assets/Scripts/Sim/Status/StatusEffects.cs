@@ -20,7 +20,7 @@ namespace BallBattle.Sim
 
         public struct PoisonStack
         {
-            public float Dps;
+            public Fix Dps;
             public int TicksLeft;
             /// <summary>Ticks until this stack's next pulse.</summary>
             public int PulseIn;
@@ -30,7 +30,7 @@ namespace BallBattle.Sim
 
         public readonly PoisonStack[] Poison = new PoisonStack[MaxPoisonStacks];
         public int ShieldCharges;
-        public float RegenPerSecond;
+        public Fix RegenPerSecond;
         public int RegenTicksLeft;
         public int RegenPulseIn;
 
@@ -45,7 +45,7 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Adds a stack in the first free slot; when full, replaces the stack with the fewest ticks left (lowest index on ties).</summary>
-        public void AddPoison(float dps, int ticks, int source)
+        public void AddPoison(Fix dps, int ticks, int source)
         {
             var slot = 0;
             for (var i = 0; i < MaxPoisonStacks; i++)
@@ -57,7 +57,7 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Starts (or replaces) regen.</summary>
-        public void SetRegen(float perSecond, int ticks)
+        public void SetRegen(Fix perSecond, int ticks)
         {
             RegenPerSecond = perSecond;
             RegenTicksLeft = ticks;
@@ -73,10 +73,10 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Advances poison one tick. Returns total damage of stacks pulsing now; <paramref name="mainSource"/> = source of the strongest of them.</summary>
-        public float TickPoison(out int mainSource)
+        public Fix TickPoison(out int mainSource)
         {
-            var total = 0f;
-            var mainDps = 0f;
+            var total = Fix.Zero;
+            var mainDps = Fix.Zero;
             mainSource = -1;
             for (var i = 0; i < MaxPoisonStacks; i++)
             {
@@ -92,11 +92,11 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Advances regen one tick. Returns the heal due now (0 between pulses).</summary>
-        public float TickRegen()
+        public Fix TickRegen()
         {
-            if (RegenTicksLeft <= 0) return 0f;
+            if (RegenTicksLeft <= 0) return Fix.Zero;
             RegenTicksLeft--;
-            if (--RegenPulseIn > 0) return 0f;
+            if (--RegenPulseIn > 0) return Fix.Zero;
             RegenPulseIn = PulseTicks;
             return RegenPerSecond;
         }

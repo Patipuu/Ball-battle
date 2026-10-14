@@ -59,16 +59,16 @@ namespace BallBattle.Sim
         public virtual void OnSpawn() { }
 
         /// <summary>Self is attacking. Return the new damage (Weapon/Projectile only).</summary>
-        public virtual float ModifyOutgoingDamage(BallState target, float damage, DamageKind kind) => damage;
+        public virtual Fix ModifyOutgoingDamage(BallState target, Fix damage, DamageKind kind) => damage;
 
         /// <summary>Self is being damaged (any kind). Return the new damage. Attacker may be null (hazard).</summary>
-        public virtual float ModifyIncomingDamage(BallState attacker, float damage, DamageKind kind) => damage;
+        public virtual Fix ModifyIncomingDamage(BallState attacker, Fix damage, DamageKind kind) => damage;
 
         /// <summary>Self landed a Weapon/Projectile hit that was not shield-blocked.</summary>
-        public virtual void OnHitDealt(BallState target, float damage, DamageKind kind) { }
+        public virtual void OnHitDealt(BallState target, Fix damage, DamageKind kind) { }
 
         /// <summary>Self took a Weapon/Projectile hit that was not shield-blocked.</summary>
-        public virtual void OnHitTaken(BallState attacker, float damage, DamageKind kind) { }
+        public virtual void OnHitTaken(BallState attacker, Fix damage, DamageKind kind) { }
 
         public virtual void OnParry(BallState other) { }
         public virtual void OnWall() { }

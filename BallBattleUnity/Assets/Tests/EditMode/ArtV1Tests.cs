@@ -104,10 +104,10 @@ namespace BallBattle.Tests
             Assert.That(ember.drawMode, Is.EqualTo(SpriteDrawMode.Sliced), "9-slice: the outline is never stretched");
             Assert.That(ember.size.y, Is.EqualTo(BallView.MinBladePixels), "thin sim blade (3) drawn 7 px: never squeezes the outline away");
             Assert.That(ember.size.x, Is.GreaterThanOrEqualTo(ember.sprite.border.x + ember.sprite.border.z), "long enough for both end caps");
-            Assert.That(mirror.size.y, Is.EqualTo(Mathf.Max(BallView.MinBladePixels, Mathf.RoundToInt(view.Sim.Balls[1].Weapon.BladeThickness))), "thickness read from the sim");
+            Assert.That(mirror.size.y, Is.EqualTo(Mathf.Max(BallView.MinBladePixels, Mathf.RoundToInt(view.Sim.Balls[1].Weapon.BladeThickness.ToFloat()))), "thickness read from the sim");
 
             // A thicker shield: whole pixels, core stretched.
-            view.Sim.Balls[1].Weapon.BladeThickness = 11.4f;
+            view.Sim.Balls[1].Weapon.BladeThickness = TFix.X(11.4f);
             typeof(ArenaView).GetMethod("Draw", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(view, new object[] { 0f, 0f });
             Assert.That(mirror.size.y, Is.EqualTo(11f));
             var bottom = mirror.transform.localPosition.y - mirror.sprite.pivot.y / mirror.sprite.rect.height * mirror.size.y;

@@ -7,7 +7,7 @@ namespace BallBattle.Sim.Traits
         public PoisonTipTrait(int level = 1) : base(level) { }
         public override string Id => TraitId;
 
-        public override void OnHitDealt(BallState target, float damage, DamageKind kind)
+        public override void OnHitDealt(BallState target, Fix damage, DamageKind kind)
         {
             if (kind != DamageKind.Weapon && kind != DamageKind.Projectile) return;
             if (target.Status.PoisonStackCount >= TraitTuning.PoisonTipMaxStacks[Level - 1]) return;

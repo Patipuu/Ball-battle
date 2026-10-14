@@ -11,14 +11,14 @@ namespace BallBattle.SimTests
         public void HeavyGrowsToughensAndSlows([Values(1, 2)] int level)
         {
             var m = Stage.Build(null,
-                (Stage.L(new HarmlessRule(), new HeavyTrait(level)), new Vec2(-60f, 0f), 0f),
-                (Stage.L(new HarmlessRule()), new Vec2(60f, 0f), 0f));
+                (Stage.L(new HarmlessRule(), new HeavyTrait(level)), FT.V(-60f, 0f), 0f),
+                (Stage.L(new HarmlessRule()), FT.V(60f, 0f), 0f));
             m.Step();
             var b = m.Balls[0];
             var i = level - 1;
-            Assert.That(b.Radius, Is.EqualTo(16f * TraitTuning.HeavyRadiusScale[i]).Within(1e-4f));
-            Assert.That(b.BladeShift, Is.EqualTo(b.Radius - 16f).Within(1e-4f));
-            Assert.That(b.MaxHp, Is.EqualTo(100f * (1f + TraitTuning.HeavyMaxHpPct[i])).Within(1e-3f));
+            Assert.That(b.Radius.F(), Is.EqualTo((FT.X(16f) * TraitTuning.HeavyRadiusScale[i]).F()).Within(1e-4f));
+            Assert.That(b.BladeShift.F(), Is.EqualTo((b.Radius - FT.X(16f)).F()).Within(1e-4f));
+            Assert.That(b.MaxHp.F(), Is.EqualTo((FT.X(100f) * (FT.X(1f) + TraitTuning.HeavyMaxHpPct[i])).F()).Within(1e-3f));
             Assert.That(b.Hp, Is.EqualTo(b.MaxHp));
             Assert.That(b.Bonus.SpeedPct, Is.EqualTo(TraitTuning.HeavySpeedPct[i]));
             Assert.That(b.KnockbackResist, Is.EqualTo(TraitTuning.HeavyKnockbackResist[i]));
@@ -27,27 +27,27 @@ namespace BallBattle.SimTests
         [Test]
         public void HeavyNeverGrowsABossPastTheCap()
         {
-            var boss = new BallLoadout(new HarmlessRule()) { Radius = 24f }.With(new HeavyTrait(2));
-            var m = Stage.Build(null, (boss, new Vec2(-60f, 0f), 0f), (Stage.L(new HarmlessRule()), new Vec2(60f, 0f), 0f));
+            var boss = new BallLoadout(new HarmlessRule()) { Radius = FT.X(24f) }.With(new HeavyTrait(2));
+            var m = Stage.Build(null, (boss, FT.V(-60f, 0f), 0f), (Stage.L(new HarmlessRule()), FT.V(60f, 0f), 0f));
             m.Step();
             Assert.That(m.Balls[0].Radius, Is.EqualTo(TraitTuning.HeavyMaxRadius[1]));
-            Assert.That(m.Balls[0].BladeShift, Is.EqualTo(24f - 16f).Within(1e-4f));
+            Assert.That(m.Balls[0].BladeShift.F(), Is.EqualTo((24f - 16f).F()).Within(1e-4f));
         }
 
         [Test]
         public void FingerprintCoversEveryTuningArray()
         {
             var fields = typeof(TraitTuning).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
-                .Where(f => f.FieldType == typeof(float[])).ToList();
+                .Where(f => f.FieldType == typeof(Fix[])).ToList();
             Assert.That(fields.Count, Is.GreaterThan(0));
             var baseline = TraitTuning.Fingerprint();
             foreach (var f in fields)
             {
-                var arr = (float[])f.GetValue(null);
+                var arr = (Fix[])f.GetValue(null);
                 for (var i = 0; i < arr.Length; i++)
                 {
                     var keep = arr[i];
-                    arr[i] = keep + 1f;
+                    arr[i] = keep + Fix.One;
                     try { Assert.That(TraitTuning.Fingerprint(), Is.Not.EqualTo(baseline), $"{f.Name}[{i}] is not in TraitTuning.Fingerprint"); }
                     finally { arr[i] = keep; }
                 }
@@ -60,39 +60,39 @@ namespace BallBattle.SimTests
             float Push(bool heavy)
             {
                 var target = heavy ? Stage.L(new HarmlessRule(), new HeavyTrait()) : Stage.L(new HarmlessRule());
-                var m = Stage.Build(null, (Stage.L(new FixedBladeRule(1f, 40f, 0f)), new Vec2(0f, 0f), 0f), (target, new Vec2(60f, 0f), 0f));
+                var m = Stage.Build(null, (Stage.L(new FixedBladeRule(1f, 40f, 0f)), FT.V(0f, 0f), 0f), (target, FT.V(60f, 0f), 0f));
                 for (var i = 0; i < 3; i++) m.Step();
-                return m.Balls[1].Vel.Length;
+                return (m.Balls[1].Vel.Length).F();
             }
-            Assert.That(Push(true), Is.LessThan(Push(false) * 0.7f));
+            Assert.That(Push(true).F(), Is.LessThan((Push(false) * 0.7f).F()));
         }
 
         [Test]
         public void VampireHealsShareOfHitDamage()
         {
             var attacker = Stage.L(new FixedBladeRule(10f, 25f, 0f), new VampireTrait());
-            attacker.Hp = 50f;
-            var m = Stage.Build(null, (attacker, new Vec2(0f, 0f), 0f), (Stage.L(new HarmlessRule()), new Vec2(45f, 0f), 0f));
+            attacker.Hp = FT.X(50f);
+            var m = Stage.Build(null, (attacker, FT.V(0f, 0f), 0f), (Stage.L(new HarmlessRule()), FT.V(45f, 0f), 0f));
             m.Step();
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(50f + 10f * TraitTuning.VampireHealPct[0]).Within(1e-4f));
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo((FT.X(50f) + FT.X(10f) * TraitTuning.VampireHealPct[0]).F()).Within(1e-4f));
         }
 
         [Test]
         public void SpikyHurtsOnBodyBounce()
         {
             var m = Stage.Build(null,
-                (Stage.L(new HarmlessRule(), new SpikyTrait(2)), new Vec2(-40f, 0f), 0f),
-                (Stage.L(new HarmlessRule()), new Vec2(40f, 0f), 0f));
-            m.Balls[0].Vel = new Vec2(3f, 0f);
-            m.Balls[1].Vel = new Vec2(-3f, 0f);
+                (Stage.L(new HarmlessRule(), new SpikyTrait(2)), FT.V(-40f, 0f), 0f),
+                (Stage.L(new HarmlessRule()), FT.V(40f, 0f), 0f));
+            m.Balls[0].Vel = FT.V(3f, 0f);
+            m.Balls[1].Vel = FT.V(-3f, 0f);
             var damage = 0f;
             for (var i = 0; i < 20; i++)
             {
                 m.Step();
-                damage += m.Events.Where(e => e.Type == SimEventType.Damage && e.B == 1).Sum(e => e.Value);
+                damage += m.Events.Where(e => e.Type == SimEventType.Damage && e.B == 1).Sum(e => e.Value.F());
             }
-            Assert.That(damage, Is.EqualTo(TraitTuning.SpikyContactDamage[1]));
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(100f), "spikes do not hurt their owner");
+            Assert.That(damage, Is.EqualTo(TraitTuning.SpikyContactDamage[1].F()));
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo(100f), "spikes do not hurt their owner");
         }
 
         [Test]

@@ -17,7 +17,7 @@ namespace BallBattle.SimTests
     /// Env: BB_SEEDS (seeds per side, default 40), BB_COMBOS (default 500), BB_REPORT (file to write).
     /// Run: dotnet test --filter "FullyQualifiedName~TraitBalanceReport"
     /// </summary>
-    [Explicit, Category("Diagnostic")]
+    [Explicit, Category("Diagnostic"), Category("Slow")]
     public class TraitBalanceReport
     {
         /// <summary>Win % (draw = half) of ball A (weapon + traits) against ball B (weapon + traits), both sides, over seeds.</summary>

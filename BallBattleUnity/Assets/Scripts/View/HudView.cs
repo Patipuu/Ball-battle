@@ -132,7 +132,7 @@ namespace BallBattle.View
             {
                 var s = sides[i];
                 var ball = sim.Balls[i];
-                var frac = Mathf.Clamp01(ball.HpFraction);
+                var frac = Mathf.Clamp01(ball.HpFraction.ToFloat());
                 if (s.Fresh) { s.LostFraction = frac; s.Fresh = false; }   // a fight that starts hurt shows no red drain
                 s.LostFraction = Mathf.Max(frac, s.LostFraction - LostLagPerSecond * deltaTime);
 
@@ -141,7 +141,7 @@ namespace BallBattle.View
                 SetBar(s.BarLost, left, y, BarWidth * s.LostFraction);
                 SetBar(s.BarFill, left, y, BarWidth * frac);
 
-                var hp = BallBattle.View.HpText.Of(ball.Hp);
+                var hp = BallBattle.View.HpText.Of(ball.Hp.ToFloat());
                 if (hp != s.ShownHp)
                 {
                     s.ShownHp = hp;
@@ -151,7 +151,7 @@ namespace BallBattle.View
                 var w = ball.Weapon;
                 if (!w.StatValue.Equals(s.ShownStat))
                 {
-                    s.ShownStat = w.StatValue;
+                    s.ShownStat = w.StatValue.ToFloat();
                     s.Stat.Set(w.StatLabel + " " + w.StatText, Palette.TextDim);
                 }
             }

@@ -9,41 +9,41 @@ namespace BallBattle.SimTests
     public class TraitTests
     {
         static MatchSim Duel(BallLoadout attacker, BallLoadout target)
-            => Stage.Build(null, (attacker, new Vec2(0f, 0f), 0f), (target, new Vec2(45f, 0f), 0f));
+            => Stage.Build(null, (attacker, FT.V(0f, 0f), 0f), (target, FT.V(45f, 0f), 0f));
 
         [Test]
         public void ThornsSendsMeleeShareBack([Values(1, 2)] int level)
         {
             var m = Duel(Stage.L(new FixedBladeRule(10f, 25f, 0f)), Stage.L(new HarmlessRule(), new ThornsTrait(level)));
             m.Step();
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(90f).Within(1e-4f));
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(100f - 10f * TraitTuning.ThornsReflectPct[level - 1]).Within(1e-4f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(90f).Within(1e-4f));
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo((FT.X(100f) - FT.X(10f) * TraitTuning.ThornsReflectPct[level - 1]).F()).Within(1e-4f));
         }
 
         [Test]
         public void SecondWindHealsOnceWhenLow([Values(1, 2)] int level)
         {
             var target = Stage.L(new HarmlessRule(), new SecondWindTrait(level));
-            target.Hp = 25f;
+            target.Hp = FT.X(25f);
             var m = Duel(Stage.L(new HarmlessRule()), target);
             m.Step();
             var heal = TraitTuning.SecondWindHeal[level - 1];
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(25f + heal).Within(1e-4f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo((FT.X(25f) + heal).F()).Within(1e-4f));
             Assert.That(m.Events.Count(e => e.Type == SimEventType.TraitTriggered && e.TraitId == SecondWindTrait.TraitId && e.A == 1 && e.Value == heal), Is.EqualTo(1));
-            m.Balls[1].Hp = 10f;
+            m.Balls[1].Hp = FT.X(10f);
             m.Step();
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(10f), "only once");
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(10f), "only once");
         }
 
         [Test]
         public void SecondWindTurnsALethalBlowIntoTheHeal()
         {
             var target = Stage.L(new HarmlessRule(), new SecondWindTrait(1));
-            target.Hp = 30f;
+            target.Hp = FT.X(30f);
             var m = Duel(Stage.L(new FixedBladeRule(50f, 25f, 0f)), target);
             m.Step();
             Assert.That(m.Balls[1].Alive);
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(TraitTuning.SecondWindHeal[0]).Within(1e-4f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo((TraitTuning.SecondWindHeal[0]).F()).Within(1e-4f));
             Assert.That(m.Events.Any(e => e.Type == SimEventType.TraitTriggered && e.TraitId == SecondWindTrait.TraitId && e.A == 1), Is.True);
         }
 
@@ -53,19 +53,19 @@ namespace BallBattle.SimTests
             var m = Duel(Stage.L(new FixedBladeRule(10f, 25f, 0f), new GlassCannonTrait(level)), Stage.L(new HarmlessRule()));
             m.Step();
             var i = level - 1;
-            Assert.That(m.Balls[0].MaxHp, Is.EqualTo(100f - TraitTuning.GlassCannonHpLoss[i]).Within(1e-3f));
+            Assert.That(m.Balls[0].MaxHp.F(), Is.EqualTo((FT.X(100f) - TraitTuning.GlassCannonHpLoss[i]).F()).Within(1e-3f));
             Assert.That(m.Balls[0].Hp, Is.EqualTo(m.Balls[0].MaxHp));
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(100f - 10f * TraitTuning.GlassCannonDamageMul[i]).Within(1e-3f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo((FT.X(100f) - FT.X(10f) * TraitTuning.GlassCannonDamageMul[i]).F()).Within(1e-3f));
         }
 
         [Test]
         public void GlassCannonKeepsTheCarriedHpFraction()
         {
             var l = Stage.L(new HarmlessRule(), new GlassCannonTrait(1));
-            l.Hp = 50f;
+            l.Hp = FT.X(50f);
             var m = Duel(l, Stage.L(new HarmlessRule()));
             m.Step();
-            Assert.That(m.Balls[0].HpFraction, Is.EqualTo(0.5f).Within(1e-4f));
+            Assert.That(m.Balls[0].HpFraction.F(), Is.EqualTo(0.5f).Within(1e-4f));
         }
 
         [Test]
@@ -76,9 +76,9 @@ namespace BallBattle.SimTests
             for (var i = 0; i < TraitTuning.ParryMasterEvery[level - 1]; i++) m.Balls[0].Traits[0].OnParry(m.Balls[1]);
             var control = Stage.L(new BladeRule());
             var cm = Duel(control, Stage.L(new BladeRule()));
-            cm.Balls[0].Weapon.OnHit(new HitContext(0f, 0f));
+            cm.Balls[0].Weapon.OnHit(new HitContext(FT.X(0f), FT.X(0f)));
             Assert.That(m.Balls[0].Weapon.StatValue, Is.GreaterThan(before));
-            Assert.That(m.Balls[0].Weapon.StatValue, Is.EqualTo(cm.Balls[0].Weapon.StatValue).Within(1e-4f));
+            Assert.That(m.Balls[0].Weapon.StatValue.F(), Is.EqualTo((cm.Balls[0].Weapon.StatValue).F()).Within(1e-4f));
         }
 
         [Test]

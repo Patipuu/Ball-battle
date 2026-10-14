@@ -6,6 +6,9 @@
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- 6a.6b/c: the fixed-point sim is all small struct operators; let the JIT inline them (DEBUG stays defined, so Fix
+         keeps its checked overflow arithmetic). Without this the suite runs several times slower than the float sim did. -->
+    <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

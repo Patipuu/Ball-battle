@@ -22,6 +22,7 @@ namespace BallBattle.View
 
         void Awake()
         {
+            if (HeadlessRoundRobin.Active) { enabled = false; return; }   // -roundrobin: no game, no save, the player quits after the run
             if (Arena == null) Arena = FindAnyObjectByType<ArenaView>();
             Arena.AutoRestart = false;
             Arena.Paused = true;
@@ -136,7 +137,7 @@ namespace BallBattle.View
             }
         }
 
-        void Start() => Flow.ToMenu();
+        void Start() { if (!HeadlessRoundRobin.Active) Flow.ToMenu(); }
 
         /// <summary>Versus round totals for the end-of-fight log line (Run mode keeps its own in RunFlow.Stats).</summary>
         readonly FightStats versusStats = new FightStats();

@@ -320,12 +320,12 @@ namespace BallBattle.Tests
             foreach (var enemy in WeaponRegistry.All)
                 foreach (var boss in new[] { false, true })
                 {
-                    var you = new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { MaxHp = 100f, Hp = 41f }.With(TraitRegistry.Create(SecondWindTrait.TraitId, 1));
+                    var you = new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { MaxHp = TFix.X(100f), Hp = TFix.X(41f) }.With(TraitRegistry.Create(SecondWindTrait.TraitId, 1));
                     var foe = new BallLoadout(WeaponRegistry.Create(enemy.Id));
                     if (boss) { foe.MaxHp = RunTuning.BossHp[1]; foe.Radius = RunTuning.BossRadius; }
                     var m = new MatchSim(ArenaRegistry.Create(ArenaRegistry.Classic), 9, new[] { you, foe });
                     m.ApplySpawnHooks();
-                    Assert.That(m.Balls[0].Hp, Is.EqualTo(41f));
+                    Assert.That(m.Balls[0].Hp.ToFloat(), Is.EqualTo(41f));
                     PlayCheckingSecondWind(m, $"vs {enemy.Id}{(boss ? " boss" : "")}");
                 }
         }
@@ -362,7 +362,7 @@ namespace BallBattle.Tests
             var sw = Enumerable.Range(0, f.Run.OfferCount).First(i => f.Run.OfferCard(i).Id == SecondWindTrait.TraitId);
             f.PickStart(sw);
             Assert.That(f.Run.Build.TraitLevel(SecondWindTrait.TraitId), Is.EqualTo(1));
-            f.Run.Build.DamagePct = 10f; // This fixture must reach Shell King to test trait persistence through the boss.
+            f.Run.Build.DamagePct = TFix.X(10f); // This fixture must reach Shell King to test trait persistence through the boss.
 
             var fired = new List<int>();
             var bossSeen = false;
@@ -370,11 +370,11 @@ namespace BallBattle.Tests
             {
                 var index = f.Run.FightIndex;
                 bossSeen |= f.Run.IsBossFight;
-                if (index > RunTuning.BossFights[0]) f.Run.Build.DamagePct = 0f;
+                if (index > RunTuning.BossFights[0]) f.Run.Build.DamagePct = TFix.X(0f);
                 if (fight > 0)
                 {
                     if (f.Run.CanPick(0)) f.Pick(0);   // keep taking cards like a player (swap, heal, max HP, traits)
-                    f.Run.Build.SetHp((index > RunTuning.BossFights[0] ? 25f : 41f) * f.Run.Build.MaxHp / 100f);
+                    f.Run.Build.SetHp((index > RunTuning.BossFights[0] ? TFix.X(25f) : TFix.X(41f)) * f.Run.Build.MaxHp / TFix.X(100f));
                 }
                 // The run now has one retry; this sequence must win to advance.
                 Assert.That(f.Run.Build.TraitLevel(SecondWindTrait.TraitId), Is.GreaterThanOrEqualTo(1), $"fight {index + 1}: still in the build");
@@ -404,7 +404,7 @@ namespace BallBattle.Tests
         // ---- 5. Prepare HP = the fight's HP ----
 
         static (string you, string enemy) Expected(MatchSim m) =>
-            ($"HP {HpText.Of(m.Balls[0].Hp)}/{HpText.Of(m.Balls[0].MaxHp)}", PrepareView.EnemyHpText(m.Balls[1].Hp, m.Balls[1].MaxHp));
+            ($"HP {HpText.Of(m.Balls[0].Hp.ToFloat())}/{HpText.Of(m.Balls[0].MaxHp.ToFloat())}", PrepareView.EnemyHpText(m.Balls[1].Hp.ToFloat(), m.Balls[1].MaxHp.ToFloat()));
 
         void AssertPrepareMatchesFight(PrepareView v, RunFlow f, string label)
         {
@@ -438,7 +438,7 @@ namespace BallBattle.Tests
                 AssertPrepareMatchesFight(v, f, label);
             }
 
-            f.Run.Build.SetHp(40f);
+            f.Run.Build.SetHp(TFix.X(40f));
             TakeCard(new Card(CardKind.Heal), "after HEAL");
             TakeCard(new Card(CardKind.MaxHp), "after MAX HP");
             TakeCard(new Card(CardKind.Trait, HeavyTrait.TraitId, 1), "after HEAVY");
@@ -468,7 +468,7 @@ namespace BallBattle.Tests
             h.ChooseWeapon(h.StartChoices[0]);
             h.PickStart(0);
             h.Run.Build.Traits.Add(new TraitSlot(HeavyTrait.TraitId, 2));
-            h.Run.Build.DamagePct = 10f; // Reach the boss before checking carried HP after it.
+            h.Run.Build.DamagePct = TFix.X(10f); // Reach the boss before checking carried HP after it.
             while (h.Run.FightIndex <= RunTuning.BossFights[0] && h.Current == RunFlow.State.Prepare)
             {
                 var wasBoss = h.Run.IsBossFight;
@@ -514,7 +514,7 @@ namespace BallBattle.Tests
         [Test]
         public void TwoAndThreeNumbersInOneTickAtOnePointAreTwelvePixelsApart()
         {
-            var arena = ArenaRect.Centered(230f, 230f);
+            var arena = ArenaRect.Centered(TFix.X(230f), TFix.X(230f));
             foreach (var count in new[] { 2, 3 })
             {
                 var popups = DamagePopups.Create(root.transform, art.Font, 8);
@@ -529,12 +529,12 @@ namespace BallBattle.Tests
         [Test]
         public void NumbersAtTheTopWallStackDownAndStayInside()
         {
-            var arena = ArenaRect.Centered(230f, 230f);
+            var arena = ArenaRect.Centered(TFix.X(230f), TFix.X(230f));
             var popups = DamagePopups.Create(root.transform, art.Font, 8);
-            for (var i = 0; i < 3; i++) popups.Show(new Vector2(10f, arena.Top - 2f), 0.2f, FxView.ReflectColor, arena, 2);
+            for (var i = 0; i < 3; i++) popups.Show(new Vector2(10f, arena.Top.ToFloat() - 2f), 0.2f, FxView.ReflectColor, arena, 2);
             var shown = popups.Showing();
             foreach (var p in shown)
-                Assert.That(p.start.y + DamagePopups.Rise + PixelFontData.GlyphHeight * p.scale, Is.LessThanOrEqualTo(arena.Top - DamagePopups.WallMargin), "never over the top wall");
+                Assert.That(p.start.y + DamagePopups.Rise + PixelFontData.GlyphHeight * p.scale, Is.LessThanOrEqualTo(arena.Top.ToFloat() - DamagePopups.WallMargin), "never over the top wall");
             var ys = shown.Select(p => p.start.y).OrderByDescending(y => y).ToArray();
             for (var i = 1; i < ys.Length; i++) Assert.That(ys[i - 1] - ys[i], Is.GreaterThanOrEqualTo(DamagePopups.StackStep), "stacked downwards");
             for (var t = 0; t < 45; t++) { popups.Tick(1f / 60f); AssertApartNow(popups, $"top, frame {t}"); }
@@ -543,7 +543,7 @@ namespace BallBattle.Tests
         [Test]
         public void ANumberShownLaterNeverCatchesUpWithOneStillRising()
         {
-            var arena = ArenaRect.Centered(230f, 230f);
+            var arena = ArenaRect.Centered(TFix.X(230f), TFix.X(230f));
             var popups = DamagePopups.Create(root.transform, art.Font, 8);
             popups.Show(Vector2.zero, 1.4f, Palette.Text, arena);
             for (var t = 0; t < 6; t++) popups.Tick(1f / 60f);   // 0.1 s later: the first has risen ~7 px
@@ -555,13 +555,13 @@ namespace BallBattle.Tests
         public void NumbersFollowAWallThatClosesIn()
         {
             var popups = DamagePopups.Create(root.transform, art.Font, 8);
-            var wide = ArenaRect.Centered(230f, 230f);
+            var wide = ArenaRect.Centered(TFix.X(230f), TFix.X(230f));
             popups.Show(new Vector2(0f, 80f), 3f, Palette.Text, wide);
-            var tight = ArenaRect.Centered(110f, 110f);
+            var tight = ArenaRect.Centered(TFix.X(110f), TFix.X(110f));
             popups.SetBounds(tight);
             popups.Tick(0.3f);
             var y = popups.ShowingNow()[0].y;
-            Assert.That(y + PixelFontData.GlyphHeight, Is.LessThanOrEqualTo(tight.Top - DamagePopups.WallMargin));
+            Assert.That(y + PixelFontData.GlyphHeight, Is.LessThanOrEqualTo(tight.Top.ToFloat() - DamagePopups.WallMargin));
         }
 
         // ---- 7. Versus overlay ----

@@ -1,4 +1,3 @@
-using System;
 
 namespace BallBattle.Sim.Traits
 {
@@ -12,13 +11,13 @@ namespace BallBattle.Sim.Traits
         public override void OnSpawn()
         {
             var i = Level - 1;
-            var target = Math.Min(Self.Radius * TraitTuning.HeavyRadiusScale[i], Math.Max(Self.Radius, TraitTuning.HeavyMaxRadius[i]));
+            var target = FixMath.Min(Self.Radius * TraitTuning.HeavyRadiusScale[i], FixMath.Max(Self.Radius, TraitTuning.HeavyMaxRadius[i]));
             var grow = target - Self.Radius;
             Self.Radius += grow;
             Self.BladeShift += grow;
             Self.Bonus.SpeedPct += TraitTuning.HeavySpeedPct[i];
             Self.KnockbackResist = TraitTuning.HeavyKnockbackResist[i];
-            var scale = 1f + TraitTuning.HeavyMaxHpPct[i];
+            var scale = Fix.One + TraitTuning.HeavyMaxHpPct[i];
             Self.MaxHp *= scale;
             Self.Hp *= scale; // keeps the HP fraction, so Run mode carries no free HP out of the fight
         }

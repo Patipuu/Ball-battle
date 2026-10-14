@@ -6,9 +6,9 @@ namespace BallBattle.Sim
     public struct StatBonus
     {
         /// <summary>Multiplies every outgoing weapon/projectile hit: damage * (1 + DamagePct).</summary>
-        public float DamagePct;
+        public Fix DamagePct;
         /// <summary>Multiplies the ball's speed cap: (MaxSpeed + weapon bonus) * (1 + SpeedPct).</summary>
-        public float SpeedPct;
+        public Fix SpeedPct;
 
         public ulong HashInto(ulong h) => SimHash.Mix(SimHash.Mix(h, DamagePct), SpeedPct);
     }
@@ -24,10 +24,10 @@ namespace BallBattle.Sim
         public WeaponRule Weapon;
         public readonly List<TraitRule> Traits = new List<TraitRule>(4);
         public StatBonus Bonus;
-        public float MaxHp = -1f;
+        public Fix MaxHp = -1;
         /// <summary>HP at match start (Run mode carries HP between fights). Clamped to MaxHp.</summary>
-        public float Hp = -1f;
-        public float Radius = -1f;
+        public Fix Hp = -1;
+        public Fix Radius = -1;
 
         public BallLoadout(WeaponRule weapon) => Weapon = weapon;
 

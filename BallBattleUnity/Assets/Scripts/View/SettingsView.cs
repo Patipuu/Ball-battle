@@ -94,7 +94,10 @@ namespace BallBattle.View
         /// <summary>Tests / automation: the pointer is lifted after a drag.</summary>
         public void ReleasePointer() => Released?.Invoke();
 
-        void Update()
+        void Update() => Tick();
+
+        /// <summary>One frame of slider following (Update calls it; EditMode tests call it between PixelInput dispatches).</summary>
+        public void Tick()
         {
             musicSlider.Follow();
             sfxSlider.Follow();
@@ -126,7 +129,9 @@ namespace BallBattle.View
                 Track.ClickCue = null;   // the slider's own feedback is the SFX click at the new volume
                 Track.Clicked += () =>
                 {
-                    SetFromX(Track.LastPressNative.x);   // a tap (or a drag released on the track)
+                    // A tap sets the value at the release point. A drag released on the track keeps the value the drag
+                    // reached (it used to jump back to the press point: 6a.6b/c part 0).
+                    if (!dragging) SetFromX(Track.LastReleaseNative.x);
                     dragging = false;
                     released?.Invoke();
                 };

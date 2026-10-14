@@ -1,4 +1,3 @@
-using System;
 
 namespace BallBattle.Sim.Weapons
 {
@@ -9,10 +8,10 @@ namespace BallBattle.Sim.Weapons
     public sealed class RigRule : WeaponRule
     {
         public const string WeaponId = "rig";
-        readonly Vec2[] turrets = new Vec2[WeaponTuning.RigMaxTurrets];
-        readonly Vec2[] scratch = new Vec2[WeaponTuning.RigMaxTurrets];
+        readonly FixVec2[] turrets = new FixVec2[WeaponTuning.RigMaxTurrets];
+        readonly FixVec2[] scratch = new FixVec2[WeaponTuning.RigMaxTurrets];
         readonly ProjectileSpec shot;
-        float damage = WeaponTuning.RigMeleeDamage;
+        Fix damage = WeaponTuning.RigMeleeDamage;
         int count;
         int next;
         int timer;
@@ -33,12 +32,12 @@ namespace BallBattle.Sim.Weapons
 
         public override string Id => WeaponId;
         public override string StatLabel => "RIGS";
-        public override float StatValue => count;
+        public override Fix StatValue => count;
 
         public int TurretCount => count;
-        public Vec2 GetTurret(int index) => turrets[index];
+        public FixVec2 GetTurret(int index) => turrets[index];
 
-        public override float Damage(in HitContext ctx) => damage;
+        public override Fix Damage(in HitContext ctx) => damage;
 
         public override void OnHit(in HitContext ctx)
         {
@@ -58,8 +57,8 @@ namespace BallBattle.Sim.Weapons
             if (foe == null) return;
             for (var i = 0; i < count; i++)
             {
-                var dir = (foe.Pos - turrets[i]).NormalizedOr(new Vec2(1f, 0f));
-                Sim.FireProjectile(Self, turrets[i] + dir * (WeaponTuning.RigTurretRadius + 1f), dir * WeaponTuning.RigShotSpeed, shot);
+                var dir = (foe.Pos - turrets[i]).NormalizedOr(FixVec2.Right);
+                Sim.FireProjectile(Self, turrets[i] + dir * (WeaponTuning.RigTurretRadius + 1), dir * WeaponTuning.RigShotSpeed, shot);
             }
         }
 

@@ -219,7 +219,7 @@ namespace BallBattle.Tests
         ArenaView BossFight(ArenaView.BossLook look)
         {
             var player = new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId));
-            var boss = new BallLoadout(WeaponRegistry.Create(BrawlerRule.WeaponId)) { MaxHp = 220f, Radius = RunTuning.BossRadius };
+            var boss = new BallLoadout(WeaponRegistry.Create(BrawlerRule.WeaponId)) { MaxHp = TFix.X(220f), Radius = RunTuning.BossRadius };
             var sim = new MatchSim(ArenaRegistry.Create(ArenaRegistry.Classic), 4, new[] { player, boss });
             sim.ApplySpawnHooks();
             var view = root.AddComponent<ArenaView>();
@@ -238,7 +238,7 @@ namespace BallBattle.Tests
             var boss = view.GetBallView(1);
             Assert.That(boss.BodySprite, Is.SameAs(art.ShellKing));
             Assert.That(boss.Scale, Is.EqualTo(1f).Within(0.001f), "drawn big already: no x1.5");
-            Assert.That(boss.NativeRadius * boss.Scale, Is.EqualTo(view.Sim.Balls[1].Radius).Within(0.001f), "sim radius 24 = body radius 24");
+            Assert.That(boss.NativeRadius * boss.Scale, Is.EqualTo(view.Sim.Balls[1].Radius.ToFloat()).Within(0.001f), "sim radius 24 = body radius 24");
             Assert.That(boss.UsesOutlineFlash, Is.True, "big ball: outline flash");
             Assert.That(boss.EdgeFlashRenderer.sprite, Is.SameAs(BallEdges.Source.Edge(art.ShellKing, 1)), "flash follows the boss sprite's rim");
             view.PlayBossGlow();
@@ -299,13 +299,13 @@ namespace BallBattle.Tests
                 art.TryArena(a.Id, out var look);
                 Assert.That(view.Frame.Floor.sprite, Is.SameAs(look.Floor), $"{a.Id}: floor_{a.Id}");
                 Assert.That(view.Frame.Floor.drawMode, Is.EqualTo(SpriteDrawMode.Tiled));
-                Assert.That(view.Frame.Floor.size, Is.EqualTo(new Vector2(Mathf.Round(sim.Arena.Right) - Mathf.Round(sim.Arena.Left), Mathf.Round(sim.Arena.Top) - Mathf.Round(sim.Arena.Bottom))));
+                Assert.That(view.Frame.Floor.size, Is.EqualTo(new Vector2(Mathf.Round(sim.Arena.Right.ToFloat()) - Mathf.Round(sim.Arena.Left.ToFloat()), Mathf.Round(sim.Arena.Top.ToFloat()) - Mathf.Round(sim.Arena.Bottom.ToFloat()))));
                 Assert.That(view.Frame.WallColor, Is.EqualTo(look.WallColor), $"{a.Id}: wall color from arena_colors.json");
-                var spikes = sim.Config.Layout != null && sim.Config.Layout.WallDamage > 0f;
+                var spikes = sim.Config.Layout != null && sim.Config.Layout.WallDamage > TFix.X(0f);
                 if (spikes)
                 {
                     // BB-FIX1a: teeth only along the corner spike zones (1/5 of each wall at TL and BR).
-                    var zones = ArenaFrameView.ZoneSegments(sim.Config.Layout.SpikeCorners, Mathf.Round(sim.Arena.Left), Mathf.Round(sim.Arena.Bottom), Mathf.Round(sim.Arena.Right), Mathf.Round(sim.Arena.Top));
+                    var zones = ArenaFrameView.ZoneSegments(sim.Config.Layout.SpikeCorners, sim.Arena);
                     var expected = zones.Sum(z => Mathf.FloorToInt(z.Length / ArenaFrameView.ToothSpacing));
                     Assert.That(view.Frame.TeethShown, Is.EqualTo(expected), "teeth along the spike zones only");
                 }

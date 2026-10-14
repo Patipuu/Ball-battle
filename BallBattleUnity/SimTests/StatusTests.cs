@@ -6,13 +6,13 @@ namespace BallBattle.SimTests
 {
     public class StatusTests
     {
-        static readonly Vec2 PosA = new Vec2(-60f, 0f);
-        static readonly Vec2 PosB = new Vec2(60f, 0f);
+        static readonly FixVec2 PosA = FT.V(-60f, 0f);
+        static readonly FixVec2 PosB = FT.V(60f, 0f);
 
         static MatchSim TwoIdleBalls(float hpB = -1f)
         {
             var b = Stage.L(new HarmlessRule());
-            b.Hp = hpB;
+            b.Hp = FT.X(hpB);
             return Stage.Build(null, (Stage.L(new HarmlessRule()), PosA, 0f), (b, PosB, 0f));
         }
 
@@ -21,8 +21,8 @@ namespace BallBattle.SimTests
         {
             var m = TwoIdleBalls();
             var target = m.Balls[1];
-            m.ApplyPoison(target, m.Balls[0], 1f, 180);
-            m.ApplyPoison(target, m.Balls[0], 1f, 180);
+            m.ApplyPoison(target, m.Balls[0], FT.X(1f), 180);
+            m.ApplyPoison(target, m.Balls[0], FT.X(1f), 180);
             Assert.That(target.Status.PoisonStackCount, Is.EqualTo(2));
 
             var pulses = 0;
@@ -33,7 +33,7 @@ namespace BallBattle.SimTests
             }
 
             Assert.That(pulses, Is.EqualTo(3), "3 s of poison = 3 pulses");
-            Assert.That(target.Hp, Is.EqualTo(100f - 2f * 3f).Within(1e-4f));
+            Assert.That(target.Hp.F(), Is.EqualTo((100f - 2f * 3f).F()).Within(1e-4f));
             Assert.That(target.Status.PoisonStackCount, Is.EqualTo(0));
         }
 
@@ -42,10 +42,10 @@ namespace BallBattle.SimTests
         {
             var m = TwoIdleBalls();
             var target = m.Balls[1];
-            m.ApplyPoison(target, m.Balls[0], 1f, 120);
+            m.ApplyPoison(target, m.Balls[0], FT.X(1f), 120);
             for (var i = 0; i < 37; i++) m.Step();
-            m.ApplyPoison(target, m.Balls[0], 1f, 120); // lands mid-second
-            m.ApplyPoison(target, m.Balls[0], 1f, 59);  // rounded up to 1 s: pulses once, together with the stack above
+            m.ApplyPoison(target, m.Balls[0], FT.X(1f), 120); // lands mid-second
+            m.ApplyPoison(target, m.Balls[0], FT.X(1f), 59);  // rounded up to 1 s: pulses once, together with the stack above
 
             var pulses = 0;
             for (var i = 0; i < 300; i++)
@@ -54,7 +54,7 @@ namespace BallBattle.SimTests
                 pulses += m.Events.Count(e => e.Type == SimEventType.StatusTick);
             }
 
-            Assert.That(target.Hp, Is.EqualTo(100f - 5f).Within(1e-4f), "2 s stacks pulse exactly twice, the 1 s stack once");
+            Assert.That(target.Hp.F(), Is.EqualTo((100f - 5f).F()).Within(1e-4f), "2 s stacks pulse exactly twice, the 1 s stack once");
             Assert.That(pulses, Is.EqualTo(4), "stacks pulsing on the same tick share one event");
         }
 
@@ -63,23 +63,23 @@ namespace BallBattle.SimTests
         {
             var m = TwoIdleBalls();
             var b = m.Balls[1];
-            b.Hp = 0f; // pending death (still Alive until the sim resolves deaths)
-            Assert.That(m.Heal(b, 50f), Is.EqualTo(0f));
-            b.Hp = 100f;
-            b.MaxHp = 80f; // e.g. a trait lowered MaxHp
-            Assert.That(m.Heal(b, 10f), Is.EqualTo(0f));
-            Assert.That(b.Hp, Is.EqualTo(100f), "heal never clamps HP down");
+            b.Hp = FT.X(0f); // pending death (still Alive until the sim resolves deaths)
+            Assert.That((m.Heal(b, FT.X(50f))).F(), Is.EqualTo(0f));
+            b.Hp = FT.X(100f);
+            b.MaxHp = FT.X(80f); // e.g. a trait lowered MaxHp
+            Assert.That((m.Heal(b, FT.X(10f))).F(), Is.EqualTo(0f));
+            Assert.That(b.Hp.F(), Is.EqualTo(100f), "heal never clamps HP down");
         }
 
         [Test]
         public void FullPoisonReplacesStackWithFewestTicksLeft()
         {
             var s = new StatusEffects();
-            for (var i = 0; i < StatusEffects.MaxPoisonStacks; i++) s.AddPoison(1f, 100 + i, 0);
-            s.AddPoison(5f, 500, 1);
+            for (var i = 0; i < StatusEffects.MaxPoisonStacks; i++) s.AddPoison(FT.X(1f), 100 + i, 0);
+            s.AddPoison(FT.X(5f), 500, 1);
 
             Assert.That(s.PoisonStackCount, Is.EqualTo(StatusEffects.MaxPoisonStacks));
-            Assert.That(s.Poison[0].Dps, Is.EqualTo(5f), "slot 0 had the fewest ticks left");
+            Assert.That(s.Poison[0].Dps.F(), Is.EqualTo(5f), "slot 0 had the fewest ticks left");
             Assert.That(s.Poison[0].Source, Is.EqualTo(1));
         }
 
@@ -87,7 +87,7 @@ namespace BallBattle.SimTests
         public void PoisonKillCreditsSource()
         {
             var m = TwoIdleBalls(hpB: 1f);
-            m.ApplyPoison(m.Balls[1], m.Balls[0], 3f, 120);
+            m.ApplyPoison(m.Balls[1], m.Balls[0], FT.X(3f), 120);
             for (var i = 0; i < 120 && m.Outcome == MatchOutcome.Ongoing; i++) m.Step();
 
             Assert.That(m.WinnerIndex, Is.EqualTo(0));
@@ -97,8 +97,8 @@ namespace BallBattle.SimTests
         [Test]
         public void ShieldBlocksExactlyItsCharges()
         {
-            var posA = new Vec2(0f, 0f);
-            var posB = new Vec2(45f, 0f);
+            var posA = FT.V(0f, 0f);
+            var posB = FT.V(45f, 0f);
             var m = Stage.Build(null, (Stage.L(new FixedBladeRule(10f, 25f, 0f)), posA, 0f), (Stage.L(new HarmlessRule()), posB, 0f));
             m.AddShield(m.Balls[1], 2);
 
@@ -113,7 +113,7 @@ namespace BallBattle.SimTests
 
             Assert.That(blocked, Is.EqualTo(2));
             Assert.That(hits, Is.EqualTo(1));
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(90f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(90f));
             Assert.That(m.Balls[1].Status.ShieldCharges, Is.EqualTo(0));
             Assert.That(m.Balls[0].HitCount, Is.EqualTo(1), "blocked hits do not count for weapon growth");
         }
@@ -122,16 +122,16 @@ namespace BallBattle.SimTests
         public void RegenHealsEverySecondUpToMaxHp()
         {
             var m = TwoIdleBalls(hpB: 95f);
-            m.ApplyRegen(m.Balls[1], 2f, 300);
+            m.ApplyRegen(m.Balls[1], FT.X(2f), 300);
             var healed = 0f;
             for (var i = 0; i < 400; i++)
             {
                 m.Step();
-                healed += m.Events.Where(e => e.Type == SimEventType.Heal).Sum(e => e.Value);
+                healed += m.Events.Where(e => e.Type == SimEventType.Heal).Sum(e => e.Value.F());
             }
 
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(100f));
-            Assert.That(healed, Is.EqualTo(5f).Within(1e-4f), "never heals past MaxHp");
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(100f));
+            Assert.That(healed.F(), Is.EqualTo(5f).Within(1e-4f), "never heals past MaxHp");
         }
 
         [Test]
@@ -139,7 +139,7 @@ namespace BallBattle.SimTests
         {
             var a = TwoIdleBalls();
             var b = TwoIdleBalls();
-            b.ApplyPoison(b.Balls[1], null, 1f, 60);
+            b.ApplyPoison(b.Balls[1], null, FT.X(1f), 60);
             Assert.That(a.ComputeHash(), Is.Not.EqualTo(b.ComputeHash()));
         }
     }

@@ -9,7 +9,7 @@ namespace BallBattle.Sim.Weapons
     {
         public const string WeaponId = "brawler";
 
-        public float DamageFactor { get; private set; } = WeaponTuning.BrawlerStartDamagePerSpeed;
+        public Fix DamageFactor { get; private set; } = WeaponTuning.BrawlerStartDamagePerSpeed;
 
         public BrawlerRule()
         {
@@ -23,9 +23,9 @@ namespace BallBattle.Sim.Weapons
         public override string StatLabel => "MAX";
 
         /// <summary>Actual speed cap (match MaxSpeed + bonus), so the HUD never shows a negative number.</summary>
-        public override float StatValue => (Config != null ? Config.MaxSpeed : 0f) + MaxSpeedBonus;
+        public override Fix StatValue => (Config != null ? Config.MaxSpeed : Fix.Zero) + MaxSpeedBonus;
 
-        public override float Damage(in HitContext ctx) => ctx.AttackerSpeed * DamageFactor;
+        public override Fix Damage(in HitContext ctx) => ctx.AttackerSpeed * DamageFactor;
 
         public override void OnHit(in HitContext ctx)
         {
@@ -35,7 +35,7 @@ namespace BallBattle.Sim.Weapons
 
         public override void OnWall() => RaiseCap(WeaponTuning.BrawlerSpeedBonusPerWall);
 
-        void RaiseCap(float amount)
+        void RaiseCap(Fix amount)
         {
             MaxSpeedBonus += amount;
             if (MaxSpeedBonus > WeaponTuning.BrawlerMaxSpeedBonus) MaxSpeedBonus = WeaponTuning.BrawlerMaxSpeedBonus;

@@ -9,7 +9,7 @@ namespace BallBattle.SimTests
     {
         static MatchSim Duel(WeaponRule a, WeaponRule b)
         {
-            var m = Stage.Build(null, (Stage.L(a), new Vec2(-80f, 0f), 90f), (Stage.L(b), new Vec2(80f, 0f), 90f));
+            var m = Stage.Build(null, (Stage.L(a), FT.V(-80f, 0f), 90f), (Stage.L(b), FT.V(80f, 0f), 90f));
             m.Step(); // binds weapons to their balls
             return m;
         }
@@ -44,11 +44,11 @@ namespace BallBattle.SimTests
             var venom = new VenomRule();
             var m = Duel(venom, new HarmlessRule());
             var target = m.Balls[1];
-            venom.OnHitDealt(target, 1f, DamageKind.Weapon);
-            venom.OnHitDealt(target, 1f, DamageKind.Weapon);
+            venom.OnHitDealt(target, FT.X(1f), DamageKind.Weapon);
+            venom.OnHitDealt(target, FT.X(1f), DamageKind.Weapon);
             Assert.That(target.Status.PoisonStackCount, Is.EqualTo(1), "allowance 1");
             venom.OnHit(default);
-            venom.OnHitDealt(target, 1f, DamageKind.Weapon);
+            venom.OnHitDealt(target, FT.X(1f), DamageKind.Weapon);
             Assert.That(target.Status.PoisonStackCount, Is.EqualTo(2));
         }
 
@@ -60,10 +60,10 @@ namespace BallBattle.SimTests
             var blade = m.Balls[1];
             var before = blade.Hp;
             aegis.OnParry(blade);
-            Assert.That(before - blade.Hp, Is.EqualTo(new BladeRule().Damage(new HitContext(0f, 0f)) * WeaponTuning.AegisReflectPct).Within(1e-4f));
+            Assert.That((before - blade.Hp).F(), Is.EqualTo((new BladeRule().Damage(new HitContext(FT.X(0f), FT.X(0f))) * WeaponTuning.AegisReflectPct).F()).Within(1e-4f));
             var width = aegis.BladeThickness;
             aegis.OnHit(default);
-            Assert.That(aegis.BladeThickness, Is.EqualTo(width + WeaponTuning.AegisWidthPerHit).Within(1e-4f));
+            Assert.That(aegis.BladeThickness.F(), Is.EqualTo((width + WeaponTuning.AegisWidthPerHit).F()).Within(1e-4f));
         }
 
         [Test]
@@ -72,7 +72,7 @@ namespace BallBattle.SimTests
             var aegis = new AegisRule();
             var m = Duel(aegis, new BrawlerRule());
             aegis.OnParry(m.Balls[1]);
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(100f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(100f));
         }
 
         [Test]
@@ -80,9 +80,9 @@ namespace BallBattle.SimTests
         {
             var rig = new RigRule();
             var m = Duel(rig, new HarmlessRule());
-            for (var i = 0; i < WeaponTuning.RigMaxTurrets + 2; i++) { m.Balls[0].Pos = new Vec2(-80f + i, 0f); rig.OnHit(default); }
+            for (var i = 0; i < WeaponTuning.RigMaxTurrets + 2; i++) { m.Balls[0].Pos = FT.V(-80f + i, 0f); rig.OnHit(default); }
             Assert.That(rig.TurretCount, Is.EqualTo(WeaponTuning.RigMaxTurrets));
-            Assert.That(Enumerable.Range(0, rig.TurretCount).Select(rig.GetTurret).Any(p => p.X == -80f), Is.False, "oldest turrets were replaced");
+            Assert.That(Enumerable.Range(0, rig.TurretCount).Select(rig.GetTurret).Any(p => p.X == -FT.X(80f)), Is.False, "oldest turrets were replaced");
             for (var i = 0; i < WeaponTuning.RigFireIntervalTicks; i++) m.Step();
             Assert.That(m.Projectiles.ActiveCount, Is.GreaterThanOrEqualTo(WeaponTuning.RigMaxTurrets));
         }
@@ -92,10 +92,10 @@ namespace BallBattle.SimTests
         {
             var rig = new RigRule();
             var m = Duel(rig, new HarmlessRule());
-            m.Balls[0].Pos = new Vec2(10000f, 0f);
+            m.Balls[0].Pos = FT.V(10000f, 0f);
             rig.OnHit(default);
             Assert.That(rig.TurretCount, Is.EqualTo(1));
-            m.Balls[0].Pos = new Vec2(-80f, 0f);
+            m.Balls[0].Pos = FT.V(-80f, 0f);
             m.Step();
             Assert.That(rig.TurretCount, Is.EqualTo(0));
         }
@@ -106,14 +106,14 @@ namespace BallBattle.SimTests
             var aegis = new AegisRule();
             var m = Duel(aegis, new BrawlerRule());
             var brawler = m.Balls[1];
-            m.Balls[0].Hp = 50f;
-            aegis.OnHitTaken(brawler, 10f, DamageKind.Weapon);
-            Assert.That(brawler.Hp, Is.EqualTo(100f - 10f * WeaponTuning.AegisBodyReflectPct).Within(1e-4f));
-            aegis.OnHitTaken(brawler, 10f, DamageKind.Projectile);
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(50f + 10f * WeaponTuning.AegisShotAbsorbPct).Within(1e-4f));
-            m.Balls[0].Hp = 0f; // pending dead: no reflect
+            m.Balls[0].Hp = FT.X(50f);
+            aegis.OnHitTaken(brawler, FT.X(10f), DamageKind.Weapon);
+            Assert.That(brawler.Hp.F(), Is.EqualTo((FT.X(100f) - FT.X(10f) * WeaponTuning.AegisBodyReflectPct).F()).Within(1e-4f));
+            aegis.OnHitTaken(brawler, FT.X(10f), DamageKind.Projectile);
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo((FT.X(50f) + FT.X(10f) * WeaponTuning.AegisShotAbsorbPct).F()).Within(1e-4f));
+            m.Balls[0].Hp = FT.X(0f); // pending dead: no reflect
             var before = brawler.Hp;
-            aegis.OnHitTaken(brawler, 10f, DamageKind.Weapon);
+            aegis.OnHitTaken(brawler, FT.X(10f), DamageKind.Weapon);
             Assert.That(brawler.Hp, Is.EqualTo(before));
         }
 
@@ -124,7 +124,7 @@ namespace BallBattle.SimTests
             var m = Duel(aegis, new HarmlessRule());
             var early = aegis.Damage(default);
             for (var i = 0; i < WeaponTuning.AegisRageStartTicks + WeaponTuning.AegisRageRampTicks; i++) aegis.OnTick();
-            Assert.That(aegis.Damage(default), Is.EqualTo(early * 2f).Within(0.01f));
+            Assert.That(aegis.Damage(default).F(), Is.EqualTo((early * FT.X(2f)).F()).Within(0.01f));
         }
 
         [Test]
@@ -132,9 +132,9 @@ namespace BallBattle.SimTests
         {
             var rig = new RigRule();
             var m = Duel(rig, new HarmlessRule());
-            for (var i = 0; i < WeaponTuning.RigMaxTurrets + 2; i++) { m.Balls[0].Pos = new Vec2(-80f + i, 0f); rig.OnHit(default); }
+            for (var i = 0; i < WeaponTuning.RigMaxTurrets + 2; i++) { m.Balls[0].Pos = FT.V(-80f + i, 0f); rig.OnHit(default); }
             // slots now hold x = -74..-79 in ring order, oldest (-74) at slot 2. Lose one by moving it out.
-            m.Balls[0].Pos = new Vec2(10000f, 0f);
+            m.Balls[0].Pos = FT.V(10000f, 0f);
             rig.OnHit(default);
             m.Step();
             Assert.That(rig.TurretCount, Is.EqualTo(WeaponTuning.RigMaxTurrets - 1));

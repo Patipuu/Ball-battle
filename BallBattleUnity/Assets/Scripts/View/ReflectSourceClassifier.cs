@@ -18,9 +18,9 @@ namespace BallBattle.View
     {
         public readonly SimEvent Damage;
         public readonly ReflectSource Source;
-        public readonly Vec2 Point;
+        public readonly FixVec2 Point;
 
-        public ReflectFx(SimEvent damage, ReflectSource source, Vec2 point)
+        public ReflectFx(SimEvent damage, ReflectSource source, FixVec2 point)
         {
             Damage = damage;
             Source = source;
@@ -50,7 +50,7 @@ namespace BallBattle.View
             bool HasThorns(int ball);
             bool HasSpiky(int ball);
             /// <summary>Ball centre now (for the Spiky midpoint).</summary>
-            Vec2 Center(int ball);
+            FixVec2 Center(int ball);
         }
 
         readonly List<int> parries = new List<int>();
@@ -128,7 +128,7 @@ namespace BallBattle.View
                     var bb = tick[bounces[k]];
                     if (!SamePair(bb, a, b)) continue;
                     bounceUsed[k] = true;
-                    return new ReflectFx(d, ReflectSource.Spiky, (owners.Center(a) + owners.Center(b)) * 0.5f);
+                    return new ReflectFx(d, ReflectSource.Spiky, (owners.Center(a) + owners.Center(b)) / 2);
                 }
 
             var fallback = aegis ? ReflectSource.Aegis : thorns ? ReflectSource.Thorns : spiky ? ReflectSource.Spiky : ReflectSource.Aegis;

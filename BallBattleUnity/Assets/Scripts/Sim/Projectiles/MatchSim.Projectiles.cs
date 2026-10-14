@@ -11,42 +11,42 @@ namespace BallBattle.Sim
     public sealed partial class MatchSim
     {
         /// <summary>Fires a projectile owned by <paramref name="owner"/>. Returns the slot, or -1 (match over, owner down or pool full).</summary>
-        public int FireProjectile(BallState owner, Vec2 pos, Vec2 vel, in ProjectileSpec spec)
+        public int FireProjectile(BallState owner, FixVec2 pos, FixVec2 vel, in ProjectileSpec spec)
         {
             if (!Ongoing || !Active(owner)) return -1;
             var slot = projectiles.Spawn(owner.Index, pos, vel, spec);
-            if (slot >= 0) Emit(SimEventType.ProjectileFired, owner.Index, slot, 0f, pos);
+            if (slot >= 0) Emit(SimEventType.ProjectileFired, owner.Index, slot, Fix.Zero, pos);
             return slot;
         }
 
         /// <summary>Substeps needed so no projectile moves farther than its radius plus the thinnest blade/obstacle half-width.</summary>
-        int ProjectileSubsteps(float minBladeThickness)
+        int ProjectileSubsteps(Fix minBladeThickness)
         {
             if (projectiles.ActiveCount == 0) return 0;
-            var halfBlade = minBladeThickness < float.MaxValue ? minBladeThickness * 0.5f : float.MaxValue;
-            var margin = MathF.Min(halfBlade, layout.MinObstacleRadius);
-            if (margin == float.MaxValue) margin = 0f; // nothing thin to cross: budget by the shot's own radius
+            var halfBlade = minBladeThickness < Fix.MaxValue ? minBladeThickness / 2 : Fix.MaxValue;
+            var margin = FixMath.Min(halfBlade, layout.MinObstacleRadius);
+            if (margin == Fix.MaxValue) margin = Fix.Zero; // nothing thin to cross: budget by the shot's own radius
             var n = 0;
             for (var i = 0; i < ProjectilePool.Capacity; i++)
             {
                 ref readonly var p = ref projectiles.Get(i);
                 if (!p.Active) continue;
-                var step = MathF.Max(p.Radius + margin, 0.5f);
-                var need = (int)MathF.Ceiling(p.Vel.Length / step);
+                var step = FixMath.Max(p.Radius + margin, Fix.Half);
+                var need = FixMath.CeilDiv(p.Vel.Length, step);
                 if (need > n) n = need;
             }
             return n;
         }
 
-        void IntegrateProjectiles(float dt)
+        void IntegrateProjectiles(int substeps, int index)
         {
             if (projectiles.ActiveCount == 0) return;
             for (var i = 0; i < ProjectilePool.Capacity; i++)
             {
                 ref var p = ref projectiles.At(i);
                 if (!p.Active) continue;
-                p.Vel.Y -= Config.Gravity * p.GravityScale * dt;
-                p.Pos += p.Vel * dt;
+                p.Vel.Y -= FixMath.SubstepPart(Config.Gravity * p.GravityScale, index, substeps);
+                p.Pos += FixMath.SubstepPart(p.Vel, index, substeps);
             }
         }
 
@@ -70,22 +70,22 @@ namespace BallBattle.Sim
             {
                 if (!Active(b) || b.Index == p.Owner || !b.Weapon.HasBlade) continue;
                 var closest = Geometry.ClosestPointOnSegment(b.BladeStart, b.BladeEnd, p.Pos);
-                var reach = p.Radius + b.Weapon.BladeThickness * 0.5f;
+                var reach = p.Radius + b.Weapon.BladeThickness / 2;
                 var delta = p.Pos - closest;
-                if (delta.LengthSq > reach * reach && b.HasTwinBlade)
+                if (delta.LengthSq > FixMath.Sq(reach) && b.HasTwinBlade)
                 {
                     closest = Geometry.ClosestPointOnSegment(b.TwinBladeStart, b.TwinBladeEnd, p.Pos);
                     delta = p.Pos - closest;
                 }
-                if (delta.LengthSq > reach * reach) continue;
+                if (delta.LengthSq > FixMath.Sq(reach)) continue;
 
                 var normal = delta.NormalizedOr((-p.Vel).NormalizedOr(FallbackNormal));
-                var into = Vec2.Dot(p.Vel, normal);
-                if (into < 0f) p.Vel -= normal * (2f * into);
+                var into = FixVec2.DotFix(p.Vel, normal);
+                if (into < Fix.Zero) p.Vel -= normal * (into * 2);
                 p.Pos = closest + normal * reach;
                 p.Owner = b.Index;
                 p.HitMask = 0;
-                Emit(SimEventType.ProjectileDeflected, b.Index, slot, 0f, closest);
+                Emit(SimEventType.ProjectileDeflected, b.Index, slot, Fix.Zero, closest);
                 b.Weapon.OnDeflect(slot);
                 foreach (var t in b.Traits) t.OnDeflect(slot);
                 return true;
@@ -102,15 +102,15 @@ namespace BallBattle.Sim
                 if (!Active(b) || b.Index == p.Owner || (p.HitMask & (1 << b.Index)) != 0) continue;
                 var delta = p.Pos - b.Pos;
                 var reach = b.Radius + p.Radius;
-                if (delta.LengthSq > reach * reach) continue;
+                if (delta.LengthSq > FixMath.Sq(reach)) continue;
 
                 var contact = b.Pos + delta.NormalizedOr(FallbackNormal) * b.Radius;
-                var damage = ComputeHitDamage(owner, b, p.Damage > 0f ? p.Damage : 0f, DamageKind.Projectile, out var blocked);
-                b.Vel += p.Vel.NormalizedOr(FallbackNormal) * (Config.HitKnockback * Config.ProjectileKnockbackScale * (1f - b.KnockbackResist));
+                var damage = ComputeHitDamage(owner, b, p.Damage > Fix.Zero ? p.Damage : Fix.Zero, DamageKind.Projectile, out var blocked);
+                b.Vel += p.Vel.NormalizedOr(FallbackNormal) * (Config.HitKnockback * Config.ProjectileKnockbackScale * (Fix.One - b.KnockbackResist));
                 Emit(SimEventType.ProjectileHit, owner.Index, b.Index, damage, contact);
                 if (blocked)
                 {
-                    Emit(SimEventType.ShieldBlocked, b.Index, owner.Index, 0f, contact);
+                    Emit(SimEventType.ShieldBlocked, b.Index, owner.Index, Fix.Zero, contact);
                 }
                 else
                 {
@@ -136,10 +136,10 @@ namespace BallBattle.Sim
             var bounced = false;
             var a = Arena;
             var r = p.Radius;
-            if (p.Pos.X - r < a.Left) { p.Pos.X = a.Left + r; if (p.Vel.X < 0f) { p.Vel.X = -p.Vel.X; bounced = true; } }
-            else if (p.Pos.X + r > a.Right) { p.Pos.X = a.Right - r; if (p.Vel.X > 0f) { p.Vel.X = -p.Vel.X; bounced = true; } }
-            if (p.Pos.Y - r < a.Bottom) { p.Pos.Y = a.Bottom + r; if (p.Vel.Y < 0f) { p.Vel.Y = -p.Vel.Y; bounced = true; } }
-            else if (p.Pos.Y + r > a.Top) { p.Pos.Y = a.Top - r; if (p.Vel.Y > 0f) { p.Vel.Y = -p.Vel.Y; bounced = true; } }
+            if (p.Pos.X - r < a.Left) { p.Pos.X = a.Left + r; if (p.Vel.X < Fix.Zero) { p.Vel.X = -p.Vel.X; bounced = true; } }
+            else if (p.Pos.X + r > a.Right) { p.Pos.X = a.Right - r; if (p.Vel.X > Fix.Zero) { p.Vel.X = -p.Vel.X; bounced = true; } }
+            if (p.Pos.Y - r < a.Bottom) { p.Pos.Y = a.Bottom + r; if (p.Vel.Y < Fix.Zero) { p.Vel.Y = -p.Vel.Y; bounced = true; } }
+            else if (p.Pos.Y + r > a.Top) { p.Pos.Y = a.Top - r; if (p.Vel.Y > Fix.Zero) { p.Vel.Y = -p.Vel.Y; bounced = true; } }
 
             for (var k = 0; k < layout.ObstacleCount; k++)
             {
@@ -147,12 +147,12 @@ namespace BallBattle.Sim
                 var core = o.ClosestCore(p.Pos);
                 var delta = p.Pos - core;
                 var minDist = r + o.Radius;
-                if (delta.LengthSq >= minDist * minDist) continue;
+                if (delta.LengthSq >= FixMath.Sq(minDist)) continue;
                 var normal = delta.NormalizedOr(FallbackNormal);
                 p.Pos = core + normal * minDist;
-                var into = Vec2.Dot(p.Vel, normal);
-                if (into >= 0f) continue;
-                p.Vel -= normal * (2f * into);
+                var into = FixVec2.DotFix(p.Vel, normal);
+                if (into >= Fix.Zero) continue;
+                p.Vel -= normal * (into * 2);
                 bounced = true;
             }
 

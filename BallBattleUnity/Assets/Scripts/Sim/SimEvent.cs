@@ -45,8 +45,8 @@ namespace BallBattle.Sim
         public int Tick;
         public int A;
         public int B;
-        public float Value;
-        public Vec2 Point;
+        public Fix Value;
+        public FixVec2 Point;
         /// <summary>Sub-type for events that need one (see each SimEventType); 0 otherwise.</summary>
         public byte Variant;
         public string TraitId;

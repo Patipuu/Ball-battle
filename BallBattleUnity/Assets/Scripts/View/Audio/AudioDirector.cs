@@ -152,7 +152,7 @@ namespace BallBattle.View
                     RequestCue(HitCueFor(e, sim, Has), e.Tick, 0.6f);
                     break;
                 case SimEventType.ProjectileHit:
-                    if (e.Value > 0f) RequestCue(HitCueFor(e, sim, Has), e.Tick, 0.35f);
+                    if (e.Value.ToFloat() > 0f) RequestCue(HitCueFor(e, sim, Has), e.Tick, 0.35f);
                     break;
                 case SimEventType.Parry:
                     RequestCue(AudioIds.Parry, e.Tick, 0.6f);
@@ -167,13 +167,13 @@ namespace BallBattle.View
                     RequestCue(AudioIds.Wall, e.Tick, 0.12f, 1.7f);   // six turrets fire together: one sound
                     break;
                 case SimEventType.WallBounce:
-                    RequestCue(WallBounceCue(e.Value, Has), e.Tick, 0.2f);
+                    RequestCue(WallBounceCue(e.Value.ToFloat(), Has), e.Tick, 0.2f);
                     break;
                 case SimEventType.BallBounce:
                     RequestCue(AudioIds.Wall, e.Tick, 0.35f, 0.8f);
                     break;
                 case SimEventType.ObstacleHit:
-                    RequestCue(AudioIds.Wall, e.Tick, 0.25f, e.Value > 0f ? 0.7f : 1.2f);
+                    RequestCue(AudioIds.Wall, e.Tick, 0.25f, e.Value.ToFloat() > 0f ? 0.7f : 1.2f);
                     break;
                 case SimEventType.Death:
                     RequestCue(AudioIds.Death, e.Tick, 0.9f);

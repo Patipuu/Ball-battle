@@ -57,7 +57,7 @@ namespace BallBattle.View
             }
         }
 
-        public static int RetryHealPercent => Mathf.RoundToInt(RunTuning.RetryHealPct * 100f);
+        public static int RetryHealPercent => Mathf.RoundToInt(RunTuning.RetryHealPct.ToFloat() * 100f);
 
         /// <summary>"LOSE ONCE: FREE PICK  RETRY AT 60% HP".</summary>
         public static string LoseOnce => $"LOSE ONCE: FREE PICK{ListSep}RETRY AT {RetryHealPercent}% HP";

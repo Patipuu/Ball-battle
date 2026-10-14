@@ -83,16 +83,16 @@ namespace BallBattle.Tests
             Step(arena, rc);
             var match = flow.CurrentMatch;
             Assert.That(arena.Sim, Is.SameAs(match));
-            var start = match.Balls.Select(b => b.Hp).ToArray();
+            var start = match.Balls.Select(b => b.Hp.ToFloat()).ToArray();
             arena.TimeScale = 4f;
             var guard = 0;
             while (flow.Current != RunFlow.State.FightResult && guard++ < 60 * 300) Step(arena, rc);
             Assert.That(flow.Current, Is.EqualTo(RunFlow.State.FightResult));
 
             var heal = new float[2];
-            foreach (var e in events) if (e.Type == SimEventType.Heal && e.A >= 0 && e.A < 2) heal[e.A] += e.Value;
+            foreach (var e in events) if (e.Type == SimEventType.Heal && e.A >= 0 && e.A < 2) heal[e.A] += e.Value.ToFloat();
             var lost = new float[2];
-            for (var i = 0; i < 2; i++) lost[i] = start[i] + heal[i] - Mathf.Max(0f, match.Balls[i].Hp);
+            for (var i = 0; i < 2; i++) lost[i] = start[i] + heal[i] - Mathf.Max(0f, match.Balls[i].Hp.ToFloat());
 
             var stats = flow.Stats;
             Assert.That(stats.Dealt(0), Is.EqualTo(lost[1]).Within(0.01f), "DMG DEALT = enemy start HP + heals - end HP");
@@ -101,7 +101,7 @@ namespace BallBattle.Tests
             Assert.That(report.DamageDealt, Is.EqualTo(lost[1]).Within(0.01f));
             Assert.That(report.DamageTaken, Is.EqualTo(lost[0]).Within(0.01f));
             if (match.WinnerIndex == 0) Assert.That(report.DamageDealt, Is.LessThanOrEqualTo(start[1] + heal[1] + 0.01f), "never more than the KO'd enemy had");
-            Debug.Log($"[3d] seed {seed} {weapon} vs {match.Balls[1].Weapon.Id}: enemy start {start[1]:0.##} healed {heal[1]:0.##} end {match.Balls[1].Hp:0.##} -> DMG DEALT {stats.Dealt(0):0.##}; you start {start[0]:0.##} healed {heal[0]:0.##} end {match.Balls[0].Hp:0.##} -> DMG TAKEN {stats.Taken(0):0.##}");
+            Debug.Log($"[3d] seed {seed} {weapon} vs {match.Balls[1].Weapon.Id}: enemy start {start[1]:0.##} healed {heal[1]:0.##} end {match.Balls[1].Hp.ToFloat():0.##} -> DMG DEALT {stats.Dealt(0):0.##}; you start {start[0]:0.##} healed {heal[0]:0.##} end {match.Balls[0].Hp.ToFloat():0.##} -> DMG TAKEN {stats.Taken(0):0.##}");
         }
 
         // ---- 2. ScreenShake with a destroyed camera ----
@@ -134,7 +134,7 @@ namespace BallBattle.Tests
 
             // HUD
             var sim = new MatchSim(ArenaRegistry.Create(ArenaRegistry.Classic), 1,
-                new[] { new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { MaxHp = 100f, Hp = 97.2f }, new BallLoadout(WeaponRegistry.Create(FangRule.WeaponId)) { MaxHp = 100f, Hp = 0.4f } });
+                new[] { new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { MaxHp = TFix.X(100f), Hp = TFix.X(97.2f) }, new BallLoadout(WeaponRegistry.Create(FangRule.WeaponId)) { MaxHp = TFix.X(100f), Hp = TFix.X(0.4f) } });
             var view = root.AddComponent<ArenaView>();
             view.Art = art;
             view.AutoRestart = false;
@@ -204,7 +204,7 @@ namespace BallBattle.Tests
         [Test]
         public void OtherSizesScaleTheBaseSpriteAndMissingSizesFallBack()
         {
-            var view = Arena(new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { Radius = 20f }, new BallLoadout(WeaponRegistry.Create(FangRule.WeaponId)));
+            var view = Arena(new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { Radius = TFix.X(20f) }, new BallLoadout(WeaponRegistry.Create(FangRule.WeaponId)));
             var ball = view.GetBallView(0);
             Assert.That(ball.BodySprite, Is.SameAs(art.Get(BladeRule.WeaponId).Ball), "x1.25 has no pre-drawn sprite");
             Assert.That(ball.UsesSizedSprite, Is.False);

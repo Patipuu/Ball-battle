@@ -43,7 +43,7 @@ namespace BallBattle.Tests
             var lb = new BallLoadout(WeaponRegistry.Create(b)).With(TraitRegistry.Create(ThornsTrait.TraitId, 1));
             var sim = new MatchSim(ArenaRegistry.Create(arenaId), seed, new[] { la, lb });
             sim.ApplySpawnHooks();
-            var startHp = sim.Balls.Select(x => x.Hp).ToArray();
+            var startHp = sim.Balls.Select(x => x.Hp.ToFloat()).ToArray();
             var stats = new FightStats();
             stats.Reset(sim);
             var healed = new float[2];
@@ -51,7 +51,7 @@ namespace BallBattle.Tests
             {
                 sim.Step();
                 stats.AddAll(sim.Events);
-                foreach (var e in sim.Events) if (e.Type == SimEventType.Heal && e.A >= 0 && e.A < 2) healed[e.A] += e.Value;
+                foreach (var e in sim.Events) if (e.Type == SimEventType.Heal && e.A >= 0 && e.A < 2) healed[e.A] += e.Value.ToFloat();
             }
             Assert.That(sim.Outcome, Is.Not.EqualTo(MatchOutcome.Ongoing));
             Assert.That(sim.Balls.Count(x => x.Alive), Is.LessThanOrEqualTo(1));
@@ -59,7 +59,7 @@ namespace BallBattle.Tests
             for (var i = 0; i < 2; i++)
             {
                 // Only the HP really removed counts (no overkill): matches the HP bar, knocked out or not.
-                var removed = startHp[i] + healed[i] - Mathf.Max(0f, sim.Balls[i].Hp);
+                var removed = startHp[i] + healed[i] - Mathf.Max(0f, sim.Balls[i].Hp.ToFloat());
                 Assert.That(stats.Taken(i), Is.EqualTo(removed).Within(0.01f), $"ball {i}: taken = HP the sim removed");
                 if (!sim.Balls[i].Alive) Assert.That(stats.Taken(i), Is.LessThanOrEqualTo(startHp[i] + healed[i] + 0.01f), $"ball {i}: never more than it had");
             }
@@ -98,15 +98,15 @@ namespace BallBattle.Tests
             var r = f.LastReport;
             Assert.That(r.FightNumber, Is.EqualTo(1));
             Assert.That(r.Outcome, Is.EqualTo(m.WinnerIndex == 0 ? FightOutcome.Win : m.WinnerIndex < 0 ? FightOutcome.Draw : FightOutcome.Lost));
-            Assert.That(r.HpLeft, Is.EqualTo(Mathf.Max(0f, m.Balls[0].Hp)));
-            Assert.That(r.MaxHpInFight, Is.EqualTo(m.Balls[0].MaxHp));
+            Assert.That(r.HpLeft, Is.EqualTo(Mathf.Max(0f, m.Balls[0].Hp.ToFloat())));
+            Assert.That(r.MaxHpInFight, Is.EqualTo(m.Balls[0].MaxHp.ToFloat()));
             Assert.That(r.DamageDealt, Is.EqualTo(f.Stats.Taken(1)), "DMG DEALT = everything the enemy lost");
             Assert.That(r.DamageTaken, Is.EqualTo(f.Stats.Taken(0)));
             Assert.That(r.CoinsGained, Is.EqualTo(f.Run.Coins - coinsBefore));
             Assert.That(r.CoinsGained, Is.EqualTo(m.WinnerIndex == 0 ? RunTuning.WinCoins : RunTuning.LossCoins));
             var nextStart = f.Run.CreateMatch().Balls[0];
-            Assert.That(r.HpNext, Is.EqualTo(nextStart.Hp), "HP NEXT FIGHT = the next fight's real start HP");
-            Assert.That(r.MaxHpNext, Is.EqualTo(nextStart.MaxHp));
+            Assert.That(r.HpNext, Is.EqualTo(nextStart.Hp.ToFloat()), "HP NEXT FIGHT = the next fight's real start HP");
+            Assert.That(r.MaxHpNext, Is.EqualTo(nextStart.MaxHp.ToFloat()));
             Assert.That(r.RetriesBefore, Is.EqualTo(retriesBefore));
             Assert.That(r.RetriesAfter, Is.EqualTo(f.Run.RetryCount));
 
@@ -114,7 +114,7 @@ namespace BallBattle.Tests
             Assert.That(r.NextFightNumber, Is.EqualTo(2));
             Assert.That(r.NextWeaponId, Is.EqualTo(f.Run.Enemy.WeaponId));
             Assert.That(r.NextArenaId, Is.EqualTo(f.Run.ArenaId));
-            Assert.That(r.NextEnemyHp, Is.EqualTo(f.Run.CreateMatch().Balls[1].MaxHp));
+            Assert.That(r.NextEnemyHp, Is.EqualTo(f.Run.CreateMatch().Balls[1].MaxHp.ToFloat()));
 
             f.NextAfterResult();
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.Prepare));
@@ -132,7 +132,11 @@ namespace BallBattle.Tests
             f.PickStart(0);
             f.Fight();
             f.Tick(2.1f);
-            while (lastMatch.Outcome == MatchOutcome.Ongoing) lastMatch.Step();
+            // This test covers resuming the next Prepare after a win, not a particular seed's matchup.
+            // Fix trajectories can change that matchup's winner; force the intended result explicitly.
+            lastMatch.Balls[1].Hp = BallBattle.Sim.Fix.Zero;
+            lastMatch.Step();
+            Assert.That(lastMatch.WinnerIndex, Is.EqualTo(0));
             f.OnMatchEnded(lastMatch);
             f.Tick(2.1f);
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.FightResult));

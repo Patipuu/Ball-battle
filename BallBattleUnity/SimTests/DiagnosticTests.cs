@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace BallBattle.SimTests
 {
     /// <summary>Pacing report with default MatchConfig (not a gate). Run: dotnet test --filter Category=Diagnostic --logger "console;verbosity=detailed"</summary>
-    [Explicit, Category("Diagnostic")]
+    [Explicit, Category("Diagnostic"), Category("Slow")]
     public class DiagnosticTests
     {
         static void Report(string name, System.Func<WeaponRule> make)

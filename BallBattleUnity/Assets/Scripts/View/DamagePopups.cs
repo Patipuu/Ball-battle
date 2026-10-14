@@ -180,13 +180,13 @@ namespace BallBattle.View
             var width = PixelFontData.MeasureWidth(text) * scale;
             var leftOffset = width / 2;                      // PixelText.Align.Center starts at -(width / 2)
             var height = PixelFontData.GlyphHeight * scale;
-            var minX = arena.Left + WallMargin + leftOffset;
-            var maxX = arena.Right - WallMargin - (width - leftOffset);
-            var minY = arena.Bottom + WallMargin;
-            var maxY = arena.Top - WallMargin - Rise - height;
+            var minX = arena.Left.ToFloat() + WallMargin + leftOffset;
+            var maxX = arena.Right.ToFloat() - WallMargin - (width - leftOffset);
+            var minY = arena.Bottom.ToFloat() + WallMargin;
+            var maxY = arena.Top.ToFloat() - WallMargin - Rise - height;
             var x = Mathf.Round(at.x);
             var y = Mathf.Round(at.y);
-            x = minX > maxX ? Mathf.Round((arena.Left + arena.Right) * 0.5f) : Mathf.Clamp(x, Mathf.Ceil(minX), Mathf.Floor(maxX));
+            x = minX > maxX ? Mathf.Round((arena.Left.ToFloat() + arena.Right.ToFloat()) * 0.5f) : Mathf.Clamp(x, Mathf.Ceil(minX), Mathf.Floor(maxX));
             y = minY > maxY ? Mathf.Round(minY) : Mathf.Clamp(y, Mathf.Ceil(minY), Mathf.Floor(maxY));
             return new Vector2(x, y);
         }
@@ -198,7 +198,7 @@ namespace BallBattle.View
         public void ShowLabelled(Vector2 at, string text, Color32 color, int scale, string label, Color32 labelColor, ArenaRect? arena)
         {
             var p = Place(at, text, scale, arena);
-            if (arena.HasValue) p.y = Mathf.Max(p.y, Mathf.Ceil(arena.Value.Bottom + WallMargin + LabelGap + LabelHeight));
+            if (arena.HasValue) p.y = Mathf.Max(p.y, Mathf.Ceil(arena.Value.Bottom.ToFloat() + WallMargin + LabelGap + LabelHeight));
             var popup = SpawnText(p, text, color, scale);
             var l = labelPool[nextLabel];
             nextLabel = (nextLabel + 1) % labelPool.Count;
@@ -291,7 +291,7 @@ namespace BallBattle.View
                 if (p.Age >= Duration) { Hide(p); continue; }
                 var t = p.Age / Duration;
                 var y = CurrentY(p);
-                if (bounds.HasValue) y = Mathf.Min(y, Mathf.Floor(bounds.Value.Top - WallMargin - PixelFontData.GlyphHeight * p.Scale));   // the walls may close in
+                if (bounds.HasValue) y = Mathf.Min(y, Mathf.Floor(bounds.Value.Top.ToFloat() - WallMargin - PixelFontData.GlyphHeight * p.Scale));   // the walls may close in
                 p.Text.transform.localPosition = new Vector3(p.Start.x, y, 0f);
                 var c = p.Color;
                 c.a = (byte)(t < 0.5f ? 255 : 255f * (1f - t) / 0.5f);

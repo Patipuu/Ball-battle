@@ -7,7 +7,7 @@ namespace BallBattle.Sim.Traits
         public VampireTrait(int level = 1) : base(level) { }
         public override string Id => TraitId;
 
-        public override void OnHitDealt(BallState target, float damage, DamageKind kind)
+        public override void OnHitDealt(BallState target, Fix damage, DamageKind kind)
             => Sim.Heal(Self, damage * TraitTuning.VampireHealPct[Level - 1]);
 
         protected override ulong HashState(ulong h) => h;

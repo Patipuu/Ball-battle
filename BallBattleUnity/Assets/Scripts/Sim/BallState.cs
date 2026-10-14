@@ -10,18 +10,18 @@ namespace BallBattle.Sim
         public readonly StatusEffects Status = new StatusEffects();
         public StatBonus Bonus;
         /// <summary>0..1: fraction of hit knockback ignored (Heavy). 0 = normal.</summary>
-        public float KnockbackResist;
+        public Fix KnockbackResist;
 
-        public Vec2 Pos;
-        public Vec2 Vel;
-        public float Hp;
-        public float MaxHp;
-        public float Radius;
+        public FixVec2 Pos;
+        public FixVec2 Vel;
+        public Fix Hp;
+        public Fix MaxHp;
+        public Fix Radius;
         /// <summary>Added to the weapon's BladeInner so blades start at the same distance from the edge on bigger balls (Radius - default radius).</summary>
-        public float BladeShift;
-        public float WeaponAngleDeg;
+        public Fix BladeShift;
+        public Fix WeaponAngleDeg;
         /// <summary>Second blade opposite the first, as a fraction of the weapon's BladeLength (Twin Blade). 0 = none.</summary>
-        public float TwinBladeScale;
+        public Fix TwinBladeScale;
         /// <summary>+1 counter-clockwise, -1 clockwise. Flips on parry.</summary>
         public int SpinDir = 1;
         public bool Alive = true;
@@ -40,14 +40,14 @@ namespace BallBattle.Sim
             HitCooldown = new int[ballCount];
         }
 
-        public float HpFraction => MaxHp > 0f ? Hp / MaxHp : 0f;
+        public Fix HpFraction => MaxHp > Fix.Zero ? Hp / MaxHp : Fix.Zero;
 
-        public Vec2 BladeStart => Pos + Vec2.FromAngleDeg(WeaponAngleDeg) * (Weapon.BladeInner + BladeShift);
-        public Vec2 BladeEnd => Pos + Vec2.FromAngleDeg(WeaponAngleDeg) * (Weapon.BladeInner + BladeShift + Weapon.BladeLength);
+        public FixVec2 BladeStart => Pos + FixVec2.FromAngleDeg(WeaponAngleDeg) * (Weapon.BladeInner + BladeShift);
+        public FixVec2 BladeEnd => Pos + FixVec2.FromAngleDeg(WeaponAngleDeg) * (Weapon.BladeInner + BladeShift + Weapon.BladeLength);
 
-        public bool HasTwinBlade => TwinBladeScale > 0f && Weapon.HasBlade;
-        public Vec2 TwinBladeStart => Pos + Vec2.FromAngleDeg(WeaponAngleDeg + 180f) * (Weapon.BladeInner + BladeShift);
-        public Vec2 TwinBladeEnd => Pos + Vec2.FromAngleDeg(WeaponAngleDeg + 180f) * (Weapon.BladeInner + BladeShift + Weapon.BladeLength * TwinBladeScale);
+        public bool HasTwinBlade => TwinBladeScale > Fix.Zero && Weapon.HasBlade;
+        public FixVec2 TwinBladeStart => Pos + FixVec2.FromAngleDeg(WeaponAngleDeg + 180) * (Weapon.BladeInner + BladeShift);
+        public FixVec2 TwinBladeEnd => Pos + FixVec2.FromAngleDeg(WeaponAngleDeg + 180) * (Weapon.BladeInner + BladeShift + Weapon.BladeLength * TwinBladeScale);
 
         public ulong HashInto(ulong h)
         {

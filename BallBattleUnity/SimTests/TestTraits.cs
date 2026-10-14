@@ -8,13 +8,13 @@ namespace BallBattle.SimTests
     {
         public static MatchConfig StillConfig() => new MatchConfig
         {
-            Gravity = 0f,
-            MinHorizontalSpeed = 0f,
+            Gravity = Fix.Zero,
+            MinHorizontalSpeed = Fix.Zero,
             ShrinkStartTick = int.MaxValue,
             CapTicks = int.MaxValue
         };
 
-        public static MatchSim Build(MatchConfig cfg, params (BallLoadout loadout, Vec2 pos, float angle)[] setup)
+        public static MatchSim Build(MatchConfig cfg, params (BallLoadout loadout, FixVec2 pos, float angle)[] setup)
         {
             var loadouts = new BallLoadout[setup.Length];
             for (var i = 0; i < setup.Length; i++) loadouts[i] = setup[i].loadout;
@@ -23,8 +23,8 @@ namespace BallBattle.SimTests
             {
                 var b = m.Balls[i];
                 b.Pos = setup[i].pos;
-                b.Vel = Vec2.Zero;
-                b.WeaponAngleDeg = setup[i].angle;
+                b.Vel = FixVec2.Zero;
+                b.WeaponAngleDeg = FT.X(setup[i].angle);
                 b.SpinDir = 1;
             }
             return m;
@@ -33,12 +33,12 @@ namespace BallBattle.SimTests
         public static BallLoadout L(WeaponRule w, params TraitRule[] traits) => new BallLoadout(w).With(traits);
 
         /// <summary>Keeps every ball parked (call after each Step) so a non-spinning blade stays in contact.</summary>
-        public static void Park(MatchSim m, params Vec2[] positions)
+        public static void Park(MatchSim m, params FixVec2[] positions)
         {
             for (var i = 0; i < positions.Length; i++)
             {
                 m.Balls[i].Pos = positions[i];
-                m.Balls[i].Vel = Vec2.Zero;
+                m.Balls[i].Vel = FixVec2.Zero;
             }
         }
     }
@@ -54,10 +54,10 @@ namespace BallBattle.SimTests
 
         public override string Id => "test-recording";
         public override void OnSpawn() => log.Add(tag + ":spawn");
-        public override float ModifyOutgoingDamage(BallState target, float damage, DamageKind kind) { log.Add(tag + ":out"); return damage; }
-        public override float ModifyIncomingDamage(BallState attacker, float damage, DamageKind kind) { log.Add(tag + ":in"); return damage; }
-        public override void OnHitDealt(BallState target, float damage, DamageKind kind) => log.Add(tag + ":dealt");
-        public override void OnHitTaken(BallState attacker, float damage, DamageKind kind) => log.Add(tag + ":taken");
+        public override Fix ModifyOutgoingDamage(BallState target, Fix damage, DamageKind kind) { log.Add(tag + ":out"); return damage; }
+        public override Fix ModifyIncomingDamage(BallState attacker, Fix damage, DamageKind kind) { log.Add(tag + ":in"); return damage; }
+        public override void OnHitDealt(BallState target, Fix damage, DamageKind kind) => log.Add(tag + ":dealt");
+        public override void OnHitTaken(BallState attacker, Fix damage, DamageKind kind) => log.Add(tag + ":taken");
         public override void OnParry(BallState other) => log.Add(tag + ":parry");
         public override void OnWall() => log.Add(tag + ":wall");
         public override void OnTick() => Ticks++;
@@ -67,21 +67,21 @@ namespace BallBattle.SimTests
     /// <summary>Multiplies outgoing and incoming hit damage.</summary>
     sealed class ScaleTrait : TraitRule
     {
-        readonly float outgoing, incoming;
-        public ScaleTrait(float outgoing, float incoming) { this.outgoing = outgoing; this.incoming = incoming; }
+        readonly Fix outgoing, incoming;
+        public ScaleTrait(float outgoing, float incoming) { this.outgoing = FT.X(outgoing); this.incoming = FT.X(incoming); }
         public override string Id => "test-scale";
-        public override float ModifyOutgoingDamage(BallState target, float damage, DamageKind kind) => damage * outgoing;
-        public override float ModifyIncomingDamage(BallState attacker, float damage, DamageKind kind) => damage * incoming;
+        public override Fix ModifyOutgoingDamage(BallState target, Fix damage, DamageKind kind) => damage * outgoing;
+        public override Fix ModifyIncomingDamage(BallState attacker, Fix damage, DamageKind kind) => damage * incoming;
         protected override ulong HashState(ulong h) => h;
     }
 
     /// <summary>Sends a fraction of every hit taken back to the attacker as Reflect damage.</summary>
     sealed class ReflectTrait : TraitRule
     {
-        readonly float ratio;
-        public ReflectTrait(float ratio) => this.ratio = ratio;
+        readonly Fix ratio;
+        public ReflectTrait(float ratio) => this.ratio = FT.X(ratio);
         public override string Id => "test-reflect";
-        public override void OnHitTaken(BallState attacker, float damage, DamageKind kind) => Sim.DealDamage(Self, attacker, damage * ratio, DamageKind.Reflect);
+        public override void OnHitTaken(BallState attacker, Fix damage, DamageKind kind) => Sim.DealDamage(Self, attacker, damage * ratio, DamageKind.Reflect);
         protected override ulong HashState(ulong h) => h;
     }
 
@@ -89,7 +89,7 @@ namespace BallBattle.SimTests
     sealed class PoisonOnHitTrait : TraitRule
     {
         public override string Id => "test-poison";
-        public override void OnHitDealt(BallState target, float damage, DamageKind kind) => Sim.ApplyPoison(target, Self, 1f, 180);
+        public override void OnHitDealt(BallState target, Fix damage, DamageKind kind) => Sim.ApplyPoison(target, Self, 1, 180);
         protected override ulong HashState(ulong h) => h;
     }
 
@@ -97,7 +97,7 @@ namespace BallBattle.SimTests
     sealed class LifestealTrait : TraitRule
     {
         public override string Id => "test-lifesteal";
-        public override void OnHitDealt(BallState target, float damage, DamageKind kind) => Sim.Heal(Self, damage);
+        public override void OnHitDealt(BallState target, Fix damage, DamageKind kind) => Sim.Heal(Self, damage);
         protected override ulong HashState(ulong h) => h;
     }
 
@@ -110,7 +110,7 @@ namespace BallBattle.SimTests
         {
             if (used) return false;
             used = true;
-            Self.Hp = 25f;
+            Self.Hp = 25;
             return true;
         }
         protected override ulong HashState(ulong h) => SimHash.Mix(h, used);
@@ -134,12 +134,12 @@ namespace BallBattle.SimTests
         public ShooterRule(int interval = 30, float damage = 2f, int bounces = 1)
         {
             this.interval = interval;
-            spec = new ProjectileSpec { Radius = 2f, Damage = damage, Bounces = bounces, LifetimeTicks = 240 };
+            spec = new ProjectileSpec { Radius = 2, Damage = FT.X(damage), Bounces = bounces, LifetimeTicks = 240 };
         }
 
         public override string Id => "test-shooter";
         public override bool HasBlade => false;
-        public override float Damage(in HitContext ctx) => 0f;
+        public override Fix Damage(in HitContext ctx) => Fix.Zero;
 
         public override void OnTick()
         {
@@ -149,8 +149,8 @@ namespace BallBattle.SimTests
             {
                 var other = Sim.Balls[i];
                 if (other == Self || !other.Alive) continue;
-                var dir = (other.Pos - Self.Pos).NormalizedOr(new Vec2(1f, 0f));
-                Sim.FireProjectile(Self, Self.Pos + dir * (Self.Radius + 3f), dir * 6f, spec);
+                var dir = (other.Pos - Self.Pos).NormalizedOr(FixVec2.Right);
+                Sim.FireProjectile(Self, Self.Pos + dir * (Self.Radius + 3), dir * 6, spec);
                 return;
             }
         }

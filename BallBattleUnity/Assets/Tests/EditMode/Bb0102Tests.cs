@@ -200,7 +200,7 @@ namespace BallBattle.Tests
         static RunFlow FlowWithSave(ProgressData progress, RunState saved)
         {
             var store = new MemorySaveStore();
-            store.Save(new SaveData { Progress = progress, HasRun = saved != null, Run = saved ?? new RunState() });
+            store.Save(new SaveData { Progress = progress, HasRun = saved != null, Run = RunSave.From(saved) });
             var flow = new RunFlow(store);
             flow.Open();
             return flow;

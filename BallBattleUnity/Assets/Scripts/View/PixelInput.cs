@@ -58,6 +58,7 @@ namespace BallBattle.View
             polledFrame = int.MinValue;
             polledDowns = polledUps = 0;
             pump = null;
+            testPointer = null;
         }
 
         /// <summary>Integer zoom used for a given screen size (at least 1).</summary>
@@ -84,7 +85,13 @@ namespace BallBattle.View
         /// <summary>True while a press is down (from the events dispatched so far).</summary>
         public static bool Held => pointerDown;
 
-        public static Vector2 Current => ScreenToNative(Input.mousePosition, Screen.width, Screen.height);
+        /// <summary>Pointer position in native pixels: the test pointer when one is set, else the mouse.</summary>
+        public static Vector2 Current => testPointer ?? ScreenToNative(Input.mousePosition, Screen.width, Screen.height);
+
+        static Vector2? testPointer;
+
+        /// <summary>Tests / automation: where <see cref="Current"/> reports the pointer (a drag between press and release); null = the mouse.</summary>
+        public static void SetTestPointer(Vector2? native) => testPointer = native;
 
         /// <summary>Drop every event for <paramref name="seconds"/> from now (also anything still queued from before).</summary>
         public static void BlockFor(float seconds) => blockedUntil = Mathf.Max(blockedUntil, Now + seconds);
@@ -209,6 +216,7 @@ namespace BallBattle.View
             polledDowns = polledUps = 0;
             queue.Clear();
             pointerDown = false;
+            testPointer = null;
         }
         // ---- Dispatch ----
 

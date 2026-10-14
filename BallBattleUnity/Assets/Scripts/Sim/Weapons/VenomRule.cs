@@ -1,4 +1,3 @@
-using System;
 
 namespace BallBattle.Sim.Weapons
 {
@@ -11,7 +10,7 @@ namespace BallBattle.Sim.Weapons
         public const string WeaponId = "venom";
 
         public int MaxStacks { get; private set; } = 1;
-        public float CurrentDamage { get; private set; } = WeaponTuning.VenomMeleeDamage;
+        public Fix CurrentDamage { get; private set; } = WeaponTuning.VenomMeleeDamage;
 
         public VenomRule()
         {
@@ -22,17 +21,17 @@ namespace BallBattle.Sim.Weapons
 
         public override string Id => WeaponId;
         public override string StatLabel => "VENOM";
-        public override float StatValue => MaxStacks;
+        public override Fix StatValue => MaxStacks;
 
-        public override float Damage(in HitContext ctx) => CurrentDamage;
+        public override Fix Damage(in HitContext ctx) => CurrentDamage;
 
         public override void OnHit(in HitContext ctx)
         {
-            MaxStacks = Math.Min(StatusEffects.MaxPoisonStacks, MaxStacks + 1);
+            MaxStacks = MaxStacks + 1 < StatusEffects.MaxPoisonStacks ? MaxStacks + 1 : StatusEffects.MaxPoisonStacks;
             CurrentDamage += WeaponTuning.VenomDamagePerHit;
         }
 
-        public override void OnHitDealt(BallState target, float damage, DamageKind kind)
+        public override void OnHitDealt(BallState target, Fix damage, DamageKind kind)
         {
             if (kind != DamageKind.Weapon && kind != DamageKind.Projectile) return;
             if (target.Status.PoisonStackCount >= MaxStacks) return;

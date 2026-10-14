@@ -9,7 +9,7 @@ namespace BallBattle.Sim.Traits
 
         public override void OnSpawn() => Self.TwinBladeScale = TraitTuning.TwinBladeScale[Level - 1];
 
-        public override float ModifyOutgoingDamage(BallState target, float damage, DamageKind kind)
+        public override Fix ModifyOutgoingDamage(BallState target, Fix damage, DamageKind kind)
             => kind == DamageKind.Weapon ? damage * TraitTuning.TwinBladeDamageMul[Level - 1] : damage;
 
         protected override ulong HashState(ulong h) => h;

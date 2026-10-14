@@ -5,7 +5,7 @@ namespace BallBattle.Sim.Weapons
     {
         public const string WeaponId = "pike";
 
-        public float CurrentDamage { get; private set; } = WeaponTuning.PikeStartDamage;
+        public Fix CurrentDamage { get; private set; } = WeaponTuning.PikeStartDamage;
 
         public PikeRule()
         {
@@ -15,10 +15,10 @@ namespace BallBattle.Sim.Weapons
 
         public override string Id => WeaponId;
         public override string StatLabel => "LEN";
-        public override float StatValue => BladeLength;
-        public override string StatText => BladeLength.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
+        public override Fix StatValue => BladeLength;
+        public override string StatText => FixMath.Format(BladeLength, 0);
 
-        public override float Damage(in HitContext ctx) => CurrentDamage;
+        public override Fix Damage(in HitContext ctx) => CurrentDamage;
 
         public override void OnHit(in HitContext ctx)
         {

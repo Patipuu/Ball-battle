@@ -68,7 +68,7 @@ namespace BallBattle.SimTests
         [Test]
         public void OffersRespectTraitSlotsAndMaxLevel()
         {
-            var b = new RunBuild { WeaponId = "blade", Hp = 100f };
+            var b = new RunBuild { WeaponId = "blade", Hp = FT.X(100f) };
             var all = BallBattle.Sim.Traits.TraitRegistry.All.Select(t => t.Id).ToList();
             foreach (var id in all) b.Traits.Add(new TraitSlot(id, 2));
             for (var reroll = 0; reroll < 50; reroll++)
@@ -100,11 +100,11 @@ namespace BallBattle.SimTests
         [Test]
         public void CardsChangeTheBuild()
         {
-            var b = new RunBuild { WeaponId = "blade", Hp = 40f };
+            var b = new RunBuild { WeaponId = "blade", Hp = FT.X(40f) };
             new Card(CardKind.Heal).ApplyTo(b);
-            Assert.That(b.Hp, Is.EqualTo(90f));
+            Assert.That(b.Hp.F(), Is.EqualTo(90f));
             new Card(CardKind.MaxHp).ApplyTo(b);
-            Assert.That((b.MaxHp, b.Hp), Is.EqualTo((115f, 105f)));
+            Assert.That((b.MaxHp, b.Hp), Is.EqualTo(((Fix)115, (Fix)105)));
             new Card(CardKind.Trait, "vampire", 1).ApplyTo(b);
             new Card(CardKind.Trait, "vampire", 2).ApplyTo(b);
             Assert.That(b.TraitLevel("vampire"), Is.EqualTo(2));
@@ -142,11 +142,12 @@ namespace BallBattle.SimTests
         public void HeavyKeepsTheHpFractionSoNoFreeHpCarriesOver()
         {
             var run = NewRun();
-            run.Build.Hp = 30f;
+            run.Build.Hp = FT.X(30f);
             run.Build.Traits.Add(new TraitSlot("heavy", 2));
             var m = run.CreateMatch();
-            Assert.That(m.Balls[0].MaxHp, Is.GreaterThan(100f), "spawn hooks already applied for the countdown");
-            Assert.That(m.Balls[0].HpFraction, Is.EqualTo(0.3f).Within(1e-5f));
+            Assert.That(m.Balls[0].MaxHp.F(), Is.GreaterThan(100f), "spawn hooks already applied for the countdown");
+            // 30/100 has Q16.16 quotient floor(0.3 * 65536) = 19660, not the float decimal 0.3.
+            Assert.That(m.Balls[0].HpFraction.Raw, Is.EqualTo(19660));
         }
 
         [Test]
@@ -157,7 +158,7 @@ namespace BallBattle.SimTests
             Assert.That(run.Build.Hp, Is.EqualTo(run.Build.MaxHp), "69.999 + 30 rounds to full, as the screen shows");
             Assert.That(run.Build.Hurt, Is.False);
 
-            var b = new RunBuild { WeaponId = "blade", Hp = 99.5f };
+            var b = new RunBuild { WeaponId = "blade", Hp = FT.X(99.5f) };
             Assert.That(b.Hurt, Is.False);
             for (var reroll = 0; reroll < 50; reroll++)
                 Assert.That(CardOffer.Generate(3, 1, reroll, b, UnlockRules.Weapons(Fresh), UnlockRules.Traits(Fresh)).Any(c => c.Kind == CardKind.Heal), Is.False);
@@ -182,11 +183,11 @@ namespace BallBattle.SimTests
         public void PlayerCarriedHpAndTraitsReachTheMatch()
         {
             var run = NewRun();
-            run.Build.Hp = 60f;
+            run.Build.Hp = FT.X(60f);
             run.Build.Traits.Clear(); // isolate the carried trait from the start pick
             run.Build.Traits.Add(new TraitSlot("vampire", 2));
             var m = run.CreateMatch();
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(60f));
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo(60f));
             Assert.That(m.Balls[0].Traits.Single().Level, Is.EqualTo(2));
         }
     }

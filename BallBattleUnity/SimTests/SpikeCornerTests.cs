@@ -13,7 +13,7 @@ namespace BallBattle.SimTests
     /// </summary>
     public class SpikeCornerTests
     {
-        const float R = 16f;   // MatchConfig.BallRadius
+        static readonly Fix R = Fix.FromInt(16);   // MatchConfig.BallRadius
 
         static MatchConfig SpikeConfig(SpikeCorner corners = ArenaTuning.SpikeCorners)
         {
@@ -23,16 +23,16 @@ namespace BallBattle.SimTests
         }
 
         /// <summary>Ball 0 starts at <paramref name="start"/> with <paramref name="vel"/>; returns HP lost and the number of damaging wall events.</summary>
-        static float Bounce(MatchConfig cfg, Vec2 start, Vec2 vel, out int hits)
+        static Fix Bounce(MatchConfig cfg, FixVec2 start, FixVec2 vel, out int hits)
         {
-            var m = Stage.Build(cfg, (Stage.L(new HarmlessRule()), start, 0f), (Stage.L(new HarmlessRule()), new Vec2(0f, 0f), 0f));
+            var m = Stage.Build(cfg, (Stage.L(new HarmlessRule()), start, 0f), (Stage.L(new HarmlessRule()), FT.V(0f, 0f), 0f));
             m.Balls[0].Vel = vel;
             var hp = m.Balls[0].Hp;
             hits = 0;
             for (var i = 0; i < 10; i++)
             {
                 m.Step();
-                hits += m.Events.Count(e => e.Type == SimEventType.WallBounce && e.A == 0 && e.Value > 0f);
+                hits += m.Events.Count(e => e.Type == SimEventType.WallBounce && e.A == 0 && e.Value > FT.X(0f));
             }
             return hp - m.Balls[0].Hp;
         }
@@ -44,9 +44,9 @@ namespace BallBattle.SimTests
         {
             var cfg = SpikeConfig();
             var r = Rect(cfg);
-            Assert.That(Bounce(cfg, new Vec2(r.Right - R - 3f, 0f), new Vec2(5f, 0f), out var hits), Is.EqualTo(0f));
+            Assert.That(Bounce(cfg, FT.V(r.Right - R - FT.X(3f), FT.X(0f)), FT.V(FT.X(5f), FT.X(0f)), out var hits), Is.EqualTo(FT.X(0f)));
             Assert.That(hits, Is.Zero);
-            Assert.That(Bounce(cfg, new Vec2(0f, r.Bottom + R + 3f), new Vec2(0f, -5f), out _), Is.EqualTo(0f), "floor midpoint");
+            Assert.That(Bounce(cfg, FT.V(FT.X(0f), r.Bottom + R + FT.X(3f)), FT.V(FT.X(0f), -FT.X(5f)), out _), Is.EqualTo(FT.X(0f)), "floor midpoint");
         }
 
         [Test]
@@ -54,13 +54,13 @@ namespace BallBattle.SimTests
         {
             var cfg = SpikeConfig();
             var r = Rect(cfg);
-            float Lost(Vec2 start, Vec2 vel) => Bounce(cfg, start, vel, out _);
-            Assert.That(Lost(new Vec2(r.Left + R + 3f, r.Top - 20f), new Vec2(-5f, 0f)), Is.EqualTo(3f), "TL zone, left wall");
-            Assert.That(Lost(new Vec2(r.Left + 20f, r.Top - R - 3f), new Vec2(0f, 5f)), Is.EqualTo(3f), "TL zone, top wall");
-            Assert.That(Lost(new Vec2(r.Right - R - 3f, r.Bottom + 20f), new Vec2(5f, 0f)), Is.EqualTo(3f), "BR zone, right wall");
-            Assert.That(Lost(new Vec2(r.Right - 20f, r.Bottom + R + 3f), new Vec2(0f, -5f)), Is.EqualTo(3f), "BR zone, floor");
-            Assert.That(Lost(new Vec2(r.Right - R - 3f, r.Top - 20f), new Vec2(5f, 0f)), Is.EqualTo(0f), "TR corner");
-            Assert.That(Lost(new Vec2(r.Left + R + 3f, r.Bottom + 20f), new Vec2(-5f, 0f)), Is.EqualTo(0f), "BL corner");
+            Fix Lost(FixVec2 start, FixVec2 vel) => Bounce(cfg, start, vel, out _);
+            Assert.That(Lost(FT.V(r.Left + R + FT.X(3f), r.Top - FT.X(20f)), FT.V(-FT.X(5f), FT.X(0f))), Is.EqualTo(FT.X(3f)), "TL zone, left wall");
+            Assert.That(Lost(FT.V(r.Left + FT.X(20f), r.Top - R - FT.X(3f)), FT.V(FT.X(0f), FT.X(5f))), Is.EqualTo(FT.X(3f)), "TL zone, top wall");
+            Assert.That(Lost(FT.V(r.Right - R - FT.X(3f), r.Bottom + FT.X(20f)), FT.V(FT.X(5f), FT.X(0f))), Is.EqualTo(FT.X(3f)), "BR zone, right wall");
+            Assert.That(Lost(FT.V(r.Right - FT.X(20f), r.Bottom + R + FT.X(3f)), FT.V(FT.X(0f), -FT.X(5f))), Is.EqualTo(FT.X(3f)), "BR zone, floor");
+            Assert.That(Lost(FT.V(r.Right - R - FT.X(3f), r.Top - FT.X(20f)), FT.V(FT.X(5f), FT.X(0f))), Is.EqualTo(FT.X(0f)), "TR corner");
+            Assert.That(Lost(FT.V(r.Left + R + FT.X(3f), r.Bottom + FT.X(20f)), FT.V(-FT.X(5f), FT.X(0f))), Is.EqualTo(FT.X(0f)), "BL corner");
         }
 
         [Test]
@@ -68,8 +68,8 @@ namespace BallBattle.SimTests
         {
             var cfg = SpikeConfig();
             var r = Rect(cfg);
-            var lost = Bounce(cfg, new Vec2(r.Left + R + 2f, r.Top - R - 2f), new Vec2(-5f, 5f), out var hits);
-            Assert.That(lost, Is.EqualTo(3f));
+            var lost = Bounce(cfg, FT.V(r.Left + R + FT.X(2f), r.Top - R - FT.X(2f)), FT.V(-FT.X(5f), FT.X(5f)), out var hits);
+            Assert.That(lost.F(), Is.EqualTo(3f));
             Assert.That(hits, Is.EqualTo(1));
         }
 
@@ -79,15 +79,15 @@ namespace BallBattle.SimTests
             var cfg = SpikeConfig();
             cfg.ShrinkStartTick = 1;
             cfg.ShrinkDurationTicks = 10;
-            var m = Stage.Build(cfg, (Stage.L(new HarmlessRule()), new Vec2(-20f, 0f), 0f), (Stage.L(new HarmlessRule()), new Vec2(20f, 0f), 0f));
+            var m = Stage.Build(cfg, (Stage.L(new HarmlessRule()), FT.V(-20f, 0f), 0f), (Stage.L(new HarmlessRule()), FT.V(20f, 0f), 0f));
             var before = m.Arena;
             for (var i = 0; i < 20; i++) m.Step();
             var r = m.Arena;
             Assert.That(r.Width, Is.LessThan(before.Width));
             Assert.That(r.Height, Is.LessThan(before.Height));
-            var zx = r.Width / 5f;
-            var zy = r.Height / 5f;
-            const float e = 0.25f;
+            var zx = r.Width / FT.X(5f);
+            var zy = r.Height / FT.X(5f);
+            var e = FT.X(0.25);
             var c = ArenaTuning.SpikeCorners;
             // TL: left wall from the top, top wall from the left.
             Assert.That(SpikeZones.Contains(r, ArenaWall.Left, r.Top - (zy - e), c), Is.True);
@@ -105,13 +105,13 @@ namespace BallBattle.SimTests
         public void AllFourCornersSwitch()
         {
             var r = Rect(SpikeConfig());
-            Assert.That(SpikeZones.Contains(r, ArenaWall.Right, r.Top - 20f, ArenaTuning.SpikeCorners), Is.False, "TR off by default");
-            Assert.That(SpikeZones.Contains(r, ArenaWall.Right, r.Top - 20f, SpikeCorner.All), Is.True);
-            Assert.That(SpikeZones.Contains(r, ArenaWall.Left, r.Bottom + 20f, SpikeCorner.All), Is.True);
+            Assert.That(SpikeZones.Contains(r, ArenaWall.Right, r.Top - FT.X(20f), ArenaTuning.SpikeCorners), Is.False, "TR off by default");
+            Assert.That(SpikeZones.Contains(r, ArenaWall.Right, r.Top - FT.X(20f), SpikeCorner.All), Is.True);
+            Assert.That(SpikeZones.Contains(r, ArenaWall.Left, r.Bottom + FT.X(20f), SpikeCorner.All), Is.True);
             var all = SpikeConfig(SpikeCorner.All);
-            Assert.That(Bounce(all, new Vec2(r.Right - R - 3f, r.Top - 20f), new Vec2(5f, 0f), out _), Is.EqualTo(3f), "TR with All");
-            Assert.That(Bounce(all, new Vec2(r.Left + R + 3f, r.Bottom + 20f), new Vec2(-5f, 0f), out _), Is.EqualTo(3f), "BL with All");
-            Assert.That(Bounce(all, new Vec2(r.Right - R - 3f, 0f), new Vec2(5f, 0f), out _), Is.EqualTo(0f), "midpoint still harmless");
+            Assert.That(Bounce(all, FT.V(r.Right - R - FT.X(3f), r.Top - FT.X(20f)), FT.V(FT.X(5f), FT.X(0f)), out _), Is.EqualTo(FT.X(3f)), "TR with All");
+            Assert.That(Bounce(all, FT.V(r.Left + R + FT.X(3f), r.Bottom + FT.X(20f)), FT.V(-FT.X(5f), FT.X(0f)), out _), Is.EqualTo(FT.X(3f)), "BL with All");
+            Assert.That(Bounce(all, FT.V(r.Right - R - FT.X(3f), FT.X(0f)), FT.V(FT.X(5f), FT.X(0f)), out _), Is.EqualTo(FT.X(0f)), "midpoint still harmless");
         }
 
         [Test]
@@ -132,18 +132,18 @@ namespace BallBattle.SimTests
         // ---- per-arena outcome digests (independent of SimVersion.Rules) ----
 
         /// <summary>
-        /// Recorded at ff7ab50 (before BB-FIX1a) for every arena; non-spike arenas must stay identical.
-        /// spike-walls changed on purpose (corner zones, 3 damage): see docs/claude-runs/bbfix1a-spikes.md.
+        /// Per-arena digests, re-pinned for the fixed-point sim (6a.6b/c; the digest now mixes the Fix raw HP values). Every
+        /// arena is pinned exactly; old (float, BB-FIX1a) → new values are listed in docs/claude-runs/6a6bc-fix.md.
         /// </summary>
         static readonly (string arena, ulong digest)[] ExpectedByArena =
         {
-            ("classic", 0x6F2265EA3A4812DFUL),
-            ("pillar", 0x3C8F87B27D8DB9B5UL),
-            ("bumpers", 0x447293047E50C7E1UL),
-            ("spike-walls", 0xFCE4FB1B969DAAF0UL),
-            ("low-gravity", 0x26A829E997CF5D92UL),
-            ("tight", 0xA8649BD7FB44D43CUL),
-            ("wide", 0x56C07FC05082E5A8UL),
+            ("classic", 0x7BEA200668ED5694UL),
+            ("pillar", 0x9BAA96D99356D870UL),
+            ("bumpers", 0xB76BDBC50DCFB6D0UL),
+            ("spike-walls", 0x81D75579528D171BUL),
+            ("low-gravity", 0x265057B248B104E2UL),
+            ("tight", 0x87CD89A941BEDBEAUL),
+            ("wide", 0xBBFD43849E96D984UL),
         };
 
         /// <summary>Winner, length and both final HPs of 8 weapons vs blade, seeds 1-2, on one arena.</summary>
@@ -157,8 +157,8 @@ namespace BallBattle.SimTests
                     while (m.Outcome == MatchOutcome.Ongoing) m.Step();
                     h = Mix(h, (ulong)(m.WinnerIndex + 2));
                     h = Mix(h, (ulong)m.Tick);
-                    h = Mix(h, (ulong)(uint)BitConverter.SingleToInt32Bits(m.Balls[0].Hp));
-                    h = Mix(h, (ulong)(uint)BitConverter.SingleToInt32Bits(m.Balls[1].Hp));
+                    h = Mix(h, (ulong)(uint)m.Balls[0].Hp.Raw);
+                    h = Mix(h, (ulong)(uint)m.Balls[1].Hp.Raw);
                 }
             return h;
         }
@@ -166,17 +166,11 @@ namespace BallBattle.SimTests
         static ulong Mix(ulong h, ulong v) => (h ^ v) * 1099511628211UL;
 
         [Test]
-        public void NonSpikeArenasPlayExactlyAsBefore()
+        public void EveryArenaMatchesItsDigest()
         {
-            foreach (var (arena, expected) in ExpectedByArena)
-            {
-                var actual = ArenaDigest(arena);
-                TestContext.Out.WriteLine($"ARENA DIGEST {arena}: 0x{actual:X16}");
-                if (arena == ArenaRegistry.SpikeWalls)
-                    Assert.That(actual, Is.Not.EqualTo(expected), "spike-walls is meant to change");
-                else
-                    Assert.That(actual, Is.EqualTo(expected), arena);
-            }
+            var actual = ExpectedByArena.Select(e => (e.arena, digest: ArenaDigest(e.arena))).ToArray();
+            foreach (var (arena, digest) in actual) TestContext.Out.WriteLine($"ARENA DIGEST {arena}: 0x{digest:X16}UL");
+            Assert.That(actual, Is.EqualTo(ExpectedByArena));
         }
     }
 }

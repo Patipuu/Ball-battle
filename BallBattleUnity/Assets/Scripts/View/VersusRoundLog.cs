@@ -12,7 +12,7 @@ namespace BallBattle.View
             string Hp(int i)
             {
                 var hp = match.Balls[i].Hp;
-                return SimTrace.Bits(hp) + "/" + hp.ToString("R", CultureInfo.InvariantCulture);
+                return SimTrace.Bits(hp) + "/" + SaveFix.ToDouble(hp).ToString("R", CultureInfo.InvariantCulture);
             }
             return $"[BallBattle] Versus round {series.DisplayRound} ended: match seed {series.MatchSeed}, round seed {match.Seed}, " +
                    $"{series.WeaponA} vs {series.WeaponB}, winner {winner}, tick {match.Tick}, hp A={Hp(0)} B={Hp(1)}";

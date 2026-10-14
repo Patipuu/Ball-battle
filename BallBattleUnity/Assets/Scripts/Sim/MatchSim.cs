@@ -88,7 +88,7 @@ namespace BallBattle.Sim
                 if (l == null || l.Weapon == null) throw new ArgumentException($"Loadout {i} has no weapon", nameof(loadouts));
                 if (l.Weapon.IsBound || !seenWeapons.Add(l.Weapon))
                     throw new InvalidOperationException($"Weapon '{l.Weapon.Id}' instance is already used by a ball; create a new instance per ball and per match.");
-                if (l.Hp == 0f) throw new ArgumentException($"Loadout {i} starts with 0 HP", nameof(loadouts));
+                if (l.Hp == Fix.Zero) throw new ArgumentException($"Loadout {i} starts with 0 HP", nameof(loadouts));
                 for (var t = 0; t < l.Traits.Count; t++)
                 {
                     var trait = l.Traits[t];
@@ -110,28 +110,27 @@ namespace BallBattle.Sim
         BallState Spawn(int index, int count, BallLoadout l)
         {
             var traits = l.Traits.ToArray();
-            var maxHp = l.MaxHp > 0f ? l.MaxHp : Config.StartHp;
-            var radius = l.Radius > 0f ? l.Radius : Config.BallRadius;
+            var maxHp = l.MaxHp > Fix.Zero ? l.MaxHp : Config.StartHp;
+            var radius = l.Radius > Fix.Zero ? l.Radius : Config.BallRadius;
             var b = new BallState(index, l.Weapon, count, traits)
             {
                 Radius = radius,
                 BladeShift = radius - Config.BallRadius,
                 MaxHp = maxHp,
-                Hp = l.Hp >= 0f ? MathF.Min(l.Hp, maxHp) : maxHp,
+                Hp = l.Hp >= Fix.Zero ? FixMath.Min(l.Hp, maxHp) : maxHp,
                 Bonus = l.Bonus
             };
             l.Weapon.Attach(this, b);
             foreach (var t in traits) t.Bind(this, b);
 
-            // Spread evenly across the width, upper half, with a seeded jitter.
-            var slot = (index + 0.5f) / count;
-            var x = Arena.Left + Arena.Width * slot + rng.Range(-15f, 15f);
-            var y = rng.Range(Arena.Bottom * 0.3f, Arena.Top * 0.6f);
-            b.Pos = new Vec2(x, y);
+            // Spread evenly across the width, upper half, with a seeded jitter. Slot centre = (index + 1/2) / count of the width.
+            var x = Arena.Left + FixMath.MulDiv(Arena.Width, 2 * index + 1, 2 * count) + rng.RangeFixOrMin(-15, 15);
+            var y = rng.RangeFixOrMin(FixMath.MulDiv(Arena.Bottom, 3, 10), FixMath.MulDiv(Arena.Top, 6, 10));
+            b.Pos = new FixVec2(x, y);
 
-            var dir = Vec2.FromAngleDeg(rng.Range(0f, 360f));
-            b.Vel = dir * rng.Range(Config.StartSpeedMin, Config.StartSpeedMax);
-            b.WeaponAngleDeg = rng.Range(0f, 360f);
+            var dir = FixVec2.FromAngleDeg(rng.RangeFixOrMin(0, 360));
+            b.Vel = dir * rng.RangeFixOrMin(Config.StartSpeedMin, Config.StartSpeedMax);
+            b.WeaponAngleDeg = rng.RangeFixOrMin(0, 360);
             b.SpinDir = rng.NextBool() ? 1 : -1;
             return b;
         }
@@ -158,11 +157,10 @@ namespace BallBattle.Sim
             Arena = Config.ArenaAt(ActiveTick);
 
             var substeps = SubstepCount();
-            var dt = 1f / substeps;
             for (var s = 0; s < substeps && Ongoing; s++)
             {
-                Integrate(dt);
-                IntegrateProjectiles(dt);
+                Integrate(substeps, s);
+                IntegrateProjectiles(substeps, s);
                 ResolveWeaponContacts();
                 ResolveProjectileContacts();
                 ResolveBallCollisions();

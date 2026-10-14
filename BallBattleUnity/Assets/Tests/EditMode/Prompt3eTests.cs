@@ -193,7 +193,7 @@ namespace BallBattle.Tests
             Assert.That(art.CardHeal.rect.size, Is.EqualTo(new Vector2(14, 14)));
             var run = RunState.Start(70, FirstChoice(70), new ProgressData());
             run.Coins = 10;
-            run.Build.SetHp(50f);
+            run.Build.SetHp(TFix.X(50f));
             run.OfferCards.Clear();
             var other = WeaponRegistry.All.First(w => w.Id != run.Build.WeaponId).Id;
             foreach (var c in new[] { new Card(CardKind.Heal), new Card(CardKind.SwapWeapon, other), new Card(CardKind.DamageUp) }) run.OfferCards.Add(OfferSlot.From(c));
@@ -273,7 +273,7 @@ namespace BallBattle.Tests
             var rig = Rig();
             LogAssert.Expect(LogType.Log, new Regex(@"^\[BallBattle\] Fight 1 ended: seed 1791713962 \(match \d+\), outcome (Win|Lost|Draw), tick \d+, you brawler HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, enemy aegis HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, DMG DEALT \d+\.\d\d TAKEN \d+\.\d\d$"));
             PlayFightOne(rig, 1791713962u, BrawlerRule.WeaponId);   // fight 1: MIRROR (aegis), which heals
-            var healed = rig.events.Where(e => e.Type == SimEventType.Heal && e.A == 1).Sum(e => e.Value);
+            var healed = rig.events.Where(e => e.Type == SimEventType.Heal && e.A == 1).Sum(e => e.Value.ToFloat());
             Assert.That(healed, Is.GreaterThan(0f));
             var r = rig.rc.Flow.LastReport;
             Assert.That(r.EnemyHealed, Is.EqualTo(healed).Within(0.01f));
@@ -331,8 +331,8 @@ namespace BallBattle.Tests
             sim.ApplySpawnHooks();
             var stats = new FightStats();
             stats.Reset(sim);
-            stats.Add(new SimEvent { Type = SimEventType.Hit, A = 0, B = 1, Value = 12.345f });
-            stats.Add(new SimEvent { Type = SimEventType.Heal, A = 1, Value = 1.5f });
+            stats.Add(new SimEvent { Type = SimEventType.Hit, A = 0, B = 1, Value = TFix.X(12.345f) });
+            stats.Add(new SimEvent { Type = SimEventType.Heal, A = 1, Value = TFix.X(1.5f) });
             var line = FightLog.Ended("Fight 3", sim, stats);
             Assert.That(line, Does.StartWith("[BallBattle] Fight 3 ended: seed 9, outcome "), "Versus: the match seed");
             Assert.That(FightLog.Ended("Fight 3", sim, stats, 1791713962u), Does.StartWith("[BallBattle] Fight 3 ended: seed 1791713962 (match 9), outcome "), "Run: the run seed (-bbSeed) and the match seed");

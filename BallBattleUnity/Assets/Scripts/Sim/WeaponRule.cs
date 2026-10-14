@@ -1,15 +1,14 @@
 using System;
-using System.Globalization;
 
 namespace BallBattle.Sim
 {
     /// <summary>Facts about one landed hit, passed to the attacker's weapon rule.</summary>
     public readonly struct HitContext
     {
-        public readonly float AttackerSpeed;
-        public readonly float RelativeSpeed;
+        public readonly Fix AttackerSpeed;
+        public readonly Fix RelativeSpeed;
 
-        public HitContext(float attackerSpeed, float relativeSpeed)
+        public HitContext(Fix attackerSpeed, Fix relativeSpeed)
         {
             AttackerSpeed = attackerSpeed;
             RelativeSpeed = relativeSpeed;
@@ -33,31 +32,31 @@ namespace BallBattle.Sim
         public virtual bool BodyAttacks => false;
 
         /// <summary>Blade = segment from center+dir*BladeInner to center+dir*(BladeInner+BladeLength).</summary>
-        public float BladeInner = 12f;
-        public float BladeLength = 20f;
-        public float BladeThickness = 3f;
-        public float SpinDegPerTick = 6f;
+        public Fix BladeInner = 12;
+        public Fix BladeLength = 20;
+        public Fix BladeThickness = 3;
+        public Fix SpinDegPerTick = 6;
 
         /// <summary>Added to MatchConfig.MaxSpeed for this ball.</summary>
-        public float MaxSpeedBonus;
+        public Fix MaxSpeedBonus;
 
         /// <summary>Ticks before this weapon may hit the same target again; -1 = MatchConfig.HitCooldownTicks.</summary>
         public int HitCooldownTicks = -1;
 
         /// <summary>Fraction of speed gained on every real wall bounce (0 = none). The speed cap still applies.</summary>
-        public float WallSpeedBoost;
+        public Fix WallSpeedBoost;
 
         /// <summary>Multiplier on MatchConfig.HitKnockback for this weapon's hits (low = target stays close for combos).</summary>
-        public float KnockbackScale = 1f;
+        public Fix KnockbackScale = 1;
 
         /// <summary>HUD label of the stat that grows (e.g. "DMG"). Real weapons must override.</summary>
         public virtual string StatLabel => "";
 
         /// <summary>Current value of that stat.</summary>
-        public virtual float StatValue => 0f;
+        public virtual Fix StatValue => Fix.Zero;
 
         /// <summary>Stat formatted for the HUD (weapon decides precision), so the HUD needs no per-weapon code.</summary>
-        public virtual string StatText => StatValue.ToString("0.#", CultureInfo.InvariantCulture);
+        public virtual string StatText => FixMath.Format(StatValue, 1);
 
         /// <summary>Config of the match this weapon is bound to (null before Bind).</summary>
         protected MatchConfig Config { get; private set; }
@@ -85,16 +84,16 @@ namespace BallBattle.Sim
             Self = self;
         }
 
-        public abstract float Damage(in HitContext ctx);
+        public abstract Fix Damage(in HitContext ctx);
 
         /// <summary>This weapon's own blade/body hit landed (not shield-blocked). Growth goes here.</summary>
         public virtual void OnHit(in HitContext ctx) { }
 
         /// <summary>Any Weapon or Projectile hit by this ball landed, after HP changed (poison on hit, +1 arrow per hit).</summary>
-        public virtual void OnHitDealt(BallState target, float damage, DamageKind kind) { }
+        public virtual void OnHitDealt(BallState target, Fix damage, DamageKind kind) { }
 
         /// <summary>This ball took a Weapon or Projectile hit that was not shield-blocked, after HP changed (reflect, counter).</summary>
-        public virtual void OnHitTaken(BallState attacker, float damage, DamageKind kind) { }
+        public virtual void OnHitTaken(BallState attacker, Fix damage, DamageKind kind) { }
 
         public virtual void OnParry(BallState other) { }
         public virtual void OnWall() { }

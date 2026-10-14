@@ -27,7 +27,7 @@ namespace BallBattle.View
             dealt[0] = dealt[1] = 0f;
             taken[0] = taken[1] = 0f;
             tracking = match != null;
-            for (var i = 0; i < 2; i++) startHp[i] = hp[i] = match != null && i < match.Balls.Count ? Mathf0(match.Balls[i].Hp) : 0f;
+            for (var i = 0; i < 2; i++) startHp[i] = hp[i] = match != null && i < match.Balls.Count ? Mathf0(match.Balls[i].Hp.ToFloat()) : 0f;
             healed[0] = healed[1] = 0f;
             secondWind[0] = secondWind[1] = false;
         }
@@ -61,20 +61,20 @@ namespace BallBattle.View
                 case SimEventType.Hit:
                 case SimEventType.ProjectileHit:
                 case SimEventType.Damage:
-                    Count(e.A, e.B, e.Value);   // A = source (-1 none), B = target
+                    Count(e.A, e.B, e.Value.ToFloat());   // A = source (-1 none), B = target
                     break;
                 case SimEventType.StatusTick:
-                    Count(e.B, e.A, e.Value);   // A = poisoned ball, B = main source
+                    Count(e.B, e.A, e.Value.ToFloat());   // A = poisoned ball, B = main source
                     break;
                 case SimEventType.ObstacleHit:
                 case SimEventType.WallBounce:
-                    Count(-1, e.A, e.Value);    // arena hazard: nobody dealt it
+                    Count(-1, e.A, e.Value.ToFloat());    // arena hazard: nobody dealt it
                     break;
                 case SimEventType.Heal:
-                    if (e.A >= 0 && e.A < 2 && e.Value > 0f)
+                    if (e.A >= 0 && e.A < 2 && e.Value.ToFloat() > 0f)
                     {
-                        healed[e.A] += e.Value;
-                        if (tracking) hp[e.A] += e.Value;
+                        healed[e.A] += e.Value.ToFloat();
+                        if (tracking) hp[e.A] += e.Value.ToFloat();
                     }
                     break;
             }
@@ -159,15 +159,15 @@ namespace BallBattle.View
                 Outcome = match.WinnerIndex == 0 ? FightOutcome.Win : match.WinnerIndex < 0 ? FightOutcome.Draw : FightOutcome.Lost,
                 EndReason = match.EndReason,
                 Seconds = match.ActiveTick / (float)MatchConfig.TicksPerSecond,
-                HpLeft = you.Hp > 0f ? you.Hp : 0f,
-                MaxHpInFight = you.MaxHp,
+                HpLeft = you.Hp.ToFloat() > 0f ? you.Hp.ToFloat() : 0f,
+                MaxHpInFight = you.MaxHp.ToFloat(),
                 DamageDealt = stats != null ? stats.Taken(1) : 0f,   // everything the enemy lost (hits, poison, reflect, arena), like DMG TAKEN
                 DamageTaken = stats != null ? stats.Taken(0) : 0f,
                 EnemyHealed = stats != null ? stats.Healed(1) : 0f,
                 CoinsGained = run.Coins - before.Coins,
                 CoinsTotal = run.Coins,
-                HpNext = run.Build.Hp,
-                MaxHpNext = run.Build.MaxHp,
+                HpNext = run.Build.Hp.ToFloat(),
+                MaxHpNext = run.Build.MaxHp.ToFloat(),
                 RetriesBefore = before.RetryCount,
                 RetriesAfter = run.RetryCount,
                 PlayerSecondWindTriggered = stats != null && stats.SecondWindTriggered(0),
@@ -180,13 +180,13 @@ namespace BallBattle.View
             {
                 var next = run.CreateMatch();   // the exact next fight: spawn hooks (Heavy, Glass Cannon, boss HP) applied
                 var enemy = run.Enemy;
-                r.HpNext = next.Balls[0].Hp;      // real start HP and max HP (Heavy: 170/170, not /100)
-                r.MaxHpNext = next.Balls[0].MaxHp;
+                r.HpNext = next.Balls[0].Hp.ToFloat();      // real start HP and max HP (Heavy: 170/170, not /100)
+                r.MaxHpNext = next.Balls[0].MaxHp.ToFloat();
                 r.NextFightNumber = run.FightIndex + 1;
                 r.NextIsBoss = run.IsBossFight;
                 r.NextWeaponId = enemy.WeaponId;
                 r.NextTraits = CardText.Traits(enemy);
-                r.NextEnemyHp = next.Balls[1].MaxHp;
+                r.NextEnemyHp = next.Balls[1].MaxHp.ToFloat();
                 r.NextArenaId = run.ArenaId;
             }
             return r;

@@ -1,7 +1,8 @@
 namespace BallBattle.Sim
 {
     /// <summary>
-    /// All tunable match constants. Units: native pixels, ticks (60 per second).
+    /// All tunable match constants. Units: native pixels, ticks (60 per second); numbers are Q16.16 (exact unless listed
+    /// in docs/claude-runs/6a6bc-fix.md as nearest-Fix).
     /// Mutable on purpose so tests can build edge-case matches; gameplay uses the defaults.
     /// </summary>
     public sealed class MatchConfig
@@ -10,10 +11,10 @@ namespace BallBattle.Sim
 
         // Arena: square in the middle of the 270x480 portrait screen, HUD above and below.
         // Sizes chosen by pacing sweep (plans/.../reports/phase-02-pacing-sweep.md): median ~55 s with a +1/hit blade.
-        public float ArenaWidth = 230f;
-        public float ArenaHeight = 230f;
-        public float MinArenaWidth = 110f;
-        public float MinArenaHeight = 110f;
+        public Fix ArenaWidth = 230;
+        public Fix ArenaHeight = 230;
+        public Fix MinArenaWidth = 110;
+        public Fix MinArenaHeight = 110;
         public int ShrinkStartTick = 90 * TicksPerSecond;
         public int ShrinkDurationTicks = 30 * TicksPerSecond;
         /// <summary>Safety cap: match ends here and higher HP% wins (equal → draw).</summary>
@@ -23,44 +24,46 @@ namespace BallBattle.Sim
         public ArenaLayout Layout = ArenaLayout.Empty;
 
         // Balls.
-        public float BallRadius = 16f;
-        public float StartHp = 100f;
-        public float Gravity = 0.05f;
-        public float MaxSpeed = 10f;
-        public float StartSpeedMin = 5f;
-        public float StartSpeedMax = 7f;
+        public Fix BallRadius = 16;
+        public Fix StartHp = 100;
+        /// <summary>0.05 px/tick² (nearest Fix).</summary>
+        public Fix Gravity = Fix.Ratio(1, 20);
+        public Fix MaxSpeed = 10;
+        public Fix StartSpeedMin = 5;
+        public Fix StartSpeedMax = 7;
         /// <summary>Floor bounce never launches slower than this, so a ball never settles on the floor.</summary>
-        public float MinFloorBounce = 5f;
+        public Fix MinFloorBounce = 5;
         /// <summary>Horizontal speed floor, so two balls never bounce vertically forever without meeting.</summary>
-        public float MinHorizontalSpeed = 1.5f;
+        public Fix MinHorizontalSpeed = Fix.Ratio(3, 2);
 
         // Combat.
         public int HitCooldownTicks = 15;
         public int HitHitstopTicks = 3;
         public int ParryHitstopTicks = 6;
         public int ParryCooldownTicks = 10;
-        public float HitKnockback = 1.5f;
-        public float ParryPush = 2f;
+        public Fix HitKnockback = Fix.Ratio(3, 2);
+        public Fix ParryPush = 2;
         /// <summary>Extra reach for body-attack contact (ball-ball resolution leaves them exactly touching).</summary>
-        public float BodyContactSlop = 0.5f;
+        public Fix BodyContactSlop = Fix.Ratio(1, 2);
         /// <summary>Push on a ball hit by a projectile (fraction of HitKnockback).</summary>
-        public float ProjectileKnockbackScale = 0.5f;
+        public Fix ProjectileKnockbackScale = Fix.Ratio(1, 2);
 
         // Integration.
         public int MinSubsteps = 2;
         public int MaxSubsteps = 32;
-        public float MaxSpinPerSubstepDeg = 4f;
+        public Fix MaxSpinPerSubstepDeg = 4;
 
-        /// <summary>Play area at a given active tick: full size, then linear shrink to the minimum, then fixed.</summary>
+        /// <summary>
+        /// Play area at a given active tick: full size, then linear shrink to the minimum, then fixed. Size during the
+        /// shrink = full + (min - full) × elapsed / duration, rounded toward zero (integer ticks, long intermediate).
+        /// </summary>
         public ArenaRect ArenaAt(int activeTick)
         {
-            float t;
-            if (activeTick <= ShrinkStartTick) t = 0f;
-            else if (ShrinkDurationTicks <= 0 || activeTick >= ShrinkStartTick + ShrinkDurationTicks) t = 1f;
-            else t = (activeTick - ShrinkStartTick) / (float)ShrinkDurationTicks;
-
-            var w = ArenaWidth + (MinArenaWidth - ArenaWidth) * t;
-            var h = ArenaHeight + (MinArenaHeight - ArenaHeight) * t;
+            if (activeTick <= ShrinkStartTick) return ArenaRect.Centered(ArenaWidth, ArenaHeight);
+            if (ShrinkDurationTicks <= 0 || activeTick >= ShrinkStartTick + ShrinkDurationTicks) return ArenaRect.Centered(MinArenaWidth, MinArenaHeight);
+            var elapsed = activeTick - ShrinkStartTick;
+            var w = ArenaWidth + FixMath.MulDiv(MinArenaWidth - ArenaWidth, elapsed, ShrinkDurationTicks);
+            var h = ArenaHeight + FixMath.MulDiv(MinArenaHeight - ArenaHeight, elapsed, ShrinkDurationTicks);
             return ArenaRect.Centered(w, h);
         }
     }

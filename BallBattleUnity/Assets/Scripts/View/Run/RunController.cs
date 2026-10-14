@@ -78,7 +78,7 @@ namespace BallBattle.View
                 arena.StartMatch(sim, "YOU", Flow.Run.IsBossFight ? "BOSS" : "FOE");
                 // Stat cards taken this run: HUD badges with the card icons (DAMAGE, SPEED CAP, MAX HP).
                 var build = Flow.Run.Build;
-                arena.Badges?.SetCardBadges(0, build.DamagePct > 0f, build.SpeedPct > 0f, build.MaxHp > BallBattle.Sim.Run.RunTuning.PlayerStartHp);
+                arena.Badges?.SetCardBadges(0, build.DamagePct > BallBattle.Sim.Fix.Zero, build.SpeedPct > BallBattle.Sim.Fix.Zero, build.MaxHp > BallBattle.Sim.Run.RunTuning.PlayerStartHp);
                 arena.Paused = true;
                 if (Flow.Run.IsRetry) overlay.ShowRetryBanner();
             };
@@ -216,7 +216,7 @@ namespace BallBattle.View
                 var b = sim.Balls[i];
                 var traits = new System.Text.StringBuilder();
                 foreach (var t in b.Traits) traits.Append(traits.Length > 0 ? "," : "").Append(t.Id).Append(t.Level);
-                return $"{b.Weapon.Id} HP {b.Hp:0.##}/{b.MaxHp:0.##} [{traits}]";
+                return $"{b.Weapon.Id} HP {b.Hp.ToFloat():0.##}/{b.MaxHp.ToFloat():0.##} [{traits}]";
             }
             var fight = Flow.Run != null ? Flow.Run.FightIndex + 1 : 0;
             return $"[BallBattle] Fight {fight} {what}: seed {sim.Seed}, tick {sim.Tick}, you {Ball(0)}, enemy {Ball(1)}";

@@ -13,27 +13,27 @@ namespace BallBattle.Sim
     public sealed partial class MatchSim
     {
         /// <summary>Alive and not pending death.</summary>
-        static bool Active(BallState b) => b != null && b.Alive && b.Hp > 0f;
+        static bool Active(BallState b) => b != null && b.Alive && b.Hp > Fix.Zero;
 
         /// <summary>Damage a Weapon/Projectile hit will deal. No HP change yet; may use up a target shield charge.</summary>
-        float ComputeHitDamage(BallState attacker, BallState target, float baseDamage, DamageKind kind, out bool blocked)
+        Fix ComputeHitDamage(BallState attacker, BallState target, Fix baseDamage, DamageKind kind, out bool blocked)
         {
-            var d = baseDamage * (1f + attacker.Bonus.DamagePct);
+            var d = baseDamage * (Fix.One + attacker.Bonus.DamagePct);
             foreach (var t in attacker.Traits) d = t.ModifyOutgoingDamage(target, d, kind);
-            blocked = d > 0f && target.Status.TryConsumeShield();
-            if (blocked) return 0f;
+            blocked = d > Fix.Zero && target.Status.TryConsumeShield();
+            if (blocked) return Fix.Zero;
             foreach (var t in target.Traits) d = t.ModifyIncomingDamage(attacker, d, kind);
-            return d > 0f ? d : 0f;
+            return d > Fix.Zero ? d : Fix.Zero;
         }
 
         /// <summary>HP part of an unblocked hit. Hooks run separately (RunHitHooks) so a trade can apply both HP changes first.</summary>
-        static void ApplyHitHp(BallState attacker, BallState target, float damage)
+        static void ApplyHitHp(BallState attacker, BallState target, Fix damage)
         {
             target.Hp -= damage;
             target.LastAttacker = attacker.Index;
         }
 
-        static void RunHitHooks(BallState attacker, BallState target, float damage, DamageKind kind)
+        static void RunHitHooks(BallState attacker, BallState target, Fix damage, DamageKind kind)
         {
             attacker.Weapon.OnHitDealt(target, damage, kind);
             foreach (var t in attacker.Traits) t.OnHitDealt(target, damage, kind);
@@ -45,19 +45,19 @@ namespace BallBattle.Sim
         /// Non-hit damage (Status, Reflect, Hazard): target's incoming traits, then HP. Source may be null.
         /// Returns the damage actually dealt and emits Damage (Variant = kind).
         /// </summary>
-        public float DealDamage(BallState source, BallState target, float amount, DamageKind kind)
+        public Fix DealDamage(BallState source, BallState target, Fix amount, DamageKind kind)
             => DealDamage(source, target, amount, kind, true);
 
         /// <summary>Internal callers that report the damage in their own event (poison pulse, walls, obstacles) pass emit = false.</summary>
-        float DealDamage(BallState source, BallState target, float amount, DamageKind kind, bool emit)
+        Fix DealDamage(BallState source, BallState target, Fix amount, DamageKind kind, bool emit)
         {
             if (kind == DamageKind.Weapon || kind == DamageKind.Projectile)
                 throw new ArgumentException("Weapon/Projectile damage goes through hits, not DealDamage", nameof(kind));
-            if (!Ongoing || !Active(target) || amount <= 0f) return 0f;
+            if (!Ongoing || !Active(target) || amount <= Fix.Zero) return Fix.Zero;
 
             var d = amount;
             foreach (var t in target.Traits) d = t.ModifyIncomingDamage(source, d, kind);
-            if (d <= 0f) return 0f;
+            if (d <= Fix.Zero) return Fix.Zero;
 
             target.Hp -= d;
             if (source != null) target.LastAttacker = source.Index;
@@ -67,20 +67,20 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Restores HP up to MaxHp. Returns the amount actually restored (emits Heal when &gt; 0). Never revives a pending-dead ball.</summary>
-        public float Heal(BallState ball, float amount)
+        public Fix Heal(BallState ball, Fix amount)
         {
-            if (!Ongoing || !Active(ball) || amount <= 0f || ball.Hp >= ball.MaxHp) return 0f;
+            if (!Ongoing || !Active(ball) || amount <= Fix.Zero || ball.Hp >= ball.MaxHp) return Fix.Zero;
             var before = ball.Hp;
-            ball.Hp = MathF.Min(ball.MaxHp, ball.Hp + amount);
+            ball.Hp = FixMath.Min(ball.MaxHp, ball.Hp + amount);
             var restored = ball.Hp - before;
             Emit(SimEventType.Heal, ball.Index, -1, restored, ball.Pos);
             return restored;
         }
 
         /// <summary>Adds a poison stack: <paramref name="dps"/> damage once per second; <paramref name="ticks"/> is rounded up to whole seconds.</summary>
-        public void ApplyPoison(BallState target, BallState source, float dps, int ticks)
+        public void ApplyPoison(BallState target, BallState source, Fix dps, int ticks)
         {
-            if (!Ongoing || !Active(target) || dps <= 0f || ticks <= 0) return;
+            if (!Ongoing || !Active(target) || dps <= Fix.Zero || ticks <= 0) return;
             var src = source != null ? source.Index : -1;
             target.Status.AddPoison(dps, WholeSeconds(ticks), src);
             Emit(SimEventType.StatusApplied, target.Index, src, dps, target.Pos, (byte)StatusKind.Poison);
@@ -95,9 +95,9 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Heal <paramref name="perSecond"/> once per second; <paramref name="ticks"/> rounded up to whole seconds. Replaces any running regen.</summary>
-        public void ApplyRegen(BallState target, float perSecond, int ticks)
+        public void ApplyRegen(BallState target, Fix perSecond, int ticks)
         {
-            if (!Ongoing || !Active(target) || perSecond <= 0f || ticks <= 0) return;
+            if (!Ongoing || !Active(target) || perSecond <= Fix.Zero || ticks <= 0) return;
             target.Status.SetRegen(perSecond, WholeSeconds(ticks));
             Emit(SimEventType.StatusApplied, target.Index, -1, perSecond, target.Pos, (byte)StatusKind.Regen);
         }
@@ -118,15 +118,15 @@ namespace BallBattle.Sim
                 if (!b.Alive) continue;
                 var s = b.Status;
                 var poison = s.TickPoison(out var mainSource);
-                if (poison > 0f)
+                if (poison > Fix.Zero)
                 {
                     var source = mainSource >= 0 ? balls[mainSource] : null;
                     var dealt = DealDamage(source, b, poison, DamageKind.Status, false);
-                    if (dealt > 0f) Emit(SimEventType.StatusTick, b.Index, mainSource, dealt, b.Pos, (byte)StatusKind.Poison);
+                    if (dealt > Fix.Zero) Emit(SimEventType.StatusTick, b.Index, mainSource, dealt, b.Pos, (byte)StatusKind.Poison);
                 }
 
                 var regen = s.TickRegen();
-                if (regen > 0f) Heal(b, regen);
+                if (regen > Fix.Zero) Heal(b, regen);
             }
             ResolveDeaths();
         }

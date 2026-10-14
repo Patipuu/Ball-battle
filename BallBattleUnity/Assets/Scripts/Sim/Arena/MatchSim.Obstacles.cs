@@ -21,18 +21,18 @@ namespace BallBattle.Sim
                     var delta = b.Pos - core;
                     var minDist = b.Radius + o.Radius;
                     var distSq = delta.LengthSq;
-                    if (distSq >= minDist * minDist) continue;
+                    if (distSq >= FixMath.Sq(minDist)) continue;
 
-                    var dist = MathF.Sqrt(distSq);
-                    var normal = dist > 1e-6f ? delta * (1f / dist) : FallbackNormal;
+                    var dist = FixMath.Sqrt(distSq);
+                    var normal = dist.Raw > 0 ? new FixVec2(delta.X / dist, delta.Y / dist) : FallbackNormal;
                     b.Pos = core + normal * minDist;
 
-                    var into = Vec2.Dot(b.Vel, normal);
-                    if (into >= 0f) continue;
-                    b.Vel -= normal * (2f * into);
+                    var into = FixVec2.DotFix(b.Vel, normal);
+                    if (into >= Fix.Zero) continue;
+                    b.Vel -= normal * (into * 2);
                     if (!Active(b)) continue; // killed by a spike this substep: still pushed out, but no more damage or hooks
-                    if (o.Boost > 0f) b.Vel = b.Vel * (1f + o.Boost);
-                    var dealt = o.Damage > 0f ? DealDamage(null, b, o.Damage, DamageKind.Hazard, false) : 0f;
+                    if (o.Boost > Fix.Zero) b.Vel = b.Vel * (Fix.One + o.Boost);
+                    var dealt = o.Damage > Fix.Zero ? DealDamage(null, b, o.Damage, DamageKind.Hazard, false) : Fix.Zero;
                     Emit(SimEventType.ObstacleHit, b.Index, k, dealt, b.Pos - normal * b.Radius);
                     if (Active(b)) OnBallBounced(b);
                 }
@@ -60,30 +60,30 @@ namespace BallBattle.Sim
                 if (b.Pos.X - r < arena.Left)
                 {
                     b.Pos.X = arena.Left + r;
-                    if (b.Vel.X < 0f) { b.Vel.X = -b.Vel.X; bounced = true; xWall = ArenaWall.Left; }
+                    if (b.Vel.X < Fix.Zero) { b.Vel.X = -b.Vel.X; bounced = true; xWall = ArenaWall.Left; }
                 }
                 else if (b.Pos.X + r > arena.Right)
                 {
                     b.Pos.X = arena.Right - r;
-                    if (b.Vel.X > 0f) { b.Vel.X = -b.Vel.X; bounced = true; xWall = ArenaWall.Right; }
+                    if (b.Vel.X > Fix.Zero) { b.Vel.X = -b.Vel.X; bounced = true; xWall = ArenaWall.Right; }
                 }
 
                 if (b.Pos.Y - r < arena.Bottom)
                 {
                     b.Pos.Y = arena.Bottom + r;
-                    if (b.Vel.Y < 0f) { b.Vel.Y = -b.Vel.Y; bounced = true; yWall = ArenaWall.Bottom; }
+                    if (b.Vel.Y < Fix.Zero) { b.Vel.Y = -b.Vel.Y; bounced = true; yWall = ArenaWall.Bottom; }
                     if (b.Vel.Y < Config.MinFloorBounce) b.Vel.Y = Config.MinFloorBounce;
                 }
                 else if (b.Pos.Y + r > arena.Top)
                 {
                     b.Pos.Y = arena.Top - r;
-                    if (b.Vel.Y > 0f) { b.Vel.Y = -b.Vel.Y; bounced = true; yWall = ArenaWall.Top; }
+                    if (b.Vel.Y > Fix.Zero) { b.Vel.Y = -b.Vel.Y; bounced = true; yWall = ArenaWall.Top; }
                 }
 
                 if (!bounced || !Active(b)) continue;
-                if (b.Weapon.WallSpeedBoost > 0f) b.Vel = b.Vel * (1f + b.Weapon.WallSpeedBoost);
-                var dealt = 0f;
-                if (wallDamage > 0f && spikeTick[b.Index] != Tick && HitsSpikeZone(arena, b.Pos, xWall, yWall))
+                if (b.Weapon.WallSpeedBoost > Fix.Zero) b.Vel = b.Vel * (Fix.One + b.Weapon.WallSpeedBoost);
+                var dealt = Fix.Zero;
+                if (wallDamage > Fix.Zero && spikeTick[b.Index] != Tick && HitsSpikeZone(arena, b.Pos, xWall, yWall))
                 {
                     spikeTick[b.Index] = Tick;
                     dealt = DealDamage(null, b, wallDamage, DamageKind.Hazard, false);
@@ -98,7 +98,7 @@ namespace BallBattle.Sim
         int[] spikeTick;
 
         /// <summary>Contact points on the walls bounced off (ball centre projected on the wall) inside a spike zone?</summary>
-        bool HitsSpikeZone(in ArenaRect arena, Vec2 pos, ArenaWall? xWall, ArenaWall? yWall)
+        bool HitsSpikeZone(in ArenaRect arena, FixVec2 pos, ArenaWall? xWall, ArenaWall? yWall)
         {
             var corners = layout.SpikeCorners;
             return (xWall.HasValue && SpikeZones.Contains(arena, xWall.Value, pos.Y, corners))

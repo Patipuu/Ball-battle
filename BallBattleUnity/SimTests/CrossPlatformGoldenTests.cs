@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace BallBattle.SimTests
 {
-    /// <summary>Fixed v4 match checkpoints for comparing Windows Unity and Linux .NET.</summary>
+    /// <summary>Fixed v6 match checkpoints for comparing Unity and .NET after the Q16.16 conversion.</summary>
     public class CrossPlatformGoldenTests
     {
         static readonly string[] WeaponIds =
@@ -13,15 +13,15 @@ namespace BallBattle.SimTests
         };
 
         // Each digest combines all eight matches for the corresponding seed, 1001 through 1020 (classic arena only).
-        // SimVersion 5 (BB-FIX1a): ComputeHash mixes SimVersion.Rules, so every value changed with the 4 -> 5 bump alone.
-        // Proof the physics did not: with Rules temporarily set back to 4 and the spike change in place, all 20 v4 values
-        // (0xD2A88D3A96477721 ... 0x2E6F293A3DBD6F44, see git history) still matched; VersusGoldenTests is unchanged.
+        // Re-pinned only after the 500-new-seeds-per-side behaviour sanity check (6a.6b/c v3).
+        // ComputeHash now includes Rules=6 and Fix raw state. Old -> new values are recorded in the task report.
         static readonly ulong[] ExpectedBySeed =
         {
-            0xEEF73442912C5F45UL, 0x6C9CB1F3F47585BCUL, 0x0D583A4B652498D4UL, 0xE10BE86758682CAAUL, 0x615720C12CA952DDUL,
-            0x5CC4EF5B8454F3C7UL, 0x77D845F46A6EED88UL, 0xA5809087BE6321EEUL, 0x0939F4085273C6D9UL, 0xBCBB361DF229BEC7UL,
-            0x7539F734E141493EUL, 0xE4625F6355701BE0UL, 0xE1FDD36872D3E8ADUL, 0x0451B5F480D2F852UL, 0x39EED389C95D132DUL,
-            0xDC267EEC4A98C1E8UL, 0xDEAA56E5352B12FDUL, 0x49A9C47C5F4DFE72UL, 0x838AED19B6A6037FUL, 0x0F586DA5838887A4UL
+            0xD431BAA2B27A7F85UL, 0x09B6D8FAB34726B1UL, 0x9DE2E81275E19CAAUL, 0x8D34C8605AE00592UL, 0xBB96BFE8B8B74FB0UL,
+            0xAFFD9CF6EBF43C3BUL, 0x31AAB7BFB1C8432AUL, 0x17CD3635A56F18EFUL, 0xBD291ECDF617ECD2UL, 0x4C72CBBB5438199CUL,
+            0xF18F3DA3E030682BUL, 0x13C44905533C4034UL, 0xA771D79EF8434B06UL, 0x39117D5FD64FA57EUL, 0x1EBB04D09D742B79UL,
+            0x616561F76BC4B6F6UL, 0x18395BBA0F443050UL, 0x3FBCA3642292576FUL, 0x22884B6DAC023333UL, 0xD75E9E34F512B2BAUL
+
         };
 
         [Test]
@@ -51,13 +51,13 @@ namespace BallBattle.SimTests
         [Test]
         public void TrigTableHasExactCardinalDirections()
         {
-            Assert.That(Vec2.FromAngleDeg(0f).X, Is.EqualTo(1f));
-            Assert.That(Vec2.FromAngleDeg(0f).Y, Is.EqualTo(0f));
-            Assert.That(Vec2.FromAngleDeg(90f).X, Is.EqualTo(0f));
-            Assert.That(Vec2.FromAngleDeg(90f).Y, Is.EqualTo(1f));
-            Assert.That(Vec2.FromAngleDeg(180f).X, Is.EqualTo(-1f));
-            Assert.That(Vec2.FromAngleDeg(180f).Y, Is.EqualTo(0f));
-            Assert.That(Vec2.FromAngleDeg(-90f).Y, Is.EqualTo(-1f));
+            Assert.That(FixVec2.FromAngleDeg(0).X, Is.EqualTo(Fix.One));
+            Assert.That(FixVec2.FromAngleDeg(0).Y, Is.EqualTo(Fix.Zero));
+            Assert.That(FixVec2.FromAngleDeg(90).X, Is.EqualTo(Fix.Zero));
+            Assert.That(FixVec2.FromAngleDeg(90).Y, Is.EqualTo(Fix.One));
+            Assert.That(FixVec2.FromAngleDeg(180).X, Is.EqualTo(-Fix.One));
+            Assert.That(FixVec2.FromAngleDeg(180).Y, Is.EqualTo(Fix.Zero));
+            Assert.That(FixVec2.FromAngleDeg(-90).Y, Is.EqualTo(-Fix.One));
         }
     }
 }

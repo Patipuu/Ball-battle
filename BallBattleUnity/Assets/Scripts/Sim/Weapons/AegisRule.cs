@@ -1,4 +1,3 @@
-using System;
 
 namespace BallBattle.Sim.Weapons
 {
@@ -21,13 +20,13 @@ namespace BallBattle.Sim.Weapons
 
         public override string Id => WeaponId;
         public override string StatLabel => "WIDTH";
-        public override float StatValue => BladeThickness;
+        public override Fix StatValue => BladeThickness;
 
-        public override float Damage(in HitContext ctx)
+        public override Fix Damage(in HitContext ctx)
         {
             var d = WeaponTuning.AegisChipDamage + (BladeThickness - WeaponTuning.AegisThickness) * WeaponTuning.AegisDamagePerWidth;
             var rage = ticks - WeaponTuning.AegisRageStartTicks;
-            return rage > 0 ? d * (1f + rage / (float)WeaponTuning.AegisRageRampTicks) : d;
+            return rage > 0 ? d + FixMath.MulDiv(d, rage, WeaponTuning.AegisRageRampTicks) : d;   // d × (1 + rage / ramp)
         }
 
         /// <summary>Slow regen (answers poison and chip damage) and the late-fight rage clock.</summary>
@@ -37,12 +36,12 @@ namespace BallBattle.Sim.Weapons
             if (ticks % MatchConfig.TicksPerSecond == 0) Sim.Heal(Self, WeaponTuning.AegisRegenPerSecond);
         }
 
-        public override void OnHit(in HitContext ctx) => BladeThickness = Math.Min(WeaponTuning.AegisMaxThickness, BladeThickness + WeaponTuning.AegisWidthPerHit);
+        public override void OnHit(in HitContext ctx) => BladeThickness = FixMath.Min(WeaponTuning.AegisMaxThickness, BladeThickness + WeaponTuning.AegisWidthPerHit);
 
         /// <summary>A body blow (bladeless attacker, e.g. Brawler) cannot be parried, so part of it is sent back.</summary>
-        public override void OnHitTaken(BallState attacker, float damage, DamageKind kind)
+        public override void OnHitTaken(BallState attacker, Fix damage, DamageKind kind)
         {
-            if (Self.Hp <= 0f) return;
+            if (Self.Hp <= Fix.Zero) return;
             if (kind == DamageKind.Projectile) { Sim.Heal(Self, damage * WeaponTuning.AegisShotAbsorbPct); return; }
             if (kind != DamageKind.Weapon || attacker.Weapon.HasBlade) return;
             Sim.DealDamage(Self, attacker, damage * WeaponTuning.AegisBodyReflectPct, DamageKind.Reflect);
@@ -50,8 +49,8 @@ namespace BallBattle.Sim.Weapons
 
         public override void OnParry(BallState other)
         {
-            if (Self.Hp <= 0f || !other.Weapon.HasBlade || other.Weapon is AegisRule) return; // two Aegis would only trade reflects until both fall
-            var blow = other.Weapon.Damage(new HitContext(other.Vel.Length, 0f));
+            if (Self.Hp <= Fix.Zero || !other.Weapon.HasBlade || other.Weapon is AegisRule) return; // two Aegis would only trade reflects until both fall
+            var blow = other.Weapon.Damage(new HitContext(other.Vel.Length, Fix.Zero));
             Sim.DealDamage(Self, other, blow * WeaponTuning.AegisReflectPct, DamageKind.Reflect);
         }
 

@@ -267,8 +267,8 @@ namespace BallBattle.Tests
             var (view, fx, sim) = ThornsFight();
             var hitPoint = sim.Balls[0].Pos;
             Feed(fx,
-                new SimEvent { Type = SimEventType.Hit, Tick = 9, A = 1, B = 0, Value = 6f, Point = hitPoint },
-                new SimEvent { Type = SimEventType.Damage, Tick = 9, A = 0, B = 1, Value = 0.9f, Point = sim.Balls[1].Pos, Variant = (byte)DamageKind.Reflect });
+                new SimEvent { Type = SimEventType.Hit, Tick = 9, A = 1, B = 0, Value = TFix.X(6f), Point = hitPoint },
+                new SimEvent { Type = SimEventType.Damage, Tick = 9, A = 0, B = 1, Value = TFix.X(0.9f), Point = sim.Balls[1].Pos, Variant = (byte)DamageKind.Reflect });
             Draw(view, 0f);
 
             var hurt = view.GetBallView(1);   // d.B: the attacker the thorns hit back
@@ -303,7 +303,7 @@ namespace BallBattle.Tests
         public void NumbersShownTogetherStackAndStayInTheArena()
         {
             var popups = DamagePopups.Create(root.transform, art.Font, 8);
-            var arena = ArenaRect.Centered(230f, 230f);
+            var arena = ArenaRect.Centered(TFix.X(230f), TFix.X(230f));
             var at = new Vector2(0f, 0f);
             popups.Show(at, 1.4f, Palette.Text, arena);
             popups.Tick(0.05f);
@@ -320,15 +320,15 @@ namespace BallBattle.Tests
             Assert.That(popups.Showing().Any(p => p.value == "5" && p.start == new Vector2(60, 0)), Is.True, "alone: not moved");
 
             // Against the top wall: stacked below instead, still inside.
-            var top = new Vector2(0f, arena.Top);
+            var top = new Vector2(0f, arena.Top.ToFloat());
             popups.Clear();
             for (var i = 0; i < 3; i++) { popups.Show(top, 1.4f + i, Palette.Text, arena); popups.Tick(0.02f); }
             var high = popups.Showing();
             AssertNoOverlap(high);
             foreach (var p in high)
             {
-                Assert.That(p.start.y + DamagePopups.Rise + PixelFontData.GlyphHeight * p.scale, Is.LessThanOrEqualTo(arena.Top - DamagePopups.WallMargin));
-                Assert.That(p.start.y, Is.GreaterThanOrEqualTo(arena.Bottom + DamagePopups.WallMargin));
+                Assert.That(p.start.y + DamagePopups.Rise + PixelFontData.GlyphHeight * p.scale, Is.LessThanOrEqualTo(arena.Top.ToFloat() - DamagePopups.WallMargin));
+                Assert.That(p.start.y, Is.GreaterThanOrEqualTo(arena.Bottom.ToFloat() + DamagePopups.WallMargin));
             }
         }
         static void AssertNoOverlap(List<(string value, int scale, Vector2 start)> shown)

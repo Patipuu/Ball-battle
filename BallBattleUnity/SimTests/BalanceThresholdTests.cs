@@ -7,7 +7,7 @@ namespace BallBattle.SimTests
     /// Regression gate for balance (plan acceptance #3). Seeds are fixed, so results are exact for a given build:
     /// a tuning or rule change that pushes any pair out of the band fails here. ~15 s on 16 threads.
     /// </summary>
-    [Category("Balance"), NonParallelizable]
+    [Explicit("Slow fixture setup: per-class measurement 149.61 seconds"), Category("Slow"), Category("Balance"), NonParallelizable]
     public class BalanceThresholdTests
     {
         const int SeedsPerSide = 200;

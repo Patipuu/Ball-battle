@@ -10,7 +10,8 @@ namespace BallBattle.Sim.Run
         /// <summary>0-based fight indices of Shell King and Mimic (fights 4 and 8).</summary>
         public static readonly int[] BossFights = { 3, 7 };
         public const int Retries = 1;
-        public static float RetryHealPct = 0.6f;
+        /// <summary>0.6 (nearest Fix).</summary>
+        public static Fix RetryHealPct = Fix.Ratio(3, 5);
 
         public const int StartCoins = 2;
         public const int WinCoins = 3;
@@ -25,22 +26,22 @@ namespace BallBattle.Sim.Run
         public const int MaxTraits = 3;
         public const int MaxTraitLevel = 2;
 
-        public static float WinHealPct = 0.35f;
-        public static float HealCardPct = 0.5f;
-        public static float MaxHpCardBonus = 15f;
-        public static float DamageCardPct = 0.15f;
-        public static float SpeedCardPct = 0.1f;
+        public static Fix WinHealPct = Fix.Ratio(7, 20);
+        public static Fix HealCardPct = Fix.Ratio(1, 2);
+        public static Fix MaxHpCardBonus = 15;
+        public static Fix DamageCardPct = Fix.Ratio(3, 20);
+        public static Fix SpeedCardPct = Fix.Ratio(1, 10);
 
-        public const float PlayerStartHp = 100f;
+        public static readonly Fix PlayerStartHp = 100;
 
         // Enemies. First pass: see plans/261009-1035-.../reports/phase-02-vertical-slice-playtest-report.md for bot win rates.
         public static readonly int[] EnemyMinTraits = { 0, 0, 1 };
         public static readonly int[] EnemyMaxTraits = { 0, 1, 2 };
-        public static readonly float[] EnemyHpPct = { 0f, 0f, 0.1f };
-        public static readonly float[] EnemyLevel2Chance = { 0f, 0.25f, 0.5f };
-        public static readonly float[] BossHp = { 160f, 220f, 300f };
+        public static readonly Fix[] EnemyHpPct = { 0, 0, Fix.Ratio(1, 10) };
+        public static readonly Fix[] EnemyLevel2Chance = { 0, Fix.Ratio(1, 4), Fix.Ratio(1, 2) };
+        public static readonly Fix[] BossHp = { 160, 220, 300 };
         public static readonly int[] BossTraits = { 0, 1, 2 };
-        public static float BossRadius = 24f;
+        public static Fix BossRadius = 24;
 
         public static int StageOf(int fightIndex) => fightIndex < 3 ? 0 : (fightIndex < 6 ? 1 : 2);
 

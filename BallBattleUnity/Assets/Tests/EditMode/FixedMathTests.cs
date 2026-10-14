@@ -68,10 +68,10 @@ namespace BallBattle.Tests
         {
             var config = new MatchConfig();
             var arena = config.ArenaAt(0);
-            var width = (int)arena.Width;
-            var height = (int)arena.Height;
-            Assert.That(arena.Width, Is.EqualTo(width));
-            Assert.That(arena.Height, Is.EqualTo(height));
+            var width = FixMath.FloorToInt(arena.Width);
+            var height = FixMath.FloorToInt(arena.Height);
+            Assert.That(arena.Width, Is.EqualTo(Fix.FromInt(width)));
+            Assert.That(arena.Height, Is.EqualTo(Fix.FromInt(height)));
             var farCorner = new FixVec2(Fix.FromRatio(width, 2), Fix.FromRatio(height, 2));
             var otherCorner = new FixVec2(Fix.FromRatio(-width, 2), Fix.FromRatio(-height, 2));
             var diagonal = farCorner - otherCorner;
@@ -82,8 +82,8 @@ namespace BallBattle.Tests
 
             // Every possible speed card: initial pick, two per fight, and the one retry pick.
             var maxCards = 2 + RunTuning.Fights * RunTuning.MaxPicksPerFight;
-            var cap = (int)Math.Ceiling((config.MaxSpeed + WeaponTuning.BrawlerMaxSpeedBonus) *
-                                        (1f + maxCards * RunTuning.SpeedCardPct));
+            var cap = FixMath.CeilToInt((config.MaxSpeed + WeaponTuning.BrawlerMaxSpeedBonus) *
+                                        (Fix.One + RunTuning.SpeedCardPct * maxCards));
             var fastest = new FixVec2(Fix.FromInt(cap), Fix.FromInt(cap));
             var velocitySquared = fastest.LengthSq;
             var dot = FixVec2.Dot(fastest, fastest);

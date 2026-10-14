@@ -7,9 +7,9 @@ namespace BallBattle.Sim.Traits
         public ThornsTrait(int level = 1) : base(level) { }
         public override string Id => TraitId;
 
-        public override void OnHitTaken(BallState attacker, float damage, DamageKind kind)
+        public override void OnHitTaken(BallState attacker, Fix damage, DamageKind kind)
         {
-            if (kind != DamageKind.Weapon || Self.Hp <= 0f) return; // a ball struck down by this hit does not strike back
+            if (kind != DamageKind.Weapon || Self.Hp <= Fix.Zero) return; // a ball struck down by this hit does not strike back
             Sim.DealDamage(Self, attacker, damage * TraitTuning.ThornsReflectPct[Level - 1], DamageKind.Reflect);
         }
 

@@ -24,18 +24,18 @@ namespace BallBattle.Sim.Run
     {
         public string WeaponId;
         public List<TraitSlot> Traits = new List<TraitSlot>();
-        public float DamagePct;
-        public float SpeedPct;
-        public float MaxHp = RunTuning.PlayerStartHp;
-        public float Hp = RunTuning.PlayerStartHp;
+        public Fix DamagePct;
+        public Fix SpeedPct;
+        public Fix MaxHp = RunTuning.PlayerStartHp;
+        public Fix Hp = RunTuning.PlayerStartHp;
         /// <summary>&lt;= 0 = default ball size.</summary>
-        public float Radius;
+        public Fix Radius;
 
         /// <summary>HP is kept in whole points (what the screen shows), never below 1 while alive.</summary>
-        public void SetHp(float hp) => Hp = Math.Max(1f, Math.Min(MaxHp, (float)Math.Round(hp)));
+        public void SetHp(Fix hp) => Hp = FixMath.Max(Fix.One, FixMath.Min(MaxHp, FixMath.RoundToEven(hp)));
 
         /// <summary>Missing at least one whole HP point (so a heal card is worth offering).</summary>
-        public bool Hurt => MaxHp - Hp >= 1f;
+        public bool Hurt => MaxHp - Hp >= Fix.One;
 
         public int TraitLevel(string id)
         {

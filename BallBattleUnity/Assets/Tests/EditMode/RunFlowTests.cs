@@ -50,14 +50,14 @@ namespace BallBattle.Tests
             var firstSeed = f.Run.FightSeed;
             f.Fight();
             f.Tick(2.1f);
-            lastMatch.DealDamage(null, lastMatch.Balls[0], 1e6f, DamageKind.Hazard);
+            lastMatch.DealDamage(null, lastMatch.Balls[0], TFix.X(30000), DamageKind.Hazard);
             while (lastMatch.Outcome == MatchOutcome.Ongoing) lastMatch.Step();
             f.OnMatchEnded(lastMatch);
             f.Tick(2.1f);
             f.NextAfterResult();
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.StartPick));
             Assert.That(f.Run.FightIndex, Is.Zero);
-            Assert.That(f.Run.Build.Hp, Is.EqualTo(f.Run.Build.MaxHp * 0.6f).Within(0.001f));
+            Assert.That(f.Run.Build.Hp.ToFloat(), Is.EqualTo(f.Run.Build.MaxHp.ToFloat() * 0.6f).Within(0.001f));
             Assert.That(f.Run.CanReroll, Is.False);
             Assert.That(f.Run.NextPickCost, Is.Zero);
             Assert.That(f.Run.OfferCount, Is.EqualTo(3));
@@ -68,7 +68,7 @@ namespace BallBattle.Tests
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.Countdown));
             Assert.That(f.Run.CanReroll, Is.False);
             f.Tick(2.1f);
-            lastMatch.DealDamage(null, lastMatch.Balls[0], 1e6f, DamageKind.Hazard);
+            lastMatch.DealDamage(null, lastMatch.Balls[0], TFix.X(30000), DamageKind.Hazard);
             while (lastMatch.Outcome == MatchOutcome.Ongoing) lastMatch.Step();
             f.OnMatchEnded(lastMatch);
             f.Tick(2.1f);
@@ -169,19 +169,19 @@ namespace BallBattle.Tests
             run.Coins = 9;
             run.Pick(1);
             run.Build.Traits.Add(new TraitSlot("vampire", 2));
-            run.Build.Hp = 63.27f; // fractional on purpose: JSON must round-trip floats exactly
+            run.Build.Hp = TFix.X(63.27f); // fractional on purpose: JSON must round-trip floats exactly
 
             var store = new MemorySaveStore();
-            store.Save(new SaveData { Progress = progress, HasRun = true, Run = run });
+            store.Save(new SaveData { Progress = progress, HasRun = true, Run = RunSave.From(run) });
             var back = store.Load();
 
             Assert.That(back.Progress.Achievements, Is.EqualTo(progress.Achievements));
             Assert.That(back.HasRun, Is.True);
-            Assert.That(back.Run.Seed, Is.EqualTo(run.Seed));
-            Assert.That(back.Run.PickedMask, Is.EqualTo(run.PickedMask));
-            Assert.That(back.Run.Build.Traits.Select(t => t.Id + t.Level), Is.EqualTo(run.Build.Traits.Select(t => t.Id + t.Level)));
-            Assert.That(Enumerable.Range(0, back.Run.OfferCount).Select(back.Run.OfferCard), Is.EqualTo(Enumerable.Range(0, run.OfferCount).Select(run.OfferCard)));
-            Assert.That(StepAndHash(back.Run.CreateMatch()), Is.EqualTo(StepAndHash(run.CreateMatch())), "restored run plays the same fight");
+            Assert.That(back.Run.ToRun().Seed, Is.EqualTo(run.Seed));
+            Assert.That(back.Run.ToRun().PickedMask, Is.EqualTo(run.PickedMask));
+            Assert.That(back.Run.ToRun().Build.Traits.Select(t => t.Id + t.Level), Is.EqualTo(run.Build.Traits.Select(t => t.Id + t.Level)));
+            Assert.That(Enumerable.Range(0, back.Run.ToRun().OfferCount).Select(back.Run.ToRun().OfferCard), Is.EqualTo(Enumerable.Range(0, run.OfferCount).Select(run.OfferCard)));
+            Assert.That(StepAndHash(back.Run.ToRun().CreateMatch()), Is.EqualTo(StepAndHash(run.CreateMatch())), "restored run plays the same fight");
         }
 
         static ulong StepAndHash(MatchSim m)
@@ -227,7 +227,7 @@ namespace BallBattle.Tests
             var run = RunState.Start(5, RunState.StartChoices(5, UnlockRules.Weapons(progress))[0], progress);
             run.Build.WeaponId = "removed-weapon";
             var store = new MemorySaveStore();
-            store.Save(new SaveData { Progress = progress, HasRun = true, Run = run });
+            store.Save(new SaveData { Progress = progress, HasRun = true, Run = RunSave.From(run) });
 
             var f = Open(store);
             Assert.That(f.HasSavedRun, Is.False);

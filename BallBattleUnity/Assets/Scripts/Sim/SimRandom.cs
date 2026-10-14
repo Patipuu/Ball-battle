@@ -50,10 +50,24 @@ namespace BallBattle.Sim
             return value % width;
         }
 
-        /// <summary>Uniform in [0, 1) with 24-bit resolution (exact in float).</summary>
-        public float NextFloat01() => (NextUInt() >> 8) * (1f / 16777216f);
+        /// <summary>Uniform in [0, 1) with 16-bit resolution: one NextUInt, its top 16 bits as Q16.16 raw.</summary>
+        public Fix NextFix01() => Fix.FromRaw((int)(NextUInt() >> 16));
 
-        public float Range(float min, float max) => min + (max - min) * NextFloat01();
+        /// <summary>
+        /// Legacy simulation Range: one draw, its upper 24 bits interpolated across the range, rounded to nearest
+        /// raw value (ties away). Keep this separate from the unbiased integer RangeFix: modulo/rejection changes
+        /// both the spawn mapping and sometimes the draw count compared with the original float simulation.
+        /// An empty range still consumes that draw, as the old min + (max-min)*NextFloat01 did.
+        /// </summary>
+        public Fix RangeFixOrMin(Fix min, Fix max)
+        {
+            var fraction = NextUInt() >> 8;
+            if (min >= max) return min;
+            const long scale = 1L << 24;
+            var numerator = (long)min.Raw * scale + ((long)max.Raw - min.Raw) * fraction;
+            var raw = numerator < 0 ? -((-numerator + scale / 2) / scale) : (numerator + scale / 2) / scale;
+            return Fix.FromRaw((int)(raw >= max.Raw ? (long)max.Raw - 1 : raw));
+        }
 
         public bool NextBool() => (NextUInt() & 0x80000000u) != 0;
     }

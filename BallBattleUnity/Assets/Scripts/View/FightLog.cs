@@ -22,7 +22,7 @@ namespace BallBattle.View
                 var b = match.Balls[i];
                 var start = stats != null ? stats.StartHp(i) : 0f;
                 var heal = stats != null ? stats.Healed(i) : 0f;
-                return $"{b.Weapon.Id} HP start {N(start)} heal {N(heal)} end {N(b.Hp > 0f ? b.Hp : 0f)}";
+                return $"{b.Weapon.Id} HP start {N(start)} heal {N(heal)} end {N(b.Hp.ToFloat() > 0f ? b.Hp.ToFloat() : 0f)}";
             }
             var dealt = stats != null ? stats.Dealt(0) : 0f;
             var taken = stats != null ? stats.Taken(0) : 0f;

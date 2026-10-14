@@ -13,7 +13,7 @@ namespace BallBattle.SimTests
     /// Per-arena balance: each weapon's average win rate against the other seven (both sides, fixed seeds).
     /// Env: BB_SEEDS (seeds per side, default 100), BB_REPORT (file). Run: dotnet test --filter "FullyQualifiedName~ArenaBalanceReport"
     /// </summary>
-    [Category("Balance"), NonParallelizable]
+    [Explicit("Slow: per-class measurement exceeds 180 seconds"), Category("Slow"), Category("Balance"), NonParallelizable]
     public class ArenaBalanceReport
     {
         static string[] weapons;

@@ -7,11 +7,11 @@ namespace BallBattle.Sim.Weapons
         public static BallState NearestFoe(MatchSim sim, BallState self)
         {
             BallState best = null;
-            var bestDistSq = float.MaxValue;
+            var bestDistSq = long.MaxValue;
             for (var i = 0; i < sim.Balls.Count; i++)
             {
                 var other = sim.Balls[i];
-                if (other == self || !other.Alive || other.Hp <= 0f) continue;
+                if (other == self || !other.Alive || other.Hp <= Fix.Zero) continue;
                 var d = (other.Pos - self.Pos).LengthSq;
                 if (d < bestDistSq) { bestDistSq = d; best = other; }
             }

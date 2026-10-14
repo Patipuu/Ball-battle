@@ -3,11 +3,12 @@ namespace BallBattle.Sim
     /// <summary>Numbers for the arena variants (ArenaRegistry). Arena heights stay &lt;= 230 so the HUD fits.</summary>
     public static class ArenaTuning
     {
-        public const float PillarRadius = 14f;
+        public static readonly Fix PillarRadius = 14;
 
-        public const float BumperRadius = 9f;
-        public const float BumperOffset = 95f;
-        public const float BumperBoost = 0.15f;
+        public static readonly Fix BumperRadius = 9;
+        public static readonly Fix BumperOffset = 95;
+        /// <summary>0.15 (nearest Fix).</summary>
+        public static readonly Fix BumperBoost = Fix.Ratio(15, 100);
 
         /// <summary>Spike-walls arena: damage of one bounce inside a spike zone. At most one per ball per tick.</summary>
         public const int SpikeWallDamage = 3;
@@ -19,12 +20,13 @@ namespace BallBattle.Sim
         public const int SpikeZoneNum = 1;
         public const int SpikeZoneDen = 5;
 
-        public const float LowGravity = 0.02f;
+        /// <summary>0.02 px/tick² (nearest Fix).</summary>
+        public static readonly Fix LowGravity = Fix.Ratio(2, 100);
 
-        public const float TightSize = 170f;
-        public const float TightMinSize = 90f;
+        public static readonly Fix TightSize = 170;
+        public static readonly Fix TightMinSize = 90;
 
-        public const float WideWidth = 260f;
-        public const float WideHeight = 230f;
+        public static readonly Fix WideWidth = 260;
+        public static readonly Fix WideHeight = 230;
     }
 }

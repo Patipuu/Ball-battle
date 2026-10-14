@@ -5,7 +5,7 @@ namespace BallBattle.Sim.Weapons
     {
         public const string WeaponId = "blade";
 
-        public float CurrentDamage { get; private set; } = WeaponTuning.BladeStartDamage;
+        public Fix CurrentDamage { get; private set; } = WeaponTuning.BladeStartDamage;
 
         public BladeRule()
         {
@@ -15,9 +15,9 @@ namespace BallBattle.Sim.Weapons
 
         public override string Id => WeaponId;
         public override string StatLabel => "DMG";
-        public override float StatValue => CurrentDamage;
+        public override Fix StatValue => CurrentDamage;
 
-        public override float Damage(in HitContext ctx) => CurrentDamage;
+        public override Fix Damage(in HitContext ctx) => CurrentDamage;
 
         public override void OnHit(in HitContext ctx) => CurrentDamage += WeaponTuning.BladeDamagePerHit;
 

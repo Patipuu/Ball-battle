@@ -67,10 +67,10 @@ namespace BallBattle.View
         public void Open()
         {
             save = store.Load() ?? new SaveData();
-            if (save.HasRun && !RunValidation.IsValid(save.Run))
+            if (save.HasRun && !RunValidation.IsValid(save.Run?.ToRun()))
             {
                 save.HasRun = false;   // unreadable or from an older build: drop the run, keep progress
-                save.Run = new RunState();
+                save.Run = new RunSave();
                 store.Save(save);
             }
             Go(State.Title);
@@ -83,7 +83,8 @@ namespace BallBattle.View
         public (ProgressData progress, RunState resumable) PeekSave()
         {
             var data = store.Load() ?? new SaveData();
-            var run = data.HasRun && RunValidation.IsValid(data.Run) ? data.Run : null;
+            var saved = data.HasRun ? data.Run?.ToRun() : null;
+            var run = RunValidation.IsValid(saved) ? saved : null;
             return (data.Progress ?? new ProgressData(), run);
         }
 
@@ -123,7 +124,7 @@ namespace BallBattle.View
         public void Continue()
         {
             if (Current != State.Title || !HasSavedRun) return;
-            Run = save.Run;
+            Run = save.Run.ToRun();
             UnityEngine.Debug.Log($"[BallBattle] Run resumed: seed {Run.Seed}, fight {Run.FightIndex + 1}");
             if (DebugOptions.ApplyForcedTrait(Run, ForceTraitId)) Persist();
             if (Run.FightLocked) StartFight();   // quit mid-fight: replay that exact fight, no edits
@@ -227,7 +228,7 @@ namespace BallBattle.View
         void Persist()
         {
             save.HasRun = Run != null && !Run.Over;
-            save.Run = save.HasRun ? Run : new RunState();
+            save.Run = save.HasRun ? RunSave.From(Run) : new RunSave();
             store.Save(save);
         }
 

@@ -1,4 +1,3 @@
-using System;
 
 namespace BallBattle.Sim.Traits
 {
@@ -12,9 +11,9 @@ namespace BallBattle.Sim.Traits
 
         public override void OnTick()
         {
-            if (used || Self.Hp <= 0f || Self.HpFraction > TraitTuning.SecondWindThreshold) return;
+            if (used || Self.Hp <= Fix.Zero || Self.HpFraction > TraitTuning.SecondWindThreshold) return;
             used = true;
-            var amount = Math.Min(TraitTuning.SecondWindHeal[Level - 1], Self.MaxHp - Self.Hp);
+            var amount = FixMath.Min(TraitTuning.SecondWindHeal[Level - 1], Self.MaxHp - Self.Hp);
             Sim.TriggerTrait(Id, Self, amount);
             Sim.Heal(Self, TraitTuning.SecondWindHeal[Level - 1]);
         }
@@ -23,7 +22,7 @@ namespace BallBattle.Sim.Traits
         {
             if (used) return false;
             used = true;
-            Self.Hp = Math.Min(Self.MaxHp, TraitTuning.SecondWindHeal[Level - 1]);
+            Self.Hp = FixMath.Min(Self.MaxHp, TraitTuning.SecondWindHeal[Level - 1]);
             return true;
         }
 

@@ -19,8 +19,8 @@ namespace BallBattle.SimTests
             foreach (var id in Arenas)
             {
                 var c = ArenaRegistry.Create(id);
-                Assert.That(c.ArenaHeight, Is.LessThanOrEqualTo(230f), id);
-                Assert.That(c.ArenaWidth, Is.LessThanOrEqualTo(260f), id);
+                Assert.That(c.ArenaHeight.F(), Is.LessThanOrEqualTo(230f), id);
+                Assert.That(c.ArenaWidth.F(), Is.LessThanOrEqualTo(260f), id);
                 Assert.That(c.MinArenaHeight, Is.LessThanOrEqualTo(c.ArenaHeight), id);
             }
         }
@@ -33,7 +33,7 @@ namespace BallBattle.SimTests
             Assert.That(c.ArenaWidth, Is.EqualTo(d.ArenaWidth));
             Assert.That(c.Gravity, Is.EqualTo(d.Gravity));
             Assert.That(c.Layout.ObstacleCount, Is.EqualTo(0));
-            Assert.That(c.Layout.WallDamage, Is.EqualTo(0f));
+            Assert.That(c.Layout.WallDamage.F(), Is.EqualTo(0f));
         }
 
         [Test]

@@ -8,8 +8,8 @@ namespace BallBattle.Sim.Weapons
     {
         public const string WeaponId = "fang";
 
-        public float SpinGain { get; private set; } = WeaponTuning.FangStartSpinGain;
-        public float CurrentDamage { get; private set; } = WeaponTuning.FangStartDamage;
+        public Fix SpinGain { get; private set; } = WeaponTuning.FangStartSpinGain;
+        public Fix CurrentDamage { get; private set; } = WeaponTuning.FangStartDamage;
 
         public FangRule()
         {
@@ -21,9 +21,9 @@ namespace BallBattle.Sim.Weapons
 
         public override string Id => WeaponId;
         public override string StatLabel => "SPIN";
-        public override float StatValue => SpinDegPerTick;
+        public override Fix StatValue => SpinDegPerTick;
 
-        public override float Damage(in HitContext ctx) => CurrentDamage;
+        public override Fix Damage(in HitContext ctx) => CurrentDamage;
 
         public override void OnHit(in HitContext ctx)
         {

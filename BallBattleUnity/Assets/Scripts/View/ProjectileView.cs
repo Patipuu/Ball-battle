@@ -51,9 +51,9 @@ namespace BallBattle.View
                 var sr = shots[i];
                 ref readonly var p = ref pool.Get(i);
                 if (!p.Active || p.Owner < 0 || p.Owner >= sim.Balls.Count) { sr.enabled = false; continue; }
-                var size = Mathf.Max(2, Mathf.RoundToInt(p.Radius * 2f));
-                var x = Mathf.RoundToInt(p.Pos.X);
-                var y = Mathf.RoundToInt(p.Pos.Y);
+                var size = Mathf.Max(2, Mathf.RoundToInt(p.Radius.ToFloat() * 2f));
+                var x = Mathf.RoundToInt(p.Pos.X.ToFloat());
+                var y = Mathf.RoundToInt(p.Pos.Y.ToFloat());
                 sr.enabled = true;
                 sr.color = Palette.Look(sim.Balls[p.Owner].Weapon.Id).Body;
                 var left = x - size / 2;   // whole-pixel edges: the size never depends on the position`r`n                var bottom = y - size / 2;`r`n                PixelRect.Set(sr, left, bottom, left + size, bottom + size);
@@ -68,8 +68,8 @@ namespace BallBattle.View
                 {
                     if (t >= count) { turretRims[slot].enabled = false; turretBodies[slot].enabled = false; continue; }
                     var c = rig.GetTurret(t);
-                    var x = Mathf.RoundToInt(c.X);
-                    var y = Mathf.RoundToInt(c.Y);
+                    var x = Mathf.RoundToInt(c.X.ToFloat());
+                    var y = Mathf.RoundToInt(c.Y.ToFloat());
                     const int half = TurretSize / 2;   // 5 px body (x-2..x+3), 7 px rim
                     turretRims[slot].enabled = true;
                     turretBodies[slot].enabled = true;

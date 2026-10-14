@@ -6,16 +6,48 @@ namespace BallBattle.SimTests
 {
     public class MatchSimTests
     {
+        [TestCase(1), TestCase(-1)]
+        public void SpeedCapIncludesTinyOrthogonalVelocity(int sign)
+        {
+            var cfg = new MatchConfig { Gravity = Fix.Zero, MinHorizontalSpeed = Fix.Zero, MaxSpeed = 10 };
+            var m = NewMatch(1, new HarmlessRule(), new HarmlessRule(), cfg);
+            m.Balls[0].Pos = FT.V(-65, 20);
+            m.Balls[1].Pos = FT.V(65, 20);
+            m.Balls[0].Vel = new FixVec2(10, Fix.FromRaw(sign));
+            m.Balls[1].Vel = FixVec2.Zero;
+            m.Step();
+            Assert.That(m.Balls[0].Vel.LengthSq, Is.LessThanOrEqualTo(FixMath.Sq(cfg.MaxSpeed)), "the squared speed cap must hold, not just its floored square root");
+        }
+
+        [TestCase(2, 1), TestCase(3, 1), TestCase(7, 1), TestCase(32, 1)]
+        [TestCase(2, -1), TestCase(3, -1), TestCase(7, -1), TestCase(32, -1)]
+        public void SubstepsKeepConfiguredPerTickRates(int substeps, int spinDir)
+        {
+            var cfg = new MatchConfig { Gravity = Fix.Ratio(1, 20), MinHorizontalSpeed = Fix.Zero,
+                MaxSpeed = 100, MinSubsteps = substeps, MaxSubsteps = substeps };
+            var weapon = new FixedBladeRule(0, 12, 1.3f);
+            var m = NewMatch(1, weapon, new HarmlessRule(), cfg);
+            var b = m.Balls[0];
+            b.Pos = FT.V(-65, 20); b.Vel = FT.V(3.3, 0); b.WeaponAngleDeg = Fix.Zero; b.SpinDir = spinDir;
+            m.Balls[1].Pos = FT.V(65, 20); m.Balls[1].Vel = FixVec2.Zero;
+            var startX = b.Pos.X;
+            var speedX = b.Vel.X;
+            m.Step();
+            Assert.That(b.Vel.Y, Is.EqualTo(-cfg.Gravity), "a tick applies the configured gravity, regardless of subdivision");
+            Assert.That(b.Pos.X, Is.EqualTo(startX + speedX), "constant velocity must move one configured tick");
+            Assert.That(b.WeaponAngleDeg, Is.EqualTo(FixMath.Wrap(weapon.SpinDegPerTick * spinDir, 360)), "constant spin must rotate one configured tick");
+        }
+
         static MatchSim NewMatch(uint seed, WeaponRule a, WeaponRule b, MatchConfig cfg = null)
             => new MatchSim(cfg ?? new MatchConfig(), seed, new[] { a, b });
 
         /// <summary>Zero-gravity match with both balls parked at given spots, for staged contact tests.</summary>
-        static MatchSim Staged(WeaponRule a, WeaponRule b, Vec2 posA, float angleA, Vec2 posB, float angleB)
+        static MatchSim Staged(WeaponRule a, WeaponRule b, FixVec2 posA, float angleA, FixVec2 posB, float angleB)
         {
-            var cfg = new MatchConfig { Gravity = 0f, MinHorizontalSpeed = 0f };
+            var cfg = new MatchConfig { Gravity = FT.X(0f), MinHorizontalSpeed = FT.X(0f) };
             var m = NewMatch(1, a, b, cfg);
-            m.Balls[0].Pos = posA; m.Balls[0].Vel = Vec2.Zero; m.Balls[0].WeaponAngleDeg = angleA; m.Balls[0].SpinDir = 1;
-            m.Balls[1].Pos = posB; m.Balls[1].Vel = Vec2.Zero; m.Balls[1].WeaponAngleDeg = angleB; m.Balls[1].SpinDir = 1;
+            m.Balls[0].Pos = posA; m.Balls[0].Vel = FixVec2.Zero; m.Balls[0].WeaponAngleDeg = FT.X(angleA); m.Balls[0].SpinDir = 1;
+            m.Balls[1].Pos = posB; m.Balls[1].Vel = FixVec2.Zero; m.Balls[1].WeaponAngleDeg = FT.X(angleB); m.Balls[1].SpinDir = 1;
             return m;
         }
 
@@ -43,11 +75,11 @@ namespace BallBattle.SimTests
         public void ArenaShrinksOnSchedule()
         {
             var c = new MatchConfig();
-            Assert.That(c.ArenaAt(0).Width, Is.EqualTo(230f));
-            Assert.That(c.ArenaAt(c.ShrinkStartTick).Width, Is.EqualTo(230f));
-            Assert.That(c.ArenaAt(c.ShrinkStartTick + c.ShrinkDurationTicks / 2).Width, Is.EqualTo(170f).Within(0.01f));
-            Assert.That(c.ArenaAt(c.ShrinkStartTick + c.ShrinkDurationTicks).Height, Is.EqualTo(110f));
-            Assert.That(c.ArenaAt(c.CapTicks + 999).Width, Is.EqualTo(110f));
+            Assert.That((c.ArenaAt(0).Width).F(), Is.EqualTo(230f));
+            Assert.That((c.ArenaAt(c.ShrinkStartTick).Width).F(), Is.EqualTo(230f));
+            Assert.That((c.ArenaAt(c.ShrinkStartTick + c.ShrinkDurationTicks / 2).Width).F(), Is.EqualTo(170f).Within(0.01f));
+            Assert.That((c.ArenaAt(c.ShrinkStartTick + c.ShrinkDurationTicks).Height).F(), Is.EqualTo(110f));
+            Assert.That((c.ArenaAt(c.CapTicks + 999).Width).F(), Is.EqualTo(110f));
         }
 
         [Test]
@@ -55,9 +87,9 @@ namespace BallBattle.SimTests
         {
             var cfg = new MatchConfig { CapTicks = int.MaxValue };
             var m = NewMatch(7, new HarmlessRule(), new HarmlessRule(), cfg);
-            m.Balls[0].Vel = new Vec2(cfg.MaxSpeed * 0.7f, cfg.MaxSpeed * 0.7f);
-            m.Balls[1].Vel = new Vec2(-cfg.MaxSpeed * 0.7f, cfg.MaxSpeed * 0.7f);
-            const float eps = 1e-3f;
+            m.Balls[0].Vel = FT.V(cfg.MaxSpeed * FT.X(0.7f), cfg.MaxSpeed * FT.X(0.7f));
+            m.Balls[1].Vel = FT.V(-cfg.MaxSpeed * FT.X(0.7f), cfg.MaxSpeed * FT.X(0.7f));
+            var eps = FT.X(1e-3);
 
             for (var t = 0; t < 1_000_000; t++)
             {
@@ -86,17 +118,17 @@ namespace BallBattle.SimTests
                 ballBounces += m.Events.Count(e => e.Type == SimEventType.BallBounce);
             }
             Assert.That(ballBounces, Is.GreaterThan(0), "balls should collide within a minute");
-            foreach (var b in m.Balls) Assert.That(b.Vel.Length, Is.GreaterThan(0.4f));
+            foreach (var b in m.Balls) Assert.That(b.Vel.Length.F(), Is.GreaterThan(0.4f));
         }
 
         [Test]
         public void ShrinkingWallDoesNotSpamWallEvents()
         {
-            var cfg = new MatchConfig { Gravity = 0f, MinHorizontalSpeed = 0f, ShrinkStartTick = 0, ShrinkDurationTicks = 600, CapTicks = int.MaxValue };
+            var cfg = new MatchConfig { Gravity = FT.X(0f), MinHorizontalSpeed = FT.X(0f), ShrinkStartTick = 0, ShrinkDurationTicks = 600, CapTicks = int.MaxValue };
             var a = new HarmlessRule();
             var m = NewMatch(1, a, new HarmlessRule(), cfg);
-            m.Balls[0].Pos = new Vec2(-100f, 0f); m.Balls[0].Vel = Vec2.Zero;
-            m.Balls[1].Pos = new Vec2(100f, 0f); m.Balls[1].Vel = Vec2.Zero;
+            m.Balls[0].Pos = FT.V(-100f, 0f); m.Balls[0].Vel = FixVec2.Zero;
+            m.Balls[1].Pos = FT.V(100f, 0f); m.Balls[1].Vel = FixVec2.Zero;
             for (var t = 0; t < 600; t++) m.Step();
             // Ball 0 is pushed by the left wall for hundreds of substeps, but it reflects off it only a few times.
             Assert.That(a.Walls, Is.LessThan(20));
@@ -107,7 +139,7 @@ namespace BallBattle.SimTests
         {
             var a = new FixedBladeRule(5f, 25f, 0f);
             var b = new FixedBladeRule(5f, 25f, 0f);
-            var m = Staged(a, b, new Vec2(-20, 0), 0f, new Vec2(20, 0), 180f);
+            var m = Staged(a, b, FT.V(-20, 0), 0f, FT.V(20, 0), 180f);
 
             m.Step();
 
@@ -115,17 +147,17 @@ namespace BallBattle.SimTests
             Assert.That(m.Events.Any(e => e.Type == SimEventType.Hit), Is.False, "parry consumes the contact");
             Assert.That(m.Balls[0].SpinDir, Is.EqualTo(-1));
             Assert.That(m.Balls[1].SpinDir, Is.EqualTo(-1));
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(100f));
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo(100f));
             Assert.That(m.HitstopRemaining, Is.EqualTo(m.Config.ParryHitstopTicks));
             Assert.That(a.Parries, Is.EqualTo(1));
-            Assert.That(m.Balls[0].Vel.X, Is.LessThan(0f), "pushed apart");
-            Assert.That(m.Balls[1].Vel.X, Is.GreaterThan(0f));
+            Assert.That(m.Balls[0].Vel.X.F(), Is.LessThan(0f), "pushed apart");
+            Assert.That(m.Balls[1].Vel.X.F(), Is.GreaterThan(0f));
         }
 
         [Test]
         public void ParriedBladesDoNotStayLocked()
         {
-            var m = Staged(new FixedBladeRule(0f), new FixedBladeRule(0f), new Vec2(-20, 0), 0f, new Vec2(20, 0), 180f);
+            var m = Staged(new FixedBladeRule(0f), new FixedBladeRule(0f), FT.V(-20, 0), 0f, FT.V(20, 0), 180f);
             var lockedTicks = 0;
             for (var t = 0; t < 60; t++)
             {
@@ -143,15 +175,15 @@ namespace BallBattle.SimTests
         public void BladeHitDamagesOncePerCooldownAndFreezesWorld()
         {
             var a = new FixedBladeRule(7f, 25f, 0f);
-            var m = Staged(a, new FixedBladeRule(7f, 25f, 0f), new Vec2(0, 0), 0f, new Vec2(36, 0), 90f);
+            var m = Staged(a, new FixedBladeRule(7f, 25f, 0f), FT.V(0, 0), 0f, FT.V(36, 0), 90f);
 
             m.Step();
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(93f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(93f));
             Assert.That(m.Balls[0].HitCount, Is.EqualTo(1));
             var hit = m.Events.Single(e => e.Type == SimEventType.Hit);
             Assert.That(hit.A, Is.EqualTo(0));
             Assert.That(hit.B, Is.EqualTo(1));
-            Assert.That(hit.Value, Is.EqualTo(7f));
+            Assert.That(hit.Value.F(), Is.EqualTo(7f));
             Assert.That(m.Events.Any(e => e.Type == SimEventType.StatChanged && e.A == 0), Is.True);
             Assert.That(m.HitstopRemaining, Is.EqualTo(m.Config.HitHitstopTicks));
 
@@ -167,29 +199,29 @@ namespace BallBattle.SimTests
 
             var hits = 0;
             for (var i = 0; i < 30; i++) { m.Step(); hits += m.Events.Count(e => e.Type == SimEventType.Hit); }
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(93f - 7f * hits));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo((93f - 7f * hits).F()));
             Assert.That(hits, Is.LessThanOrEqualTo(1), "cooldown blocks a hit every substep");
         }
 
         [Test]
         public void BodyAttackerHitsOnContact()
         {
-            var cfg = new MatchConfig { Gravity = 0f, MinHorizontalSpeed = 0f };
+            var cfg = new MatchConfig { Gravity = FT.X(0f), MinHorizontalSpeed = FT.X(0f) };
             var m = NewMatch(1, new FixedBodyRule(10f), new HarmlessRule(), cfg);
-            m.Balls[0].Pos = new Vec2(0, 0); m.Balls[0].Vel = new Vec2(5, 0);
-            m.Balls[1].Pos = new Vec2(34, 0); m.Balls[1].Vel = Vec2.Zero;
+            m.Balls[0].Pos = FT.V(0, 0); m.Balls[0].Vel = FT.V(5, 0);
+            m.Balls[1].Pos = FT.V(34, 0); m.Balls[1].Vel = FixVec2.Zero;
 
             m.Step();
 
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(90f));
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(100f), "harmless body deals nothing back");
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(90f));
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo(100f), "harmless body deals nothing back");
         }
 
         [Test]
         public void KillEndsMatchWithWinner()
         {
-            var m = Staged(new FixedBladeRule(7f, 25f, 0f), new FixedBladeRule(7f, 25f, 0f), new Vec2(0, 0), 0f, new Vec2(36, 0), 90f);
-            m.Balls[1].Hp = 5f;
+            var m = Staged(new FixedBladeRule(7f, 25f, 0f), new FixedBladeRule(7f, 25f, 0f), FT.V(0, 0), 0f, FT.V(36, 0), 90f);
+            m.Balls[1].Hp = FT.X(5f);
 
             m.Step();
 
@@ -197,7 +229,7 @@ namespace BallBattle.SimTests
             Assert.That(m.WinnerIndex, Is.EqualTo(0));
             Assert.That(m.EndReason, Is.EqualTo(MatchEndReason.Knockout));
             Assert.That(m.Balls[1].Alive, Is.False);
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(0f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(0f));
             Assert.That(m.Events.Any(e => e.Type == SimEventType.Death && e.A == 1 && e.B == 0), Is.True);
             Assert.That(m.Events.Any(e => e.Type == SimEventType.MatchEnd && e.A == 0), Is.True);
 
@@ -222,7 +254,7 @@ namespace BallBattle.SimTests
         public void TimeCapGoesToHigherHpPercent()
         {
             var m = NewMatch(5, new HarmlessRule(), new HarmlessRule(), new MatchConfig { CapTicks = 120 });
-            m.Balls[1].Hp = 50f;
+            m.Balls[1].Hp = FT.X(50f);
             while (m.Outcome == MatchOutcome.Ongoing) m.Step();
             Assert.That(m.Outcome, Is.EqualTo(MatchOutcome.Win));
             Assert.That(m.WinnerIndex, Is.EqualTo(0));
@@ -243,7 +275,7 @@ namespace BallBattle.SimTests
             }
             seconds.Sort();
             Assert.That(finished, Is.GreaterThanOrEqualTo(99), "almost every match ends by knockout, not the time cap");
-            Assert.That(seconds[50], Is.InRange(20f, 90f), "median match length");
+            Assert.That(seconds[50].F(), Is.InRange(20f, 90f), "median match length");
         }
 
         [Test]
@@ -271,9 +303,9 @@ namespace BallBattle.SimTests
         /// <summary>A's blade along +x into B; B's blade angled down-left into A; blades never touch.</summary>
         static MatchSim TradeSetup(float hp)
         {
-            var m = Staged(new FixedBladeRule(7f, 25f, 0f), new FixedBladeRule(7f, 25f, 0f), new Vec2(0, 0), 0f, new Vec2(34, 0), 200f);
-            m.Balls[0].Hp = hp;
-            m.Balls[1].Hp = hp;
+            var m = Staged(new FixedBladeRule(7f, 25f, 0f), new FixedBladeRule(7f, 25f, 0f), FT.V(0, 0), 0f, FT.V(34, 0), 200f);
+            m.Balls[0].Hp = FT.X(hp);
+            m.Balls[1].Hp = FT.X(hp);
             return m;
         }
 
@@ -284,8 +316,8 @@ namespace BallBattle.SimTests
             m.Step();
             Assert.That(m.Events.Count(e => e.Type == SimEventType.Hit), Is.EqualTo(2));
             Assert.That(m.Events.Any(e => e.Type == SimEventType.Parry), Is.False);
-            Assert.That(m.Balls[0].Hp, Is.EqualTo(93f));
-            Assert.That(m.Balls[1].Hp, Is.EqualTo(93f));
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo(93f));
+            Assert.That(m.Balls[1].Hp.F(), Is.EqualTo(93f));
         }
 
         [Test]
@@ -301,11 +333,11 @@ namespace BallBattle.SimTests
         [Test]
         public void SpeedCapHoldsAfterHorizontalFloor()
         {
-            var m = NewMatch(4, new HarmlessRule(), new HarmlessRule(), new MatchConfig { Gravity = 0f });
-            m.Balls[0].Vel = new Vec2(0f, 50f);
+            var m = NewMatch(4, new HarmlessRule(), new HarmlessRule(), new MatchConfig { Gravity = FT.X(0f) });
+            m.Balls[0].Vel = FT.V(0f, 50f);
             m.Step();
-            Assert.That(m.Balls[0].Vel.Length, Is.LessThanOrEqualTo(m.Config.MaxSpeed + 1e-4f));
-            Assert.That(System.Math.Abs(m.Balls[0].Vel.X), Is.GreaterThan(0f));
+            Assert.That(m.Balls[0].Vel.Length, Is.LessThanOrEqualTo(m.Config.MaxSpeed + FT.X(1e-4f)));
+            Assert.That((System.Math.Abs((m.Balls[0].Vel.X).F())).F(), Is.GreaterThan(0f));
         }
 
         [Test]
@@ -326,10 +358,10 @@ namespace BallBattle.SimTests
 
         static MatchSim FastBladesSetup(int maxSubsteps)
         {
-            var cfg = new MatchConfig { Gravity = 0f, MinHorizontalSpeed = 0f, MaxSubsteps = maxSubsteps };
+            var cfg = new MatchConfig { Gravity = FT.X(0f), MinHorizontalSpeed = FT.X(0f), MaxSubsteps = maxSubsteps };
             var m = NewMatch(1, new FixedBladeRule(1f, 70f, 30f), new FixedBladeRule(1f, 70f, 30f), cfg);
-            m.Balls[0].Pos = new Vec2(-45, 0); m.Balls[0].Vel = Vec2.Zero; m.Balls[0].WeaponAngleDeg = 100f; m.Balls[0].SpinDir = -1;
-            m.Balls[1].Pos = new Vec2(45, 0); m.Balls[1].Vel = Vec2.Zero; m.Balls[1].WeaponAngleDeg = 80f; m.Balls[1].SpinDir = 1;
+            m.Balls[0].Pos = FT.V(-45, 0); m.Balls[0].Vel = FixVec2.Zero; m.Balls[0].WeaponAngleDeg = FT.X(100f); m.Balls[0].SpinDir = -1;
+            m.Balls[1].Pos = FT.V(45, 0); m.Balls[1].Vel = FixVec2.Zero; m.Balls[1].WeaponAngleDeg = FT.X(80f); m.Balls[1].SpinDir = 1;
             return m;
         }
 
@@ -345,7 +377,7 @@ namespace BallBattle.SimTests
             var old = BallBattle.Sim.Weapons.WeaponTuning.FangSpinGainDecay;
             try
             {
-                BallBattle.Sim.Weapons.WeaponTuning.FangSpinGainDecay = 0.5f;
+                BallBattle.Sim.Weapons.WeaponTuning.FangSpinGainDecay = FT.X(0.5f);
                 Assert.That(Run(), Is.Not.EqualTo(before), "a live-read tuning value must still change the hash");
             }
             finally { BallBattle.Sim.Weapons.WeaponTuning.FangSpinGainDecay = old; }

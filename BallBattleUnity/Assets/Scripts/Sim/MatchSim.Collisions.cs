@@ -5,7 +5,7 @@ namespace BallBattle.Sim
     /// <summary>Contact resolution: blade-blade parry, blade/body hits, ball-ball bounce.</summary>
     public sealed partial class MatchSim
     {
-        static readonly Vec2 FallbackNormal = new Vec2(1f, 0f);
+        static readonly FixVec2 FallbackNormal = FixVec2.Right;
 
         void ResolveWeaponContacts()
         {
@@ -37,7 +37,7 @@ namespace BallBattle.Sim
                         else if (sb > sa) abHit = false;
                     }
 
-                    float abDamage = 0f, baDamage = 0f;
+                    Fix abDamage = Fix.Zero, baDamage = Fix.Zero;
                     bool abBlocked = false, baBlocked = false;
                     HitContext abCtx = default, baCtx = default;
                     if (abHit) { abCtx = MakeContext(a, b); abDamage = ComputeHitDamage(a, b, SafeDamage(a.Weapon, abCtx), DamageKind.Weapon, out abBlocked); }
@@ -58,7 +58,7 @@ namespace BallBattle.Sim
         {
             if (!a.Weapon.HasBlade || !b.Weapon.HasBlade) return false;
 
-            var reach = (a.Weapon.BladeThickness + b.Weapon.BladeThickness) * 0.5f;
+            var reach = (a.Weapon.BladeThickness + b.Weapon.BladeThickness) / 2;
             var touch = Geometry.SegmentsTouch(a.BladeStart, a.BladeEnd, b.BladeStart, b.BladeEnd, reach, out var pa, out var pb)
                 || (b.HasTwinBlade && Geometry.SegmentsTouch(a.BladeStart, a.BladeEnd, b.TwinBladeStart, b.TwinBladeEnd, reach, out pa, out pb))
                 || (a.HasTwinBlade && Geometry.SegmentsTouch(a.TwinBladeStart, a.TwinBladeEnd, b.BladeStart, b.BladeEnd, reach, out pa, out pb))
@@ -70,7 +70,7 @@ namespace BallBattle.Sim
             b.SpinDir = -b.SpinDir;
             parryCooldown[a.Index, b.Index] = Config.ParryCooldownTicks;
             parryCooldown[b.Index, a.Index] = Config.ParryCooldownTicks;
-            HitstopRemaining = Math.Max(HitstopRemaining, Config.ParryHitstopTicks);
+            if (Config.ParryHitstopTicks > HitstopRemaining) HitstopRemaining = Config.ParryHitstopTicks;
 
             // Push the balls apart so the blades do not stay locked together.
             var normal = (b.Pos - a.Pos).NormalizedOr(FallbackNormal);
@@ -81,12 +81,12 @@ namespace BallBattle.Sim
             b.Weapon.OnParry(a);
             foreach (var t in a.Traits) t.OnParry(b);
             foreach (var t in b.Traits) t.OnParry(a);
-            Emit(SimEventType.Parry, a.Index, b.Index, 0f, (pa + pb) * 0.5f);
+            Emit(SimEventType.Parry, a.Index, b.Index, Fix.Zero, (pa + pb) / 2);
             return true;
         }
 
         /// <summary>Does attacker's blade (or body) touch target right now and is it off cooldown? No side effects.</summary>
-        bool DetectHit(BallState attacker, BallState target, out Vec2 contact)
+        bool DetectHit(BallState attacker, BallState target, out FixVec2 contact)
         {
             contact = default;
             if (attacker.HitCooldown[target.Index] > 0) return false;
@@ -94,12 +94,12 @@ namespace BallBattle.Sim
             var w = attacker.Weapon;
             if (w.HasBlade)
             {
-                var reach = target.Radius + w.BladeThickness * 0.5f;
+                var reach = target.Radius + w.BladeThickness / 2;
                 var closest = Geometry.ClosestPointOnSegment(attacker.BladeStart, attacker.BladeEnd, target.Pos);
-                if ((closest - target.Pos).LengthSq <= reach * reach) { contact = closest; return true; }
+                if ((closest - target.Pos).LengthSq <= FixMath.Sq(reach)) { contact = closest; return true; }
                 if (!attacker.HasTwinBlade) return false;
                 closest = Geometry.ClosestPointOnSegment(attacker.TwinBladeStart, attacker.TwinBladeEnd, target.Pos);
-                if ((closest - target.Pos).LengthSq > reach * reach) return false;
+                if ((closest - target.Pos).LengthSq > FixMath.Sq(reach)) return false;
                 contact = closest;
                 return true;
             }
@@ -108,7 +108,7 @@ namespace BallBattle.Sim
             {
                 var delta = target.Pos - attacker.Pos;
                 var reach = attacker.Radius + target.Radius + Config.BodyContactSlop;
-                if (delta.LengthSq > reach * reach) return false;
+                if (delta.LengthSq > FixMath.Sq(reach)) return false;
                 contact = attacker.Pos + delta.NormalizedOr(FallbackNormal) * attacker.Radius;
                 return true;
             }
@@ -119,37 +119,37 @@ namespace BallBattle.Sim
         static HitContext MakeContext(BallState attacker, BallState target)
             => new HitContext(attacker.Vel.Length, (attacker.Vel - target.Vel).Length);
 
-        static float SafeDamage(WeaponRule w, in HitContext ctx)
+        static Fix SafeDamage(WeaponRule w, in HitContext ctx)
         {
             var d = w.Damage(ctx);
-            return d > 0f ? d : 0f;
+            return d > Fix.Zero ? d : Fix.Zero;
         }
 
         /// <summary>
         /// Cooldown, hitstop and knockback happen either way. A shield-blocked hit deals no damage, does not
         /// count for the weapon's growth (no OnHit) and emits ShieldBlocked instead of Hit. Hit hooks run later.
         /// </summary>
-        void ApplyHit(BallState attacker, BallState target, float damage, bool blocked, in HitContext ctx, Vec2 contact)
+        void ApplyHit(BallState attacker, BallState target, Fix damage, bool blocked, in HitContext ctx, FixVec2 contact)
         {
             var cooldown = attacker.Weapon.HitCooldownTicks >= 0 ? attacker.Weapon.HitCooldownTicks : Config.HitCooldownTicks;
             attacker.HitCooldown[target.Index] = cooldown;
-            HitstopRemaining = Math.Max(HitstopRemaining, Config.HitHitstopTicks);
+            if (Config.HitHitstopTicks > HitstopRemaining) HitstopRemaining = Config.HitHitstopTicks;
 
             // Push away from the contact point (a long blade tip pushes along the swing, not center-to-center).
             var centerDir = (target.Pos - attacker.Pos).NormalizedOr(FallbackNormal);
             var knock = (target.Pos - contact).NormalizedOr(centerDir);
-            target.Vel += knock * (Config.HitKnockback * attacker.Weapon.KnockbackScale * (1f - target.KnockbackResist));
+            target.Vel += knock * (Config.HitKnockback * attacker.Weapon.KnockbackScale * (Fix.One - target.KnockbackResist));
 
             if (blocked)
             {
-                Emit(SimEventType.ShieldBlocked, target.Index, attacker.Index, 0f, contact);
+                Emit(SimEventType.ShieldBlocked, target.Index, attacker.Index, Fix.Zero, contact);
                 return;
             }
 
             attacker.HitCount++;
             attacker.Weapon.OnHit(ctx);
             Emit(SimEventType.Hit, attacker.Index, target.Index, damage, contact);
-            Emit(SimEventType.StatChanged, attacker.Index, -1, 0f, attacker.Pos);
+            Emit(SimEventType.StatChanged, attacker.Index, -1, Fix.Zero, attacker.Pos);
             ApplyHitHp(attacker, target, damage);
         }
 
@@ -168,10 +168,10 @@ namespace BallBattle.Sim
                     var delta = b.Pos - a.Pos;
                     var minDist = a.Radius + b.Radius;
                     var distSq = delta.LengthSq;
-                    if (distSq >= minDist * minDist) continue;
+                    if (distSq >= FixMath.Sq(minDist)) continue;
 
-                    var dist = MathF.Sqrt(distSq);
-                    var normal = dist > 1e-6f ? delta * (1f / dist) : FallbackNormal;
+                    var dist = FixMath.Sqrt(distSq);
+                    var normal = dist.Raw > 0 ? new FixVec2(delta.X / dist, delta.Y / dist) : FallbackNormal;
                     var ma = a.Radius * a.Radius;
                     var mb = b.Radius * b.Radius;
                     var wa = mb / (ma + mb); // share of the correction/impulse taken by a (lighter moves more)
@@ -180,11 +180,14 @@ namespace BallBattle.Sim
                     a.Pos -= normal * (overlap * wa);
                     b.Pos += normal * (overlap * wb);
 
-                    var closing = Vec2.Dot(b.Vel - a.Vel, normal);
-                    if (closing < 0f)
+                    var closing = FixVec2.DotFix(b.Vel - a.Vel, normal);
+                    if (closing < Fix.Zero)
                     {
-                        a.Vel += normal * (closing * 2f * wa);
-                        b.Vel -= normal * (closing * 2f * wb);
+                        // Keep the mass division until the final raw result. Quantizing wa/wb first loses
+                        // momentum (e.g. r24/r16, +/-4: 1280 -> 1280.125 instead of within 0.01).
+                        var totalMass = ma + mb;
+                        a.Vel += normal * FixMath.MulDiv(closing * 2, mb.Raw, totalMass.Raw);
+                        b.Vel -= normal * FixMath.MulDiv(closing * 2, ma.Raw, totalMass.Raw);
                         Emit(SimEventType.BallBounce, a.Index, b.Index, -closing, a.Pos + normal * a.Radius);
                         foreach (var t in a.Traits) t.OnBodyContact(b);
                         foreach (var t in b.Traits) t.OnBodyContact(a);

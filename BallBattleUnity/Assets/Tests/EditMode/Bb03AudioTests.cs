@@ -70,18 +70,18 @@ namespace BallBattle.Tests
         {
             var d = NewDirector();
             var hive = Sim("rig", "blade");
-            var turretShot = new SimEvent { Type = SimEventType.ProjectileHit, Tick = 10, A = 0, B = 1, Value = 3f };
+            var turretShot = new SimEvent { Type = SimEventType.ProjectileHit, Tick = 10, A = 0, B = 1, Value = TFix.X(3f) };
             Assert.That(AudioDirector.HitCueFor(turretShot, hive, lib.Has), Is.EqualTo("hit_rig"));
             d.OnSimEvent(turretShot, hive);
             Assert.That(d.Played.Last().Id, Is.EqualTo("hit_rig"));
 
             var sparkler = Sim("blade", "volley");
-            var arrow = new SimEvent { Type = SimEventType.ProjectileHit, Tick = 11, A = 1, B = 0, Value = 2f };
+            var arrow = new SimEvent { Type = SimEventType.ProjectileHit, Tick = 11, A = 1, B = 0, Value = TFix.X(2f) };
             Assert.That(AudioDirector.HitCueFor(arrow, sparkler, lib.Has), Is.EqualTo("hit_volley"));
             d.OnSimEvent(arrow, sparkler);
             Assert.That(d.Played.Last().Id, Is.EqualTo("hit_volley"));
 
-            var melee = new SimEvent { Type = SimEventType.Hit, Tick = 12, A = 0, B = 1, Value = 4f };
+            var melee = new SimEvent { Type = SimEventType.Hit, Tick = 12, A = 0, B = 1, Value = TFix.X(4f) };
             d.OnSimEvent(melee, sparkler);
             Assert.That(d.Played.Last().Id, Is.EqualTo("hit_blade"), "melee hit: the attacker's weapon");
         }

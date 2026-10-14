@@ -11,15 +11,23 @@ namespace BallBattle.Sim
             {
                 if (!b.Alive) continue;
                 // Horizontal floor first, then the cap, so the cap always holds.
-                if (MathF.Abs(b.Vel.X) < Config.MinHorizontalSpeed)
+                if (FixMath.Abs(b.Vel.X) < Config.MinHorizontalSpeed)
                 {
-                    float sign = b.Vel.X > 0f ? 1f : (b.Vel.X < 0f ? -1f : (b.Index % 2 == 0 ? 1f : -1f));
-                    b.Vel.X = sign * Config.MinHorizontalSpeed;
+                    var sign = b.Vel.X.Raw > 0 ? 1 : (b.Vel.X.Raw < 0 ? -1 : (b.Index % 2 == 0 ? 1 : -1));
+                    b.Vel.X = Config.MinHorizontalSpeed * sign;
                 }
 
-                var max = (Config.MaxSpeed + b.Weapon.MaxSpeedBonus) * (1f + b.Bonus.SpeedPct);
+                var max = (Config.MaxSpeed + b.Weapon.MaxSpeedBonus) * (Fix.One + b.Bonus.SpeedPct);
                 var speedSq = b.Vel.LengthSq;
-                if (speedSq > max * max) b.Vel = b.Vel * (max / MathF.Sqrt(speedSq));
+                if (speedSq > FixMath.Sq(max))
+                {
+                    // A floored root can equal max while the squared speed is still above it. Use its ceiling,
+                    // then one raw rational division per axis; avoid quantizing a scale before multiplying.
+                    var lengthRaw = FixMath.Sqrt(speedSq).Raw;
+                    if ((long)lengthRaw * lengthRaw < speedSq) lengthRaw++;
+                    b.Vel = new FixVec2(FixMath.MulDiv(b.Vel.X, max.Raw, lengthRaw),
+                        FixMath.MulDiv(b.Vel.Y, max.Raw, lengthRaw));
+                }
             }
         }
 
@@ -42,7 +50,7 @@ namespace BallBattle.Sim
             if (!Ongoing || ActiveTick < Config.CapTicks) return;
 
             var best = -1;
-            var bestFrac = -1f;
+            var bestFrac = -Fix.One;
             var tie = false;
             foreach (var b in balls)
             {
@@ -65,13 +73,13 @@ namespace BallBattle.Sim
             var anyDied = false;
             foreach (var b in balls)
             {
-                if (!b.Alive || b.Hp > 0f) continue;
+                if (!b.Alive || b.Hp > Fix.Zero) continue;
                 if (TrySave(b)) continue;
-                b.Hp = 0f;
+                b.Hp = Fix.Zero;
                 b.Alive = false;
                 anyDied = true;
                 projectiles.RemoveOwnedBy(b.Index);
-                Emit(SimEventType.Death, b.Index, b.LastAttacker, 0f, b.Pos);
+                Emit(SimEventType.Death, b.Index, b.LastAttacker, Fix.Zero, b.Pos);
             }
             if (anyDied) EndIfDecided();
         }
@@ -82,10 +90,10 @@ namespace BallBattle.Sim
             foreach (var t in b.Traits)
             {
                 if (!t.TryPreventDeath()) continue;
-                if (b.Hp <= 0f) throw new InvalidOperationException($"Trait '{t.Id}' claimed to prevent death but left HP at {b.Hp}");
+                if (b.Hp <= Fix.Zero) throw new InvalidOperationException($"Trait '{t.Id}' claimed to prevent death but left HP at {b.Hp}");
                 if (b.Hp > b.MaxHp) b.Hp = b.MaxHp;
-                TriggerTrait(t.Id, b, b.Hp - MathF.Max(before, 0f));
-                Emit(SimEventType.Heal, b.Index, -1, b.Hp - MathF.Max(before, 0f), b.Pos);
+                TriggerTrait(t.Id, b, b.Hp - FixMath.Max(before, Fix.Zero));
+                Emit(SimEventType.Heal, b.Index, -1, b.Hp - FixMath.Max(before, Fix.Zero), b.Pos);
                 return true;
             }
             return false;
@@ -111,15 +119,15 @@ namespace BallBattle.Sim
             Outcome = winner >= 0 ? MatchOutcome.Win : MatchOutcome.Draw;
             WinnerIndex = winner;
             EndReason = reason;
-            Emit(SimEventType.MatchEnd, winner, -1, 0f, Vec2.Zero);
+            Emit(SimEventType.MatchEnd, winner, -1, Fix.Zero, FixVec2.Zero);
         }
 
-        void Emit(SimEventType type, int a, int b, float value, Vec2 point, byte variant = 0)
+        void Emit(SimEventType type, int a, int b, Fix value, FixVec2 point, byte variant = 0)
         {
             Events.Add(new SimEvent { Type = type, Tick = Tick, A = a, B = b, Value = value, Point = point, Variant = variant });
         }
 
-        public void TriggerTrait(string traitId, BallState ball, float value)
+        public void TriggerTrait(string traitId, BallState ball, Fix value)
         {
             Events.Add(new SimEvent { Type = SimEventType.TraitTriggered, Tick = Tick, A = ball.Index, B = -1,
                 Value = value, Point = ball.Pos, TraitId = traitId });

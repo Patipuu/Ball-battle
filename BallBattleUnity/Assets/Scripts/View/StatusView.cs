@@ -55,7 +55,7 @@ namespace BallBattle.View
             {
                 var sr = poison[i * StatusEffects.MaxPoisonStacks + k];
                 if (k >= stacks) { sr.enabled = false; continue; }
-                Dot(sr, center, tick * 4f + k * 360f / stacks, ball.Radius + 3f, 2);
+                Dot(sr, center, tick * 4f + k * 360f / stacks, ball.Radius.ToFloat() + 3f, 2);
             }
 
             var rings = !ball.Alive ? 0 : (ball.Status.ShieldCharges >= 2 ? 2 : (ball.Status.ShieldCharges == 1 ? 1 : 0));
@@ -64,7 +64,7 @@ namespace BallBattle.View
                 {
                     var sr = ring[(i * 2 + r) * RingDots + k];
                     if (r >= rings) { sr.enabled = false; continue; }
-                    Dot(sr, center, k * 360f / RingDots + r * 15f, ball.Radius + 5f + r * 3f, 1);
+                    Dot(sr, center, k * 360f / RingDots + r * 15f, ball.Radius.ToFloat() + 5f + r * 3f, 1);
                 }
         }
     }

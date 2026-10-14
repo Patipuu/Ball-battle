@@ -15,7 +15,7 @@ namespace BallBattle.SimTests
     public class VersusGoldenTests
     {
         /// <summary>Recomputed for SimVersion 4 with fixed trigonometry.</summary>
-        const ulong ExpectedDigest = 0xEE6798E60B605BCFUL;
+        const ulong ExpectedDigest = 0xDA949C380918B81DUL;
 
         /// <summary>The four Step 1 weapons only: later weapons have their own balance gate.</summary>
         static readonly string[] Step1Ids = { "blade", "fang", "pike", "brawler" };
@@ -33,8 +33,8 @@ namespace BallBattle.SimTests
                 while (m.Outcome == MatchOutcome.Ongoing) m.Step();
                 h = Mix(h, (ulong)(m.WinnerIndex + 2));
                 h = Mix(h, (ulong)m.Tick);
-                h = Mix(h, (ulong)(uint)BitConverter.SingleToInt32Bits(m.Balls[0].Hp));
-                h = Mix(h, (ulong)(uint)BitConverter.SingleToInt32Bits(m.Balls[1].Hp));
+                h = Mix(h, (ulong)(uint)m.Balls[0].Hp.Raw);
+                h = Mix(h, (ulong)(uint)m.Balls[1].Hp.Raw);
             }
 
             TestContext.Out.WriteLine($"VERSUS DIGEST 0x{h:X16}UL");

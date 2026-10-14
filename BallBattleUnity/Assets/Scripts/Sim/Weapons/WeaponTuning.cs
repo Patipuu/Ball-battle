@@ -13,87 +13,87 @@ namespace BallBattle.Sim.Weapons
     public static class WeaponTuning
     {
         // Blade: steady damage growth.
-        public static float BladeLength = 24f;
-        public static float BladeSpin = 6f;
-        public static float BladeStartDamage = 1f;
-        public static float BladeDamagePerHit = 1f;
+        public static Fix BladeLength = 24;
+        public static Fix BladeSpin = 6;
+        public static Fix BladeStartDamage = 1;
+        public static Fix BladeDamagePerHit = 1;
 
         // Fang: short, spins faster on every hit (gain shrinks), many cheap hits, parries a lot.
-        public static float FangLength = 16f;
-        public static float FangStartSpin = 8f;
-        public static float FangStartSpinGain = 3f;
-        public static float FangSpinGainDecay = 0.98f;
-        public static float FangMaxSpin = 40f;
-        public static float FangStartDamage = 1f;
-        public static float FangDamagePerHit = 0.4f;
+        public static Fix FangLength = 16;
+        public static Fix FangStartSpin = 8;
+        public static Fix FangStartSpinGain = 3;
+        public static Fix FangSpinGainDecay = Fix.Ratio(49, 50);
+        public static Fix FangMaxSpin = 40;
+        public static Fix FangStartDamage = 1;
+        public static Fix FangDamagePerHit = Fix.Ratio(2, 5);
         public static int FangHitCooldownTicks = 3;
-        public static float FangKnockbackScale = 0.3f;
+        public static Fix FangKnockbackScale = Fix.Ratio(3, 10);
 
         // Pike: slow, grows longer and harder.
-        public static float PikeStartLength = 26f;
-        public static float PikeSpin = 4f;
-        public static float PikeStartDamage = 1f;
-        public static float PikeGrowthPerHit = 0.75f;
-        public static float PikeMaxLength = 90f;
+        public static Fix PikeStartLength = 26;
+        public static Fix PikeSpin = 4;
+        public static Fix PikeStartDamage = 1;
+        public static Fix PikeGrowthPerHit = Fix.Ratio(3, 4);
+        public static Fix PikeMaxLength = 90;
 
         // Brawler: no blade; body damage scales with its own speed; speed cap grows on hits and wall bounces.
-        public static float BrawlerStartDamagePerSpeed = 0.1f;
-        public static float BrawlerDamagePerSpeedPerHit = 0.01f;
-        public static float BrawlerStartSpeedBonus = -3f;
-        public static float BrawlerSpeedBonusPerHit = 0.5f;
-        public static float BrawlerSpeedBonusPerWall = 0.2f;
-        public static float BrawlerMaxSpeedBonus = 4f;
-        public static float BrawlerWallSpeedBoost = 0.08f;
+        public static Fix BrawlerStartDamagePerSpeed = Fix.Ratio(1, 10);
+        public static Fix BrawlerDamagePerSpeedPerHit = Fix.Ratio(1, 100);
+        public static Fix BrawlerStartSpeedBonus = -3;
+        public static Fix BrawlerSpeedBonusPerHit = Fix.Ratio(1, 2);
+        public static Fix BrawlerSpeedBonusPerWall = Fix.Ratio(1, 5);
+        public static Fix BrawlerMaxSpeedBonus = 4;
+        public static Fix BrawlerWallSpeedBoost = Fix.Ratio(2, 25);
 
         // Volley: stubby blade; every interval a fan of arrows along the blade; each melee hit adds an arrow.
-        public static float VolleyLength = 12f;
-        public static float VolleySpin = 3.5f;
-        public static float VolleyMeleeDamage = 1f;
-        public static float VolleyArrowDamagePerHit = 0.1f;
+        public static Fix VolleyLength = 12;
+        public static Fix VolleySpin = Fix.Ratio(7, 2);
+        public static Fix VolleyMeleeDamage = 1;
+        public static Fix VolleyArrowDamagePerHit = Fix.Ratio(1, 10);
         public static int VolleyIntervalTicks = 90;
         public static int VolleyMaxArrows = 8;
-        public static float VolleySpreadDeg = 8f;
-        public static float VolleyArrowSpeed = 5f;
-        public static float VolleyArrowRadius = 1.5f;
-        public static float VolleyArrowDamage = 0.9f;
+        public static Fix VolleySpreadDeg = 8;
+        public static Fix VolleyArrowSpeed = 5;
+        public static Fix VolleyArrowRadius = Fix.Ratio(3, 2);
+        public static Fix VolleyArrowDamage = Fix.Ratio(9, 10);
         public static int VolleyArrowLifetimeTicks = 180;
 
         // Venom: wide slow blade; the poison stack allowance grows per hit.
-        public static float VenomLength = 22f;
-        public static float VenomThickness = 6f;
-        public static float VenomSpin = 4f;
-        public static float VenomMeleeDamage = 1.5f;
-        public static float VenomDamagePerHit = 0.25f;
-        public static float VenomDps = 1f;
+        public static Fix VenomLength = 22;
+        public static Fix VenomThickness = 6;
+        public static Fix VenomSpin = 4;
+        public static Fix VenomMeleeDamage = Fix.Ratio(3, 2);
+        public static Fix VenomDamagePerHit = Fix.Ratio(1, 4);
+        public static Fix VenomDps = 1;
         public static int VenomSeconds = 4;
 
         // Aegis: broad shield blade; reflects the parried blow; widens on body hits.
-        public static float AegisLength = 22f;
-        public static float AegisThickness = 7f;
-        public static float AegisSpin = 3f;
-        public static float AegisChipDamage = 0.7f;
-        public static float AegisDamagePerWidth = 0.25f;
-        public static float AegisBodyReflectPct = 0.5f;
-        public static float AegisWidthPerHit = 0.25f;
-        public static float AegisMaxThickness = 14f;
-        public static float AegisReflectPct = 0.4f;
-        public static float AegisShotAbsorbPct = 0.2f;
-        public static float AegisRegenPerSecond = 0.25f;
+        public static Fix AegisLength = 22;
+        public static Fix AegisThickness = 7;
+        public static Fix AegisSpin = 3;
+        public static Fix AegisChipDamage = Fix.Ratio(7, 10);
+        public static Fix AegisDamagePerWidth = Fix.Ratio(1, 4);
+        public static Fix AegisBodyReflectPct = Fix.Ratio(1, 2);
+        public static Fix AegisWidthPerHit = Fix.Ratio(1, 4);
+        public static Fix AegisMaxThickness = 14;
+        public static Fix AegisReflectPct = Fix.Ratio(2, 5);
+        public static Fix AegisShotAbsorbPct = Fix.Ratio(1, 5);
+        public static Fix AegisRegenPerSecond = Fix.Ratio(1, 4);
         /// <summary>After this many active ticks Aegis hits harder and harder (ends Aegis mirrors); +100% per ramp.</summary>
         public static int AegisRageStartTicks = 900;
         public static int AegisRageRampTicks = 600;
 
         // Rig: every melee hit drops a turret (ghost emplacement); turrets shoot together.
-        public static float RigLength = 18f;
-        public static float RigSpin = 5f;
-        public static float RigMeleeDamage = 1.5f;
-        public static float RigDamagePerHit = 0.2f;
+        public static Fix RigLength = 18;
+        public static Fix RigSpin = 5;
+        public static Fix RigMeleeDamage = Fix.Ratio(3, 2);
+        public static Fix RigDamagePerHit = Fix.Ratio(1, 5);
         public const int RigMaxTurrets = 6;
-        public static float RigTurretRadius = 3f;
+        public static Fix RigTurretRadius = 3;
         public static int RigFireIntervalTicks = 68;
-        public static float RigShotSpeed = 3.5f;
-        public static float RigShotRadius = 1.5f;
-        public static float RigShotDamage = 1.1f;
+        public static Fix RigShotSpeed = Fix.Ratio(7, 2);
+        public static Fix RigShotRadius = Fix.Ratio(3, 2);
+        public static Fix RigShotDamage = Fix.Ratio(11, 10);
         public static int RigShotLifetimeTicks = 150;
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace BallBattle.Sim.Weapons
             foreach (var f in fields)
             {
                 var v = f.GetValue(null);
-                if (v is float fl) h = SimHash.Mix(h, fl);
+                if (v is Fix fx) h = SimHash.Mix(h, fx);
                 else if (v is int i) h = SimHash.Mix(h, i);
                 else throw new InvalidOperationException($"WeaponTuning.{f.Name}: unsupported type {f.FieldType}");
             }

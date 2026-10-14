@@ -173,13 +173,13 @@ namespace BallBattle.View
 
             var enemy = run.Enemy;
             enemyLabel.Set(boss ? "GIANT BOSS" : "ENEMY", boss ? Palette.WallWarning : Palette.TextDim);
-            SetBall(enemyIcon, enemyName, enemy.WeaponId, (foe != null ? foe.Radius : (enemy.Radius > 0f ? enemy.Radius : IconNativeRadius)) / IconNativeRadius);
+            SetBall(enemyIcon, enemyName, enemy.WeaponId, (foe != null ? foe.Radius.ToFloat() : (enemy.Radius > Fix.Zero ? enemy.Radius.ToFloat() : IconNativeRadius)) / IconNativeRadius);
             enemyTraits.Set(CardText.Traits(enemy), Palette.Text);
-            enemyStats.Set(EnemyHpText(foe != null ? foe.Hp : enemy.MaxHp, foe != null ? foe.MaxHp : enemy.MaxHp), Palette.TextDim);
+            enemyStats.Set(EnemyHpText((foe != null ? foe.Hp : enemy.MaxHp).ToFloat(), (foe != null ? foe.MaxHp : enemy.MaxHp).ToFloat()), Palette.TextDim);
 
-            SetBall(youIcon, youName, run.Build.WeaponId, (you != null ? you.Radius : IconNativeRadius) / IconNativeRadius);
+            SetBall(youIcon, youName, run.Build.WeaponId, (you != null ? you.Radius.ToFloat() : IconNativeRadius) / IconNativeRadius);
             youTraits.Set(CardText.Traits(run.Build), Palette.Text);
-            youStats.Set(you != null ? CardText.Stats(run.Build, you.Hp, you.MaxHp) : CardText.Stats(run.Build), Palette.TextDim);
+            youStats.Set(you != null ? CardText.Stats(run.Build, you.Hp.ToFloat(), you.MaxHp.ToFloat()) : CardText.Stats(run.Build), Palette.TextDim);
             ShowArena(run.ArenaId);
 
             var cost = run.NextPickCost;
@@ -467,9 +467,9 @@ namespace BallBattle.View
 
             var config = ArenaRegistry.Create(arenaId);
             var layout = config.Layout ?? ArenaLayout.Empty;
-            var scale = ArenaPreviewWidth / ArenaTuning.WideWidth;
-            var halfW = Mathf.Round(config.ArenaWidth * scale * 0.5f);
-            var halfH = Mathf.Round(config.ArenaHeight * scale * 0.5f);
+            var scale = ArenaPreviewWidth / ArenaTuning.WideWidth.ToFloat();
+            var halfW = Mathf.Round(config.ArenaWidth.ToFloat() * scale * 0.5f);
+            var halfH = Mathf.Round(config.ArenaHeight.ToFloat() * scale * 0.5f);
             // Same colors and floor tile as the fight (arena_colors.json, floor_<id>), the tile drawn at half size.
             var hasArt = art.TryArena(arenaId, out var look);
             var wall = hasArt ? look.WallColor : (Color32)Palette.Wall;
@@ -488,14 +488,15 @@ namespace BallBattle.View
                 sr.sortingOrder = RunUi.Order + 4;
                 previewFloor = sr;
             }
-            if (layout.WallDamage > 0f)
+            if (layout.WallDamage > Fix.Zero)
             {
-                // spike_tooth color: a 1 px band inside the walls, only along the corner spike zones (as in the fight)
+                // spike_tooth color: a 1 px band inside the walls, only along the corner spike zones (as in the fight; the
+                // zones come from the sim's SpikeZones.Segments of the start rect, scaled to the sketch)
                 var tooth = new Color32(255, 70, 50, 255);
-                foreach (var z in ArenaFrameView.ZoneSegments(layout.SpikeCorners, -halfW, -halfH, halfW, halfH))
+                foreach (var z in SpikeZones.Segments(config.ArenaAt(0), layout.SpikeCorners))
                 {
-                    var from = Mathf.Round(z.From);
-                    var to = Mathf.Round(z.To);
+                    var from = Mathf.Round(z.From.ToFloat() * scale);
+                    var to = Mathf.Round(z.To.ToFloat() * scale);
                     switch (z.Wall)
                     {
                         case ArenaWall.Top: Rect(tooth, from, halfH - 1, to, halfH, 5); break;
@@ -507,17 +508,17 @@ namespace BallBattle.View
             }
             if (config.MinArenaWidth < config.ArenaWidth && arenaId == ArenaRegistry.Tight)
             {
-                var mw = Mathf.Round(config.MinArenaWidth * scale * 0.5f);
-                var mh = Mathf.Round(config.MinArenaHeight * scale * 0.5f);
+                var mw = Mathf.Round(config.MinArenaWidth.ToFloat() * scale * 0.5f);
+                var mh = Mathf.Round(config.MinArenaHeight.ToFloat() * scale * 0.5f);
                 Rect(Palette.HpBack, -mw, -mh, mw, mh, 5);   // where the shrinking walls end
             }
             for (var i = 0; i < layout.ObstacleCount; i++)
             {
                 var o = layout.Get(i);
-                var r = Mathf.Max(1f, Mathf.Round(o.Radius * scale));
-                var color = o.Damage > 0f ? new Color32(210, 60, 60, 255) : o.Boost > 0f ? new Color32(240, 170, 60, 255) : new Color32(120, 130, 150, 255);
-                var x = Mathf.Round(o.A.X * scale);
-                var y = Mathf.Round(o.A.Y * scale);
+                var r = Mathf.Max(1f, Mathf.Round(o.Radius.ToFloat() * scale));
+                var color = o.Damage > Fix.Zero ? new Color32(210, 60, 60, 255) : o.Boost > Fix.Zero ? new Color32(240, 170, 60, 255) : new Color32(120, 130, 150, 255);
+                var x = Mathf.Round(o.A.X.ToFloat() * scale);
+                var y = Mathf.Round(o.A.Y.ToFloat() * scale);
                 Rect(color, x - r, y - r, x + r, y + r, 6);
             }
         }

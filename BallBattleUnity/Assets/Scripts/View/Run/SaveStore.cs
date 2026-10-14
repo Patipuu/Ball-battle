@@ -13,7 +13,8 @@ namespace BallBattle.View
         public int Version = CurrentVersion;
         public ProgressData Progress = new ProgressData();
         public bool HasRun;
-        public RunState Run = new RunState();
+        /// <summary>The run in its save form (doubles, same JSON names as before 6a.6b/c); RunSave.ToRun() gives the Sim RunState.</summary>
+        public RunSave Run = new RunSave();
         /// <summary>Music / SFX volume steps 0..10 (BB-03). Older saves have no such fields and load the defaults; no version bump.</summary>
         public int musicVol = VolumeSettings.DefaultMusic;
         public int sfxVol = VolumeSettings.DefaultSfx;
@@ -41,7 +42,7 @@ namespace BallBattle.View
             }
             data.Version = SaveData.CurrentVersion;
             data.HasRun = false;
-            data.Run = new RunState();
+            data.Run = new RunSave();
             return data;
         }
     }

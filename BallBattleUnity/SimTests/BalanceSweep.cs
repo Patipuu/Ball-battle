@@ -11,7 +11,7 @@ namespace BallBattle.SimTests
     /// Writes a table per sweep to BB_REPORT (or test output). Restores tuning after each sweep.
     /// Run one: dotnet test --filter "FullyQualifiedName~BalanceSweep.Brawler"
     /// </summary>
-    [Explicit, Category("Diagnostic"), NonParallelizable]
+    [Explicit, Category("Diagnostic"), Category("Slow"), NonParallelizable]
     public class BalanceSweep
     {
         const int Seeds = 100;
@@ -48,8 +48,8 @@ namespace BallBattle.SimTests
                 foreach (var s in new[] { 0.1f, 0.15f, 0.2f, 0.25f, 0.3f })
                 foreach (var g in new[] { 0f, 0.01f, 0.02f, 0.04f })
                 {
-                    WeaponTuning.BrawlerStartDamagePerSpeed = s;
-                    WeaponTuning.BrawlerDamagePerSpeedPerHit = g;
+                    WeaponTuning.BrawlerStartDamagePerSpeed = FT.X(FT.X(s));
+                    WeaponTuning.BrawlerDamagePerSpeedPerHit = FT.X(FT.X(g));
                     Row($"s={s} g={g}", "blade", "brawler");
                 }
             }
@@ -71,8 +71,8 @@ namespace BallBattle.SimTests
                 foreach (var gr in new[] { 0.5f, 0.75f, 1f, 1.25f })
                 foreach (var sp in new[] { 4f, 5f, 6f })
                 {
-                    WeaponTuning.PikeGrowthPerHit = gr;
-                    WeaponTuning.PikeSpin = sp;
+                    WeaponTuning.PikeGrowthPerHit = FT.X(FT.X(gr));
+                    WeaponTuning.PikeSpin = FT.X(FT.X(sp));
                     Row($"grow={gr} spin={sp}", "blade", "pike");
                 }
             }
@@ -96,9 +96,9 @@ namespace BallBattle.SimTests
                 foreach (var cd in new[] { 3, 6 })
                 foreach (var kb in new[] { 0.3f, 1f })
                 {
-                    WeaponTuning.FangDamagePerHit = d;
+                    WeaponTuning.FangDamagePerHit = FT.X(FT.X(d));
                     WeaponTuning.FangHitCooldownTicks = cd;
-                    WeaponTuning.FangKnockbackScale = kb;
+                    WeaponTuning.FangKnockbackScale = FT.X(FT.X(kb));
                     Row($"d={d} cd={cd} kb={kb}", "blade", "fang");
                 }
             }
@@ -121,12 +121,12 @@ namespace BallBattle.SimTests
             try
             {
                 WeaponTuning.FangHitCooldownTicks = 3;
-                WeaponTuning.FangKnockbackScale = 0.3f;
+                WeaponTuning.FangKnockbackScale = FT.X(FT.X(0.3f));
                 foreach (var l in new[] { 12f, 16f, 20f })
                 foreach (var d in new[] { 0.2f, 0.35f, 0.5f })
                 {
-                    WeaponTuning.FangLength = l;
-                    WeaponTuning.FangDamagePerHit = d;
+                    WeaponTuning.FangLength = FT.X(FT.X(l));
+                    WeaponTuning.FangDamagePerHit = FT.X(FT.X(d));
                     Row($"len={l} d={d}", "blade", "fang");
                 }
             }

@@ -10,10 +10,10 @@ namespace BallBattle.Sim.Run
     public static class CardOffer
     {
         /// <summary>Whole trait category (split between offered traits), so many unlocked traits never crowd out the rest.</summary>
-        const float TraitWeightTotal = 7.5f;
-        const float StatWeight = 2f;
-        const float SwapWeightTotal = 1.5f;
-        const float MaxHpWeight = 1f;
+        static readonly Fix TraitWeightTotal = Fix.Ratio(15, 2);
+        static readonly Fix StatWeight = 2;
+        static readonly Fix SwapWeightTotal = Fix.Ratio(3, 2);
+        static readonly Fix MaxHpWeight = 1;
 
         /// <summary>A weapon swap must not leave a held trait useless or banned on the new weapon.</summary>
         static bool KeepsAllTraits(RunBuild build, string weaponId)
@@ -27,8 +27,8 @@ namespace BallBattle.Sim.Run
             IReadOnlyList<string> weapons, IReadOnlyList<string> traits)
         {
             var cards = new List<Card>();
-            var weights = new List<float>();
-            void Add(Card c, float w) { cards.Add(c); weights.Add(w); }
+            var weights = new List<Fix>();
+            void Add(Card c, Fix w) { cards.Add(c); weights.Add(w); }
 
             var traitCards = new List<Card>();
             foreach (var id in traits)
@@ -48,7 +48,7 @@ namespace BallBattle.Sim.Run
                 if (w != build.WeaponId && KeepsAllTraits(build, w)) swaps.Add(w);
             foreach (var w in swaps) Add(new Card(CardKind.SwapWeapon, w), SwapWeightTotal / swaps.Count);
 
-            if (build.Hurt) Add(new Card(CardKind.Heal), build.Hp < build.MaxHp * 0.6f ? 3f : 1f);
+            if (build.Hurt) Add(new Card(CardKind.Heal), build.Hp < FixMath.MulDiv(build.MaxHp, 6, 10) ? 3 : 1);
             Add(new Card(CardKind.MaxHp), MaxHpWeight);
 
             var rng = new SimRandom(RunTuning.Derive(runSeed, 1000 + fightIndex, reroll));
@@ -56,14 +56,14 @@ namespace BallBattle.Sim.Run
             var offer = new Card[count];
             for (var n = 0; n < count; n++)
             {
-                var total = 0f;
+                var total = Fix.Zero;
                 foreach (var w in weights) total += w;
-                var r = rng.NextFloat01() * total;
+                var r = rng.NextFix01() * total;
                 var pick = weights.Count - 1;
                 for (var i = 0; i < weights.Count; i++)
                 {
                     r -= weights[i];
-                    if (r < 0f) { pick = i; break; }
+                    if (r < Fix.Zero) { pick = i; break; }
                 }
                 offer[n] = cards[pick];
                 cards.RemoveAt(pick);

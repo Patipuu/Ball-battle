@@ -23,6 +23,9 @@ namespace BallBattle.View
         /// <summary>Native point of the last press that started inside this button.</summary>
         public Vector2 LastPressNative { get; private set; }
 
+        /// <summary>Native point of the last release that ended a press started inside this button (set before Clicked).</summary>
+        public Vector2 LastReleaseNative { get; private set; }
+
         SpriteRenderer border, fill;
         PixelText label;
         Color32 fillColor, borderColor;
@@ -120,6 +123,7 @@ namespace BallBattle.View
                 return;
             }
             if (!held) return;
+            LastReleaseNative = e.Native;
             var inside = Contains(e.Native);
             SetHeld(false);
             if (!inside) return;

@@ -31,8 +31,8 @@ namespace BallBattle.SimTests
         {
             var m = run.CreateMatch();
             var p = m.Balls[0];
-            p.Hp = p.MaxHp * playerHpFraction;
-            m.DealDamage(null, m.Balls[playerWins ? 1 : 0], 1e6f, DamageKind.Hazard);
+            p.Hp = p.MaxHp * FT.X(playerHpFraction);
+            m.DealDamage(null, m.Balls[playerWins ? 1 : 0], FT.X(30000), DamageKind.Hazard);
             return Finish(m);
         }
     }

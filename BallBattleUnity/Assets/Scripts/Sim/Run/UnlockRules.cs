@@ -136,7 +136,7 @@ namespace BallBattle.Sim.Run
                     GoalId = row.Id,
                     RewardIds = NewRewards(row, p),
                     // Never a full bar before the goal is actually reached.
-                    Current = Math.Max(0, Math.Min(progress, row.Max - 1)),
+                    Current = MaxInt(0, progress < row.Max - 1 ? progress : row.Max - 1),
                     Max = row.Max,
                 };
             }
@@ -148,7 +148,9 @@ namespace BallBattle.Sim.Run
         /// fight's result is recorded whether won or lost; so cleared = BestFight - 1 (an under-count of one only when
         /// the furthest fight recorded was a win and the run was then left).
         /// </summary>
-        public static int FightsCleared(ProgressData p) => Math.Max(p.BestFight - 1, 0);
+        public static int FightsCleared(ProgressData p) => MaxInt(p.BestFight - 1, 0);
+
+        static int MaxInt(int a, int b) => a > b ? a : b;
 
         /// <summary>Weapon/trait ids the row grants that exist in this build and are not unlocked in <paramref name="p"/> yet.</summary>
         public static List<string> NewRewards(GoalRow row, ProgressData p)

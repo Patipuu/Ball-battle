@@ -52,7 +52,7 @@ namespace BallBattle.SimTests
         {
             var run = NewRun();
             run.ApplyResult(Forced(run, true, 0.5f));
-            Assert.That(run.Build.Hp, Is.EqualTo(50f + 100f * RunTuning.WinHealPct).Within(1e-3f));
+            Assert.That(run.Build.Hp, Is.EqualTo(Fix.FromInt(FixMath.RoundToEven(RunTuning.WinHealPct * 100 + 50))), "HP kept in whole points (round half to even)");
             Assert.That(run.Coins, Is.EqualTo(RunTuning.StartCoins + RunTuning.WinCoins));
             Assert.That(run.RetryCount, Is.Zero);
 
@@ -70,7 +70,7 @@ namespace BallBattle.SimTests
             var firstSeed = run.FightSeed;
             run.ApplyResult(Forced(run, false));
             Assert.That(run.RetryCount, Is.EqualTo(1));
-            Assert.That(run.Build.Hp, Is.EqualTo(run.Build.MaxHp * RunTuning.RetryHealPct).Within(0.001f));
+            Assert.That(run.Build.Hp.F(), Is.EqualTo((run.Build.MaxHp * RunTuning.RetryHealPct).F()).Within(0.001f));
             Assert.That(run.FightIndex, Is.EqualTo(1));
             Assert.That(run.IsRetry, Is.True);
             Assert.That(run.ArenaId, Is.EqualTo(arena));
@@ -123,7 +123,7 @@ namespace BallBattle.SimTests
                 Assert.That(e.Traits.Select(t => t.Id).Distinct().Count(), Is.EqualTo(e.Traits.Count));
             }
             var normal = EnemyGenerator.Generate(9, 0);
-            Assert.That(normal.Radius, Is.LessThanOrEqualTo(0f));
+            Assert.That(normal.Radius.F(), Is.LessThanOrEqualTo(0f));
             Assert.That(normal.MaxHp, Is.EqualTo(RunTuning.PlayerStartHp));
         }
 

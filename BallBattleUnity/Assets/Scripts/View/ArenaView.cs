@@ -273,8 +273,8 @@ namespace BallBattle.View
             for (var i = 0; i < Sim.Balls.Count; i++)
             {
                 var b = Sim.Balls[i];
-                prevPos[i] = new Vector2(b.Pos.X, b.Pos.Y);
-                prevAngle[i] = b.WeaponAngleDeg;
+                prevPos[i] = new Vector2(b.Pos.X.ToFloat(), b.Pos.Y.ToFloat());
+                prevAngle[i] = b.WeaponAngleDeg.ToFloat();
             }
         }
 
@@ -284,10 +284,10 @@ namespace BallBattle.View
             for (var i = 0; i < Sim.Balls.Count; i++)
             {
                 var b = Sim.Balls[i];
-                var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X, b.Pos.Y), alpha);
-                var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg, alpha);
-                ballViews[i].FitRadius(b.Radius);   // x1.2/x1.35/x1.5: pre-drawn sprite at scale 1; other sizes scale the base sprite
-                ballViews[i].Render(pos, angle, b.Weapon.BladeInner + b.BladeShift, b.Weapon.BladeLength, b.Weapon.StatValue, b.Alive, dt, b.HasTwinBlade ? b.Weapon.BladeLength * b.TwinBladeScale : 0f, b.Weapon.BladeThickness);
+                var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X.ToFloat(), b.Pos.Y.ToFloat()), alpha);
+                var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg.ToFloat(), alpha);
+                ballViews[i].FitRadius(b.Radius.ToFloat());   // x1.2/x1.35/x1.5: pre-drawn sprite at scale 1; other sizes scale the base sprite
+                ballViews[i].Render(pos, angle, (b.Weapon.BladeInner + b.BladeShift).ToFloat(), b.Weapon.BladeLength.ToFloat(), b.Weapon.StatValue.ToFloat(), b.Alive, dt, b.HasTwinBlade ? (b.Weapon.BladeLength * b.TwinBladeScale).ToFloat() : 0f, b.Weapon.BladeThickness.ToFloat());
                 statusView.Render(i, b, pos, Sim.ActiveTick);
             }
             projectileView.Render(Sim);
@@ -295,6 +295,6 @@ namespace BallBattle.View
         }
 
         /// <summary>Sim coordinates (native pixels, arena-centred) to world space, for effects.</summary>
-        public Vector3 SimToWorld(Vec2 p) => transform.TransformPoint(new Vector3(p.X, p.Y, 0f));
+        public Vector3 SimToWorld(FixVec2 p) => transform.TransformPoint(new Vector3(p.X.ToFloat(), p.Y.ToFloat(), 0f));
     }
 }

@@ -1,10 +1,9 @@
-using System;
 using System.Globalization;
 using System.Text;
 
 namespace BallBattle.Sim
 {
-    /// <summary>Read-only per-tick fingerprint of the six requested float fields on every ball.</summary>
+    /// <summary>Read-only per-tick fingerprint of six fields on every ball (Fix raw values).</summary>
     public static class SimTrace
     {
         public static ulong Hash(MatchSim sim)
@@ -24,7 +23,8 @@ namespace BallBattle.Sim
 
         public static string Line(MatchSim sim) => sim.Tick.ToString(CultureInfo.InvariantCulture) + " " + Hash(sim).ToString("X16", CultureInfo.InvariantCulture);
 
-        public static string Bits(float value) => "0x" + unchecked((uint)BitConverter.SingleToInt32Bits(value)).ToString("X8", CultureInfo.InvariantCulture);
+        /// <summary>Q16.16 raw bits as hex.</summary>
+        public static string Bits(Fix value) => "0x" + unchecked((uint)value.Raw).ToString("X8", CultureInfo.InvariantCulture);
 
         /// <summary>Companion detail line, same tick as Line, for locating the first changed field.</summary>
         public static string FieldsLine(MatchSim sim)
@@ -43,6 +43,6 @@ namespace BallBattle.Sim
             return s.ToString();
         }
 
-        static void Add(StringBuilder s, string prefix, string name, float value) => s.Append(prefix).Append(name).Append('=').Append(Bits(value));
+        static void Add(StringBuilder s, string prefix, string name, Fix value) => s.Append(prefix).Append(name).Append('=').Append(Bits(value));
     }
 }

@@ -78,7 +78,7 @@ namespace BallBattle.SimTests
                 var c = run.OfferCard(i);
                 var score = c.Kind switch
                 {
-                    CardKind.Heal => run.Build.Hp < run.Build.MaxHp * 0.5f ? 10 : 1,
+                    CardKind.Heal => run.Build.Hp < run.Build.MaxHp / 2 ? 10 : 1,
                     CardKind.Trait => c.Level == 2 ? 8 : 7,
                     CardKind.DamageUp => 6,
                     CardKind.MaxHp => 4,

@@ -16,10 +16,10 @@ namespace BallBattle.Tests
             var series = new Series("blade", "fang", 1454667u);
             var sim = new MatchSim(ArenaRegistry.Create(ArenaRegistry.Classic), series.CurrentRoundSeed,
                 new[] { WeaponRegistry.Create("blade"), WeaponRegistry.Create("fang") });
-            sim.Balls[0].Hp = 1.25f;
-            sim.Balls[1].Hp = -0.5f;
+            sim.Balls[0].Hp = TFix.X(1.25f);
+            sim.Balls[1].Hp = TFix.X(-0.5f);
             Assert.That(VersusRoundLog.Ended(series, sim), Is.EqualTo(
-                "[BallBattle] Versus round 1 ended: match seed 1454667, round seed 4134000519, blade vs fang, winner DRAW, tick 0, hp A=0x3FA00000/1.25 B=0xBF000000/-0.5"));
+                "[BallBattle] Versus round 1 ended: match seed 1454667, round seed 4134000519, blade vs fang, winner DRAW, tick 0, hp A=0x00014000/1.25 B=0xFFFF8000/-0.5"));
             LogAssert.Expect(LogType.Log, "[BallBattle] Versus seed forced: 1454667");
             Assert.That(GameController.NewVersusSeed(1454667u), Is.EqualTo(1454667u));
             Assert.That(DebugOptions.ParseTrace(new[] { "-bbTrace" }), Is.True);

@@ -121,15 +121,15 @@ namespace BallBattle.Tests
             Assert.That(rig.Flow.Run.Build.TraitLevel(SecondWindTrait.TraitId), Is.EqualTo(1));
 
             rig.Arena.TimeScale = 4f;
-            rig.Flow.Run.Build.DamagePct = 10f; // Reach the boss deterministically; restore for the fight under test.
+            rig.Flow.Run.Build.DamagePct = TFix.X(10f); // Reach the boss deterministically; restore for the fight under test.
             while (rig.Flow.Run.FightIndex < 4) PlayOneFight(rig);   // Shell King is fight 4
-            rig.Flow.Run.Build.DamagePct = 0f;
+            rig.Flow.Run.Build.DamagePct = TFix.X(0f);
             rig.Arena.TimeScale = 1f;
             Assert.That(rig.Flow.Current, Is.EqualTo(RunFlow.State.Prepare));
             Assert.That(rig.Flow.Run.History.Any(h => RunTuning.IsBoss(h.FightIndex)), Is.True, "the boss was fought");
 
             // Prepare of fight 4 at 41% HP, like the video; the screen redraws as on any change.
-            rig.Flow.Run.Build.SetHp(0.41f * rig.Flow.Run.Build.MaxHp);
+            rig.Flow.Run.Build.SetHp(TFix.X(0.41f) * rig.Flow.Run.Build.MaxHp);
             rig.Flow.Run.OfferCards[0] = OfferSlot.From(new Card(CardKind.DamageUp));   // a card can be taken, so FIGHT asks "SKIP FREE PICK?"
             rig.Run.Prepare.Show(rig.Flow.Run);
             var shownHp = rig.Run.Prepare.YouStats.Split(' ')[1].Split('/')[0];
@@ -148,7 +148,7 @@ namespace BallBattle.Tests
                 Assert.That(you.Weapon.Id, Is.EqualTo(BrawlerRule.WeaponId));
                 Assert.That(you.Traits.OfType<ThornsTrait>().Any(), Is.True);
             }
-            Assert.That(HpText.Of(you.Hp).ToString(), Is.EqualTo(shownHp), "countdown HP = Prepare HP");
+            Assert.That(HpText.Of(you.Hp.ToFloat()).ToString(), Is.EqualTo(shownHp), "countdown HP = Prepare HP");
             Assert.That(rig.Arena.Hud.HpText(0), Is.EqualTo(shownHp), "HUD during the countdown");
             var hp0 = you.Hp;
 
@@ -165,8 +165,8 @@ namespace BallBattle.Tests
             var guard = 0;
             while (countdownSim.Tick < 1 && guard++ < 10) rig.Step();
             Assert.That(rig.Arena.Sim, Is.SameAs(countdownSim), "the running match is the countdown match");
-            var heals = rig.Events.Where(e => e.Type == SimEventType.Heal && e.A == 0).Sum(e => e.Value);
-            Assert.That(you.Hp, Is.LessThanOrEqualTo(hp0 + heals + 0.001f), "no unexplained HP jump on the first tick");
+            var heals = rig.Events.Where(e => e.Type == SimEventType.Heal && e.A == 0).Sum(e => e.Value.ToFloat());
+            Assert.That(you.Hp.ToFloat(), Is.LessThanOrEqualTo(hp0.ToFloat() + heals + 0.001f), "no unexplained HP jump on the first tick");
             Assert.That(SecondWindOf(rig.Arena.Sim.Balls[0]), Is.SameAs(SecondWindOf(you)));
 
             // The whole fight: same match; Second Wind fires at <= 30% (one tick late at most) and never dies unused.
@@ -227,11 +227,11 @@ namespace BallBattle.Tests
             var report = FightReport.Build(match, stats, before, run);
             Assert.That(report.DamageDealt, Is.EqualTo(stats.Taken(1)), "DMG DEALT = all the enemy lost (hits, poison, reflect, arena)");
             if (match.WinnerIndex == 0 && match.EndReason == MatchEndReason.Knockout)
-                Assert.That(report.DamageDealt, Is.GreaterThanOrEqualTo(match.Balls[1].MaxHp * 0.99f), "a KO shows about the enemy's whole HP");
+                Assert.That(report.DamageDealt, Is.GreaterThanOrEqualTo(match.Balls[1].MaxHp.ToFloat() * 0.99f), "a KO shows about the enemy's whole HP");
             var next = run.CreateMatch().Balls[0];
-            Assert.That(report.MaxHpNext, Is.EqualTo(next.MaxHp), "HP NEXT FIGHT uses the real max HP");
-            Assert.That(report.MaxHpNext, Is.EqualTo(run.Build.MaxHp * (1f + TraitTuning.HeavyMaxHpPct[1])).Within(0.01f), "Heavy 2: not /100");
-            Assert.That(report.CarryLine, Does.Contain("/" + HpText.Of(next.MaxHp)));
+            Assert.That(report.MaxHpNext, Is.EqualTo(next.MaxHp.ToFloat()), "HP NEXT FIGHT uses the real max HP");
+            Assert.That(report.MaxHpNext, Is.EqualTo((run.Build.MaxHp * (Fix.One + TraitTuning.HeavyMaxHpPct[1])).ToFloat()).Within(0.01f), "Heavy 2: not /100");
+            Assert.That(report.CarryLine, Does.Contain("/" + HpText.Of(next.MaxHp.ToFloat())));
         }
 
         [Test]
@@ -247,7 +247,7 @@ namespace BallBattle.Tests
         [Test]
         public void TheRedLostSegmentStartsAtTheCurrentHp()
         {
-            var a = new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { MaxHp = 100f, Hp = 41f };
+            var a = new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { MaxHp = TFix.X(100f), Hp = TFix.X(41f) };
             var sim = new MatchSim(ArenaRegistry.Create(ArenaRegistry.Classic), 3, new[] { a, new BallLoadout(WeaponRegistry.Create(FangRule.WeaponId)) });
             var view = root.AddComponent<ArenaView>();
             view.Art = art;
@@ -282,7 +282,7 @@ namespace BallBattle.Tests
 
         (ArenaView view, FxView fx, MatchSim sim) Fight(float youHp)
         {
-            var a = new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { MaxHp = 100f, Hp = youHp }.With(TraitRegistry.Create(SecondWindTrait.TraitId, 1));
+            var a = new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)) { MaxHp = TFix.X(100f), Hp = TFix.X(youHp) }.With(TraitRegistry.Create(SecondWindTrait.TraitId, 1));
             var b = new BallLoadout(WeaponRegistry.Create(FangRule.WeaponId)).With(TraitRegistry.Create(VampireTrait.TraitId, 1));
             var sim = new MatchSim(ArenaRegistry.Create(ArenaRegistry.Classic), 6, new[] { a, b });
             sim.ApplySpawnHooks();
@@ -305,7 +305,7 @@ namespace BallBattle.Tests
             var normal = view.Badges.BoxColor(0, SecondWindTrait.TraitId).Value;
             view.Advance(Frame);
             view.Advance(Frame);
-            var label = "+" + fx.Popups.Format(TraitTuning.SecondWindHeal[0]);
+            var label = "+" + fx.Popups.Format(TraitTuning.SecondWindHeal[0].ToFloat());
             var number = fx.Popups.ShowingNow().FirstOrDefault(p => p.value == label);
             Assert.That(number.value, Is.EqualTo(label), "the heal number has a + sign");
             Assert.That(number.scale, Is.EqualTo(2));
@@ -343,14 +343,14 @@ namespace BallBattle.Tests
         {
             var (view, fx, sim) = Fight(80f);
             var on = typeof(FxView).GetMethod("OnSimEvent", BindingFlags.NonPublic | BindingFlags.Instance);
-            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.Heal, Tick = 1, A = 0, Value = 3.5f, Point = sim.Balls[0].Pos } });
+            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.Heal, Tick = 1, A = 0, Value = TFix.X(3.5f), Point = sim.Balls[0].Pos } });
             Assert.That(fx.ActiveRingPulses, Is.Zero, "a 3.5 heal (vampire, regen) is not Second Wind");
             Assert.That(fx.Popups.ShowingNow().Any(p => p.value == "3.5"), Is.True);
             Assert.That(view.Badges.IsSpent(0, SecondWindTrait.TraitId), Is.False);
-            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.TraitTriggered, TraitId = SecondWindTrait.TraitId, Tick = 2, A = 0, Value = 20f, Point = sim.Balls[0].Pos } });
-            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.TraitTriggered, TraitId = SecondWindTrait.TraitId, Tick = 3, A = 0, Value = 20f, Point = sim.Balls[0].Pos } });
+            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.TraitTriggered, TraitId = SecondWindTrait.TraitId, Tick = 2, A = 0, Value = TFix.X(20f), Point = sim.Balls[0].Pos } });
+            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.TraitTriggered, TraitId = SecondWindTrait.TraitId, Tick = 3, A = 0, Value = TFix.X(20f), Point = sim.Balls[0].Pos } });
             Assert.That(fx.ActiveRingPulses, Is.EqualTo(1), "once per fight");
-            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.Heal, Tick = 4, A = 1, Value = 20f, Point = sim.Balls[1].Pos } });
+            on.Invoke(fx, new object[] { new SimEvent { Type = SimEventType.Heal, Tick = 4, A = 1, Value = TFix.X(20f), Point = sim.Balls[1].Pos } });
             Assert.That(fx.ActiveRingPulses, Is.EqualTo(1), "the enemy has no Second Wind");
         }
 
@@ -363,7 +363,7 @@ namespace BallBattle.Tests
             while (sim.Outcome == MatchOutcome.Ongoing && !(bool)UsedField.GetValue(SecondWindOf(you)) && guard++ < 60 * 200) view.Advance(Frame);
             Assert.That((bool)UsedField.GetValue(SecondWindOf(you)), Is.True, "Second Wind fired in this fight");
             Assert.That(view.Badges.IsSpent(0, SecondWindTrait.TraitId), Is.True);
-            Assert.That(fx.Popups.LabelOf("+" + fx.Popups.Format(TraitTuning.SecondWindHeal[0])), Is.Not.Null);
+            Assert.That(fx.Popups.LabelOf("+" + fx.Popups.Format(TraitTuning.SecondWindHeal[0].ToFloat())), Is.Not.Null);
         }
 
         // ---- 3. Damage capped to the HP removed ----
@@ -376,15 +376,15 @@ namespace BallBattle.Tests
             sim.ApplySpawnHooks();
             var stats = new FightStats();
             stats.Reset(sim);
-            stats.Add(new SimEvent { Type = SimEventType.Hit, A = 1, B = 0, Value = 60f });
-            stats.Add(new SimEvent { Type = SimEventType.Heal, A = 0, Value = 10f });
-            stats.Add(new SimEvent { Type = SimEventType.Hit, A = 1, B = 0, Value = 70f });   // only 50 left: 20 overkill
+            stats.Add(new SimEvent { Type = SimEventType.Hit, A = 1, B = 0, Value = TFix.X(60f) });
+            stats.Add(new SimEvent { Type = SimEventType.Heal, A = 0, Value = TFix.X(10f) });
+            stats.Add(new SimEvent { Type = SimEventType.Hit, A = 1, B = 0, Value = TFix.X(70f) });   // only 50 left: 20 overkill
             Assert.That(stats.Taken(0), Is.EqualTo(110f));
             Assert.That(stats.DealtBySource(1), Is.EqualTo(110f));
-            stats.Add(new SimEvent { Type = SimEventType.StatusTick, A = 0, B = 1, Value = 5f });   // already at 0
+            stats.Add(new SimEvent { Type = SimEventType.StatusTick, A = 0, B = 1, Value = TFix.X(5f) });   // already at 0
             Assert.That(stats.Taken(0), Is.EqualTo(110f));
-            stats.Add(new SimEvent { Type = SimEventType.Heal, A = 0, Value = 20f });   // Second Wind save: back to 20
-            stats.Add(new SimEvent { Type = SimEventType.WallBounce, A = 0, Value = 25f });
+            stats.Add(new SimEvent { Type = SimEventType.Heal, A = 0, Value = TFix.X(20f) });   // Second Wind save: back to 20
+            stats.Add(new SimEvent { Type = SimEventType.WallBounce, A = 0, Value = TFix.X(25f) });
             Assert.That(stats.Taken(0), Is.EqualTo(130f), "after a save, counts again up to the HP it got back");
             Assert.That(stats.DealtBySource(1), Is.EqualTo(110f), "arena damage is nobody's");
             Assert.That(stats.Dealt(1), Is.EqualTo(stats.Taken(0)), "DMG DEALT = everything the opponent lost");

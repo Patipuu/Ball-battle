@@ -12,7 +12,7 @@ namespace BallBattle.Sim.Traits
         {
             if (++parries < TraitTuning.ParryMasterEvery[Level - 1]) return;
             parries = 0;
-            Self.Weapon.OnHit(new HitContext(Self.Vel.Length, 0f));
+            Self.Weapon.OnHit(new HitContext(Self.Vel.Length, Fix.Zero));
         }
 
         protected override ulong HashState(ulong h) => SimHash.Mix(h, parries);

@@ -6,10 +6,10 @@ namespace BallBattle.Sim
         public bool Active;
         /// <summary>Ball index that owns it (cannot hit or be deflected by its owner). Changes when deflected.</summary>
         public int Owner;
-        public Vec2 Pos;
-        public Vec2 Vel;
-        public float Radius;
-        public float Damage;
+        public FixVec2 Pos;
+        public FixVec2 Vel;
+        public Fix Radius;
+        public Fix Damage;
         /// <summary>Wall/obstacle bounces left; at 0 the next wall contact removes it.</summary>
         public int BouncesLeft;
         /// <summary>Ball hits left before it is removed (1 = stops at first ball).</summary>
@@ -17,7 +17,7 @@ namespace BallBattle.Sim
         /// <summary>Removed when this reaches 0 (counts active ticks).</summary>
         public int TicksLeft;
         /// <summary>Multiplier on MatchConfig.Gravity (0 = flies straight).</summary>
-        public float GravityScale;
+        public Fix GravityScale;
         /// <summary>Bit i set = already hit ball i (piercing shots hit each ball once).</summary>
         public int HitMask;
 
@@ -41,14 +41,14 @@ namespace BallBattle.Sim
     /// <summary>What a weapon or trait asks for when firing. Pos/Vel are filled by the caller.</summary>
     public struct ProjectileSpec
     {
-        public float Radius;
-        public float Damage;
+        public Fix Radius;
+        public Fix Damage;
         public int Bounces;
         /// <summary>Balls it can hit before it is removed; &lt;= 0 = 1.</summary>
         public int Hits;
         /// <summary>&lt;= 0 = ProjectilePool.DefaultLifetimeTicks.</summary>
         public int LifetimeTicks;
-        public float GravityScale;
+        public Fix GravityScale;
     }
 
     /// <summary>
@@ -71,7 +71,7 @@ namespace BallBattle.Sim
         internal ref Projectile At(int index) => ref items[index];
 
         /// <summary>Returns the slot index, or -1 when the pool is full (the shot is dropped).</summary>
-        internal int Spawn(int owner, Vec2 pos, Vec2 vel, in ProjectileSpec spec)
+        internal int Spawn(int owner, FixVec2 pos, FixVec2 vel, in ProjectileSpec spec)
         {
             for (var i = 0; i < Capacity; i++)
             {

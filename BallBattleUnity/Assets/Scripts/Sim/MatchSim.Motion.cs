@@ -1,24 +1,25 @@
-using System;
-
 namespace BallBattle.Sim
 {
     /// <summary>Substep budget and ball integration.</summary>
     public sealed partial class MatchSim
     {
+        /// <summary>π/180, nearest Fix (1144 raw); only used to size the substep budget.</summary>
+        static readonly Fix DegToRad = Fix.Ratio(355, 113 * 180);
+
         /// <summary>
         /// Enough substeps that per substep: no blade turns more than MaxSpinPerSubstepDeg, no ball moves
         /// more than half its radius, two blade tips cannot close faster than the parry reach (otherwise
         /// fast/long blades could pass through each other without a parry), and projectiles alive at the
         /// start of the tick move less than their radius plus the thinnest blade/obstacle half-width.
-        /// Capped at MaxSubsteps.
+        /// Capped at MaxSubsteps. Each count is the integer ceiling of the ratio.
         /// </summary>
         int SubstepCount()
         {
-            var maxSpin = 0f;
-            var maxSpeed = 0f;
-            var maxTipSpeed = 0f;
-            var minParryReach = float.MaxValue;
-            var minRadius = float.MaxValue;
+            var maxSpin = Fix.Zero;
+            var maxSpeed = Fix.Zero;
+            var maxTipSpeed = Fix.Zero;
+            var minParryReach = Fix.MaxValue;
+            var minRadius = Fix.MaxValue;
             foreach (var b in balls)
             {
                 if (!b.Alive) continue;
@@ -28,34 +29,33 @@ namespace BallBattle.Sim
                 var w = b.Weapon;
                 if (!w.HasBlade) continue;
                 if (w.SpinDegPerTick > maxSpin) maxSpin = w.SpinDegPerTick;
-                var tip = w.SpinDegPerTick * (MathF.PI / 180f) * (w.BladeInner + b.BladeShift + w.BladeLength);
+                var tip = w.SpinDegPerTick * DegToRad * (w.BladeInner + b.BladeShift + w.BladeLength);
                 if (tip > maxTipSpeed) maxTipSpeed = tip;
                 if (w.BladeThickness < minParryReach) minParryReach = w.BladeThickness;
             }
 
-            var bySpin = (int)MathF.Ceiling(maxSpin / Config.MaxSpinPerSubstepDeg);
-            var bySpeed = (int)MathF.Ceiling(maxSpeed / (minRadius * 0.5f));
-            var bySweep = maxTipSpeed > 0f ? (int)MathF.Ceiling((2f * maxTipSpeed + 2f * maxSpeed) / minParryReach) : 0;
-            bySpin = Math.Max(bySpin, bySweep);
-            var n = Math.Max(Config.MinSubsteps, Math.Max(bySpin, bySpeed));
-            n = Math.Max(n, ProjectileSubsteps(minParryReach));
-            return Math.Min(n, Config.MaxSubsteps);
+            var bySpin = FixMath.CeilDiv(maxSpin, Config.MaxSpinPerSubstepDeg);
+            var bySpeed = FixMath.CeilDiv(maxSpeed, minRadius / 2);
+            var bySweep = maxTipSpeed > Fix.Zero ? FixMath.CeilDiv(maxTipSpeed * 2 + maxSpeed * 2, minParryReach) : 0;
+            if (bySweep > bySpin) bySpin = bySweep;
+            var n = Config.MinSubsteps;
+            if (bySpin > n) n = bySpin;
+            if (bySpeed > n) n = bySpeed;
+            var byShots = ProjectileSubsteps(minParryReach);
+            if (byShots > n) n = byShots;
+            return n < Config.MaxSubsteps ? n : Config.MaxSubsteps;
         }
 
-        void Integrate(float dt)
+        /// <summary>One substep; cumulative quotient differences preserve the configured per-tick rates.</summary>
+        void Integrate(int substeps, int index)
         {
             foreach (var b in balls)
             {
                 if (!b.Alive) continue;
-                b.Vel.Y -= Config.Gravity * dt;
-                b.Pos += b.Vel * dt;
+                b.Vel.Y -= FixMath.SubstepPart(Config.Gravity, index, substeps);
+                b.Pos += FixMath.SubstepPart(b.Vel, index, substeps);
                 if (b.Weapon.HasBlade)
-                {
-                    var a = b.WeaponAngleDeg + b.SpinDir * b.Weapon.SpinDegPerTick * dt;
-                    a %= 360f;
-                    if (a < 0f) a += 360f;
-                    b.WeaponAngleDeg = a;
-                }
+                    b.WeaponAngleDeg = FixMath.Wrap(b.WeaponAngleDeg + FixMath.SubstepPart(b.Weapon.SpinDegPerTick * b.SpinDir, index, substeps), 360);
             }
         }
     }

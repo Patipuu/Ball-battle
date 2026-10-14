@@ -100,10 +100,10 @@ namespace BallBattle.View
         public void Render(ArenaRect arena, int activeTick, MatchConfig config, string arenaId)
         {
             // Snap edges to whole pixels so the frame never smears.
-            var l = Mathf.Round(arena.Left);
-            var r = Mathf.Round(arena.Right);
-            var b = Mathf.Round(arena.Bottom);
-            var t = Mathf.Round(arena.Top);
+            var l = Mathf.Round(arena.Left.ToFloat());
+            var r = Mathf.Round(arena.Right.ToFloat());
+            var b = Mathf.Round(arena.Bottom.ToFloat());
+            var t = Mathf.Round(arena.Top.ToFloat());
 
             ArtLibrary.ArenaArt look = default;
             var hasArt = art != null && arenaId != null && art.TryArena(arenaId, out look);
@@ -144,10 +144,10 @@ namespace BallBattle.View
 
             DrawObstacles(config.Layout ?? ArenaLayout.Empty);
 
-            var spikes = config.Layout != null && config.Layout.WallDamage > 0f;
+            var spikes = config.Layout != null && config.Layout.WallDamage > Fix.Zero;
             var baseColor = hasArt ? look.WallColor : (Color32)Palette.Wall;   // spike arena: normal walls, spikes only in the corner zones
             var closing = art != null ? art.ClosingWallColor : (Color32)Palette.WallWarning;
-            var zones = spikes ? ZoneSegments(config.Layout.SpikeCorners, l, b, r, t) : NoZones;
+            var zones = spikes ? ZoneSegments(config.Layout.SpikeCorners, arena) : NoZones;
             var teethArt = hasArt && art.SpikeTooth != null;
             DrawTeeth(teethArt ? zones : NoZones);
             DrawZoneStrips(teethArt ? NoZones : zones);
@@ -176,21 +176,32 @@ namespace BallBattle.View
         static readonly ZoneSegment[] NoZones = new ZoneSegment[0];
 
         /// <summary>
-        /// Spike zones of the rect (l,b,r,t) for the given corners: SpikeZoneNum/SpikeZoneDen of each wall from the corner, on both
-        /// walls meeting there (same rule as the sim's SpikeZones, drawn from the current, shrinking rect).
+        /// Spike zones of the sim rect <paramref name="arena"/> for the given corners, exactly as the sim defines them
+        /// (SpikeZones.Segments: SpikeZoneNum/SpikeZoneDen of each wall from the corner, on both walls meeting there, from the
+        /// current, shrinking rect), converted to floats for drawing. The wall line (At) is the rounded edge the frame draws.
         /// </summary>
-        public static ZoneSegment[] ZoneSegments(SpikeCorner corners, float l, float b, float r, float t)
+        public static ZoneSegment[] ZoneSegments(SpikeCorner corners, ArenaRect arena)
         {
-            var zx = (r - l) * ArenaTuning.SpikeZoneNum / ArenaTuning.SpikeZoneDen;
-            var zy = (t - b) * ArenaTuning.SpikeZoneNum / ArenaTuning.SpikeZoneDen;
-            var list = new System.Collections.Generic.List<ZoneSegment>();
-            void Add(ArenaWall wall, float from, float to, float at, float angle, bool horizontal) =>
-                list.Add(new ZoneSegment { Wall = wall, From = from, To = to, At = at, Angle = angle, Horizontal = horizontal });
-            if (SpikeZones.Has(corners, SpikeCorner.TopLeft)) { Add(ArenaWall.Top, l, l + zx, t, 0f, true); Add(ArenaWall.Left, t - zy, t, l, 90f, false); }
-            if (SpikeZones.Has(corners, SpikeCorner.TopRight)) { Add(ArenaWall.Top, r - zx, r, t, 0f, true); Add(ArenaWall.Right, t - zy, t, r, -90f, false); }
-            if (SpikeZones.Has(corners, SpikeCorner.BottomLeft)) { Add(ArenaWall.Bottom, l, l + zx, b, 180f, true); Add(ArenaWall.Left, b, b + zy, l, 90f, false); }
-            if (SpikeZones.Has(corners, SpikeCorner.BottomRight)) { Add(ArenaWall.Bottom, r - zx, r, b, 180f, true); Add(ArenaWall.Right, b, b + zy, r, -90f, false); }
-            return list.ToArray();
+            var segs = SpikeZones.Segments(arena, corners);
+            var l = Mathf.Round(arena.Left.ToFloat());
+            var r = Mathf.Round(arena.Right.ToFloat());
+            var b = Mathf.Round(arena.Bottom.ToFloat());
+            var t = Mathf.Round(arena.Top.ToFloat());
+            var list = new ZoneSegment[segs.Length];
+            for (var i = 0; i < segs.Length; i++)
+            {
+                var s = segs[i];
+                float at, angle;
+                switch (s.Wall)
+                {
+                    case ArenaWall.Top: at = t; angle = 0f; break;
+                    case ArenaWall.Bottom: at = b; angle = 180f; break;
+                    case ArenaWall.Left: at = l; angle = 90f; break;
+                    default: at = r; angle = -90f; break;
+                }
+                list[i] = new ZoneSegment { Wall = s.Wall, From = s.From.ToFloat(), To = s.To.ToFloat(), At = at, Angle = angle, Horizontal = s.Horizontal };
+            }
+            return list;
         }
 
         /// <summary>
@@ -263,18 +274,19 @@ namespace BallBattle.View
             for (var i = 0; i < layout.ObstacleCount; i++)
             {
                 var o = layout.Get(i);
-                var color = o.Damage > 0f ? SpikeColor : (o.Boost > 0f ? BumperColor : PostColor);
-                var steps = o.Shape == ObstacleShape.Circle ? 1 : Mathf.Max(1, Mathf.CeilToInt((o.B - o.A).Length));
+                var color = o.Damage > Fix.Zero ? SpikeColor : (o.Boost > Fix.Zero ? BumperColor : PostColor);
+                var steps = o.Shape == ObstacleShape.Circle ? 1 : Mathf.Max(1, Mathf.CeilToInt((o.B - o.A).Length.ToFloat()));
                 for (var s = 0; s < steps; s++)
                 {
-                    var c = o.Shape == ObstacleShape.Circle ? o.A : o.A + (o.B - o.A) * (s / (float)steps);
-                    var r = Mathf.RoundToInt(o.Radius);
+                    var a = new Vector2(o.A.X.ToFloat(), o.A.Y.ToFloat());
+                    var c = o.Shape == ObstacleShape.Circle ? a : a + (new Vector2(o.B.X.ToFloat(), o.B.Y.ToFloat()) - a) * (s / (float)steps);
+                    var r = Mathf.RoundToInt(o.Radius.ToFloat());
                     for (var dy = -r; dy < r; dy++)
                     {
                         var half = Mathf.Round(Mathf.Sqrt(r * r - (dy + 0.5f) * (dy + 0.5f)));
                         var row = Quad(obstacleRoot, "Row", pixelSprite, color, ObstacleOrder);
-                        var y = Mathf.Round(c.Y) + dy;
-                        Box(row, Mathf.Round(c.X) - half, y, Mathf.Round(c.X) + half, y + 1);
+                        var y = Mathf.Round(c.y) + dy;
+                        Box(row, Mathf.Round(c.x) - half, y, Mathf.Round(c.x) + half, y + 1);
                     }
                 }
             }

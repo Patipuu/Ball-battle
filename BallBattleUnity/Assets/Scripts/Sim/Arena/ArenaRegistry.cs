@@ -51,7 +51,7 @@ namespace BallBattle.Sim
             {
                 case Classic: break;
                 case Pillar:
-                    c.Layout = new ArenaLayout(new[] { Obstacle.Circle(new Vec2(0f, 0f), ArenaTuning.PillarRadius) });
+                    c.Layout = new ArenaLayout(new[] { Obstacle.Circle(FixVec2.Zero, ArenaTuning.PillarRadius) });
                     break;
                 case Bumpers:
                     var o = ArenaTuning.BumperOffset;
@@ -59,8 +59,8 @@ namespace BallBattle.Sim
                     var boost = ArenaTuning.BumperBoost;
                     c.Layout = new ArenaLayout(new[]
                     {
-                        Obstacle.Circle(new Vec2(-o, -o), rad, 0f, boost), Obstacle.Circle(new Vec2(o, -o), rad, 0f, boost),
-                        Obstacle.Circle(new Vec2(-o, o), rad, 0f, boost), Obstacle.Circle(new Vec2(o, o), rad, 0f, boost),
+                        Obstacle.Circle(new FixVec2(-o, -o), rad, Fix.Zero, boost), Obstacle.Circle(new FixVec2(o, -o), rad, Fix.Zero, boost),
+                        Obstacle.Circle(new FixVec2(-o, o), rad, Fix.Zero, boost), Obstacle.Circle(new FixVec2(o, o), rad, Fix.Zero, boost),
                     });
                     break;
                 case SpikeWalls:

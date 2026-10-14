@@ -209,13 +209,13 @@ namespace BallBattle.Tests
             var you = real.Balls[0];
             var foe = real.Balls[1];
             Assert.That(you.MaxHp, Is.GreaterThan(run.Build.MaxHp), "Heavy adds HP at spawn");
-            Assert.That(v.YouStats, Does.StartWith($"HP {HpText.Of(you.Hp)}/{HpText.Of(you.MaxHp)}"));
-            Assert.That(v.EnemyStats, Is.EqualTo(PrepareView.EnemyHpText(foe.Hp, foe.MaxHp)));
-            Assert.That(v.EnemyStats, Does.Contain(HpText.Of(foe.MaxHp).ToString()));
+            Assert.That(v.YouStats, Does.StartWith($"HP {HpText.Of(you.Hp.ToFloat())}/{HpText.Of(you.MaxHp.ToFloat())}"));
+            Assert.That(v.EnemyStats, Is.EqualTo(PrepareView.EnemyHpText(foe.Hp.ToFloat(), foe.MaxHp.ToFloat())));
+            Assert.That(v.EnemyStats, Does.Contain(HpText.Of(foe.MaxHp.ToFloat()).ToString()));
 
             Assert.That(v.ArenaLabel, Is.EqualTo("ARENA " + ArenaRegistry.Get(run.ArenaId).DisplayName));
             Assert.That(v.ArenaPreviewPieces, Is.GreaterThanOrEqualTo(2), "floor + wall at least");
-            Assert.That(v.EnemyIcon.bounds.size.x, Is.EqualTo(foe.Radius * 2f).Within(0.01f), "boss icon at its real size");
+            Assert.That(v.EnemyIcon.bounds.size.x, Is.EqualTo((foe.Radius * 2).ToFloat()).Within(0.01f), "boss icon at its real size");
         }
 
         // ---- 10. Taken cards look different ----
@@ -268,7 +268,7 @@ namespace BallBattle.Tests
             var foe = view.GetBallView(1);
             Assert.That(you.IsMarked, Is.True);
             Assert.That(foe.IsMarked, Is.False);
-            var top = you.transform.position.y + sim.Balls[0].Radius;
+            var top = you.transform.position.y + sim.Balls[0].Radius.ToFloat();
             Assert.That(you.MarkerArrowPosition.y, Is.GreaterThan(top), "arrow above the ball");
             Assert.That(you.MarkerArrowPosition.y, Is.LessThanOrEqualTo(top + 6f), "arrow close to the ball");
         }
@@ -291,8 +291,8 @@ namespace BallBattle.Tests
             Draw(view, 0f);
             var you = view.GetBallView(0);
             var boss = view.GetBallView(1);
-            Assert.That(boss.GetComponent<SpriteRenderer>().bounds.size.x, Is.EqualTo(RunTuning.BossRadius * 2f).Within(0.01f));
-            Assert.That(you.GetComponent<SpriteRenderer>().bounds.size.x, Is.EqualTo(sim.Balls[0].Radius * 2f).Within(0.01f));
+            Assert.That(boss.GetComponent<SpriteRenderer>().bounds.size.x, Is.EqualTo((RunTuning.BossRadius * 2).ToFloat()).Within(0.01f));
+            Assert.That(you.GetComponent<SpriteRenderer>().bounds.size.x, Is.EqualTo((sim.Balls[0].Radius * 2).ToFloat()).Within(0.01f));
             Assert.That(boss.NativeRadius * boss.Scale, Is.GreaterThan(you.NativeRadius * you.Scale), "bigger on screen (pre-drawn _48 at scale 1 since 3d)");
 
             boss.Flash(0.06f);
@@ -322,7 +322,7 @@ namespace BallBattle.Tests
         [Test]
         public void DamageNumbersStayFourPixelsInsideTheArena()
         {
-            var arena = ArenaRect.Centered(230f, 230f);
+            var arena = ArenaRect.Centered(TFix.X(230f), TFix.X(230f));
             var points = new[] { new Vector2(-200, 0), new Vector2(200, 0), new Vector2(0, 200), new Vector2(0, -200), new Vector2(114, 114), new Vector2(-114, -114), Vector2.zero };
             foreach (var scale in new[] { 1, 2 })
             foreach (var text in new[] { "7", "12.5", "100" })
@@ -333,10 +333,10 @@ namespace BallBattle.Tests
                 var left = p.x - w / 2;
                 var right = left + w;
                 var top = p.y + DamagePopups.Rise + PixelFontData.GlyphHeight * scale;
-                Assert.That(left, Is.GreaterThanOrEqualTo(arena.Left + DamagePopups.WallMargin), $"{text} x{scale} at {at}");
-                Assert.That(right, Is.LessThanOrEqualTo(arena.Right - DamagePopups.WallMargin), $"{text} x{scale} at {at}");
-                Assert.That(p.y, Is.GreaterThanOrEqualTo(arena.Bottom + DamagePopups.WallMargin), $"{text} x{scale} at {at}");
-                Assert.That(top, Is.LessThanOrEqualTo(arena.Top - DamagePopups.WallMargin), $"{text} x{scale} at {at}");
+                Assert.That(left, Is.GreaterThanOrEqualTo(arena.Left.ToFloat() + DamagePopups.WallMargin), $"{text} x{scale} at {at}");
+                Assert.That(right, Is.LessThanOrEqualTo(arena.Right.ToFloat() - DamagePopups.WallMargin), $"{text} x{scale} at {at}");
+                Assert.That(p.y, Is.GreaterThanOrEqualTo(arena.Bottom.ToFloat() + DamagePopups.WallMargin), $"{text} x{scale} at {at}");
+                Assert.That(top, Is.LessThanOrEqualTo(arena.Top.ToFloat() - DamagePopups.WallMargin), $"{text} x{scale} at {at}");
                 Assert.That(p.x, Is.EqualTo(Mathf.Round(p.x)));
                 Assert.That(p.y, Is.EqualTo(Mathf.Round(p.y)));
             }
@@ -393,8 +393,8 @@ namespace BallBattle.Tests
             run.Build.Traits.Add(new TraitSlot("glass-cannon", 2));
             run.Build.Traits.Add(new TraitSlot("parry-master", 2));
             run.Build.Traits.Add(new TraitSlot("second-wind", 2));
-            run.Build.DamagePct = 0.45f;
-            run.Build.SpeedPct = 0.3f;
+            run.Build.DamagePct = TFix.X(0.45f);
+            run.Build.SpeedPct = TFix.X(0.3f);
             var prepare = NewPrepare(run);
             AssertAllTextOnScreen(prepare.transform);
             prepare.PressFight();

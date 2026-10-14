@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using BallBattle.Sim;
 using BallBattle.Sim.Run;
 using NUnit.Framework;
 
@@ -9,17 +10,18 @@ namespace BallBattle.SimTests
     /// <summary>Tries alternative run tunings and prints bot win rates (diagnostic, not a gate).</summary>
     public class RunDifficultySweep
     {
-        static void Set(float[] dst, params float[] v) { for (var i = 0; i < v.Length; i++) dst[i] = v[i]; }
+        static void Set(Fix[] dst, params double[] v) { for (var i = 0; i < v.Length; i++) dst[i] = FT.X(v[i]); }
+        static void Set(Fix[] dst, Fix[] v) { for (var i = 0; i < v.Length; i++) dst[i] = v[i]; }
         static void Set(int[] dst, params int[] v) { for (var i = 0; i < v.Length; i++) dst[i] = v[i]; }
 
-        static float[] bossHp, enemyHp, level2;
+        static Fix[] bossHp, enemyHp, level2;
         static int[] bossTraits, minTraits, maxTraits;
-        static float winHeal, dmgCard, maxHpCard;
+        static Fix winHeal, dmgCard, maxHpCard;
 
         static void Snapshot()
         {
-            bossHp = (float[])RunTuning.BossHp.Clone(); enemyHp = (float[])RunTuning.EnemyHpPct.Clone();
-            level2 = (float[])RunTuning.EnemyLevel2Chance.Clone(); bossTraits = (int[])RunTuning.BossTraits.Clone();
+            bossHp = (Fix[])RunTuning.BossHp.Clone(); enemyHp = (Fix[])RunTuning.EnemyHpPct.Clone();
+            level2 = (Fix[])RunTuning.EnemyLevel2Chance.Clone(); bossTraits = (int[])RunTuning.BossTraits.Clone();
             minTraits = (int[])RunTuning.EnemyMinTraits.Clone(); maxTraits = (int[])RunTuning.EnemyMaxTraits.Clone();
             winHeal = RunTuning.WinHealPct; dmgCard = RunTuning.DamageCardPct; maxHpCard = RunTuning.MaxHpCardBonus;
         }
@@ -32,7 +34,7 @@ namespace BallBattle.SimTests
             RunTuning.WinHealPct = winHeal; RunTuning.DamageCardPct = dmgCard; RunTuning.MaxHpCardBonus = maxHpCard;
         }
 
-        [Test, Category("Diagnostic"), Explicit("long: dotnet test --filter Name=Sweep")]
+        [Test, Category("Diagnostic"), Category("Slow"), Explicit("long: dotnet test --filter Name=Sweep")]
         public void Sweep()
         {
             var configs = new (string name, Action apply)[]
@@ -42,35 +44,35 @@ namespace BallBattle.SimTests
                 {
                     Set(RunTuning.BossHp, 160f, 220f, 300f); Set(RunTuning.BossTraits, 0, 1, 2);
                     Set(RunTuning.EnemyMinTraits, 0, 0, 1); Set(RunTuning.EnemyMaxTraits, 0, 1, 2);
-                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = 0.3f;
+                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = FT.X(0.3f);
                 }),
                 ("C B + strong cards", () =>
                 {
                     Set(RunTuning.BossHp, 160f, 220f, 300f); Set(RunTuning.BossTraits, 0, 1, 2);
                     Set(RunTuning.EnemyMinTraits, 0, 0, 1); Set(RunTuning.EnemyMaxTraits, 0, 1, 2);
-                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = 0.3f;
-                    RunTuning.DamageCardPct = 0.25f; RunTuning.MaxHpCardBonus = 25f;
+                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = FT.X(0.3f);
+                    RunTuning.DamageCardPct = FT.X(0.25f); RunTuning.MaxHpCardBonus = FT.X(25f);
                 }),
                 ("D C + weaker bosses", () =>
                 {
                     Set(RunTuning.BossHp, 130f, 180f, 240f); Set(RunTuning.BossTraits, 0, 1, 2);
                     Set(RunTuning.EnemyMinTraits, 0, 0, 1); Set(RunTuning.EnemyMaxTraits, 0, 1, 2);
-                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = 0.3f;
-                    RunTuning.DamageCardPct = 0.25f; RunTuning.MaxHpCardBonus = 25f;
+                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = FT.X(0.3f);
+                    RunTuning.DamageCardPct = FT.X(0.25f); RunTuning.MaxHpCardBonus = FT.X(25f);
                 }),
                 ("E D + boss traits 1/1/2", () =>
                 {
                     Set(RunTuning.BossHp, 130f, 180f, 240f); Set(RunTuning.BossTraits, 1, 1, 2);
                     Set(RunTuning.EnemyMinTraits, 0, 0, 1); Set(RunTuning.EnemyMaxTraits, 0, 1, 2);
-                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = 0.3f;
-                    RunTuning.DamageCardPct = 0.25f; RunTuning.MaxHpCardBonus = 25f;
+                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = FT.X(0.3f);
+                    RunTuning.DamageCardPct = FT.X(0.25f); RunTuning.MaxHpCardBonus = FT.X(25f);
                 }),
                 ("F D + bosses 110/150/200", () =>
                 {
                     Set(RunTuning.BossHp, 110f, 150f, 200f); Set(RunTuning.BossTraits, 0, 1, 2);
                     Set(RunTuning.EnemyMinTraits, 0, 0, 1); Set(RunTuning.EnemyMaxTraits, 0, 1, 2);
-                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = 0.3f;
-                    RunTuning.DamageCardPct = 0.25f; RunTuning.MaxHpCardBonus = 25f;
+                    Set(RunTuning.EnemyHpPct, 0f, 0f, 0.1f); RunTuning.WinHealPct = FT.X(0.3f);
+                    RunTuning.DamageCardPct = FT.X(0.25f); RunTuning.MaxHpCardBonus = FT.X(25f);
                 }),
             };
 

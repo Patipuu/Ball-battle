@@ -310,7 +310,7 @@ namespace BallBattle.Tests
         {
             var store = new MemorySaveStore();
             var flow = FlowWithSavedRun(store);
-            var savedSeed = store.Load().Run.Seed;
+            var savedSeed = store.Load().Run.ToRun().Seed;
             var title = RunTitleView.Create(root.transform, art);
             var starts = 0;
             title.NewRunRequested += () => starts++;
@@ -320,7 +320,7 @@ namespace BallBattle.Tests
             Spam(RunTitleView.NewRunArea.center, src);
             Assert.That(title.DialogOpen, Is.True);
             Assert.That(starts, Is.Zero, "the saved run is kept");
-            Assert.That(store.Load().Run.Seed, Is.EqualTo(savedSeed));
+            Assert.That(store.Load().Run.ToRun().Seed, Is.EqualTo(savedSeed));
         }
     }
 }

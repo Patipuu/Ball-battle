@@ -157,19 +157,19 @@ namespace BallBattle.Tests
             foreach (var tick in new[] { 0, config.ShrinkStartTick + config.ShrinkDurationTicks / 2, config.ShrinkStartTick + config.ShrinkDurationTicks })
             {
                 var r = config.ArenaAt(tick);
-                var zones = ArenaFrameView.ZoneSegments(config.Layout.SpikeCorners, r.Left, r.Bottom, r.Right, r.Top);
+                var zones = ArenaFrameView.ZoneSegments(config.Layout.SpikeCorners, r);
                 Assert.That(zones.Length, Is.EqualTo(4), "TL + BR, two walls each");
                 foreach (var z in zones)
                 {
                     var wall = z.Horizontal ? r.Width : r.Height;
-                    Assert.That(z.Length, Is.EqualTo(wall / 5f).Within(1e-3f), $"{z.Wall} at tick {tick}");
+                    Assert.That(z.Length, Is.EqualTo((wall / 5).ToFloat()).Within(1e-3f), $"{z.Wall} at tick {tick}");
                 }
-                Assert.That(zones.Any(z => z.Wall == ArenaWall.Top && Mathf.Approximately(z.From, r.Left)), "TL on the top wall");
-                Assert.That(zones.Any(z => z.Wall == ArenaWall.Left && Mathf.Approximately(z.To, r.Top)), "TL on the left wall");
-                Assert.That(zones.Any(z => z.Wall == ArenaWall.Bottom && Mathf.Approximately(z.To, r.Right)), "BR on the floor");
-                Assert.That(zones.Any(z => z.Wall == ArenaWall.Right && Mathf.Approximately(z.From, r.Bottom)), "BR on the right wall");
+                Assert.That(zones.Any(z => z.Wall == ArenaWall.Top && Mathf.Approximately(z.From, r.Left.ToFloat())), "TL on the top wall");
+                Assert.That(zones.Any(z => z.Wall == ArenaWall.Left && Mathf.Approximately(z.To, r.Top.ToFloat())), "TL on the left wall");
+                Assert.That(zones.Any(z => z.Wall == ArenaWall.Bottom && Mathf.Approximately(z.To, r.Right.ToFloat())), "BR on the floor");
+                Assert.That(zones.Any(z => z.Wall == ArenaWall.Right && Mathf.Approximately(z.From, r.Bottom.ToFloat())), "BR on the right wall");
             }
-            Assert.That(ArenaFrameView.ZoneSegments(SpikeCorner.All, -100, -100, 100, 100).Length, Is.EqualTo(8));
+            Assert.That(ArenaFrameView.ZoneSegments(SpikeCorner.All, ArenaRect.Centered(200, 200)).Length, Is.EqualTo(8));
         }
 
         [Test]
@@ -181,10 +181,10 @@ namespace BallBattle.Tests
             {
                 var r = config.ArenaAt(tick);
                 frame.Render(r, tick, config, ArenaRegistry.SpikeWalls);
-                var zones = ArenaFrameView.ZoneSegments(config.Layout.SpikeCorners, Mathf.Round(r.Left), Mathf.Round(r.Bottom), Mathf.Round(r.Right), Mathf.Round(r.Top));
+                var zones = ArenaFrameView.ZoneSegments(config.Layout.SpikeCorners, r);
                 var expected = zones.Sum(z => Mathf.FloorToInt(z.Length / ArenaFrameView.ToothSpacing));
                 Assert.That(frame.TeethShown, Is.EqualTo(expected), $"tick {tick}");
-                var all4 = 2 * Mathf.FloorToInt(r.Width / ArenaFrameView.ToothSpacing) + 2 * Mathf.FloorToInt(r.Height / ArenaFrameView.ToothSpacing);
+                var all4 = 2 * Mathf.FloorToInt((r.Width / ArenaFrameView.ToothSpacing).ToFloat()) + 2 * Mathf.FloorToInt((r.Height / ArenaFrameView.ToothSpacing).ToFloat());
                 Assert.That(frame.TeethShown, Is.LessThan(all4 / 2), "not along whole walls");
             }
             art.TryArena(ArenaRegistry.SpikeWalls, out var look);
@@ -200,7 +200,7 @@ namespace BallBattle.Tests
             Assert.That(AudioDirector.WallBounceCue(0f, id => true), Is.EqualTo(AudioIds.Wall), "harmless bounce");
             Assert.That(lib.Has(AudioIds.SpikeHit), Is.False, "no spike_hit clip added");
             var d = AudioDirector.Create(root.transform, lib, new MemorySaveStore());
-            d.OnSimEvent(new SimEvent { Type = SimEventType.WallBounce, Tick = 4, A = 0, B = -1, Value = 3f }, null);
+            d.OnSimEvent(new SimEvent { Type = SimEventType.WallBounce, Tick = 4, A = 0, B = -1, Value = TFix.X(3f) }, null);
             Assert.That(d.Played.Select(p => p.Id), Is.EqualTo(new[] { AudioIds.Wall }), "one cue, never both");
         }
     }

@@ -130,8 +130,8 @@ namespace BallBattle.View
             secondWindShown[e.A] = true;
             secondWindTick[e.A] = e.Tick;
             var ball = arena.Sim.Balls[e.A];
-            var at = V(ball.Pos) + new Vector2(0f, ball.Radius + 4f);
-            popups.ShowLabelled(at, "+" + popups.Format(e.Value), SecondWindColor, 2, SecondWindLabel, SecondWindLabelColor, arena.Sim.Arena);
+            var at = V(ball.Pos) + new Vector2(0f, ball.Radius.ToFloat() + 4f);
+            popups.ShowLabelled(at, "+" + popups.Format(e.Value.ToFloat()), SecondWindColor, 2, SecondWindLabel, SecondWindLabelColor, arena.Sim.Arena);
             StartRing(e.A);
             arena.Badges?.SetSpent(e.A, SecondWindTrait.TraitId, true);
         }
@@ -196,7 +196,7 @@ namespace BallBattle.View
 
         Color32 BallColor(int index) => Palette.Look(arena.Sim.Balls[index].Weapon.Id).Body;
 
-        static Vector2 V(Vec2 p) => new Vector2(p.X, p.Y);
+        static Vector2 V(FixVec2 p) => new Vector2(p.X.ToFloat(), p.Y.ToFloat());
 
         void OnSimEvent(SimEvent e)
         {
@@ -209,9 +209,9 @@ namespace BallBattle.View
                 {
                     var target = arena.Sim.Balls[e.B];
                     arena.GetBallView(e.B)?.Flash(FlashSeconds);
-                    particles.Burst(V(e.Point), e.Value >= 5f ? 7 : 5, BallColor(e.A), 50f, 110f, 0.35f, e.Value >= 5f ? 2 : 1);
-                    ShowPopup(V(target.Pos) + new Vector2(0f, target.Radius + 4f), e.Value, Palette.Text);
-                    shake?.Add(Mathf.Clamp(1f + e.Value / 6f, 1f, ScreenShake.MaxAmplitude), 0.15f);
+                    particles.Burst(V(e.Point), e.Value.ToFloat() >= 5f ? 7 : 5, BallColor(e.A), 50f, 110f, 0.35f, e.Value.ToFloat() >= 5f ? 2 : 1);
+                    ShowPopup(V(target.Pos) + new Vector2(0f, target.Radius.ToFloat() + 4f), e.Value.ToFloat(), Palette.Text);
+                    shake?.Add(Mathf.Clamp(1f + e.Value.ToFloat() / 6f, 1f, ScreenShake.MaxAmplitude), 0.15f);
                     break;
                 }
                 case SimEventType.Parry:
@@ -223,12 +223,12 @@ namespace BallBattle.View
                     particles.Burst(V(e.Point), 2, BallColor(e.A), 20f, 50f, 0.15f);
                     break;
                 case SimEventType.ProjectileHit:
-                    if (e.Value > 0f)
+                    if (e.Value.ToFloat() > 0f)
                     {
                         var hurt = arena.Sim.Balls[e.B];
                         arena.GetBallView(e.B)?.Flash(FlashSeconds);
                         particles.Burst(V(e.Point), 4, BallColor(e.A), 40f, 90f, 0.25f);
-                        ShowPopup(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), e.Value, Palette.Text);
+                        ShowPopup(V(hurt.Pos) + new Vector2(0f, hurt.Radius.ToFloat() + 4f), e.Value.ToFloat(), Palette.Text);
                     }
                     break;
                 case SimEventType.ProjectileDeflected:
@@ -238,7 +238,7 @@ namespace BallBattle.View
                 {
                     var sick = arena.Sim.Balls[e.A];
                     particles.Burst(V(sick.Pos), 3, StatusPoison, 20f, 60f, 0.3f);
-                    ShowPopup(V(sick.Pos) + new Vector2(0f, sick.Radius + 4f), e.Value, StatusPoison);
+                    ShowPopup(V(sick.Pos) + new Vector2(0f, sick.Radius.ToFloat() + 4f), e.Value.ToFloat(), StatusPoison);
                     break;
                 }
                 case SimEventType.ShieldBlocked:
@@ -247,10 +247,10 @@ namespace BallBattle.View
                     break;
                 case SimEventType.Heal:
                     if (e.A >= 0 && e.A < secondWindTick.Length && secondWindTick[e.A] == e.Tick) break;
-                    if (e.Value >= 0.5f)
+                    if (e.Value.ToFloat() >= 0.5f)
                     {
                         var healed = arena.Sim.Balls[e.A];
-                        ShowPopup(V(healed.Pos) + new Vector2(0f, healed.Radius + 4f), e.Value, StatusHeal);
+                        ShowPopup(V(healed.Pos) + new Vector2(0f, healed.Radius.ToFloat() + 4f), e.Value.ToFloat(), StatusHeal);
                         particles.Burst(V(healed.Pos), 3, StatusHeal, 15f, 50f, 0.4f);
                     }
                     break;
@@ -258,14 +258,14 @@ namespace BallBattle.View
                     if (e.TraitId == SecondWindTrait.TraitId) ShowSecondWind(e);
                     break;
                 case SimEventType.ObstacleHit:
-                    if (e.Value > 0f)
+                    if (e.Value.ToFloat() > 0f)
                     {
                         particles.Burst(V(e.Point), 4, Palette.Hot, 40f, 100f, 0.25f);
-                        ShowPopup(V(e.Point), e.Value, Palette.Hot);
+                        ShowPopup(V(e.Point), e.Value.ToFloat(), Palette.Hot);
                     }
                     break;
                 case SimEventType.WallBounce:
-                    if (e.Value > 0f) ShowPopup(V(arena.Sim.Balls[e.A].Pos), e.Value, Palette.Hot);
+                    if (e.Value.ToFloat() > 0f) ShowPopup(V(arena.Sim.Balls[e.A].Pos), e.Value.ToFloat(), Palette.Hot);
                     break;
                 case SimEventType.BallBounce:
                     break;
@@ -323,14 +323,14 @@ namespace BallBattle.View
 
             // The ball the damage came BACK to (d.B) shows it: 1 px magenta edge, body keeps its weapon color.
             arena.GetBallView(d.B)?.FlashEdge(ReflectFlashSeconds, ReflectColor);
-            ShowPopup(V(hurt.Pos) + new Vector2(0f, hurt.Radius + 4f), d.Value, ReflectColor, ReflectNumberScale);
+            ShowPopup(V(hurt.Pos) + new Vector2(0f, hurt.Radius.ToFloat() + 4f), d.Value.ToFloat(), ReflectColor, ReflectNumberScale);
 
             // 3-4 magenta motes fly from the reflecting ball to the one it hurts (spikes for Thorns).
             var to = V(hurt.Pos);
-            var count = d.Value >= 2f ? 4 : 3;
+            var count = d.Value.ToFloat() >= 2f ? 4 : 3;
             for (var k = 0; k < count; k++)
             {
-                var start = V(src.Pos) + Random.insideUnitCircle * (src.Radius * 0.6f);
+                var start = V(src.Pos) + Random.insideUnitCircle * (src.Radius.ToFloat() * 0.6f);
                 var flight = ReflectFlightSeconds * Random.Range(0.85f, 1.15f);
                 var travel = to - start;
                 var vel = travel / flight;
@@ -380,7 +380,7 @@ namespace BallBattle.View
             public bool UsesAegis(int ball) => Ball(ball)?.Weapon is AegisRule;
             public bool HasThorns(int ball) => Has(Ball(ball), ThornsTrait.TraitId);
             public bool HasSpiky(int ball) => Has(Ball(ball), SpikyTrait.TraitId);
-            public Vec2 Center(int ball) => Ball(ball)?.Pos ?? Vec2.Zero;
+            public FixVec2 Center(int ball) => Ball(ball)?.Pos ?? FixVec2.Zero;
 
             static bool Has(BallState b, string traitId)
             {

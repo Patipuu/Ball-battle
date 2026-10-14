@@ -12,7 +12,7 @@ namespace BallBattle.Sim.Run
         public bool Draw;
         public bool Retry;
         public string EnemyWeapon;
-        public float HpAfter;
+        public Fix HpAfter;
     }
 
     /// <summary>Serializable form of a Card (Card itself is an immutable struct).</summary>
@@ -35,7 +35,7 @@ namespace BallBattle.Sim.Run
         {
             if (run == null || run.Build == null || run.Over) return false;
             if (run.FightIndex < 0 || run.FightIndex >= RunTuning.Fights || run.RetryCount < 0 || run.RetryCount > RunTuning.Retries) return false;
-            if (!WeaponExists(run.Build.WeaponId) || run.Build.MaxHp <= 0f || run.Build.Hp <= 0f) return false;
+            if (!WeaponExists(run.Build.WeaponId) || run.Build.MaxHp <= Fix.Zero || run.Build.Hp <= Fix.Zero) return false;
             if (run.Build.Traits.Count > RunTuning.MaxTraits) return false;
             foreach (var t in run.Build.Traits)
                 if (!TraitRegistry.Exists(t.Id) || t.Level < 1 || t.Level > RunTuning.MaxTraitLevel) return false;

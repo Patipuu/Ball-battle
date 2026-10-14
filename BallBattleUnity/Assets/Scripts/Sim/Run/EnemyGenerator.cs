@@ -42,7 +42,7 @@ namespace BallBattle.Sim.Run
                 var min = RunTuning.EnemyMinTraits[stage];
                 var max = RunTuning.EnemyMaxTraits[stage];
                 traitCount = min + (int)(rng.NextUInt() % (uint)(max - min + 1));
-                e.MaxHp = RunTuning.PlayerStartHp * (1f + RunTuning.EnemyHpPct[stage]);
+                e.MaxHp = RunTuning.PlayerStartHp * (Fix.One + RunTuning.EnemyHpPct[stage]);
             }
             e.Hp = e.MaxHp;
 
@@ -57,7 +57,7 @@ namespace BallBattle.Sim.Run
                 var i = (int)(rng.NextUInt() % (uint)eligible.Count);
                 while (used[i]) i = (i + 1) % eligible.Count;
                 used[i] = true;
-                var level = rng.NextFloat01() < RunTuning.EnemyLevel2Chance[stage] ? 2 : 1;
+                var level = rng.NextFix01() < RunTuning.EnemyLevel2Chance[stage] ? 2 : 1;
                 e.Traits.Add(new TraitSlot(eligible[i], level));
             }
             return e;

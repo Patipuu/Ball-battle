@@ -1,8 +1,6 @@
-using System;
-
 namespace BallBattle.Sim
 {
-    /// <summary>FNV-1a 64-bit over exact bit patterns, for replay/determinism checks.</summary>
+    /// <summary>FNV-1a 64-bit over exact bit patterns (Fix raw values), for replay/determinism checks.</summary>
     public static class SimHash
     {
         public const ulong Seed = 14695981039346656037UL;
@@ -19,12 +17,9 @@ namespace BallBattle.Sim
         }
 
         public static ulong Mix(ulong h, int value) => Mix(h, unchecked((uint)value));
-
-        public static ulong Mix(ulong h, float value) => Mix(h, BitConverter.SingleToInt32Bits(value));
-
+        public static ulong Mix(ulong h, Fix value) => Mix(h, value.Raw);
         public static ulong Mix(ulong h, bool value) => Mix(h, value ? 1 : 0);
-
-        public static ulong Mix(ulong h, Vec2 v) => Mix(Mix(h, v.X), v.Y);
+        public static ulong Mix(ulong h, FixVec2 v) => Mix(Mix(h, v.X.Raw), v.Y.Raw);
 
         /// <summary>Mixes a string's UTF-16 code units (no allocation).</summary>
         public static ulong Mix(ulong h, string s)
