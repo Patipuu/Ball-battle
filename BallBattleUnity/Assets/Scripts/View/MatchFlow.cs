@@ -19,6 +19,19 @@ namespace BallBattle.View
         public State Current { get; private set; } = State.Menu;
         public Series Series { get; private set; }
         public int LastRoundWinner { get; private set; } = -1;
+
+        /// <summary>
+        /// Debug (-bbForceDraw, BB-SFX2): the first round to resolve is reported as a draw and ends the whole match as a draw
+        /// (the Result screen follows the normal pause), so the draw flow can be tested. Off by default; View only (the
+        /// match itself plays as usual, only its result is replaced). Run mode has its own flow and never reads it.
+        /// </summary>
+        public bool ForceDraw { get; set; }
+
+        /// <summary>The match ended as a draw (only with <see cref="ForceDraw"/>; a normal drawn round is replayed).</summary>
+        public bool EndedInDraw { get; private set; }
+
+        /// <summary>The winner the rest of the View should use for a round that ended with <paramref name="winner"/>.</summary>
+        public int ReportedWinner(int winner) => ForceDraw ? -1 : winner;
         float timer;
 
         /// <summary>A round must be set up (weapon A, weapon B, round seed) and shown frozen during the countdown.</summary>
@@ -53,6 +66,7 @@ namespace BallBattle.View
         {
             Series = new Series(weaponA, weaponB, matchSeed);
             LastRoundWinner = -1;
+            EndedInDraw = false;
             PrepareRound();
         }
 
@@ -80,8 +94,10 @@ namespace BallBattle.View
         public void OnRoundEnded(int winner)
         {
             if (Current != State.Playing) return;
+            winner = ReportedWinner(winner);
             LastRoundWinner = winner;
             Series.ReportRound(winner);
+            if (ForceDraw) EndedInDraw = true;
             Current = State.RoundOver;
             timer = RoundOverSeconds;
         }
@@ -101,7 +117,7 @@ namespace BallBattle.View
                 case State.RoundOver:
                     timer -= dt;
                     if (timer > 0f) break;
-                    if (Series.IsOver)
+                    if (Series.IsOver || EndedInDraw)
                     {
                         Current = State.Result;
                         SeriesFinished?.Invoke();

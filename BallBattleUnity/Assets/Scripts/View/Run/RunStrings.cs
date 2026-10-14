@@ -67,6 +67,9 @@ namespace BallBattle.View
         /// <summary>EN "LOSE ONCE: FREE PICK  RETRY AT 60% HP"; VI "THUA LẦN 1: CHỌN THẺ MIỄN PHÍ  ĐẤU LẠI VỚI 60% HP".</summary>
         public static string LoseOnceIn(Lang lang) => StringTable.Format(StringKeys.LoseOnce, lang, RetryHealPercent);
 
+        /// <summary>Versus match ended as a draw (-bbForceDraw): EN "DRAW", VI "HÒA".</summary>
+        public static string VersusDraw => StringTable.Get(StringKeys.VersusDraw);
+
         /// <summary>Start pick footer: "NO REROLL ON START PICK".</summary>
         public static string StartPickNoReroll => StringTable.Get(StringKeys.StartPickNoReroll);
 

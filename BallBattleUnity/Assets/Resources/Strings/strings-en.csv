@@ -4,3 +4,4 @@ run.boss_at.one,BOSS AT FIGHT {0}
 run.boss_at.two,BOSS AT FIGHTS {0} AND {1}
 run.boss_at.many,BOSS AT FIGHTS {0}
 run.lose_once,LOSE ONCE: FREE PICK  RETRY AT {0}% HP
+versus.draw,DRAW

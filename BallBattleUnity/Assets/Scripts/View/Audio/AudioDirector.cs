@@ -86,6 +86,7 @@ namespace BallBattle.View
             d.MusicVolume = m;
             d.SfxVolume = s;
             UiAudio.Requested += d.OnUiRequested;
+            AudioLog.AnnounceOnce();
             d.ApplyMusic(d.Clock());
             return d;
         }
@@ -165,6 +166,7 @@ namespace BallBattle.View
 
         public void OnSimEvent(SimEvent e, MatchSim sim)
         {
+            TrackHp(e, sim);
             switch (e.Type)
             {
                 case SimEventType.Hit:
@@ -186,13 +188,15 @@ namespace BallBattle.View
                     RequestCue(AudioIds.Wall, e.Tick, 0.12f, 1.7f);   // six turrets fire together: one sound
                     break;
                 case SimEventType.WallBounce:
-                    RequestCue(WallBounceCue(e.Value.ToFloat(), Has), e.Tick, 0.2f);
+                    RequestHazard(e, sim, WallBounceVolume, 1f);
                     break;
                 case SimEventType.BallBounce:
                     RequestCue(AudioIds.Wall, e.Tick, 0.35f, 0.8f);
                     break;
                 case SimEventType.ObstacleHit:
-                    RequestCue(AudioIds.Wall, e.Tick, 0.25f, e.Value.ToFloat() > 0f ? 0.7f : 1.2f);
+                    // Damaging obstacle: spike_hit (or wall) at pitch 1.0 + the normal jitter (BB-SFX2: no 0.7 pitch-down).
+                    // Harmless bumper / pillar: wall at pitch 1.2, as before.
+                    RequestHazard(e, sim, ObstacleVolume, e.Value.ToFloat() > 0f ? 1f : ObstacleHarmlessPitch);
                     break;
                 case SimEventType.Death:
                     RequestCue(AudioIds.Death, e.Tick, 0.9f);
@@ -205,14 +209,69 @@ namespace BallBattle.View
 
         bool Has(string id) => library != null && library.Has(id);
 
+        // ---------------- hazards: wall bounces and obstacle hits (BB-SFX2) ----------------
+
+        /// <summary>Volume of every WallBounce cue (wall or spike_hit).</summary>
+        public const float WallBounceVolume = 0.2f;
+        /// <summary>Volume of every ObstacleHit cue (wall or spike_hit).</summary>
+        public const float ObstacleVolume = 0.25f;
+        /// <summary>Pitch of a harmless obstacle (bumper / pillar) bounce.</summary>
+        public const float ObstacleHarmlessPitch = 1.2f;
+
+        /// <summary>
+        /// The one cue of a WallBounce / ObstacleHit: spike_hit when it dealt damage and the clip exists, else wall. Pure; exactly
+        /// one id per event, never both. Any other event type gets wall.
+        /// </summary>
+        public static string HazardCue(SimEventType type, float damage, Func<string, bool> hasClip) =>
+            (type == SimEventType.WallBounce || type == SimEventType.ObstacleHit) && damage > 0f && hasClip != null && hasClip(AudioIds.SpikeHit)
+                ? AudioIds.SpikeHit : AudioIds.Wall;
+
         /// <summary>A bounce that took spike damage plays spike_hit when that clip exists, else the plain wall sound (never both).</summary>
-        public static string WallBounceCue(float spikeDamage, Func<string, bool> hasClip) =>
-            spikeDamage > 0f && hasClip != null && hasClip(AudioIds.SpikeHit) ? AudioIds.SpikeHit : AudioIds.Wall;
+        public static string WallBounceCue(float spikeDamage, Func<string, bool> hasClip) => HazardCue(SimEventType.WallBounce, spikeDamage, hasClip);
+
+        void RequestHazard(SimEvent e, MatchSim sim, float volume, float pitch)
+        {
+            var damage = e.Value.ToFloat();
+            var id = HazardCue(e.Type, damage, Has);
+            var allowed = RequestCue(id, e.Tick, volume, pitch);
+            if (AudioLog.Enabled) AudioLog.Write(AudioLog.Line(e, sim, damage, LastHpChangeTick(e.A), id, allowed), this);
+        }
+
+        // HP as the View last saw it, per ball: the tick it last changed (for the audio log).
+        float[] seenHp = new float[0];
+        int[] hpChangedAt = new int[0];
+
+        void TrackHp(SimEvent e, MatchSim sim)
+        {
+            if (sim == null) return;
+            var n = sim.Balls.Count;
+            if (seenHp.Length != n)
+            {
+                seenHp = new float[n];
+                hpChangedAt = new int[n];
+                for (var i = 0; i < n; i++) { seenHp[i] = sim.Balls[i].Hp.ToFloat(); hpChangedAt[i] = -1; }
+            }
+            for (var i = 0; i < n; i++)
+            {
+                var hp = sim.Balls[i].Hp.ToFloat();
+                if (hp == seenHp[i]) continue;
+                seenHp[i] = hp;
+                hpChangedAt[i] = e.Tick;
+            }
+        }
+
+        /// <summary>Tick at which ball <paramref name="ball"/>'s HP last changed as seen by the View (-1 = not since the match began).</summary>
+        public int LastHpChangeTick(int ball) => ball >= 0 && ball < hpChangedAt.Length ? hpChangedAt[ball] : -1;
+
+        /// <summary>Lines written by the audio log for this director (bounded like Played; tests).</summary>
+        public readonly List<string> LogLines = new List<string>();
 
         /// <summary>A new match on the arena: tick numbers restart; a fight track faded by the last knockout comes back.</summary>
         public void OnMatchStarted()
         {
             simGate.Reset();
+            seenHp = new float[0];
+            hpChangedAt = new int[0];
             pendingResult = null;
             var track = AudioIds.TrackFor(screen);
             if (AudioIds.IsFightTrack(track)) Music.Request(track);

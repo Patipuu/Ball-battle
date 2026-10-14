@@ -105,7 +105,7 @@ namespace BallBattle.View
                 resultPanel.SetActive(state == MatchFlow.State.Result);
                 if (state == MatchFlow.State.Result)
                 {
-                    FillResult(s);
+                    FillResult(s, flow.EndedInDraw);
                     // The tap that lands as the panel appears (on the round banner, say) must not press REMATCH under it.
                     PixelInput.BlockFor(ResultInputBlockSeconds);
                     PixelButton.NoteShownAll(resultPanel.transform);
@@ -116,7 +116,7 @@ namespace BallBattle.View
 
             // Rebuild the score string only when it changes (no per-frame garbage).
             // No "ROUND n" line once the series is decided (the pause after the deciding round, and the result).
-            var scoreKey = state == MatchFlow.State.Result || s.IsOver ? -1 : s.DisplayRound * 10000 + s.WinsA * 100 + s.WinsB;
+            var scoreKey = state == MatchFlow.State.Result || s.IsOver || flow.EndedInDraw ? -1 : s.DisplayRound * 10000 + s.WinsA * 100 + s.WinsB;
             if (scoreKey != lastScoreKey)
             {
                 lastScoreKey = scoreKey;
@@ -142,7 +142,8 @@ namespace BallBattle.View
             if (bannerBand.enabled != showBanner)
             {
                 bannerBand.enabled = showBanner;
-                banner.Set(showBanner ? RoundText(s, flow.LastRoundWinner) : "", showBanner ? BannerColor(s, flow.LastRoundWinner) : default);
+                banner.Set(showBanner ? (flow.EndedInDraw ? RunStrings.VersusDraw : RoundText(s, flow.LastRoundWinner)) : "",
+                           showBanner ? BannerColor(s, flow.LastRoundWinner) : default);
             }
         }
 
@@ -158,8 +159,18 @@ namespace BallBattle.View
         static Color32 BannerColor(Series s, int winner) =>
             winner < 0 ? Palette.Text : Palette.Look(WeaponOf(s, winner)).Body;
 
-        void FillResult(Series s)
+        /// <summary>Result panel title (tests).</summary>
+        public string ResultTitleText => resultTitle.Text;
+
+        void FillResult(Series s, bool draw)
         {
+            if (draw)
+            {
+                resultTitle.Set(RunStrings.VersusDraw, Palette.Text);
+                resultScore.Set($"{s.WinsA} - {s.WinsB}", Palette.Text);
+                resultSeed.Set("SEED " + s.MatchSeed, Palette.TextDim);
+                return;
+            }
             var w = s.Winner;
             resultTitle.Set(WeaponNames.Of(WeaponOf(s, w)) + " WINS", Palette.Look(WeaponOf(s, w)).Body);
             resultScore.Set($"{s.WinsA} - {s.WinsB}", Palette.Text);

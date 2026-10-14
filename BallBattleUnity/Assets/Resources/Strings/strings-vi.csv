@@ -4,3 +4,4 @@ run.boss_at.one,BOSS Ở TRẬN {0}
 run.boss_at.two,BOSS Ở TRẬN {0} VÀ {1}
 run.boss_at.many,BOSS Ở TRẬN {0}
 run.lose_once,THUA LẦN 1: CHỌN THẺ MIỄN PHÍ  ĐẤU LẠI VỚI {0}% HP
+versus.draw,HÒA

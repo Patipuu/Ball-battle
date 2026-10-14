@@ -48,12 +48,12 @@ namespace BallBattle.Tests
 
         // ================= A1: the font file =================
 
-        /// <summary>Every character the 5x7 file has: space, the old punctuation, 0-9, A-Z, Đ and the 72 Vietnamese capital vowels.</summary>
+        /// <summary>Every character the 5x7 v2 file has: space, the old punctuation plus the comma (BB-SFX2), 0-9, A-Z, Đ and the 72 Vietnamese capital vowels.</summary>
         public static readonly string ExpectedChars = BuildExpected();
 
         static string BuildExpected()
         {
-            var sb = new StringBuilder(" !%+-./:?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZĐĂÂÊÔƠƯ");
+            var sb = new StringBuilder(" !%+-./:?,0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZĐĂÂÊÔƠƯ");
             foreach (var b in "AĂÂEÊIOÔƠUƯY")
                 foreach (var t in new[] { "\u0300", "\u0301", "\u0309", "\u0303", "\u0323" })
                     sb.Append((b + t).Normalize(NormalizationForm.FormC));
@@ -67,8 +67,8 @@ namespace BallBattle.Tests
             Assert.That(asset, Is.Not.Null, "Resources/Fonts/pixelfont_5x7.json");
             Assert.That(asset.text.Normalize(NormalizationForm.FormC), Is.EqualTo(asset.text.TrimStart('\uFEFF')), "file is NFC");
             var font = PixelFont.Parse(asset.text);
-            Assert.That(ExpectedChars.Length, Is.EqualTo(112));
-            Assert.That(font.Count, Is.EqualTo(ExpectedChars.Length), "the file has 112 glyphs (the task said 113; see report)");
+            Assert.That(ExpectedChars.Length, Is.EqualTo(113));
+            Assert.That(font.Count, Is.EqualTo(ExpectedChars.Length), "v2 file: 113 glyphs, comma included");
             foreach (var c in ExpectedChars) Assert.That(font.Has(c), Is.True, $"'{c}' U+{(int)c:X4}");
             foreach (var c in font.Chars)
             {
@@ -76,7 +76,7 @@ namespace BallBattle.Tests
                 Assert.That(g.Rows.Length, Is.EqualTo(PixelFont.CellHeight), $"'{c}' rows");
                 Assert.That(g.Rows.All(r => r.Length == g.Width), Is.True, $"'{c}' row widths");
                 Assert.That(g.Width, Is.InRange(PixelFont.MinGlyphWidth, PixelFont.MaxGlyphWidth), $"'{c}' width");
-                Assert.That(g.Rows[11].Contains('#'), Is.False, $"'{c}' row 11 is blank");
+                Assert.That(g.Rows[11].Contains('#'), Is.EqualTo(c == ','), $"'{c}' row 11 (only the comma's tail reaches it)");
                 // Row 3 is blank except for the horn of Ơ/Ư (and their toned forms), which Art drew reaching into it.
                 var horn = "ƠỚỜỞỠỢƯỨỪỬỮỰ".IndexOf(c) >= 0;
                 Assert.That(g.Rows[3].Contains('#'), Is.EqualTo(horn), $"'{c}' row 3");
@@ -146,12 +146,12 @@ namespace BallBattle.Tests
         public void MissingCharacterDrawsTheFallbackAndIsLoggedOnce()
         {
             var font = PixelFont.Parse(Resources.Load<TextAsset>(PixelFont.ResourcePath).text);
-            Assert.That(font.Has(','), Is.False, "no comma in the font (as in the old 3x5 one)");
-            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("no glyph for ','"));
-            Assert.That(font.Get(',').Char, Is.EqualTo(PixelFont.Fallback));
-            Assert.That(font.Get(',').Char, Is.EqualTo(PixelFont.Fallback), "second time: no second log");
+            Assert.That(font.Has('#'), Is.False, "'#' is not in the font");
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("no glyph for '#'"));
+            Assert.That(font.Get('#').Char, Is.EqualTo(PixelFont.Fallback));
+            Assert.That(font.Get('#').Char, Is.EqualTo(PixelFont.Fallback), "second time: no second log");
             LogAssert.NoUnexpectedReceived();
-            Assert.That(font.Measure("A,B"), Is.EqualTo(font.Measure("A B")), "fallback = the space glyph");
+            Assert.That(font.Measure("A#B"), Is.EqualTo(font.Measure("A B")), "fallback = the space glyph");
         }
 
         // ================= A3: MeasureWidth =================

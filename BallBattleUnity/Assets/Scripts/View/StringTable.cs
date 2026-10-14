@@ -16,8 +16,9 @@ namespace BallBattle.View
         public const string BossAtTwo = "run.boss_at.two";
         public const string BossAtMany = "run.boss_at.many";
         public const string LoseOnce = "run.lose_once";
+        public const string VersusDraw = "versus.draw";
 
-        public static readonly string[] All = { StartPickNoReroll, BossAtOne, BossAtTwo, BossAtMany, LoseOnce };
+        public static readonly string[] All = { StartPickNoReroll, BossAtOne, BossAtTwo, BossAtMany, LoseOnce, VersusDraw };
     }
 
     /// <summary>

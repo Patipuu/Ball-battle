@@ -28,7 +28,7 @@ namespace BallBattle.View
             Arena.AutoRestart = false;
             Arena.Paused = true;
 
-            Flow = new MatchFlow();
+            Flow = new MatchFlow { ForceDraw = DebugOptions.ForceDraw };   // -bbForceDraw: Versus only, off by default
             Menu = MenuView.Create(transform, Arena.Art);
             Overlay = OverlayView.Create(transform, Arena.Art);
             store = FileSaveStore.Default();
@@ -107,7 +107,22 @@ namespace BallBattle.View
         }
 
         void OnAudioEvent(BallBattle.Sim.SimEvent e) => Audio?.OnSimEvent(e, Arena.Sim);
-        void OnAudioMatchEnded(int winner) => Audio?.OnMatchEnded(winner, Arena.MarkedBall);
+        void OnAudioMatchEnded(int winner) => Audio?.OnMatchEnded(AudioWinner(winner, Run.IsOpen, Flow), Arena.MarkedBall);
+
+        /// <summary>Round winner for the audio: in Versus the flow's reported winner (a forced draw = -1); Run mode untouched.</summary>
+        public static int AudioWinner(int winner, bool runOpen, MatchFlow versusFlow) =>
+            runOpen || versusFlow == null ? winner : versusFlow.ReportedWinner(winner);
+
+        /// <summary>Music screen of the Versus flow (no Run open).</summary>
+        public static MusicScreen VersusScreen(MatchFlow.State state, bool settingsOpen, bool versusOpen)
+        {
+            switch (state)
+            {
+                case MatchFlow.State.Menu: return settingsOpen ? MusicScreen.Settings : versusOpen ? MusicScreen.VersusPick : MusicScreen.Menu;
+                case MatchFlow.State.Result: return MusicScreen.VersusResult;
+                default: return MusicScreen.Fight;
+            }
+        }
         void OnAudioMatchStarted() => Audio?.OnMatchStarted();
 
         /// <summary>Screen shown now, for the music (AudioIds.TrackFor).</summary>
@@ -130,12 +145,7 @@ namespace BallBattle.View
                     default: return MusicScreen.None;
                 }
             }
-            switch (Flow.Current)
-            {
-                case MatchFlow.State.Menu: return Menu.SettingsOpen ? MusicScreen.Settings : Menu.VersusOpen ? MusicScreen.VersusPick : MusicScreen.Menu;
-                case MatchFlow.State.Result: return MusicScreen.VersusResult;
-                default: return MusicScreen.Fight;
-            }
+            return VersusScreen(Flow.Current, Menu.SettingsOpen, Menu.VersusOpen);
         }
 
         void Start() { if (!HeadlessRoundRobin.Active) Flow.ToMenu(); }

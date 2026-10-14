@@ -8,7 +8,7 @@ namespace BallBattle.View
     /// <summary>
     /// Data-driven variable-width pixel font (BB-FONT1): Resources/Fonts/pixelfont_5x7.json, a copy of Art's file
     /// { "&lt;char&gt;": ["row0", ..., "row12"] }. Every glyph is a 13-row cell of '.'/'#' rows, all rows of one glyph the same
-    /// width (3..7 px): rows 0-2 marks above (Vietnamese tones/hats), row 3 blank, rows 4-10 the 5x7 body, row 11 blank,
+    /// width (2..7 px; the comma is 2): rows 0-2 marks above (Vietnamese tones/hats), row 3 blank, rows 4-10 the 5x7 body, row 11 blank,
     /// row 12 the dot below (nặng). Letters are 1 px apart. Uppercase only: lowercase maps to uppercase, input is NFC-normalized.
     /// A character the font lacks draws as the fallback (the blank space glyph, as the old 3x5 font did) and is logged once
     /// (Editor only). The glyph atlas is built at runtime from the data (point filtered); the old 3x5 font (PixelFontData,
@@ -21,7 +21,7 @@ namespace BallBattle.View
         public const int CellHeight = 13;
         /// <summary>Gap between letters at scale 1.</summary>
         public const int Spacing = 1;
-        public const int MinGlyphWidth = 3;
+        public const int MinGlyphWidth = 2;   // BB-SFX2: the v2 file's comma is 2 px wide
         public const int MaxGlyphWidth = 7;
         /// <summary>Body rows (cap height 7): rows 4..10 of the cell.</summary>
         public const int BodyTopRow = 4, BodyBottomRow = 10;

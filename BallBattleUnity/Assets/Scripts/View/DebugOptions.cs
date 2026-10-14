@@ -32,6 +32,8 @@ namespace BallBattle.View
             forceTrait = null;
             forceSeed = null;
             trace = false;
+            audioLogOn = null;
+            forceDraw = null;
         }
 
         /// <summary>Trait id forced into the first offer, or null (normal play).</summary>
@@ -62,6 +64,26 @@ namespace BallBattle.View
         }
 
         public static bool Trace { get { _ = ForceTrait; return trace; } }
+
+        /// <summary>-bbAudioLog: log every wall/obstacle cue (AudioLog). Off by default.</summary>
+        public const string AudioLogArg = "-bbAudioLog";
+        /// <summary>-bbForceDraw: Versus only, the first round to resolve ends the match as a draw (MatchFlow.ForceDraw). Off by default; Run mode ignores it.</summary>
+        public const string ForceDrawArg = "-bbForceDraw";
+
+        static bool? audioLogOn, forceDraw;   // parsed once (read on every hazard cue)
+
+        public static bool AudioLogOn => audioLogOn ?? (audioLogOn = HasArg(Environment.GetCommandLineArgs(), AudioLogArg)).Value;
+        public static bool ForceDraw => forceDraw ?? (forceDraw = HasArg(Environment.GetCommandLineArgs(), ForceDrawArg)).Value;
+        public static bool ParseAudioLog(string[] args) => HasArg(args, AudioLogArg);
+        public static bool ParseForceDraw(string[] args) => HasArg(args, ForceDrawArg);
+
+        static bool HasArg(string[] args, string name)
+        {
+            if (args == null) return false;
+            foreach (var arg in args)
+                if (string.Equals(arg, name, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
 
         /// <summary>True when the command line asks for Vietnamese (<see cref="LangViArg"/>).</summary>
         public static bool LangVi => ParseLangVi(Environment.GetCommandLineArgs());
