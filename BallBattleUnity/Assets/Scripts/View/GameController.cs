@@ -23,6 +23,7 @@ namespace BallBattle.View
         void Awake()
         {
             if (HeadlessRoundRobin.Active) { enabled = false; return; }   // -roundrobin: no game, no save, the player quits after the run
+            StringTable.Current = DebugOptions.LangVi ? Lang.Vi : Lang.En;   // hidden -bbLangVi switch; EN by default (before any screen is built)
             if (Arena == null) Arena = FindAnyObjectByType<ArenaView>();
             Arena.AutoRestart = false;
             Arena.Paused = true;

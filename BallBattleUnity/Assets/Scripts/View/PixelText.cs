@@ -4,21 +4,17 @@ using UnityEngine;
 namespace BallBattle.View
 {
     /// <summary>
-    /// Text drawn with the 3x5 font atlas, one SpriteRenderer per glyph (pooled). Positions are whole pixels,
-    /// scale is an integer, so text stays crisp in the 270x480 pixel-perfect view.
+    /// Text drawn with the variable-width 5x7 pixel font (PixelFont, BB-FONT1), one SpriteRenderer per glyph (pooled).
+    /// The position is the bottom-left (Left), bottom-centre (Center) or bottom-right (Right) of a 13*scale px tall cell
+    /// (marks above, body, dot below). Positions are whole pixels, scale is an integer, so text stays crisp in the
+    /// 270x480 pixel-perfect view. Text is stored NFC-normalized and uppercase (PixelFont.Normalize).
     /// </summary>
     public sealed class PixelText : MonoBehaviour
     {
         public enum Align { Left, Center, Right }
 
-        static readonly Dictionary<Texture2D, Sprite[]> Atlases = new Dictionary<Texture2D, Sprite[]>();
-
-        /// <summary>Drop cached glyph sprites on play start (survives when domain reload is disabled).</summary>
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetCache() => Atlases.Clear();
-
         readonly List<SpriteRenderer> glyphs = new List<SpriteRenderer>();
-        Sprite[] sprites;
+        PixelFont font;
         int sortingOrder;
         Align align;
         int scale = 1;
@@ -26,31 +22,18 @@ namespace BallBattle.View
         Color32 currentColor;
         bool highlighted;
 
+        /// <summary><paramref name="font"/> (the old 3x5 atlas, ArtLibrary.Font) is no longer drawn; kept so callers stay unchanged.</summary>
         public static PixelText Create(Transform parent, string name, Texture2D font, Vector2 position, Align align, int scale, int sortingOrder)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             go.transform.localPosition = new Vector3(Mathf.Round(position.x), Mathf.Round(position.y), 0f);
             var t = go.AddComponent<PixelText>();
-            t.sprites = AtlasFor(font);
+            t.font = PixelFont.Default;
             t.align = align;
             t.scale = Mathf.Max(1, scale);
             t.sortingOrder = sortingOrder;
             return t;
-        }
-
-        static Sprite[] AtlasFor(Texture2D font)
-        {
-            if (Atlases.TryGetValue(font, out var cached) && cached[0] != null) return cached;
-            var arr = new Sprite[PixelFontData.Glyphs.Length];
-            for (var i = 0; i < arr.Length; i++)
-            {
-                var rect = new Rect(i * PixelFontData.CellWidth, 0, PixelFontData.GlyphWidth, PixelFontData.GlyphHeight);
-                arr[i] = Sprite.Create(font, rect, Vector2.zero, 1f, 0, SpriteMeshType.FullRect);
-                arr[i].name = $"glyph_{PixelFontData.Glyphs[i].Key}";
-            }
-            Atlases[font] = arr;
-            return arr;
         }
 
         /// <summary>Text currently shown ("" before the first Set).</summary>
@@ -66,10 +49,10 @@ namespace BallBattle.View
         {
             get
             {
-                var width = PixelFontData.MeasureWidth(Text) * scale;
+                var width = PixelFont.MeasureWidth(Text) * scale;
                 var startX = align == Align.Left ? 0 : (align == Align.Center ? -(width / 2) : -width);
                 var p = transform.localPosition;
-                return new Rect(p.x + startX, p.y, width, PixelFontData.GlyphHeight * scale);
+                return new Rect(p.x + startX, p.y, width, PixelFont.CellHeight * scale);
             }
         }
 
@@ -88,26 +71,27 @@ namespace BallBattle.View
         }
         public void Set(string text, Color32 color)
         {
-            text = text ?? string.Empty;
+            text = PixelFont.Normalize(text);
             if (text == current && color.Equals(currentColor) && !highlighted) return;
             highlighted = false;
             current = text;
             currentColor = color;
 
-            var width = PixelFontData.MeasureWidth(text) * scale;
+            var width = font.Measure(text) * scale;
             var startX = align == Align.Left ? 0 : (align == Align.Center ? -(width / 2) : -width);
 
             while (glyphs.Count < text.Length) glyphs.Add(NewGlyph());
+            var x = startX;
             for (var i = 0; i < glyphs.Count; i++)
             {
                 var sr = glyphs[i];
                 if (i >= text.Length) { sr.enabled = false; continue; }
-                var index = PixelFontData.IndexOf(text[i]);
-                sr.enabled = index > 0; // index 0 is space
-                if (!sr.enabled) continue;
-                sr.sprite = sprites[index];
+                var g = font.Get(text[i]);
+                sr.enabled = !g.Blank;   // spaces (and the blank fallback) only advance
+                sr.sprite = g.Sprite;
                 sr.color = color;
-                sr.transform.localPosition = new Vector3(startX + i * PixelFontData.Advance * scale, 0f, 0f);
+                sr.transform.localPosition = new Vector3(x, 0f, 0f);
+                x += (g.Width + PixelFont.Spacing) * scale;
             }
         }
 
@@ -117,10 +101,10 @@ namespace BallBattle.View
         /// </summary>
         public void SetHighlighted(string text, Color32 color, Color32 numberColor)
         {
-            text = text ?? string.Empty;
             highlighted = false;
             current = null;   // force a full redraw
             Set(text, color);
+            text = current;   // normalized: glyph i = character i
             highlighted = true;
             for (var i = 0; i < text.Length && i < glyphs.Count; i++)
                 if (IsNumberChar(text, i)) glyphs[i].color = numberColor;

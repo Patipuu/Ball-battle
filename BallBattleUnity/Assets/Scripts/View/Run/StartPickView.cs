@@ -23,17 +23,20 @@ namespace BallBattle.View
         readonly PixelText[] detail2 = new PixelText[RunTuning.OfferSize];
         readonly PixelText[] rarity = new PixelText[RunTuning.OfferSize];
 
-        public static Rect CardArea(int i) => new Rect(-125, 80 - i * 76, 250, 66);
+        /// <summary>BB-FONT1: 70 px cards (title x2 26 + two detail rows + rarity row, 13 px cells), 6 px apart.</summary>
+        public static Rect CardArea(int i) => new Rect(-125, 92 - i * 76, 250, 70);
+        /// <summary>Card text starts here (1 px right of the 2x icon; the longest detail ends 1 px inside the card).</summary>
+        public const float TextX = -86f;
 
         public static StartPickView Create(Transform parent, ArtLibrary art)
         {
             var root = RunUi.Root(parent, "StartPick", art);
             var view = root.gameObject.AddComponent<StartPickView>();
             view.art = art;
-            view.title1 = RunUi.Text(root, art, -110, 206, 3, PixelText.Align.Left);
-            view.title2 = RunUi.Text(root, art, -110, 184, 3, PixelText.Align.Left);
-            RunUi.Text(root, art, -110, 168, 1, PixelText.Align.Left, "FREE PICK 1 OF 3", Palette.TextDim);
-            PixelRect.Set(PixelRect.Create(root, "HeadingRule", art.Pixel, Palette.Wall, RunUi.Order + 3), -110, 159, 110, 160);
+            view.title1 = RunUi.Text(root, art, -110, 212, 2, PixelText.Align.Left);   // x3 no longer fits the top: x2, cells 212..238
+            view.title2 = RunUi.Text(root, art, -110, 186, 2, PixelText.Align.Left);   // 186..212
+            RunUi.Text(root, art, -110, 171, 1, PixelText.Align.Left, "FREE PICK 1 OF 3", Palette.TextDim);
+            PixelRect.Set(PixelRect.Create(root, "HeadingRule", art.Pixel, Palette.Wall, RunUi.Order + 3), -110, 166, 110, 167);
             view.weaponIcon = RunUi.Icon(root, new Vector2(98, 202), RunUi.Order + 3);
             view.weapon = RunUi.Text(root, art, 98, 178, 1);
             for (var i = 0; i < view.cards.Length; i++)
@@ -53,20 +56,21 @@ namespace BallBattle.View
                 PixelRect.Set(view.stripes[i], area.xMin + 2, area.yMin + 2, area.xMin + 6, area.yMax - 2);
                 var iconGo = new GameObject("Icon");
                 iconGo.transform.SetParent(card, false);
-                iconGo.transform.localPosition = new Vector3(-100, area.yMax - 21, 0);
+                iconGo.transform.localPosition = new Vector3(-101, area.yMax - 30, 0);   // 28 px icon ends at -87, text starts -86
                 iconGo.transform.localScale = new Vector3(2, 2, 1);
                 view.icons[i] = iconGo.AddComponent<SpriteRenderer>();
                 view.icons[i].sortingOrder = view.cards[i].IconOrder + 1;
                 var order = view.cards[i].IconOrder + 2;
-                view.names[i] = PixelText.Create(card, "Title", art.Font, new Vector2(-83, area.yMax - 17), PixelText.Align.Left, 2, order);
-                view.detail1[i] = PixelText.Create(card, "Detail1", art.Font, new Vector2(-83, area.yMax - 31), PixelText.Align.Left, 1, order);
-                view.detail2[i] = PixelText.Create(card, "Detail2", art.Font, new Vector2(-83, area.yMax - 40), PixelText.Align.Left, 1, order);
-                view.rarity[i] = PixelText.Create(card, "Rarity", art.Font, new Vector2(-83, area.yMin + 7), PixelText.Align.Left, 1, order);
-                PixelText.Create(card, "TapToPick", art.Font, new Vector2(35, area.yMin + 7), PixelText.Align.Left, 1, order).Set("TAP TO PICK", Palette.TextDim);
+                // Cells from the card top: title x2 2..28, details 28..41 and 41..54, rarity / TAP TO PICK 55..68.
+                view.names[i] = PixelText.Create(card, "Title", art.Font, new Vector2(TextX, area.yMax - 28), PixelText.Align.Left, 2, order);
+                view.detail1[i] = PixelText.Create(card, "Detail1", art.Font, new Vector2(TextX, area.yMax - 41), PixelText.Align.Left, 1, order);
+                view.detail2[i] = PixelText.Create(card, "Detail2", art.Font, new Vector2(TextX, area.yMax - 54), PixelText.Align.Left, 1, order);
+                view.rarity[i] = PixelText.Create(card, "Rarity", art.Font, new Vector2(TextX, area.yMin + 2), PixelText.Align.Left, 1, order);
+                PixelText.Create(card, "TapToPick", art.Font, new Vector2(117, area.yMin + 2), PixelText.Align.Right, 1, order).Set("TAP TO PICK", Palette.TextDim);
             }
-            PixelRect.Set(PixelRect.Create(root, "FooterBand", art.Pixel, RunUi.Panel, RunUi.Order + 2), -127, -122, 127, -99);
-            view.noReroll = RunUi.Text(root, art, -119, -107, 1, PixelText.Align.Left, RunStrings.StartPickNoReroll, Palette.TextDim);
-            view.nextFight = RunUi.Text(root, art, -119, -116, 1, PixelText.Align.Left, "YOUR FIRST FIGHT STARTS AFTER THIS", Palette.TextDim);
+            PixelRect.Set(PixelRect.Create(root, "FooterBand", art.Pixel, RunUi.Panel, RunUi.Order + 2), -127, -97, 127, -64);
+            view.noReroll = RunUi.Text(root, art, -119, -79, 1, PixelText.Align.Left, RunStrings.StartPickNoReroll, Palette.TextDim);        // cell -79..-66
+            view.nextFight = RunUi.Text(root, art, -119, -93, 1, PixelText.Align.Left, "YOUR FIRST FIGHT STARTS AFTER THIS", Palette.TextDim);   // cell -93..-80
             view.Hide();
             return view;
         }

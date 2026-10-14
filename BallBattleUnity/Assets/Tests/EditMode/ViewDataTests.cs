@@ -33,7 +33,7 @@ namespace BallBattle.Tests
             {
                 var text = e.DisplayName + e.Create().StatLabel + "0123456789.";
                 foreach (var c in text)
-                    Assert.That(PixelFontData.IndexOf(c), Is.GreaterThanOrEqualTo(0), $"'{c}' missing from font ({e.Id})");
+                    Assert.That(PixelFont.Default.Has(PixelFont.Normalize(c.ToString())[0]), Is.True, $"'{c}' missing from font ({e.Id})");
             }
         }
 
@@ -44,11 +44,11 @@ namespace BallBattle.Tests
             {
                 Assert.That(TraitBadgeView.HasStyle(e.Id), Is.True, $"badge style for {e.Id}");
                 foreach (var c in e.DisplayName + e.Blurb)
-                    Assert.That(PixelFontData.IndexOf(c), Is.GreaterThanOrEqualTo(0), $"'{c}' missing from font (trait {e.Id})");
+                    Assert.That(PixelFont.Default.Has(PixelFont.Normalize(c.ToString())[0]), Is.True, $"'{c}' missing from font (trait {e.Id})");
             }
             foreach (var a in ArenaRegistry.All)
                 foreach (var c in "ARENA: " + a.DisplayName)
-                    Assert.That(PixelFontData.IndexOf(c), Is.GreaterThanOrEqualTo(0), $"'{c}' missing from font (arena {a.Id})");
+                    Assert.That(PixelFont.Default.Has(PixelFont.Normalize(c.ToString())[0]), Is.True, $"'{c}' missing from font (arena {a.Id})");
         }
         [Test]
         public void EveryCardTextFitsTheCard()
@@ -64,11 +64,12 @@ namespace BallBattle.Tests
                 var title = CardText.Title(c);
                 var d1 = CardText.Detail(c);
                 var d2 = CardText.Detail2(c);
-                Assert.That(title.Length, Is.LessThanOrEqualTo(CardText.MaxTitleChars), $"title '{title}' ({c})");
-                Assert.That(d1.Length, Is.InRange(1, CardText.MaxDetailChars), $"detail '{d1}' ({c})");
-                Assert.That(d2.Length, Is.LessThanOrEqualTo(CardText.MaxDetailChars), $"detail2 '{d2}' ({c})");
+                Assert.That(PixelFont.MeasureWidth(title), Is.LessThanOrEqualTo(CardText.MaxTitleWidth), $"title '{title}' ({c})");
+                Assert.That(d1.Length, Is.GreaterThanOrEqualTo(1), $"detail '{d1}' ({c})");
+                Assert.That(PixelFont.MeasureWidth(d1), Is.LessThanOrEqualTo(CardText.MaxDetailWidth), $"detail '{d1}' ({c})");
+                Assert.That(PixelFont.MeasureWidth(d2), Is.LessThanOrEqualTo(CardText.MaxDetailWidth), $"detail2 '{d2}' ({c})");
                 foreach (var ch in title + d1 + d2)
-                    Assert.That(PixelFontData.IndexOf(ch), Is.GreaterThanOrEqualTo(0), $"'{ch}' missing from font ({c})");
+                    Assert.That(PixelFont.Default.Has(PixelFont.Normalize(ch.ToString())[0]), Is.True, $"'{ch}' missing from font ({c})");
             }
         }
         [Test]

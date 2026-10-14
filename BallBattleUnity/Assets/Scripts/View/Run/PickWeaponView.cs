@@ -28,7 +28,11 @@ namespace BallBattle.View
         public void Show(IReadOnlyList<string> choices)
         {
             gameObject.SetActive(true);
-            if (tilesRoot != null) Destroy(tilesRoot.gameObject);
+            if (tilesRoot != null)
+            {
+                if (Application.isPlaying) Destroy(tilesRoot.gameObject);
+                else DestroyImmediate(tilesRoot.gameObject);   // EditMode tests and captures show it more than once
+            }
             tilesRoot = new GameObject("Tiles").transform;
             tilesRoot.SetParent(transform, false);
 

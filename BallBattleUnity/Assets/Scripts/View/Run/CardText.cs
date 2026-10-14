@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using BallBattle.Sim;
 using BallBattle.Sim.Run;
@@ -13,8 +14,12 @@ namespace BallBattle.View
     /// </summary>
     public static class CardText
     {
-        public const int MaxTitleChars = 18;
-        public const int MaxDetailChars = 44;
+        /// <summary>
+        /// Widest card text in pixels at scale 1 (BB-FONT1: was a character count): from the text column (x -86, right of
+        /// the icon) to 2 px inside the card's right edge (x 123). A title wider than half of it wraps onto two 1x lines.
+        /// </summary>
+        public const int MaxTitleWidth = 209;
+        public const int MaxDetailWidth = 209;
 
         public static string Title(Card c)
         {
@@ -123,6 +128,24 @@ namespace BallBattle.View
                 s += TraitRegistry.Get(t.Id).DisplayName + (t.Level > 1 ? " " + t.Level : "");   // "SECOND WIND 2"
             }
             return s;
+        }
+
+        /// <summary>
+        /// <see cref="Traits"/> broken between traits into lines at most <paramref name="maxWidth"/> px wide (scale 1), never
+        /// inside a trait name. Three traits always fit two lines of the Prepare / result boxes.
+        /// </summary>
+        public static List<string> TraitLines(RunBuild b, int maxWidth)
+        {
+            if (b.Traits.Count == 0) return new List<string> { Traits(b) };
+            return TextWrap.Items(TraitNames(b), "", " ", maxWidth);
+        }
+
+        /// <summary>One entry per trait, as <see cref="Traits"/> writes it ("SECOND WIND 2"). Empty without traits.</summary>
+        public static List<string> TraitNames(RunBuild b)
+        {
+            var names = new List<string>();
+            foreach (var t in b.Traits) names.Add(TraitRegistry.Get(t.Id).DisplayName + (t.Level > 1 ? " " + t.Level : ""));
+            return names;
         }
 
         public static string Stats(RunBuild b) => Stats(b, b.Hp.ToFloat(), b.MaxHp.ToFloat());

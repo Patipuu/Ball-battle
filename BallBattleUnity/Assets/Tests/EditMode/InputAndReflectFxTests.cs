@@ -173,7 +173,10 @@ namespace BallBattle.Tests
             Assert.That(v.ConfirmOpen, Is.True, "free pick unused: asks first");
             Wait(0.35f);   // the dialog drops taps for 0.3 s after it opens (3e.2)
 
-            var yesOverCard = new Vector2(PrepareView.ConfirmYesArea.center.x, -40f);
+            // A point on YES that is also on card 2 (BB-FONT1: from the overlap of the two rects, not a fixed y).
+            var yes = PrepareView.ConfirmYesArea;
+            var card = PrepareView.CardArea(1);
+            var yesOverCard = new Vector2(yes.center.x, Mathf.Floor((Mathf.Max(yes.yMin, card.yMin) + Mathf.Min(yes.yMax, card.yMax)) / 2f));
             Assert.That(PrepareView.ConfirmYesArea.Contains(yesOverCard) && PrepareView.CardArea(1).Contains(yesOverCard), Is.True);
             Tap(yesOverCard);
             Assert.That(other, Is.EqualTo(new[] { "fight" }));
@@ -327,7 +330,7 @@ namespace BallBattle.Tests
             AssertNoOverlap(high);
             foreach (var p in high)
             {
-                Assert.That(p.start.y + DamagePopups.Rise + PixelFontData.GlyphHeight * p.scale, Is.LessThanOrEqualTo(arena.Top.ToFloat() - DamagePopups.WallMargin));
+                Assert.That(p.start.y + DamagePopups.Rise + DamagePopups.InkTop(p.scale), Is.LessThanOrEqualTo(arena.Top.ToFloat() - DamagePopups.WallMargin));
                 Assert.That(p.start.y, Is.GreaterThanOrEqualTo(arena.Bottom.ToFloat() + DamagePopups.WallMargin));
             }
         }

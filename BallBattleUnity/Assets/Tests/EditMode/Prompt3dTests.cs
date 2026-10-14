@@ -326,7 +326,7 @@ namespace BallBattle.Tests
         {
             Assert.That(RunTitleView.StatsLine(new ProgressData { BestFight = 5, RunsWon = 3, RunsPlayed = 12 }), Is.EqualTo("BEST FIGHT 5/8   WINS 3/12"));
             var huge = RunTitleView.StatsLine(new ProgressData { BestFight = 8, RunsWon = 123456789, RunsPlayed = 2000000000 });
-            Assert.That(huge.Length, Is.LessThanOrEqualTo(TextWrap.MaxCharsOnScreen(1)), "fits 270 px");
+            Assert.That(PixelFont.MeasureWidth(huge), Is.LessThanOrEqualTo(TextWrap.MaxWidthOnScreen(1)), "fits 270 px");
 
             // Old saves without RunsWon read 0; a run only counts as won when it beat the last boss.
             var old = JsonUtility.FromJson<ProgressData>("{\"RunsPlayed\":4,\"BestFight\":3}");

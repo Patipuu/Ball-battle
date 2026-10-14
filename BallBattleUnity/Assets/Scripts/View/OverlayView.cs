@@ -20,7 +20,7 @@ namespace BallBattle.View
         public static readonly Rect NewMatchArea = new Rect(-80, -50, 160, 28);
         public static readonly Rect MenuArea = new Rect(-80, -90, 160, 28);
         /// <summary>Round banner band (the tap target testers hit by mistake).</summary>
-        public static readonly Rect BannerArea = new Rect(-115, -12, 230, 24);
+        public static readonly Rect BannerArea = new Rect(-115, -14, 230, 28);
 
         public event Action RematchRequested;
         public event Action NewMatchRequested;
@@ -50,14 +50,14 @@ namespace BallBattle.View
             seed = PixelText.Create(transform, "Seed", art.Font, new Vector2(-131, -236), PixelText.Align.Left, 1, Order);
             countdown = PixelText.Create(transform, "Countdown", art.Font, new Vector2(0, -15), PixelText.Align.Center, 6, Order + 2);
             bannerBand = PixelRect.Create(transform, "BannerBand", art.Pixel, new Color32(16, 16, 26, 220), Order);
-            PixelRect.Set(bannerBand, -115, -12, 115, 12);
-            banner = PixelText.Create(transform, "Banner", art.Font, new Vector2(0, -5), PixelText.Align.Center, 2, Order + 1);
+            PixelRect.Set(bannerBand, BannerArea.xMin, BannerArea.yMin, BannerArea.xMax, BannerArea.yMax);
+            banner = PixelText.Create(transform, "Banner", art.Font, new Vector2(0, -13), PixelText.Align.Center, 2, Order + 1);   // 26 px cell in the 28 px band
 
             resultPanel = new GameObject("Result");
             resultPanel.transform.SetParent(transform, false);
             var p = resultPanel.transform;
             PixelRect.Set(PixelRect.Create(p, "Dim", art.Pixel, new Color32(16, 16, 26, 230), ResultOrder), -200, -300, 200, 300);
-            resultTitle = PixelText.Create(p, "Title", art.Font, new Vector2(0, 120), PixelText.Align.Center, 3, ResultOrder + 4);
+            resultTitle = PixelText.Create(p, "Title", art.Font, new Vector2(0, 128), PixelText.Align.Center, 3, ResultOrder + 4);   // 128..167, over the x4 score (70..122)
             resultScore = PixelText.Create(p, "ScoreBig", art.Font, new Vector2(0, 70), PixelText.Align.Center, 4, ResultOrder + 4);
             resultSeed = PixelText.Create(p, "Seed", art.Font, new Vector2(0, 45), PixelText.Align.Center, 1, ResultOrder + 4);
             Button(art, p, "Rematch", RematchArea, "REMATCH", Palette.WallWarning, () => RematchRequested?.Invoke());

@@ -136,7 +136,7 @@ namespace BallBattle.Tests
             {
                 Assert.That(WeaponNames.Of(id), Is.EqualTo(name));
                 Assert.That(WeaponRegistry.Get(id).Id, Is.EqualTo(id), "ids unchanged");
-                foreach (var c in name) Assert.That(PixelFontData.IndexOf(c), Is.GreaterThanOrEqualTo(0));
+                foreach (var c in name) Assert.That(PixelFont.Default.Has(c), Is.True, $"'{c}' in the 5x7 font");
             }
             Assert.That(WeaponNames.CoversAll(), Is.True);
             Assert.That(WeaponRegistry.Get("blade").DisplayName, Is.EqualTo("BLADE"), "the sim's own name is untouched");

@@ -17,6 +17,8 @@ namespace BallBattle.View
         /// <summary>-bbSeed &lt;number&gt;: every NEW run starts with this seed (a saved run keeps its own on CONTINUE).</summary>
         public const string ForceSeedArg = "-bbSeed";
         public const string TraceArg = "-bbTrace";
+        /// <summary>-bbLangVi: hidden switch that draws the string table in Vietnamese (BB-FONT1). Off by default; EN stays the default.</summary>
+        public const string LangViArg = "-bbLangVi";
 
         static bool parsed;
         static string forceTrait;
@@ -60,6 +62,17 @@ namespace BallBattle.View
         }
 
         public static bool Trace { get { _ = ForceTrait; return trace; } }
+
+        /// <summary>True when the command line asks for Vietnamese (<see cref="LangViArg"/>).</summary>
+        public static bool LangVi => ParseLangVi(Environment.GetCommandLineArgs());
+
+        public static bool ParseLangVi(string[] args)
+        {
+            if (args == null) return false;
+            foreach (var arg in args)
+                if (string.Equals(arg, LangViArg, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
 
         public static bool ParseTrace(string[] args)
         {

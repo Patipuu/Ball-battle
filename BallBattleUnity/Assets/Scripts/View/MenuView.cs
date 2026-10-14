@@ -25,7 +25,7 @@ namespace BallBattle.View
         public static readonly Rect RunArea = new Rect(-111, 32, 222, 48);
         /// <summary>VERSUS button (64,326) 142x30.</summary>
         public static readonly Rect VersusArea = new Rect(-71, -116, 142, 30);
-        public static readonly Rect VersusBackArea = new Rect(-60, -206, 120, 22);
+        public static readonly Rect VersusBackArea = new Rect(-60, -214, 120, 32);
 
         public event Action<string, string> StartRequested;
         /// <summary>RUN with no saved run: open Run mode on its title screen.</summary>
@@ -50,8 +50,8 @@ namespace BallBattle.View
         /// <summary>Settings page closed (BACK, Esc, any other page): volumes are saved then, if they changed.</summary>
         public event Action SettingsClosed;
 
-        /// <summary>One-time "OLD RUN ENDED BY UPDATE" panel: box (8,200) 254x64, OK button 80x22.</summary>
-        public static readonly Rect NoticeOkArea = new Rect(-40, 240 - 200 - 52, 80, 22);
+        /// <summary>One-time "OLD RUN ENDED BY UPDATE" panel: box (8,200) 254x64, OK button 80x24 (BB-FONT1: text scale 1).</summary>
+        public static readonly Rect NoticeOkArea = new Rect(-40, 240 - 200 - 58, 80, 24);
         /// <summary>Sorting base of the notice: above everything on the hub (which tops out at Order + 5).</summary>
         public const int NoticeOrder = Order + 10;
 
@@ -98,11 +98,11 @@ namespace BallBattle.View
             runButton = PixelButton.Create(hub, "Run", art, RunArea, null, 1, Palette.WallWarning, Palette.WallWarning, Palette.Background, Order + 2);
             runButton.Clicked += PressRun;
             var o = runButton.IconOrder + 1;
-            runLabel = PixelText.Create(runButton.transform, "RunLabel", art.Font, new Vector2(0, 48), PixelText.Align.Center, 3, o);           // top 177
-            continueLabel = PixelText.Create(runButton.transform, "ContinueLabel", art.Font, new Vector2(0, 63), PixelText.Align.Center, 2, o); // top 167
-            continueLine = PixelText.Create(runButton.transform, "ContinueLine", art.Font, new Vector2(0, 41), PixelText.Align.Center, 1, o);   // top 194 = y+34
+            runLabel = PixelText.Create(runButton.transform, "RunLabel", art.Font, new Vector2(0, 36), PixelText.Align.Center, 3, o);           // cell 36..75
+            continueLabel = PixelText.Create(runButton.transform, "ContinueLabel", art.Font, new Vector2(0, 52), PixelText.Align.Center, 2, o); // cell 52..78
+            continueLine = PixelText.Create(runButton.transform, "ContinueLine", art.Font, new Vector2(0, 37), PixelText.Align.Center, 1, o);   // cell 37..50
 
-            Text(hub, art, RunStrings.RulesSummary, 0, 21, 1, Palette.TextDim);   // top 214
+            Text(hub, art, RunStrings.RulesSummary, 0, 17, 1, Palette.TextDim);   // cell 17..30, under the RUN button (32)
             goal = NextGoalBox.Create(hub, art, 8, 244, Order);
 
             var vs = PixelButton.Create(hub, "Versus", art, VersusArea, RunStrings.Versus, 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
@@ -119,19 +119,20 @@ namespace BallBattle.View
             var o = GearButton.IconOrder;
             void Px(string n, Color32 c, int order, float x0, float y0, float x1, float y1) =>
                 PixelRect.Set(PixelRect.Create(GearButton.transform, n, art.Pixel, c, order), a.xMin + x0, a.yMin + y0, a.xMin + x1, a.yMin + y1);
-            Px("Ring", Palette.TextDim, o, 3, 3, 9, 9);
-            Px("ToothN", Palette.TextDim, o, 5, 9, 7, 10);
-            Px("ToothS", Palette.TextDim, o, 5, 2, 7, 3);
-            Px("ToothW", Palette.TextDim, o, 2, 5, 3, 7);
-            Px("ToothE", Palette.TextDim, o, 9, 5, 10, 7);
-            Px("Hole", Palette.Floor, o + 1, 5, 5, 7, 7);
+            const float g = 6f;   // the 12x12 gear drawing sits in the middle of the 24x24 tap target
+            Px("Ring", Palette.TextDim, o, g + 3, g + 3, g + 9, g + 9);
+            Px("ToothN", Palette.TextDim, o, g + 5, g + 9, g + 7, g + 10);
+            Px("ToothS", Palette.TextDim, o, g + 5, g + 2, g + 7, g + 3);
+            Px("ToothW", Palette.TextDim, o, g + 2, g + 5, g + 3, g + 7);
+            Px("ToothE", Palette.TextDim, o, g + 9, g + 5, g + 10, g + 7);
+            Px("Hole", Palette.Floor, o + 1, g + 5, g + 5, g + 7, g + 7);
         }
 
         void BuildVersus(ArtLibrary art)
         {
             var p = versusPage;
-            Text(p, art, "BALL BATTLE", 0, 196, 3, Palette.Text);
-            Text(p, art, "VERSUS: ANY WEAPON  BEST OF 3", 0, 182, 1, Palette.TextDim);
+            Text(p, art, "BALL BATTLE", 0, 199, 3, Palette.Text);                    // cell 199..238
+            Text(p, art, "VERSUS: ANY WEAPON  BEST OF 3", 0, 185, 1, Palette.TextDim);   // 185..198
 
             ids = new string[WeaponRegistry.All.Count];
             for (var i = 0; i < ids.Length; i++) ids[i] = WeaponRegistry.All[i].Id;
@@ -139,19 +140,19 @@ namespace BallBattle.View
             selected[1] = ids.Length > 1 ? ids[1] : ids[0];
 
             tiles = new PixelButton[2][];
-            BuildRow(art, 0, "BALL 1", 168, 164);   // label 168..178, tiles 90..164
-            BuildRow(art, 1, "BALL 2", 78, 74);    // label 78..88, tiles 0..74
+            BuildRow(art, 0, "BALL 1", 171, 169);   // label x1 171..184, tiles 95..169
+            BuildRow(art, 1, "BALL 2", 80, 78);     // label 80..93, tiles 4..78
 
-            versus = PixelText.Create(p, "Versus", art.Font, new Vector2(0, -22), PixelText.Align.Center, 2, Order + 4);
+            versus = PixelText.Create(p, "Versus", art.Font, new Vector2(0, -24), PixelText.Align.Center, 2, Order + 4);   // -24..2
 
-            var arenaBtn = PixelButton.Create(p, "ArenaPick", art, new Rect(-60, -64, 120, 18), "", 1,
+            var arenaBtn = PixelButton.Create(p, "ArenaPick", art, new Rect(-60, -56, 120, 24), "", 1,
                                               Palette.Floor, Palette.Wall, Palette.Text, Order + 2);
             arenaBtn.Clicked += () => { arenaIndex = (arenaIndex + 1) % ArenaRegistry.All.Count; Refresh(); };
-            arenaLabel = PixelText.Create(p, "ArenaLabel", art.Font, new Vector2(0, -55), PixelText.Align.Center, 1, Order + 4);
-            var random = PixelButton.Create(p, "Random", art, new Rect(-60, -92, 120, 22), "RANDOM", 1,
+            arenaLabel = PixelText.Create(p, "ArenaLabel", art.Font, new Vector2(0, -50), PixelText.Align.Center, 1, Order + 4);   // inside -56..-32
+            var random = PixelButton.Create(p, "Random", art, new Rect(-60, -88, 120, 24), "RANDOM", 1,
                                             Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             random.Clicked += Randomize;
-            var start = PixelButton.Create(p, "Start", art, new Rect(-80, -136, 160, 32), "START", 3,
+            var start = PixelButton.Create(p, "Start", art, new Rect(-80, -130, 160, 32), "START", 2,
                                            Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
             start.Clicked += () => StartRequested?.Invoke(selected[0], selected[1]);
             StartButton = start;
@@ -172,7 +173,7 @@ namespace BallBattle.View
         /// <summary>Weapon tiles in a grid of Cols columns: icon on the left, name on the right.</summary>
         void BuildRow(ArtLibrary art, int side, string title, float labelY, float tilesTop)
         {
-            var label = PixelText.Create(versusPage, title, art.Font, new Vector2(-121, labelY), PixelText.Align.Left, 2, Order + 4);
+            var label = PixelText.Create(versusPage, title, art.Font, new Vector2(-121, labelY), PixelText.Align.Left, 1, Order + 4);
             label.Set(title, Palette.Text);
 
             tiles[side] = new PixelButton[ids.Length];
@@ -187,13 +188,13 @@ namespace BallBattle.View
 
                 var icon = new GameObject("Icon");
                 icon.transform.SetParent(b.transform, false);
-                icon.transform.localPosition = new Vector3(area.xMin + 13, area.center.y, 0f);
+                icon.transform.localPosition = new Vector3(area.center.x, area.yMax - 10, 0f);   // icon on top, name under it
                 icon.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
                 var sr = icon.AddComponent<SpriteRenderer>();
                 sr.sprite = art.Get(id).Ball;
                 sr.sortingOrder = b.IconOrder;
 
-                var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.xMin + 26, area.center.y - 2), PixelText.Align.Left, 1, b.IconOrder);
+                var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.center.x, area.yMin + 2), PixelText.Align.Center, 1, b.IconOrder);   // fits 62 px
                 name.Set(WeaponNames.Of(id), Palette.Look(id).Body);
 
                 var s = side;
@@ -302,9 +303,9 @@ namespace BallBattle.View
             var top = NextGoalBox.LocalTop(200);
             PixelRect.Set(PixelRect.Create(noticePage, "NoticeBorder", art.Pixel, Palette.WallWarning, NoticeOrder + 1), left, top - 64, left + NextGoalBox.Width, top);
             PixelRect.Set(PixelRect.Create(noticePage, "NoticeFill", art.Pixel, RunUi.Panel, NoticeOrder + 2), left + 1, top - 63, left + NextGoalBox.Width - 1, top - 1);
-            var text = PixelText.Create(noticePage, "NoticeText", art.Font, new Vector2(0, top - 10 - 2 * PixelFontData.GlyphHeight), PixelText.Align.Center, 2, NoticeOrder + 4);
+            var text = PixelText.Create(noticePage, "NoticeText", art.Font, new Vector2(0, top - 10 - PixelFont.CellHeight), PixelText.Align.Center, 1, NoticeOrder + 4);
             text.Set(RunStrings.OldRunEnded, Palette.Text);
-            var ok = PixelButton.Create(noticePage, "NoticeOk", art, NoticeOkArea, RunStrings.Ok, 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, NoticeOrder + 3);
+            var ok = PixelButton.Create(noticePage, "NoticeOk", art, NoticeOkArea, RunStrings.Ok, 1, Palette.Floor, Palette.WallWarning, Palette.WallWarning, NoticeOrder + 3);
             ok.Clicked += PressNoticeOk;
             NoticeOkButton = ok;
             go.SetActive(false);

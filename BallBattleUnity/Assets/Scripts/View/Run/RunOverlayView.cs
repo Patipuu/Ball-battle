@@ -33,11 +33,11 @@ namespace BallBattle.View
             v.label = PixelText.Create(root, "Label", art.Font, new Vector2(0, 128), PixelText.Align.Center, 1, Order);
             v.countdown = PixelText.Create(root, "Countdown", art.Font, new Vector2(0, -15), PixelText.Align.Center, 6, Order + 2);
             v.band = PixelRect.Create(root, "Band", art.Pixel, new Color32(16, 16, 26, 220), Order);
-            PixelRect.Set(v.band, -115, -12, 115, 12);
-            v.banner = PixelText.Create(root, "Banner", art.Font, new Vector2(0, -5), PixelText.Align.Center, 2, Order + 1);
-            v.speed = PixelButton.Create(root, "Speed", art, new Rect(-22, -234, 44, 18), "X1", 1, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
+            PixelRect.Set(v.band, -115, -14, 115, 14);
+            v.banner = PixelText.Create(root, "Banner", art.Font, new Vector2(0, -13), PixelText.Align.Center, 2, Order + 1);   // 26 px cell in the 28 px band
+            v.speed = PixelButton.Create(root, "Speed", art, new Rect(-22, -238, 44, 24), "X1", 1, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);   // 24 px tap target (was 18)
             v.speed.Clicked += () => v.SpeedToggled?.Invoke();
-            v.retryToken = RunUi.Icon(root, new Vector2(115, 210), Order + 2);
+            v.retryToken = RunUi.Icon(root, new Vector2(115, 229), Order + 2);   // above the x2 HP number's ink (5x7 font: 197..211)
             v.retryCaption = PixelText.Create(root, "RetryCaption", art.Font, new Vector2(87, 158), PixelText.Align.Right, 1, Order + 2);
             v.sixtyPercent = PixelText.Create(root, "SixtyPercent", art.Font, new Vector2(23, 185), PixelText.Align.Center, 1, Order + 2);
             v.retryBorder = new[]
@@ -55,11 +55,12 @@ namespace BallBattle.View
             v.retryBannerRoot = new GameObject("RetryBanner");
             v.retryBannerRoot.transform.SetParent(root, false);
             var bannerRoot = v.retryBannerRoot.transform;
-            PixelRect.Set(PixelRect.Create(bannerRoot, "BannerBorder", art.Pixel, Palette.WallWarning, Order + 5), -75, -31, 75, 31);
-            PixelRect.Set(PixelRect.Create(bannerRoot, "BannerFill", art.Pixel, Palette.Background, Order + 6), -74, -30, 74, 30);
-            PixelText.Create(bannerRoot, "RetryTitle", art.Font, new Vector2(0, 9), PixelText.Align.Center, 3, Order + 7).Set("RETRY", Palette.WallWarning);
-            PixelText.Create(bannerRoot, "SameFoe", art.Font, new Vector2(0, -8), PixelText.Align.Center, 1, Order + 7).Set("SAME FOE  SAME ARENA", Palette.Text);
-            PixelText.Create(bannerRoot, "LastChance", art.Font, new Vector2(0, -19), PixelText.Align.Center, 1, Order + 7).Set("HP 60%  LAST CHANCE", Palette.WallWarning);
+            // BB-FONT1: 160x76 panel; RETRY x3 cell 0..39, the two lines -14..-1 and -28..-15.
+            PixelRect.Set(PixelRect.Create(bannerRoot, "BannerBorder", art.Pixel, Palette.WallWarning, Order + 5), -80, -33, 80, 43);
+            PixelRect.Set(PixelRect.Create(bannerRoot, "BannerFill", art.Pixel, Palette.Background, Order + 6), -79, -32, 79, 42);
+            PixelText.Create(bannerRoot, "RetryTitle", art.Font, new Vector2(0, 0), PixelText.Align.Center, 3, Order + 7).Set("RETRY", Palette.WallWarning);
+            PixelText.Create(bannerRoot, "SameFoe", art.Font, new Vector2(0, -14), PixelText.Align.Center, 1, Order + 7).Set("SAME FOE  SAME ARENA", Palette.Text);
+            PixelText.Create(bannerRoot, "LastChance", art.Font, new Vector2(0, -28), PixelText.Align.Center, 1, Order + 7).Set("HP 60%  LAST CHANCE", Palette.WallWarning);
             v.retryBannerTap = PixelButton.Create(bannerRoot, "DismissRetry", art, new Rect(-135, -240, 270, 480), null, 1,
                 new Color32(0, 0, 0, 0), new Color32(0, 0, 0, 0), Palette.Text, Order + 8);
             v.retryBannerTap.Clicked += v.DismissRetryBanner;
@@ -133,7 +134,12 @@ namespace BallBattle.View
             }
 
             var n = flow.CountdownNumber;
-            if (state == RunFlow.State.Countdown && n != lastCountdown) { lastCountdown = n; countdown.Set(n.ToString(), Palette.WallWarning); }
+            if (state == RunFlow.State.Countdown && RetryBannerActive)
+            {
+                lastCountdown = -1;              // the countdown is held under the RETRY notice: no digit behind it
+                countdown.Set("", default);
+            }
+            else if (state == RunFlow.State.Countdown && n != lastCountdown) { lastCountdown = n; countdown.Set(n.ToString(), Palette.WallWarning); }
             else if (state == RunFlow.State.Playing && goTimer > 0f)
             {
                 goTimer -= dt;

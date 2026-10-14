@@ -46,7 +46,7 @@ namespace BallBattle.View
             b.borderColor = borderColor;
             if (!string.IsNullOrEmpty(text))
             {
-                var textY = area.center.y - PixelFontData.GlyphHeight * textScale / 2f;
+                var textY = area.center.y - PixelFont.CellHeight * textScale / 2f;
                 b.label = PixelText.Create(go.transform, "Label", art.Font, new Vector2(area.center.x, Mathf.Floor(textY)), PixelText.Align.Center, textScale, order + 3);
                 b.label.Set(text, textColor);
             }

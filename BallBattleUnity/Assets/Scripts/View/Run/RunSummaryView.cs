@@ -22,12 +22,14 @@ namespace BallBattle.View
         public const int UnlockLines = 3;
         /// <summary>Lines inside the milestone frame.</summary>
         public const int BoxLines = 10;
-        const int BoxTop = 132;          // screen y of the milestone frame
+        const int BoxTop = 136;          // screen y of the milestone frame
         const int BoxPad = 6;
-        const int LinePitch = 9;
+        const int LinePitch = PixelFont.CellHeight;   // BB-FONT1: 13 px cells (was 9)
+        /// <summary>Screen y of the NEXT GOAL box (60 px tall).</summary>
+        const int GoalTop = 300;
 
-        public static readonly Rect NewRunArea = new Rect(-80, -122, 160, 32);   // screen 330..362
-        public static readonly Rect MenuArea = new Rect(-80, -166, 160, 32);     // screen 374..406
+        public static readonly Rect NewRunArea = new Rect(-80, -160, 160, 32);   // screen 368..400
+        public static readonly Rect MenuArea = new Rect(-80, -200, 160, 32);     // screen 408..440
 
         PixelText title, fights, record, bosses, best, retry;
         readonly PixelText[] boxLines = new PixelText[BoxLines];
@@ -44,21 +46,21 @@ namespace BallBattle.View
         {
             var root = RunUi.Root(parent, "RunSummary", art);
             var v = root.gameObject.AddComponent<RunSummaryView>();
-            v.title = RunUi.Text(root, art, 0, 185, 3);    // top 40
-            v.fights = RunUi.Text(root, art, 0, 165, 1);   // top 70
-            v.record = RunUi.Text(root, art, 0, 150, 2);   // top 80
-            v.bosses = RunUi.Text(root, art, 0, 137, 1);   // top 98
-            v.best = RunUi.Text(root, art, 0, 127, 1);     // top 108
-            v.retry = RunUi.Text(root, art, 0, 117, 1);    // top 118
+            v.title = RunUi.Text(root, art, 0, 190, 3);    // cell 190..229
+            v.fights = RunUi.Text(root, art, 0, 175, 1);   // 175..188
+            v.record = RunUi.Text(root, art, 0, 148, 2);   // 148..174
+            v.bosses = RunUi.Text(root, art, 0, 134, 1);   // 134..147
+            v.best = RunUi.Text(root, art, 0, 121, 1);     // 121..134
+            v.retry = RunUi.Text(root, art, 0, 108, 1);    // 108..121
 
             var left = NextGoalBox.LocalX(8);
             var top = NextGoalBox.LocalTop(BoxTop);
             v.boxBorder = PixelRect.Create(root, "MilestoneBorder", art.Pixel, NextGoalBox.Green, RunUi.Order + 1);
             v.boxFill = PixelRect.Create(root, "MilestoneFill", art.Pixel, RunUi.Panel, RunUi.Order + 2);
             for (var i = 0; i < BoxLines; i++)
-                v.boxLines[i] = RunUi.Text(root, art, left + BoxPad, top - 5 - i * LinePitch - PixelFontData.GlyphHeight, 1, PixelText.Align.Left);
+                v.boxLines[i] = RunUi.Text(root, art, left + BoxPad, top - 5 - i * LinePitch - PixelFont.CellHeight, 1, PixelText.Align.Left);
 
-            v.goal = NextGoalBox.Create(root, art, 8, 248, RunUi.Order);
+            v.goal = NextGoalBox.Create(root, art, 8, GoalTop, RunUi.Order);
             RunUi.Button(root, art, NewRunArea, "NEW RUN", 2, Palette.WallWarning, () => v.NewRunRequested?.Invoke());
             RunUi.Button(root, art, MenuArea, "MENU", 2, Palette.TextDim, () => v.MenuRequested?.Invoke()).ClickCue = AudioIds.UiBack;
             return v;
@@ -166,7 +168,7 @@ namespace BallBattle.View
         public static List<(string text, Color32 color)> MilestoneLines(List<Milestone> reached)
         {
             var lines = new List<(string, Color32)>();
-            var max = (NextGoalBox.Width - 2 * BoxPad + 1) / PixelFontData.Advance;
+            var max = NextGoalBox.Width - 2 * BoxPad;   // pixels (scale 1)
             var any = false;
             foreach (var m in reached)
             {
@@ -187,7 +189,7 @@ namespace BallBattle.View
         /// </summary>
         public static List<string> UnlockText(IReadOnlyList<string> names)
         {
-            var max = TextWrap.MaxCharsOnScreen(1);
+            var max = TextWrap.MaxWidthOnScreen(1);
             var lines = TextWrap.Items(names, "UNLOCKED: ", "  ", max);
             if (lines.Count <= UnlockLines) return lines;
             // Too many: keep what fits, say how many more.

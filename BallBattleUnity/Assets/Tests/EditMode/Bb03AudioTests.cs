@@ -278,7 +278,7 @@ namespace BallBattle.Tests
         public void SettingsPanelLayout()
         {
             var menu = MenuView.Create(root.transform, art);
-            Assert.That(menu.GearButton.Area, Is.EqualTo(new Rect(250 - 135, 240 - 8 - 12, 12, 12)), "gear 12x12 at (250,8)");
+            Assert.That(menu.GearButton.Area, Is.EqualTo(new Rect(242 - 135, 240 - 4 - 24, 24, 24)), "gear: 24x24 tap target at (242,4) around the 12x12 drawing (BB-FONT1)");
             menu.ShowSettings();
             Assert.That(menu.SettingsOpen, Is.True);
             Bb0102Tests.AssertTextFitsAndNoOverlap(menu.transform);

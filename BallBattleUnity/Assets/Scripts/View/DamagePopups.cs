@@ -21,8 +21,15 @@ namespace BallBattle.View
         const float BigHit = 10f;
         /// <summary>Kept for reference: stacking now applies to every number on screen, not only those this recent.</summary>
         public const float StackWindow = 0.2f;
-        /// <summary>Minimum vertical gap between numbers in the same columns (more than a 2x number's 10 px height).</summary>
-        public const float StackStep = 12f;
+        /// <summary>Minimum vertical gap between numbers in the same columns (more than a 2x number's 14 px ink height).</summary>
+        public const float StackStep = 15f;
+
+        /// <summary>
+        /// Numbers are digits and signs: all their pixels are in the font's body rows (4..10 of the 13-row cell). Their box is
+        /// that ink box, from InkBottom to InkTop above the text position (BB-FONT1; the marks/dot rows are always empty here).
+        /// </summary>
+        public static float InkBottom(int scale) => (PixelFont.CellHeight - 1 - PixelFont.BodyBottomRow) * scale;
+        public static float InkTop(int scale) => (PixelFont.CellHeight - PixelFont.BodyTopRow) * scale;
         const int MaxStack = 16;
 
         sealed class Popup
@@ -165,8 +172,8 @@ namespace BallBattle.View
         /// <summary>Area a centred number covers at its start position.</summary>
         public static Rect StartRect(Vector2 start, string text, int scale)
         {
-            var width = PixelFontData.MeasureWidth(text) * scale;
-            return new Rect(start.x - width / 2, start.y, width, PixelFontData.GlyphHeight * scale);
+            var width = PixelFont.MeasureWidth(text) * scale;
+            return new Rect(start.x - width / 2, start.y + InkBottom(scale), width, InkTop(scale) - InkBottom(scale));
         }
 
         static Rect Expand(Rect r, float by) => new Rect(r.xMin - by, r.yMin - by, r.width + 2f * by, r.height + 2f * by);
@@ -177,9 +184,9 @@ namespace BallBattle.View
         /// </summary>
         public static Vector2 ClampToArena(Vector2 at, string text, int scale, ArenaRect arena)
         {
-            var width = PixelFontData.MeasureWidth(text) * scale;
+            var width = PixelFont.MeasureWidth(text) * scale;
             var leftOffset = width / 2;                      // PixelText.Align.Center starts at -(width / 2)
-            var height = PixelFontData.GlyphHeight * scale;
+            var height = InkTop(scale);   // ink top above the text position
             var minX = arena.Left.ToFloat() + WallMargin + leftOffset;
             var maxX = arena.Right.ToFloat() - WallMargin - (width - leftOffset);
             var minY = arena.Bottom.ToFloat() + WallMargin;
@@ -291,7 +298,7 @@ namespace BallBattle.View
                 if (p.Age >= Duration) { Hide(p); continue; }
                 var t = p.Age / Duration;
                 var y = CurrentY(p);
-                if (bounds.HasValue) y = Mathf.Min(y, Mathf.Floor(bounds.Value.Top.ToFloat() - WallMargin - PixelFontData.GlyphHeight * p.Scale));   // the walls may close in
+                if (bounds.HasValue) y = Mathf.Min(y, Mathf.Floor(bounds.Value.Top.ToFloat() - WallMargin - InkTop(p.Scale)));   // the walls may close in
                 p.Text.transform.localPosition = new Vector3(p.Start.x, y, 0f);
                 var c = p.Color;
                 c.a = (byte)(t < 0.5f ? 255 : 255f * (1f - t) / 0.5f);

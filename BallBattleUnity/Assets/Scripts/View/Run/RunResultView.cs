@@ -15,9 +15,9 @@ namespace BallBattle.View
         public const float EntryInputBlockSeconds = 0.8f;
 
         const float RowLeft = -110f;
-        /// <summary>HP LEFT, DMG DEALT, DMG TAKEN, COINS; the FOE HEALED line sits between DEALT and TAKEN (2 px clear of both).</summary>
-        static readonly float[] RowY = { 145f, 134f, 117f, 106f };
-        const float FoeHealedY = 126f;
+        /// <summary>HP LEFT, DMG DEALT, DMG TAKEN, COINS, one 13 px cell each; the FOE HEALED row sits between DEALT and TAKEN.</summary>
+        static readonly float[] RowY = { 145f, 132f, 106f, 93f };
+        const float FoeHealedY = 119f;
         static readonly Color32 HealColor = new Color32(140, 240, 220, 255);
         PixelText foeHealed;
         const float RowRight = 110f;
@@ -30,7 +30,9 @@ namespace BallBattle.View
         PixelText consequence, carry, runLine;
         PixelText traitTriggered;
         GameObject nextBox;
-        PixelText nextHeader, nextName, nextTraits, nextStats;
+        PixelText nextHeader, nextName, nextTraits, nextTraits2, nextStats;
+        /// <summary>Next enemy's traits lines: from x -74 to 120.</summary>
+        const int NextTraitsWidth = 194;
         SpriteRenderer nextIcon;
         PixelButton continueButton;
         bool onScreen;
@@ -46,11 +48,11 @@ namespace BallBattle.View
 
         void Build(Transform root)
         {
-            fight = RunUi.Text(root, art, 0, 206, 1);
-            title = RunUi.Text(root, art, 0, 176, 4);
-            how = RunUi.Text(root, art, 0, 164, 1);
+            fight = RunUi.Text(root, art, 0, 218, 1);     // cell 218..231
+            title = RunUi.Text(root, art, 0, 177, 3);     // x4 (52 px) no longer fits: x3, 177..216
+            how = RunUi.Text(root, art, 0, 163, 1);       // 163..176
 
-            RunUi.Box(root, art, -120, 98, 120, 156);
+            RunUi.Box(root, art, -120, 90, 120, 160);
             labels = new PixelText[4];
             values = new PixelText[4];
             string[] names = { "HP LEFT", "DMG DEALT", "DMG TAKEN", "COINS" };
@@ -63,21 +65,22 @@ namespace BallBattle.View
 
             // Small line under DMG DEALT, only when the enemy healed (Aegis regen, Vampire...): explains a DMG DEALT above its max HP.
             foeHealed = RunUi.Text(root, art, RowLeft + 8, FoeHealedY, 1, PixelText.Align.Left);
-            consequence = RunUi.Text(root, art, 0, 84, 1);
-            carry = RunUi.Text(root, art, 0, 72, 1);
-            traitTriggered = RunUi.Text(root, art, 0, 60, 1);
-            runLine = RunUi.Text(root, art, 0, 40, 3);
+            consequence = RunUi.Text(root, art, 0, 75, 1);      // 75..88
+            carry = RunUi.Text(root, art, 0, 62, 1);            // 62..75
+            traitTriggered = RunUi.Text(root, art, 0, 49, 1);   // 49..62
+            runLine = RunUi.Text(root, art, 0, 14, 2);          // only when the run is over (no next box then): x3 -> x2, 14..40
 
             nextBox = new GameObject("Next");
             nextBox.transform.SetParent(root, false);
             var n = nextBox.transform;
-            RunUi.Box(n, art, -120, -10, 120, 58);
-            nextHeader = RunUi.Text(n, art, -112, 48, 1, PixelText.Align.Left);
-            nextIcon = RunUi.Icon(n, new Vector2(-96, 22), RunUi.Order + 3);
+            RunUi.Box(n, art, -120, -38, 120, 46);
+            nextHeader = RunUi.Text(n, art, -112, 31, 1, PixelText.Align.Left);   // 31..44
+            nextIcon = RunUi.Icon(n, new Vector2(-96, 10), RunUi.Order + 3);
             nextIcon.transform.localScale = new Vector3(0.75f, 0.75f, 1f);
-            nextName = RunUi.Text(n, art, -74, 28, 2, PixelText.Align.Left);
-            nextTraits = RunUi.Text(n, art, -74, 16, 1, PixelText.Align.Left);
-            nextStats = RunUi.Text(n, art, -112, -2, 1, PixelText.Align.Left);
+            nextName = RunUi.Text(n, art, -74, 4, 2, PixelText.Align.Left);       // 4..30
+            nextTraits = RunUi.Text(n, art, -74, -9, 1, PixelText.Align.Left);    // -9..4
+            nextTraits2 = RunUi.Text(n, art, -74, -22, 1, PixelText.Align.Left);  // -22..-9 (only when the traits need two lines)
+            nextStats = RunUi.Text(n, art, -112, -35, 1, PixelText.Align.Left);   // -35..-22
 
             continueButton = RunUi.Button(root, art, ContinueArea, "NEXT FIGHT", 2, Palette.WallWarning, () => ContinueRequested?.Invoke());
         }
@@ -117,7 +120,11 @@ namespace BallBattle.View
                 nextHeader.Set(r.NextHeader, r.NextIsBoss ? Palette.WallWarning : Palette.TextDim);
                 nextIcon.sprite = art.Get(r.NextWeaponId).Ball;
                 nextName.Set(r.NextWeaponName, Palette.Look(r.NextWeaponId).Body);
-                nextTraits.Set(r.NextTraits, Palette.Text);
+                var lines = r.NextTraitNames != null && r.NextTraitNames.Count > 0
+                    ? TextWrap.Items(r.NextTraitNames, "", " ", NextTraitsWidth)
+                    : TextWrap.SplitToFit(r.NextTraits ?? "", NextTraitsWidth);
+                nextTraits.Set(lines.Count > 0 ? lines[0] : "", Palette.Text);
+                nextTraits2.Set(lines.Count > 1 ? string.Join(" ", lines.GetRange(1, lines.Count - 1)) : "", Palette.Text);
                 nextStats.Set(r.NextStats, Palette.Text);
             }
             continueButton.SetText(r.RunOver ? "SUMMARY" : "NEXT FIGHT", Palette.WallWarning);

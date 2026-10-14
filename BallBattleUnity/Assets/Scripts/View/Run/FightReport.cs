@@ -141,6 +141,8 @@ namespace BallBattle.View
         public bool NextIsBoss;
         public string NextWeaponId;
         public string NextTraits;
+        /// <summary>Next enemy's trait names (with level), one entry per trait, for wrapping between traits (BB-FONT1). Null: split NextTraits.</summary>
+        public System.Collections.Generic.List<string> NextTraitNames;
         public float NextEnemyHp;
         public string NextArenaId;
 
@@ -186,6 +188,7 @@ namespace BallBattle.View
                 r.NextIsBoss = run.IsBossFight;
                 r.NextWeaponId = enemy.WeaponId;
                 r.NextTraits = CardText.Traits(enemy);
+                r.NextTraitNames = CardText.TraitNames(enemy);
                 r.NextEnemyHp = next.Balls[1].MaxHp.ToFloat();
                 r.NextArenaId = run.ArenaId;
             }

@@ -82,6 +82,60 @@ namespace BallBattle.SimTests
             Assert.That(r.Pairs.Sum(p => p.Draws), Is.EqualTo(r.Pairs.Sum(p => p.Matches)), "nobody dies in 5 ticks");
         }
 
+        /// <summary>BB-FONT1 part B: activeTicks columns next to the tick columns, in both files; output only, still deterministic.</summary>
+        [Test]
+        public void ActiveTickColumnsArePresentBoundedAndDeterministic()
+        {
+            Assert.That(RoundRobin.MainHeader, Does.EndWith(",avgTicks,medianTicks,maxTicks,avgActiveTicks,medianActiveTicks,maxActiveTicks"));
+            Assert.That(RoundRobin.WeaponHeader, Does.EndWith(",avgTicks,avgActiveTicks,medianActiveTicks,maxActiveTicks"));
+            const int CapTicks = 10800;   // 180 s at 60 ticks/s: MatchConfig.CapTicks
+
+            var o = RoundRobin.Parse(new[] { "-seeds", "2", "-arena", "all" });
+            var a = RoundRobin.Run(o);
+            var b = RoundRobin.Run(RoundRobin.Parse(new[] { "-seeds", "2", "-arena", "all" }));
+            Assert.That(a.MainCsv, Is.EqualTo(b.MainCsv), "same args twice: byte-identical");
+            Assert.That(a.WeaponCsv, Is.EqualTo(b.WeaponCsv));
+            var serial = RoundRobin.Run(o, parallel: false);
+            Assert.That(serial.MainCsv, Is.EqualTo(a.MainCsv));
+            Assert.That(serial.WeaponCsv, Is.EqualTo(a.WeaponCsv));
+
+            var header = RoundRobin.MainHeader.Split(',');
+            int Col(string name) => Array.IndexOf(header, name);
+            var rows = a.MainCsv.TrimEnd('\n').Split('\n').Skip(1).Select(l => l.Split(',')).ToList();
+            Assert.That(rows.Count, Is.EqualTo(a.Pairs.Count));
+            double D(string s) => double.Parse(s, System.Globalization.CultureInfo.InvariantCulture);
+            foreach (var r in rows)
+            {
+                Assert.That(r.Length, Is.EqualTo(header.Length));
+                Assert.That(D(r[Col("avgActiveTicks")]), Is.LessThanOrEqualTo(D(r[Col("avgTicks")])), string.Join(",", r));
+                Assert.That(D(r[Col("medianActiveTicks")]), Is.LessThanOrEqualTo(D(r[Col("medianTicks")])), string.Join(",", r));
+                Assert.That(int.Parse(r[Col("maxActiveTicks")]), Is.LessThanOrEqualTo(int.Parse(r[Col("maxTicks")])));
+                Assert.That(int.Parse(r[Col("maxActiveTicks")]), Is.LessThanOrEqualTo(CapTicks));
+            }
+            var weaponHeader = RoundRobin.WeaponHeader.Split(',');
+            foreach (var r in a.WeaponCsv.TrimEnd('\n').Split('\n').Skip(1).Select(l => l.Split(',')))
+            {
+                Assert.That(r.Length, Is.EqualTo(weaponHeader.Length));
+                Assert.That(D(r[Array.IndexOf(weaponHeader, "avgActiveTicks")]), Is.LessThanOrEqualTo(D(r[Array.IndexOf(weaponHeader, "avgTicks")])));
+                Assert.That(int.Parse(r[Array.IndexOf(weaponHeader, "maxActiveTicks")]), Is.LessThanOrEqualTo(CapTicks));
+            }
+
+            // Every match: activeTicks <= ticks <= cap, and adding the column changed no result (Play == PlayDetailed).
+            foreach (var p in a.Pairs)
+            {
+                Assert.That(p.MaxActiveTicks, Is.LessThanOrEqualTo(p.MaxTicks));
+                for (var i = 0; i < p.Matches; i++)
+                {
+                    var seed = RoundRobin.Seed(p.WeaponA, p.WeaponB, i);
+                    var (w, t, at) = RoundRobin.PlayDetailed(p.Arena, p.WeaponA, p.WeaponB, seed, 0);
+                    Assert.That(at, Is.LessThanOrEqualTo(t));
+                    Assert.That(at, Is.LessThanOrEqualTo(CapTicks));
+                    Assert.That(RoundRobin.Play(p.Arena, p.WeaponA, p.WeaponB, seed, 0), Is.EqualTo((w, t)));
+                    Assert.That(p.ActiveTicksSorted, Does.Contain(at));
+                }
+            }
+        }
+
         /// <summary>
         /// dotnet entry for the same tool: BB_RR_ARGS="-seeds 200 -arena classic -out results.csv" dotnet test --filter Name=RoundRobinCli
         /// </summary>

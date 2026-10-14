@@ -329,10 +329,10 @@ namespace BallBattle.Tests
             foreach (var at in points)
             {
                 var p = DamagePopups.ClampToArena(at, text, scale, arena);
-                var w = PixelFontData.MeasureWidth(text) * scale;
+                var w = PixelFont.MeasureWidth(text) * scale;
                 var left = p.x - w / 2;
                 var right = left + w;
-                var top = p.y + DamagePopups.Rise + PixelFontData.GlyphHeight * scale;
+                var top = p.y + DamagePopups.Rise + DamagePopups.InkTop(scale);   // the highest ink pixel
                 Assert.That(left, Is.GreaterThanOrEqualTo(arena.Left.ToFloat() + DamagePopups.WallMargin), $"{text} x{scale} at {at}");
                 Assert.That(right, Is.LessThanOrEqualTo(arena.Right.ToFloat() - DamagePopups.WallMargin), $"{text} x{scale} at {at}");
                 Assert.That(p.y, Is.GreaterThanOrEqualTo(arena.Bottom.ToFloat() + DamagePopups.WallMargin), $"{text} x{scale} at {at}");
@@ -357,6 +357,7 @@ namespace BallBattle.Tests
 
             var names = new List<string>();
             foreach (var a in run.Achievements) names.AddRange(RunStrings.UnlockedNames(a));
+            names = names.Distinct().ToList();   // BB-FONT1: win1 names its goal rewards, which include boss2's
             var lines = RunSummaryView.UnlockText(names);
             Assert.That(lines.Count, Is.InRange(1, RunSummaryView.UnlockLines));
             var joined = string.Join(" ", lines);
@@ -369,7 +370,7 @@ namespace BallBattle.Tests
             var many = Enumerable.Range(0, 40).Select(i => "LONG NAME " + i).ToList();
             var lines = RunSummaryView.UnlockText(many);
             Assert.That(lines.Count, Is.LessThanOrEqualTo(RunSummaryView.UnlockLines));
-            foreach (var l in lines) Assert.That(l.Length, Is.LessThanOrEqualTo(TextWrap.MaxCharsOnScreen(1)));
+            foreach (var l in lines) Assert.That(PixelFont.MeasureWidth(l), Is.LessThanOrEqualTo(TextWrap.MaxWidthOnScreen(1)), l);
             Assert.That(lines[lines.Count - 1], Does.EndWith("MORE"));
         }
 

@@ -105,16 +105,26 @@ namespace BallBattle.View
         }
 
         /// <summary>
-        /// On-screen names of what an achievement unlocks, in table order (weapons, then traits): the current ball names
-        /// (WeaponNames: EMBER, MANTIS, ... HIVE), not the sim registry names. View-side replacement for
-        /// UnlockRules.UnlockedNames, which reads WeaponRegistry.DisplayName (Sim stays untouched).
+        /// Display names of what a goal unlocks, read from the goal's reward data (UnlockRules.GoalTable row → Rewards →
+        /// weapon/trait ids), e.g. win1 → SPARKLER, POISON TIP, MIRROR, SPORE, BUBBLE, PARRY MASTER. A plain achievement
+        /// without a goal row (boss2, boss3) uses its own unlock row. Weapons show their ball names (WeaponNames: EMBER ...
+        /// HIVE), traits their registry name. Never an achievement or goal id: ids that are neither a weapon nor a trait
+        /// in this build are skipped. View-side replacement for UnlockRules.UnlockedNames (Sim untouched).
         /// </summary>
-        public static List<string> UnlockedNames(string achievement)
+        public static List<string> UnlockedNames(string goalOrAchievement)
         {
             var names = new List<string>();
-            if (string.IsNullOrEmpty(achievement)) return names;
-            var row = new GoalRow(achievement, new[] { achievement }, new[] { achievement }, GoalProgress.RunsWon, 1);
-            foreach (var id in UnlockRules.NewRewards(row, new ProgressData())) names.Add(RewardName(id));
+            if (string.IsNullOrEmpty(goalOrAchievement)) return names;
+            var row = UnlockRules.GoalRowOf(goalOrAchievement)
+                      ?? new GoalRow(goalOrAchievement, new[] { goalOrAchievement }, new[] { goalOrAchievement }, GoalProgress.RunsWon, 1);
+            foreach (var id in UnlockRules.NewRewards(row, new ProgressData()))
+            {
+                string name = null;
+                foreach (var w in WeaponRegistry.All)
+                    if (w.Id == id) name = WeaponNames.Of(id);
+                if (name == null && TraitRegistry.Exists(id)) name = TraitRegistry.Get(id).DisplayName;
+                if (name != null && !names.Contains(name)) names.Add(name);
+            }
             return names;
         }
 

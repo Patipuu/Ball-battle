@@ -14,15 +14,20 @@ namespace BallBattle.View
     public sealed class PrepareView : MonoBehaviour
     {
         // ---- Layout (native pixels, screen centred). Public so tests can check hitboxes. ----
-        public const float CardHeight = 36f;
-        static readonly float[] CardBottoms = { 0f, -42f, -84f };
+        /// <summary>BB-FONT1 (5x7 font, 13 px cells): 58 px cards = title row (26) + two detail rows (13 + 13), 1 px between rows, 2 px padding.</summary>
+        public const float CardHeight = 58f;
+        static readonly float[] CardBottoms = { -49f, -110f, -171f };
         public static Rect CardArea(int i) => new Rect(-125, CardBottoms[i], 250, CardHeight);
-        public static readonly Rect RerollArea = new Rect(-125, -130, 110, 30);
-        public static readonly Rect FightArea = new Rect(-5, -130, 130, 30);
+        public static readonly Rect RerollArea = new Rect(-125, -205, 110, 30);
+        public static readonly Rect FightArea = new Rect(-5, -205, 130, 30);
+        /// <summary>Card text (title, details) stays left of this x (2 px inside the card's right edge).</summary>
+        public const float CardTextRight = 123f;
+        /// <summary>Traits lines in the ENEMY / YOU boxes: from x -74 to 121.</summary>
+        const int TraitsWidth = 195;
         /// <summary>Gap between the REROLL button and the reason line under it.</summary>
         public const float RerollReasonGap = 2f;
         /// <summary>Bottom of the scale-1 reason line: its top is RerollReasonGap below the button.</summary>
-        public static readonly float RerollReasonY = RerollArea.yMin - RerollReasonGap - PixelFontData.GlyphHeight;
+        public static readonly float RerollReasonY = RerollArea.yMin - RerollReasonGap - PixelFont.CellHeight;
         public static readonly Rect ConfirmPanel = ConfirmDialog.PanelAt(0);   // where SKIP FREE PICK? opens (off FIGHT)
         public static readonly Rect ConfirmYesArea = ConfirmDialog.YesAt(0);
         public static readonly Rect ConfirmNoArea = ConfirmDialog.NoAt(0);
@@ -36,7 +41,7 @@ namespace BallBattle.View
         public event Action RerollRequested, FightRequested;
 
         ArtLibrary art;
-        PixelText header, purse, pickHint, enemyLabel, enemyName, enemyTraits, enemyStats, youName, youTraits, youStats;
+        PixelText header, purse, pickHint, enemyLabel, enemyName, enemyTraits, enemyTraits2, enemyStats, youName, youTraits, youTraits2, youStats;
         SpriteRenderer enemyIcon, youIcon;
         PixelText arenaName;
         Transform arenaRoot;
@@ -58,7 +63,7 @@ namespace BallBattle.View
 
         /// <summary>Card text starts here; with a 2x icon (28 px) it moves right past it.</summary>
         public const float CardTextX = -117f;
-        public const float CardTextXWithIcon = -85f;
+        public const float CardTextXWithIcon = -86f;
         static readonly Color32 FrameTaken = new Color32(150, 230, 160, 255);
         static readonly Color32 FrameBlocked = new Color32(120, 120, 132, 255);
         readonly float[] cardBlink = new float[RunTuning.OfferSize];
@@ -83,27 +88,31 @@ namespace BallBattle.View
 
         void Build(Transform root)
         {
-            header = RunUi.Text(root, art, 0, 210, 2);
-            purse = RunUi.Text(root, art, 0, 196, 1);
+            header = RunUi.Text(root, art, 0, 212, 2);    // cell 212..238
+            purse = RunUi.Text(root, art, 0, 198, 1);     // cell 198..211
 
-            RunUi.Box(root, art, -125, 126, 125, 188);
-            enemyLabel = RunUi.Text(root, art, -119, 178, 1, PixelText.Align.Left);
-            enemyIcon = RunUi.Icon(root, new Vector2(-100, 150), RunUi.Order + 3);
-            enemyName = RunUi.Text(root, art, -74, 160, 2, PixelText.Align.Left);
-            enemyTraits = RunUi.Text(root, art, -74, 148, 1, PixelText.Align.Left);
-            enemyStats = RunUi.Text(root, art, -74, 136, 1, PixelText.Align.Left);
-            arenaName = RunUi.Text(root, art, ArenaPreviewX, 129, 1);
+            // ENEMY box 113..196: label 181, name x2 154, traits 141 and 128 (wrapped between traits), stats 115.
+            RunUi.Box(root, art, -125, 113, 125, 196);
+            enemyLabel = RunUi.Text(root, art, -119, 181, 1, PixelText.Align.Left);
+            enemyIcon = RunUi.Icon(root, new Vector2(-100, 152), RunUi.Order + 3);
+            enemyName = RunUi.Text(root, art, -74, 154, 2, PixelText.Align.Left);
+            enemyTraits = RunUi.Text(root, art, -74, 141, 1, PixelText.Align.Left);
+            enemyTraits2 = RunUi.Text(root, art, -74, 128, 1, PixelText.Align.Left);
+            enemyStats = RunUi.Text(root, art, -74, 115, 1, PixelText.Align.Left);
+            arenaName = RunUi.Text(root, art, 121, 115, 1, PixelText.Align.Right);   // right-aligned inside the box ("ARENA BUMPERS" no longer fits centred under the preview)
             arenaRoot = new GameObject("ArenaPreview").transform;
             arenaRoot.SetParent(root, false);
 
-            RunUi.Box(root, art, -125, 58, 125, 120);
-            RunUi.Text(root, art, -119, 110, 1, PixelText.Align.Left, "YOU", Palette.TextDim);
-            youIcon = RunUi.Icon(root, new Vector2(-100, 82), RunUi.Order + 3);
-            youName = RunUi.Text(root, art, -74, 92, 2, PixelText.Align.Left);
-            youTraits = RunUi.Text(root, art, -74, 80, 1, PixelText.Align.Left);
-            youStats = RunUi.Text(root, art, -74, 68, 1, PixelText.Align.Left);
+            // YOU box 26..109: label 94, name x2 67, traits 54 and 41, stats 28.
+            RunUi.Box(root, art, -125, 26, 125, 109);
+            RunUi.Text(root, art, -119, 94, 1, PixelText.Align.Left, "YOU", Palette.TextDim);
+            youIcon = RunUi.Icon(root, new Vector2(-100, 67), RunUi.Order + 3);
+            youName = RunUi.Text(root, art, -74, 67, 2, PixelText.Align.Left);
+            youTraits = RunUi.Text(root, art, -74, 54, 1, PixelText.Align.Left);
+            youTraits2 = RunUi.Text(root, art, -74, 41, 1, PixelText.Align.Left);
+            youStats = RunUi.Text(root, art, -74, 28, 1, PixelText.Align.Left);
 
-            pickHint = RunUi.Text(root, art, 0, 44, 1);
+            pickHint = RunUi.Text(root, art, 0, 11, 1);   // cell 11..24, between YOU (26) and card 1 (top 9)
             for (var i = 0; i < cards.Length; i++)
             {
                 var index = i;
@@ -120,25 +129,25 @@ namespace BallBattle.View
                 PixelRect.Set(cardStripes[i], area.xMin + 2, area.yMin + 2, area.xMin + 6, area.yMax - 2);
                 var iconGo = new GameObject("Icon");
                 iconGo.transform.SetParent(cards[i].transform, false);
-                iconGo.transform.localPosition = new Vector3(area.xMin + 22, area.yMin + 18, 0f);   // 28x28 at x -117..-89, y +4..+32
+                iconGo.transform.localPosition = new Vector3(area.xMin + 22, area.yMin + CardHeight / 2f, 0f);   // 28x28 at x -117..-89, centred
                 iconGo.transform.localScale = new Vector3(2f, 2f, 1f);
                 cardIcons[i] = iconGo.AddComponent<SpriteRenderer>();
                 cardIcons[i].sortingOrder = cards[i].IconOrder + 1;
                 var order = cards[i].IconOrder + 2;
-                cardTitles[i] = PixelText.Create(cards[i].transform, "Title", art.Font, new Vector2(-117, area.yMin + 22), PixelText.Align.Left, 2, order);
-                cardTags[i] = PixelText.Create(cards[i].transform, "Tag", art.Font, new Vector2(117, area.yMin + 25), PixelText.Align.Right, 1, order);
-                cardTitleSmall1[i] = PixelText.Create(cards[i].transform, "TitleLine1", art.Font, new Vector2(-117, area.yMin + 27), PixelText.Align.Left, 1, order);
-                cardTitleSmall2[i] = PixelText.Create(cards[i].transform, "TitleLine2", art.Font, new Vector2(-117, area.yMin + 20), PixelText.Align.Left, 1, order);
-                cardDetails[i] = PixelText.Create(cards[i].transform, "Detail", art.Font, new Vector2(-117, area.yMin + 12), PixelText.Align.Left, 1, order);
-                cardDetails2[i] = PixelText.Create(cards[i].transform, "Detail2", art.Font, new Vector2(-117, area.yMin + 4), PixelText.Align.Left, 1, order);
+                cardTitles[i] = PixelText.Create(cards[i].transform, "Title", art.Font, new Vector2(-117, area.yMin + TitleY), PixelText.Align.Left, 2, order);
+                cardTags[i] = PixelText.Create(cards[i].transform, "Tag", art.Font, new Vector2(117, area.yMin + TagY), PixelText.Align.Right, 1, order);
+                cardTitleSmall1[i] = PixelText.Create(cards[i].transform, "TitleLine1", art.Font, new Vector2(-117, area.yMin + SmallLine1Y), PixelText.Align.Left, 1, order);
+                cardTitleSmall2[i] = PixelText.Create(cards[i].transform, "TitleLine2", art.Font, new Vector2(-117, area.yMin + SmallLine2Y), PixelText.Align.Left, 1, order);
+                cardDetails[i] = PixelText.Create(cards[i].transform, "Detail", art.Font, new Vector2(-117, area.yMin + Detail1Y), PixelText.Align.Left, 1, order);
+                cardDetails2[i] = PixelText.Create(cards[i].transform, "Detail2", art.Font, new Vector2(-117, area.yMin + Detail2Y), PixelText.Align.Left, 1, order);
             }
 
-            reroll = RunUi.Button(root, art, RerollArea, $"REROLL {RunTuning.RerollCost}", 1, Palette.TextDim, () => { if (!TapSwallowed) OnRerollClicked(); });
+            reroll = RunUi.Button(root, art, RerollArea, $"REROLL {RunTuning.RerollCost}", 1, Palette.TextDim, () => { if (!TapSwallowed) OnRerollClicked(); });   // cell inside 30 px
             reroll.ClickCue = null;   // card_reroll (RunFlow.Rerolled) or ui_denied
             // One small line 2 px under the button (it used to sit inside it, over the label).
             rerollReason = PixelText.Create(reroll.transform, "Reason", art.Font, new Vector2(RerollArea.center.x, RerollReasonY), PixelText.Align.Center, 1, reroll.IconOrder + 1);
-            RunUi.Button(root, art, FightArea, "FIGHT!", 3, Palette.WallWarning, () => { if (!TapSwallowed) OnFightClicked(); });
-            RunUi.Text(root, art, 0, -150, 1, initial: "ESC: MENU   THE RUN IS SAVED", color: Palette.TextDim);
+            RunUi.Button(root, art, FightArea, "FIGHT!", 2, Palette.WallWarning, () => { if (!TapSwallowed) OnFightClicked(); });   // x3 (39 px) no longer fits 30 px
+            RunUi.Text(root, art, 0, -235, 1, initial: "ESC: MENU   THE RUN IS SAVED", color: Palette.TextDim);   // cell -235..-222, under the reason line
 
             BuildConfirm(root);
         }
@@ -151,7 +160,7 @@ namespace BallBattle.View
         /// <summary>Sprite radius the preview icons are scaled from (the sim radius 24 of a boss = x1.5).</summary>
         float IconNativeRadius => art != null && art.BallFlash != null ? art.BallFlash.rect.width / art.BallFlash.pixelsPerUnit * 0.5f : 16f;
         const float ArenaPreviewX = 92f;
-        const float ArenaPreviewY = 160f;
+        const float ArenaPreviewY = 164f;
         const float ArenaPreviewWidth = 46f;   // the widest arena (260) maps to this many pixels
         /// <summary>The arena preview draws the floor tile at this scale (5 px instead of 10).</summary>
         public const float PreviewTileScale = 0.5f;
@@ -179,11 +188,11 @@ namespace BallBattle.View
             var enemy = run.Enemy;
             enemyLabel.Set(boss ? "GIANT BOSS" : "ENEMY", boss ? Palette.WallWarning : Palette.TextDim);
             SetBall(enemyIcon, enemyName, enemy.WeaponId, (foe != null ? foe.Radius.ToFloat() : (enemy.Radius > Fix.Zero ? enemy.Radius.ToFloat() : IconNativeRadius)) / IconNativeRadius);
-            enemyTraits.Set(CardText.Traits(enemy), Palette.Text);
+            SetTraits(enemyTraits, enemyTraits2, CardText.TraitLines(enemy, TraitsWidth));
             enemyStats.Set(EnemyHpText((foe != null ? foe.Hp : enemy.MaxHp).ToFloat(), (foe != null ? foe.MaxHp : enemy.MaxHp).ToFloat()), Palette.TextDim);
 
             SetBall(youIcon, youName, run.Build.WeaponId, (you != null ? you.Radius.ToFloat() : IconNativeRadius) / IconNativeRadius);
-            youTraits.Set(CardText.Traits(run.Build), Palette.Text);
+            SetTraits(youTraits, youTraits2, CardText.TraitLines(run.Build, TraitsWidth));
             youStats.Set(you != null ? CardText.Stats(run.Build, you.Hp.ToFloat(), you.MaxHp.ToFloat()) : CardText.Stats(run.Build), Palette.TextDim);
             ShowArena(run.ArenaId);
 
@@ -206,6 +215,16 @@ namespace BallBattle.View
             if (rerollWhy != null) rerollReason.Set(rerollWhy, Blocked);
             else rerollReason.Set(RerollAgainText(run), Palette.TextDim);   // reroll is repeatable: say it costs again
         }
+
+        /// <summary>Up to two traits lines (wrapped between traits); a third line, which three traits never need, joins the second.</summary>
+        static void SetTraits(PixelText line1, PixelText line2, System.Collections.Generic.List<string> lines)
+        {
+            line1.Set(lines.Count > 0 ? lines[0] : "", Palette.Text);
+            line2.Set(lines.Count > 1 ? string.Join(" ", lines.GetRange(1, lines.Count - 1)) : "", Palette.Text);
+        }
+
+        /// <summary>Traits lines of the YOU box (tests).</summary>
+        public string YouTraitsText => (youTraits.Text + " " + youTraits2.Text).Trim();
 
         /// <summary>Enemy HP line: the HP the fight really starts with (Heavy, Glass Cannon, boss HP all applied).</summary>
         /// <summary>The line under REROLL ("NOT ENOUGH COINS" in red, or the dim "AGAIN ..." note; tests).</summary>
@@ -281,27 +300,31 @@ namespace BallBattle.View
             var x = cardTitles[i].transform.localPosition.x;
             var y0 = CardArea(i).yMin;
             var tag = cardTags[i].Text;
-            var tagLeft = string.IsNullOrEmpty(tag) ? float.PositiveInfinity : 117f - PixelFontData.MeasureWidth(tag);
+            var tagLeft = string.IsNullOrEmpty(tag) ? float.PositiveInfinity : 117f - PixelFont.MeasureWidth(tag);
+            var right = Mathf.Min(tagLeft - TitleTagGap, CardTextRight);   // the 2x title must clear the tag and the card edge
             string line1 = null, line2 = null;
-            if (x + PixelFontData.MeasureWidth(title) * 2 + TitleTagGap > tagLeft)
+            if (x + PixelFont.MeasureWidth(title) * 2 > right)
                 for (var at = title.LastIndexOf(' '); at > 0; at = title.LastIndexOf(' ', at - 1))
                 {
                     var a = title.Substring(0, at);
                     var b = title.Substring(at + 1);
-                    if (x + PixelFontData.MeasureWidth(a) + TitleTagGap > tagLeft || x + PixelFontData.MeasureWidth(b) > 117f) continue;
+                    if (x + PixelFont.MeasureWidth(a) + TitleTagGap > tagLeft || x + PixelFont.MeasureWidth(b) > CardTextRight) continue;
                     line1 = a;
                     line2 = b;
                     break;   // the longest first line that fits
                 }
             var wrapped = line1 != null;
             cardTitles[i].Set(wrapped ? "" : title, color);
-            cardTitleSmall1[i].transform.localPosition = new Vector3(x, y0 + 27, 0f);
-            cardTitleSmall2[i].transform.localPosition = new Vector3(x, y0 + 20, 0f);
+            cardTitleSmall1[i].transform.localPosition = new Vector3(x, y0 + SmallLine1Y, 0f);
+            cardTitleSmall2[i].transform.localPosition = new Vector3(x, y0 + SmallLine2Y, 0f);
             cardTitleSmall1[i].Set(wrapped ? line1 : "", color);
             cardTitleSmall2[i].Set(wrapped ? line2 : "", color);
         }
 
         const float TitleTagGap = 2f;
+        /// <summary>Rows inside a card, px above its bottom (13 px cells, 1 px apart): title x2 30..56, tag 43..56 (beside the
+        /// title, on the row of the first wrapped line), wrapped title 43..56 and 30..43, details 16..29 and 2..15.</summary>
+        public const float TitleY = 30f, TagY = 43f, SmallLine1Y = 43f, SmallLine2Y = 30f, Detail1Y = 16f, Detail2Y = 2f;
 
         /// <summary>True when card <paramref name="i"/>'s title is wrapped onto two small lines (tests).</summary>
         public bool TitleWrapped(int i) => cardTitleSmall1[i].Text.Length > 0;
@@ -325,9 +348,9 @@ namespace BallBattle.View
             cardIcons[i].enabled = face.Icon != null;
             var x = face.Icon != null ? CardTextXWithIcon : CardTextX;
             var y0 = CardArea(i).yMin;
-            cardTitles[i].transform.localPosition = new Vector3(x, y0 + 22, 0f);
-            cardDetails[i].transform.localPosition = new Vector3(x, y0 + 12, 0f);
-            cardDetails2[i].transform.localPosition = new Vector3(x, y0 + 4, 0f);
+            cardTitles[i].transform.localPosition = new Vector3(x, y0 + TitleY, 0f);
+            cardDetails[i].transform.localPosition = new Vector3(x, y0 + Detail1Y, 0f);
+            cardDetails2[i].transform.localPosition = new Vector3(x, y0 + Detail2Y, 0f);
             cardDetails[i].SetHighlighted(face.Detail1, Palette.TextDim, CardFace.NumberColor);
             cardDetails2[i].SetHighlighted(face.Detail2, Palette.TextDim, CardFace.NumberColor);
         }

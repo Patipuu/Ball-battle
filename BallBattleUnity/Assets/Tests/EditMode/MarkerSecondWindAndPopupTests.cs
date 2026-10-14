@@ -534,7 +534,7 @@ namespace BallBattle.Tests
             for (var i = 0; i < 3; i++) popups.Show(new Vector2(10f, arena.Top.ToFloat() - 2f), 0.2f, FxView.ReflectColor, arena, 2);
             var shown = popups.Showing();
             foreach (var p in shown)
-                Assert.That(p.start.y + DamagePopups.Rise + PixelFontData.GlyphHeight * p.scale, Is.LessThanOrEqualTo(arena.Top.ToFloat() - DamagePopups.WallMargin), "never over the top wall");
+                Assert.That(p.start.y + DamagePopups.Rise + DamagePopups.InkTop(p.scale), Is.LessThanOrEqualTo(arena.Top.ToFloat() - DamagePopups.WallMargin), "never over the top wall");
             var ys = shown.Select(p => p.start.y).OrderByDescending(y => y).ToArray();
             for (var i = 1; i < ys.Length; i++) Assert.That(ys[i - 1] - ys[i], Is.GreaterThanOrEqualTo(DamagePopups.StackStep), "stacked downwards");
             for (var t = 0; t < 45; t++) { popups.Tick(1f / 60f); AssertApartNow(popups, $"top, frame {t}"); }
@@ -561,7 +561,7 @@ namespace BallBattle.Tests
             popups.SetBounds(tight);
             popups.Tick(0.3f);
             var y = popups.ShowingNow()[0].y;
-            Assert.That(y + PixelFontData.GlyphHeight, Is.LessThanOrEqualTo(tight.Top.ToFloat() - DamagePopups.WallMargin));
+            Assert.That(y + DamagePopups.InkTop(1), Is.LessThanOrEqualTo(tight.Top.ToFloat() - DamagePopups.WallMargin));
         }
 
         // ---- 7. Versus overlay ----

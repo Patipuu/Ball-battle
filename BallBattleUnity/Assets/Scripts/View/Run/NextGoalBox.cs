@@ -4,18 +4,21 @@ using UnityEngine;
 namespace BallBattle.View
 {
     /// <summary>
-    /// Shared NEXT GOAL panel, fixed 254x52 so a taller font (Vietnamese) never moves the screen around it.
-    /// Left: "NEXT GOAL", goal name (HUD yellow, scale 2), "UNLOCKS: A  B +N". Right: "current/max" and a 66x4 bar.
+    /// Shared NEXT GOAL panel, fixed 254x60 so a taller font (Vietnamese) never moves the screen around it.
+    /// Left: "NEXT GOAL", goal name (HUD yellow, scale 2), "UNLOCKS: A  B +N", each in its own 13*scale px cell (BB-FONT1).
+    /// Right: "current/max" and a 66x4 bar under it.
     /// When everything is unlocked: "ALL UNLOCKED" in green and "WINS n", no number or bar.
     /// Placed by its top-left corner in 270x480 screen pixels (origin top-left).
     /// </summary>
     public sealed class NextGoalBox : MonoBehaviour
     {
         public const int Width = 254;
-        public const int Height = 52;
+        public const int Height = 60;
         const int Pad = 6;
         const int BarWidth = 66;
         const int BarHeight = 4;
+        /// <summary>Bar top, px below the box top (under the count).</summary>
+        const int BarTop = 31;
 
         public static readonly Color32 Green = new Color32(110, 220, 110, 255);
 
@@ -50,21 +53,21 @@ namespace BallBattle.View
             PixelRect.Set(PixelRect.Create(transform, "Border", art.Pixel, Palette.Wall, order + 1), left, top - Height, left + Width, top);
             PixelRect.Set(PixelRect.Create(transform, "Fill", art.Pixel, RunUi.Panel, order + 2), left + 1, top - Height + 1, left + Width - 1, top - 1);
 
-            label = TextAt(art, left + Pad, 2, 1, PixelText.Align.Left, order + 4);
+            label = TextAt(art, left + Pad, 2, 1, PixelText.Align.Left, order + 4);       // cell 2..15
             label.Set(RunStrings.NextGoal, Palette.TextDim);
-            title = TextAt(art, left + Pad, 14, 2, PixelText.Align.Left, order + 4);
-            sub = TextAt(art, left + Pad, 36, 1, PixelText.Align.Left, order + 4);
-            count = TextAt(art, left + Width - Pad, 18, 1, PixelText.Align.Right, order + 4);
+            title = TextAt(art, left + Pad, 15, 2, PixelText.Align.Left, order + 4);      // cell 15..41
+            sub = TextAt(art, left + Pad, 43, 1, PixelText.Align.Left, order + 4);        // cell 43..56
+            count = TextAt(art, left + Width - Pad, 15, 1, PixelText.Align.Right, order + 4);   // cell 15..28
 
             barLeft = left + Width - Pad - BarWidth;
             barBack = PixelRect.Create(transform, "BarBack", art.Pixel, Palette.HpBack, order + 3);
-            PixelRect.Set(barBack, barLeft, top - 28 - BarHeight, barLeft + BarWidth, top - 28);
+            PixelRect.Set(barBack, barLeft, top - BarTop - BarHeight, barLeft + BarWidth, top - BarTop);
             barFill = PixelRect.Create(transform, "BarFill", art.Pixel, Palette.WallWarning, order + 4);
         }
 
         /// <summary>Text whose top edge is <paramref name="dy"/> pixels below the box top.</summary>
         PixelText TextAt(ArtLibrary art, float x, int dy, int scale, PixelText.Align align, int order) =>
-            PixelText.Create(transform, "Text", art.Font, new Vector2(x, top - dy - PixelFontData.GlyphHeight * scale), align, scale, order);
+            PixelText.Create(transform, "Text", art.Font, new Vector2(x, top - dy - PixelFont.CellHeight * scale), align, scale, order);
 
         public void Show(ProgressData progress)
         {
@@ -86,7 +89,7 @@ namespace BallBattle.View
             barBack.gameObject.SetActive(true);
             var fill = g.Max > 0 ? Mathf.Round(BarWidth * Mathf.Clamp01((float)g.Current / g.Max)) : 0f;
             barFill.gameObject.SetActive(fill > 0f);
-            PixelRect.Set(barFill, barLeft, top - 28 - BarHeight, barLeft + fill, top - 28);
+            PixelRect.Set(barFill, barLeft, top - BarTop - BarHeight, barLeft + fill, top - BarTop);
         }
     }
 }

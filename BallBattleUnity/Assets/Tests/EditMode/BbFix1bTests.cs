@@ -286,8 +286,8 @@ namespace BallBattle.Tests
                 Assert.That(b.LabelText, Is.EqualTo(RunStrings.Back));
                 Assert.That(b.LabelScale, Is.EqualTo(backs[0].LabelScale), b.name);
                 Assert.That(b.LabelScale, Is.GreaterThanOrEqualTo(2), "readable: 10 px tall");
-                Assert.That(PixelFontData.MeasureWidth(RunStrings.Back) * b.LabelScale, Is.LessThan(b.Area.width - 4f), "fits");
-                Assert.That(PixelFontData.GlyphHeight * b.LabelScale, Is.LessThan(b.Area.height - 4f), "fits");
+                Assert.That(PixelFont.MeasureWidth(RunStrings.Back) * b.LabelScale, Is.LessThan(b.Area.width - 4f), "fits");
+                Assert.That(PixelFont.CellHeight * b.LabelScale, Is.LessThan(b.Area.height - 4f), "fits");
             }
             var s = menu.Settings.BackButton;
             Assert.That(s.FillColor, Is.EqualTo(new Color32(0xF4, 0xC5, 0x42, 255)));

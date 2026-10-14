@@ -36,7 +36,9 @@ namespace BallBattle.View
         sealed class Layout
         {
             public GameObject Root;
-            public PixelText Question, Info;
+            /// <summary>The question at scale 2, or at scale 1 when scale 2 would not fit the panel (only one is shown).</summary>
+            public PixelText Question, QuestionSmall, Info;
+            public PixelText ShownQuestion => Question.Text.Length > 0 ? Question : QuestionSmall;
         }
 
         Transform root;
@@ -65,8 +67,10 @@ namespace BallBattle.View
                 var t = l.Root.transform;
                 PixelRect.Set(PixelRect.Create(t, "Border", art.Pixel, Palette.WallWarning, order + 1), p.xMin, p.yMin, p.xMax, p.yMax);
                 PixelRect.Set(PixelRect.Create(t, "Fill", art.Pixel, RunUi.Panel, order + 2), p.xMin + 1, p.yMin + 1, p.xMax - 1, p.yMax - 1);
-                l.Question = PixelText.Create(t, "Question", art.Font, new Vector2(0, p.yMax - 22), PixelText.Align.Center, 2, order + 4);
-                l.Info = PixelText.Create(t, "Info", art.Font, new Vector2(0, p.yMax - 34), PixelText.Align.Center, 1, order + 4);
+                // BB-FONT1 cells: question 6..32 px under the top (scale 2; scale 1 sits at 13..26), info 36..49, buttons 56..84.
+                l.Question = PixelText.Create(t, "Question", art.Font, new Vector2(0, p.yMax - 6 - 2 * PixelFont.CellHeight), PixelText.Align.Center, 2, order + 4);
+                l.QuestionSmall = PixelText.Create(t, "QuestionSmall", art.Font, new Vector2(0, p.yMax - 13 - PixelFont.CellHeight), PixelText.Align.Center, 1, order + 4);
+                l.Info = PixelText.Create(t, "Info", art.Font, new Vector2(0, p.yMax - 36 - PixelFont.CellHeight), PixelText.Align.Center, 1, order + 4);
                 PixelButton.Create(t, "Yes", art, YesAt(i), "YES", 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, order + 3).Clicked += () => d.Press(true);
                 var no = PixelButton.Create(t, "No", art, NoAt(i), "NO", 2, Palette.Floor, Palette.Text, Palette.Text, order + 3);
                 no.ClickCue = AudioIds.UiBack;
@@ -79,7 +83,7 @@ namespace BallBattle.View
 
         public bool IsOpen => current >= 0;
         public Transform Root => root;
-        public string Question => IsOpen ? layouts[current].Question.Text : "";
+        public string Question => IsOpen ? layouts[current].ShownQuestion.Text : "";
         public Rect PanelArea => PanelAt(Mathf.Max(0, current));
         public Rect YesArea => YesAt(Mathf.Max(0, current));
         public Rect NoArea => NoAt(Mathf.Max(0, current));
@@ -92,7 +96,9 @@ namespace BallBattle.View
             onYes = yes;
             onNo = no;
             var l = layouts[current];
-            l.Question.Set(question, Palette.WallWarning);
+            var big = PixelFont.MeasureWidth(question) * 2 <= PanelWidth - 8f;
+            l.Question.Set(big ? question : "", Palette.WallWarning);
+            l.QuestionSmall.Set(big ? "" : question, Palette.WallWarning);
             l.Info.Set(info ?? "", Palette.TextDim);
             shade.SetActive(true);
             l.Root.SetActive(true);

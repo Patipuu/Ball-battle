@@ -12,13 +12,14 @@ namespace BallBattle.View
         public const int Steps = VolumeCurve.Max;
         public const int CellWidth = 20;
 
-        /// <summary>Gear button on the menu hub: (250,8), 12x12.</summary>
-        public static readonly Rect GearArea = ScreenRect(250, 8, 12, 12);
-        public static readonly Rect MusicArea = ScreenRect(35, 136, Steps * CellWidth, 16);
-        public static readonly Rect SfxArea = ScreenRect(35, 192, Steps * CellWidth, 16);
-        public static readonly Rect EnArea = ScreenRect(35, 248, 40, 20);
-        public static readonly Rect ViArea = ScreenRect(85, 248, 40, 20);
-        public static readonly Rect BackArea = ScreenRect(75, 330, 120, 22);
+        /// <summary>Gear button on the menu hub: (242,4), 24x24 tap target around the 12x12 gear (BB-FONT1: was 12x12).</summary>
+        public static readonly Rect GearArea = ScreenRect(242, 4, 24, 24);
+        /// <summary>Slider tracks 200x24 (BB-FONT1: 24 px tap target, was 16), each under its 13*2 px label.</summary>
+        public static readonly Rect MusicArea = ScreenRect(35, 150, Steps * CellWidth, 24);
+        public static readonly Rect SfxArea = ScreenRect(35, 214, Steps * CellWidth, 24);
+        public static readonly Rect EnArea = ScreenRect(35, 280, 40, 28);
+        public static readonly Rect ViArea = ScreenRect(85, 280, 40, 28);
+        public static readonly Rect BackArea = ScreenRect(75, 340, 120, 32);
 
         /// <summary>Live value changes while tapping/dragging (volume changes at once; nothing is saved here).</summary>
         public event Action<int> MusicChanged, SfxChanged;
@@ -49,12 +50,12 @@ namespace BallBattle.View
         void Build(ArtLibrary art, int order)
         {
             Label(art, RunStrings.Settings, 0, 60, 3, PixelText.Align.Center, Palette.Text, order);
-            Label(art, RunStrings.Music, MusicArea.xMin, 120, 2, PixelText.Align.Left, Palette.Text, order);
+            Label(art, RunStrings.Music, MusicArea.xMin, 122, 2, PixelText.Align.Left, Palette.Text, order);
             musicSlider = new Slider(this, art, MusicArea, order, x => MusicChanged?.Invoke(x), () => Released?.Invoke());
-            Label(art, RunStrings.Sfx, SfxArea.xMin, 176, 2, PixelText.Align.Left, Palette.Text, order);
+            Label(art, RunStrings.Sfx, SfxArea.xMin, 186, 2, PixelText.Align.Left, Palette.Text, order);
             sfxSlider = new Slider(this, art, SfxArea, order, x => SfxChanged?.Invoke(x), () => Released?.Invoke());
 
-            Label(art, RunStrings.Language, EnArea.xMin, 232, 2, PixelText.Align.Left, Palette.Text, order);
+            Label(art, RunStrings.Language, EnArea.xMin, 250, 2, PixelText.Align.Left, Palette.Text, order);
             LanguageBox(art, EnArea, RunStrings.En, true, order);
             LanguageBox(art, ViArea, RunStrings.Vi, false, order);
 
@@ -67,7 +68,7 @@ namespace BallBattle.View
 
         PixelText Label(ArtLibrary art, string s, float x, float screenTop, int scale, PixelText.Align align, Color32 c, int order)
         {
-            var t = PixelText.Create(transform, s, art.Font, new Vector2(x, LocalTop(screenTop) - PixelFontData.GlyphHeight * scale), align, scale, order + 4);
+            var t = PixelText.Create(transform, s, art.Font, new Vector2(x, LocalTop(screenTop) - PixelFont.CellHeight * scale), align, scale, order + 4);
             t.Set(s, c);
             return t;
         }
@@ -77,7 +78,7 @@ namespace BallBattle.View
         {
             PixelRect.Set(PixelRect.Create(transform, "LangBorder", art.Pixel, selected ? Palette.WallWarning : Palette.Wall, order + 1), r);
             PixelRect.Set(PixelRect.Create(transform, "LangFill", art.Pixel, selected ? Palette.HpBack : Palette.Floor, order + 2), r.xMin + 1, r.yMin + 1, r.xMax - 1, r.yMax - 1);
-            var t = PixelText.Create(transform, text, art.Font, new Vector2(r.center.x, Mathf.Floor(r.center.y - PixelFontData.GlyphHeight)), PixelText.Align.Center, 2, order + 4);
+            var t = PixelText.Create(transform, text, art.Font, new Vector2(r.center.x, Mathf.Floor(r.center.y - PixelFont.CellHeight)), PixelText.Align.Center, 2, order + 4);   // 26 px cell in the 28 px box
             t.Set(text, selected ? Palette.WallWarning : Palette.TextDim);
         }
 
@@ -147,7 +148,7 @@ namespace BallBattle.View
                     PixelRect.Set(cells[i], x0, area.yMin + 3, x0 + CellWidth - 3, area.yMax - 3);
                 }
                 value = PixelText.Create(owner.transform, "Value", art.Font,
-                    new Vector2(area.xMax + 6, Mathf.Floor(area.center.y - PixelFontData.GlyphHeight)), PixelText.Align.Left, 2, order + 4);
+                    new Vector2(area.xMax + 6, Mathf.Floor(area.center.y - PixelFont.CellHeight)), PixelText.Align.Left, 2, order + 4);
             }
 
             /// <summary>Each frame: follow the pointer while the slider is held; a release off the track also counts as a release.</summary>

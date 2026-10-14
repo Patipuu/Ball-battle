@@ -16,8 +16,10 @@ namespace BallBattle.Sim.Tools
     /// </summary>
     public static class RoundRobin
     {
-        public const string MainHeader = "arena,weaponA,weaponB,matches,winsA,winsB,draws,winRateA,avgTicks,medianTicks,maxTicks";
-        public const string WeaponHeader = "weapon,matches,wins,draws,winRate,avgTicks";
+        /// <summary>Tick columns: Tick = every step played; ActiveTicks = MatchSim.ActiveTick (the clock of the 180 s cap and the
+        /// shrink start), added by BB-FONT1 after the existing tick columns. Output only: no match result changes.</summary>
+        public const string MainHeader = "arena,weaponA,weaponB,matches,winsA,winsB,draws,winRateA,avgTicks,medianTicks,maxTicks,avgActiveTicks,medianActiveTicks,maxActiveTicks";
+        public const string WeaponHeader = "weapon,matches,wins,draws,winRate,avgTicks,avgActiveTicks,medianActiveTicks,maxActiveTicks";
 
         public sealed class Options
         {
@@ -32,10 +34,12 @@ namespace BallBattle.Sim.Tools
         public sealed class PairResult
         {
             public string Arena, WeaponA, WeaponB;
-            public int Matches, WinsA, WinsB, Draws, MaxTicks;
-            public long TotalTicks;
+            public int Matches, WinsA, WinsB, Draws, MaxTicks, MaxActiveTicks;
+            public long TotalTicks, TotalActiveTicks;
             /// <summary>Median × 2 (an integer even when the count is even).</summary>
-            public long MedianTicks2;
+            public long MedianTicks2, MedianActiveTicks2;
+            /// <summary>ActiveTick of every match, sorted (per-weapon medians are taken over these).</summary>
+            public int[] ActiveTicksSorted = new int[0];
         }
 
         public sealed class Result
@@ -97,9 +101,24 @@ namespace BallBattle.Sim.Tools
         /// <summary>One match to the end (or to <paramref name="maxTicks"/>): winner index (-1 = draw) and ticks played.</summary>
         public static (int winner, int ticks) Play(string arena, string weaponA, string weaponB, uint seed, int maxTicks)
         {
+            var (winner, ticks, _) = PlayDetailed(arena, weaponA, weaponB, seed, maxTicks);
+            return (winner, ticks);
+        }
+
+        /// <summary>Same match as <see cref="Play"/>, also returning MatchSim.ActiveTick at the end (read only, after the last step).</summary>
+        public static (int winner, int ticks, int activeTicks) PlayDetailed(string arena, string weaponA, string weaponB, uint seed, int maxTicks)
+        {
             var m = new MatchSim(ArenaRegistry.Create(arena), seed, new[] { WeaponRegistry.Create(weaponA), WeaponRegistry.Create(weaponB) });
             while (m.Outcome == MatchOutcome.Ongoing && (maxTicks <= 0 || m.Tick < maxTicks)) m.Step();
-            return (m.Outcome == MatchOutcome.Ongoing ? -1 : m.WinnerIndex, m.Tick);
+            return (m.Outcome == MatchOutcome.Ongoing ? -1 : m.WinnerIndex, m.Tick, m.ActiveTick);
+        }
+
+        /// <summary>Median × 2 of a sorted array (0 when empty).</summary>
+        static long Median2(int[] sorted)
+        {
+            var n = sorted.Length;
+            if (n == 0) return 0;
+            return n % 2 == 1 ? 2L * sorted[n / 2] : (long)sorted[n / 2 - 1] + sorted[n / 2];
         }
 
         public static Result Run(Options o, bool parallel = true)
@@ -120,19 +139,26 @@ namespace BallBattle.Sim.Tools
             {
                 var p = jobs[j];
                 var ticks = new int[o.Seeds];
+                var active = new int[o.Seeds];
                 for (var i = 0; i < o.Seeds; i++)
                 {
-                    var (winner, t) = Play(p.Arena, p.WeaponA, p.WeaponB, Seed(p.WeaponA, p.WeaponB, i), o.MaxTicks);
+                    var (winner, t, at) = PlayDetailed(p.Arena, p.WeaponA, p.WeaponB, Seed(p.WeaponA, p.WeaponB, i), o.MaxTicks);
                     if (winner == 0) p.WinsA++;
                     else if (winner == 1) p.WinsB++;
                     else p.Draws++;
                     ticks[i] = t;
                     p.TotalTicks += t;
                     if (t > p.MaxTicks) p.MaxTicks = t;
+                    active[i] = at;
+                    p.TotalActiveTicks += at;
+                    if (at > p.MaxActiveTicks) p.MaxActiveTicks = at;
                 }
                 Array.Sort(ticks);
+                Array.Sort(active);
                 var n = ticks.Length;
-                p.MedianTicks2 = n % 2 == 1 ? 2L * ticks[n / 2] : (long)ticks[n / 2 - 1] + ticks[n / 2];
+                p.MedianTicks2 = Median2(ticks);
+                p.MedianActiveTicks2 = Median2(active);
+                p.ActiveTicksSorted = active;
                 p.Matches = n;
             }
 
@@ -153,7 +179,9 @@ namespace BallBattle.Sim.Tools
                 sb.Append(p.Arena).Append(',').Append(p.WeaponA).Append(',').Append(p.WeaponB).Append(',')
                   .Append(I(p.Matches)).Append(',').Append(I(p.WinsA)).Append(',').Append(I(p.WinsB)).Append(',').Append(I(p.Draws)).Append(',')
                   .Append(Decimal(p.WinsA, p.Matches, 4)).Append(',').Append(Decimal(p.TotalTicks, p.Matches, 1)).Append(',')
-                  .Append(Decimal(p.MedianTicks2, 2, 1)).Append(',').Append(I(p.MaxTicks)).Append('\n');
+                  .Append(Decimal(p.MedianTicks2, 2, 1)).Append(',').Append(I(p.MaxTicks)).Append(',')
+                  .Append(Decimal(p.TotalActiveTicks, p.Matches, 1)).Append(',').Append(Decimal(p.MedianActiveTicks2, 2, 1)).Append(',')
+                  .Append(I(p.MaxActiveTicks)).Append('\n');
             return sb.ToString();
         }
 
@@ -163,14 +191,27 @@ namespace BallBattle.Sim.Tools
             var sb = new StringBuilder(WeaponHeader).Append('\n');
             foreach (var w in weapons)
             {
-                long matches = 0, wins = 0, draws = 0, ticks = 0;
+                long matches = 0, wins = 0, draws = 0, ticks = 0, activeTicks = 0;
+                var maxActive = 0;
+                var all = new List<int>();
+                void Side(PairResult p, int sideWins)
+                {
+                    matches += p.Matches; wins += sideWins; draws += p.Draws; ticks += p.TotalTicks;
+                    activeTicks += p.TotalActiveTicks;
+                    if (p.MaxActiveTicks > maxActive) maxActive = p.MaxActiveTicks;
+                    all.AddRange(p.ActiveTicksSorted);
+                }
                 foreach (var p in pairs)
                 {
-                    if (p.WeaponA == w) { matches += p.Matches; wins += p.WinsA; draws += p.Draws; ticks += p.TotalTicks; }
-                    if (p.WeaponB == w) { matches += p.Matches; wins += p.WinsB; draws += p.Draws; ticks += p.TotalTicks; }
+                    if (p.WeaponA == w) Side(p, p.WinsA);
+                    if (p.WeaponB == w) Side(p, p.WinsB);
                 }
+                var sorted = all.ToArray();
+                Array.Sort(sorted);
                 sb.Append(w).Append(',').Append(L(matches)).Append(',').Append(L(wins)).Append(',').Append(L(draws)).Append(',')
-                  .Append(Decimal(wins, matches, 4)).Append(',').Append(Decimal(ticks, matches, 1)).Append('\n');
+                  .Append(Decimal(wins, matches, 4)).Append(',').Append(Decimal(ticks, matches, 1)).Append(',')
+                  .Append(Decimal(activeTicks, matches, 1)).Append(',').Append(Decimal(Median2(sorted), 2, 1)).Append(',')
+                  .Append(I(maxActive)).Append('\n');
             }
             return sb.ToString();
         }
