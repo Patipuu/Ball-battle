@@ -9,7 +9,8 @@ namespace BallBattle.View
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 2;
+        /// <summary>3 = BB-04 (boss slots and forced boss in the run, last boss + Boss Codex in progress). Older saves: SaveMigration.</summary>
+        public const int CurrentVersion = 3;
         public int Version = CurrentVersion;
         public ProgressData Progress = new ProgressData();
         public bool HasRun;
@@ -23,10 +24,11 @@ namespace BallBattle.View
     }
 
     /// <summary>
-    /// Upgrades an older save in place (both stores call it on Load). v1 → v2: the run in progress cannot be converted (the sim
-    /// changed under it), so it is dropped; as compensation it counts as having reached its current fight (BestFight), it is NOT
+    /// Upgrades an older save in place (both stores call it on Load). v1 → v2 and v2 → v3 (BB-04 bosses, Rules 8) follow the same
+    /// rule: the run in progress cannot be converted (the sim changed under it), so it is dropped; as compensation it counts as having reached its current fight (BestFight), it is NOT
     /// counted as played/won/lost, and oldRunNotice is set so the player is told once. Achievements, unlocks and every other
-    /// record stay as they were (unlocks come from achievements; the next goal is recomputed from progress on demand).
+    /// record stay as they were (unlocks come from achievements; the next goal is recomputed from progress on demand). BB-04 fields
+    /// absent from an old save load empty: no "last boss" yet (the next run picks its bosses from the seed) and an empty Boss Codex.
     /// </summary>
     public static class SaveMigration
     {

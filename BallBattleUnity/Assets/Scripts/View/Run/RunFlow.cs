@@ -36,6 +36,9 @@ namespace BallBattle.View
         /// <summary>Tester switch (-bbForceTrait): this trait is always in the offer before fight 1. Null = normal play.</summary>
         public string ForceTraitId { get; set; }
 
+        /// <summary>Tester switch (-bbForceBoss, BB-04): this boss takes its slot and the next non-boss fight. Null = normal play.</summary>
+        public string ForceBossId { get; set; }
+
         /// <summary>Damage totals of the fight being played; the arena feeds it the sim's events (RunController).</summary>
         public FightStats Stats { get; } = new FightStats();
 
@@ -111,7 +114,9 @@ namespace BallBattle.View
             if (Current != State.PickWeapon || !StartChoices.Contains(weaponId)) return;
             if (save.HasRun) UnlockRules.RecordAbandoned(save.Progress);
             Run = RunState.Start(pendingSeed, weaponId, save.Progress);
-            UnityEngine.Debug.Log(RunStartLog(pendingSeed, weaponId, ForceTraitId));
+            BossSelection.Remember(save.Progress, Run);   // BB-04: before any forced boss, so -bbForceBoss never enters the history
+            if (ForceBossId != null) Run.ApplyForcedBoss(ForceBossId);
+            UnityEngine.Debug.Log(RunStartLog(pendingSeed, weaponId, ForceTraitId) + $", bosses {string.Join("/", Run.BossIds)}" + (ForceBossId != null ? $", -bbForceBoss {ForceBossId}" : ""));
             DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
             Persist();
             Go(State.StartPick);
@@ -126,7 +131,9 @@ namespace BallBattle.View
             if (Current != State.Title || !HasSavedRun) return;
             Run = save.Run.ToRun();
             UnityEngine.Debug.Log($"[BallBattle] Run resumed: seed {Run.Seed}, fight {Run.FightIndex + 1}");
-            if (DebugOptions.ApplyForcedTrait(Run, ForceTraitId)) Persist();
+            var changed = DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
+            if (ForceBossId != null && Run.ForcedBossId != ForceBossId) changed |= Run.ApplyForcedBoss(ForceBossId);
+            if (changed) Persist();
             if (Run.FightLocked) StartFight();   // quit mid-fight: replay that exact fight, no edits
             else Go(Run.StartPickPending ? State.StartPick : State.Prepare);
         }

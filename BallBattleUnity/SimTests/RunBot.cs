@@ -18,9 +18,19 @@ namespace BallBattle.SimTests
             public Result(bool won, int fightsWon, int bosses) { Won = won; FightsWon = fightsWon; BossesDefeated = bosses; }
         }
 
-        public static Result Play(uint seed, Policy policy)
+        /// <summary>
+        /// BB-04: the bot plays as a returning player (one run already played, no "last boss" remembered), so each run's bosses come
+        /// from its seed (both bosses of each slot appear across seeds). A fresh save would always meet SHELL KING + MIMIC (first-run
+        /// rule). Unlocks depend only on achievements, so the bot's weapons and traits are the same as before.
+        /// </summary>
+        public static ProgressData BotProgress() => new ProgressData { RunsPlayed = 1 };
+
+        public static Result Play(uint seed, Policy policy) => Play(seed, policy, null);
+
+        /// <summary><paramref name="onFight"/> (BB-04 reports) sees every finished match before its result is applied.</summary>
+        public static Result Play(uint seed, Policy policy, Action<RunState, MatchSim> onFight)
         {
-            var progress = new ProgressData();
+            var progress = BotProgress();
             var choices = RunState.StartChoices(seed, UnlockRules.Weapons(progress));
             var rng = new SimRandom(seed ^ 0xB07B07u);
             var run = RunState.Start(seed, choices[(int)(rng.NextUInt() % (uint)choices.Count)], progress);
@@ -35,6 +45,7 @@ namespace BallBattle.SimTests
 
                 var m = run.CreateMatch();
                 while (m.Outcome == MatchOutcome.Ongoing) m.Step();
+                onFight?.Invoke(run, m);
                 run.ApplyResult(m);
             }
             return new Result(run.Won, run.History.Count(f => f.Won), run.BossesDefeated);
@@ -46,7 +57,7 @@ namespace BallBattle.SimTests
             if (options.Length > 0) run.Pick(options[(int)(rng.NextUInt() % (uint)options.Length)]);
         }
 
-        static void PickGreedyStart(RunState run)
+        internal static void PickGreedyStart(RunState run)
         {
             var best = Best(run);
             if (best < 0) best = Enumerable.Range(0, run.OfferCount).Where(run.CanPick).DefaultIfEmpty(-1).First();
@@ -54,7 +65,7 @@ namespace BallBattle.SimTests
         }
 
         /// <summary>Heal when low, else upgrade/add traits, else damage, else max HP; rerolls bad hands, buys a second card when rich.</summary>
-        static void PickGreedy(RunState run)
+        internal static void PickGreedy(RunState run)
         {
             while (Best(run) < 0 && run.CanReroll && run.Coins > RunTuning.ExtraPickCost) run.Reroll();
             for (var pick = 0; pick < RunTuning.MaxPicksPerFight; pick++)

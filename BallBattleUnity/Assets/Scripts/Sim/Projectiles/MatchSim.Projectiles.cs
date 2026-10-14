@@ -105,10 +105,14 @@ namespace BallBattle.Sim
                 if (delta.LengthSq > FixMath.Sq(reach)) continue;
 
                 var contact = b.Pos + delta.NormalizedOr(FallbackNormal) * b.Radius;
-                var damage = ComputeHitDamage(owner, b, p.Damage > Fix.Zero ? p.Damage : Fix.Zero, DamageKind.Projectile, out var blocked);
+                var damage = ComputeHitDamage(owner, b, p.Damage > Fix.Zero ? p.Damage : Fix.Zero, DamageKind.Projectile, contact, out var blocked, out var shelled);
                 b.Vel += p.Vel.NormalizedOr(FallbackNormal) * (Config.HitKnockback * Config.ProjectileKnockbackScale * (Fix.One - b.KnockbackResist));
-                Emit(SimEventType.ProjectileHit, owner.Index, b.Index, damage, contact);
-                if (blocked)
+                Emit(SimEventType.ProjectileHit, owner.Index, b.Index, damage, contact, (byte)(shelled ? 1 : 0));
+                if (shelled)
+                {
+                    // BB-04 Shell King: 0 damage, no hooks; the shot is still spent on this ball.
+                }
+                else if (blocked)
                 {
                     Emit(SimEventType.ShieldBlocked, b.Index, owner.Index, Fix.Zero, contact);
                 }
@@ -143,6 +147,7 @@ namespace BallBattle.Sim
 
             for (var k = 0; k < layout.ObstacleCount; k++)
             {
+                if (!ObstacleActive(k)) continue;   // BB-04: switched off by a Warden step
                 var o = layout.Get(k);
                 var core = o.ClosestCore(p.Pos);
                 var delta = p.Pos - core;

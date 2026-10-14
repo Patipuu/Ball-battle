@@ -7,7 +7,7 @@ namespace BallBattle.View
 
     /// <summary>
     /// Clip ids (= file names in Assets/Audio and Assets/Audio/Generated) and the routing rules around them.
-    /// Boss cues (boss_*) are BB-04 and deliberately absent.
+    /// Boss cues (boss_*, BB-04) have no fallback: a missing clip plays nothing.
     /// </summary>
     public static class AudioIds
     {
@@ -24,6 +24,36 @@ namespace BallBattle.View
         /// <summary>Optional clip for a bounce inside a spike zone; when absent the plain wall sound plays.</summary>
         public const string SpikeHit = "spike_hit";
 
+        // ---- BB-04 boss cues (Assets/Audio/<id>.wav) ----
+        public const string BossShellKingWarn = "boss_shellking_warn", BossShellKingHit = "boss_shellking_hit";
+        public const string BossMagnetWarn = "boss_magnet_warn", BossMagnetHit = "boss_magnet_hit";
+        public const string BossMimicHit = "boss_mimic_hit";
+        public const string BossWardenWarn = "boss_warden_warn", BossWardenHit = "boss_warden_hit";
+
+        public static readonly string[] BossCues = { BossShellKingWarn, BossShellKingHit, BossMagnetWarn, BossMagnetHit, BossMimicHit, BossWardenWarn, BossWardenHit };
+
+        /// <summary>Volume and pitch of every boss cue (normal SFX bus, no random jitter).</summary>
+        public const float BossCueVolume = 0.8f, BossCuePitch = 1f;
+
+        /// <summary>
+        /// Cue of a boss event, or null for events with no cue (shell off, magnet end). Shell warn/on, magnet warn/pull, mimic copied
+        /// (no warn cue), warden warn/step.
+        /// </summary>
+        public static string BossCue(BallBattle.Sim.Boss.BossEvent e)
+        {
+            switch (e)
+            {
+                case BallBattle.Sim.Boss.BossEvent.ShellWarn: return BossShellKingWarn;
+                case BallBattle.Sim.Boss.BossEvent.ShellOn: return BossShellKingHit;
+                case BallBattle.Sim.Boss.BossEvent.MagnetWarn: return BossMagnetWarn;
+                case BallBattle.Sim.Boss.BossEvent.MagnetPull: return BossMagnetHit;
+                case BallBattle.Sim.Boss.BossEvent.MimicCopied: return BossMimicHit;
+                case BallBattle.Sim.Boss.BossEvent.WardenWarn: return BossWardenWarn;
+                case BallBattle.Sim.Boss.BossEvent.WardenStep: return BossWardenHit;
+                default: return null;   // ShellOff, MagnetEnd
+            }
+        }
+
         /// <summary>Weapon ids with their own hit clip.</summary>
         public static readonly string[] HitWeapons = { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig" };
 
@@ -35,6 +65,8 @@ namespace BallBattle.View
             UiClick, UiBack, CardPick, CardReroll, UiDenied, FightStart, FightWin, FightLose, RetryBanner, Unlock, RunWin, RunOver, SecondWind,
             SpikeHit,   // BB-FIX1b: Assets/Audio/spike_hit.wav (a missing file is skipped by the linker with a warning)
             "hit_blade", "hit_fang", "hit_pike", "hit_brawler", "hit_volley", "hit_venom", "hit_aegis", "hit_rig",
+            // BB-04 boss cues: linked when their files exist (none yet; the linker skips a missing file with a warning).
+            BossShellKingWarn, BossShellKingHit, BossMagnetWarn, BossMagnetHit, BossMimicHit, BossWardenWarn, BossWardenHit,
         };
 
         /// <summary>"hit_&lt;weaponId&gt;" when that clip exists, else the generic "hit".</summary>

@@ -113,15 +113,20 @@ namespace BallBattle.SimTests
         [Test]
         public void BossesAreGiantWithMoreHpAndTraits()
         {
+            // BB-04: HP and trait count come from the boss (BossTuning); the slot's default boss here (SHELL KING / MIMIC).
             for (var boss = 0; boss < 2; boss++)
             {
-                var stage = boss == 0 ? 0 : 2;
+                var id = EnemyGenerator.DefaultBoss(RunTuning.BossFights[boss]);
                 var e = EnemyGenerator.Generate(9, RunTuning.BossFights[boss]);
+                Assert.That(e.BossId, Is.EqualTo(id));
                 Assert.That(e.Radius, Is.EqualTo(RunTuning.BossRadius));
-                Assert.That(e.MaxHp, Is.EqualTo(RunTuning.BossHp[stage]));
-                Assert.That(e.Traits.Count, Is.EqualTo(Math.Min(RunTuning.BossTraits[stage], BallBattle.Sim.Traits.TraitRegistry.All.Count)));
+                Assert.That(e.MaxHp, Is.EqualTo(EnemyGenerator.BossHp(id)));
+                Assert.That(e.MaxHp, Is.GreaterThan(RunTuning.PlayerStartHp));
+                Assert.That(e.Traits.Count, Is.EqualTo(Math.Min(EnemyGenerator.BossTraitCount(id), BallBattle.Sim.Traits.TraitRegistry.All.Count)));
                 Assert.That(e.Traits.Select(t => t.Id).Distinct().Count(), Is.EqualTo(e.Traits.Count));
             }
+            var warden = EnemyGenerator.Generate(9, RunTuning.BossFights[1], BallBattle.Sim.Boss.BossIds.Warden);
+            Assert.That(warden.Traits.Count, Is.EqualTo(BallBattle.Sim.Boss.BossTuning.WardenTraits), "WARDEN keeps the old fight-8 traits");
             var normal = EnemyGenerator.Generate(9, 0);
             Assert.That(normal.Radius.F(), Is.LessThanOrEqualTo(0f));
             Assert.That(normal.MaxHp, Is.EqualTo(RunTuning.PlayerStartHp));

@@ -22,7 +22,7 @@ namespace BallBattle.View
         public const int UnlockLines = 3;
         /// <summary>Lines inside the milestone frame.</summary>
         public const int BoxLines = 10;
-        const int BoxTop = 136;          // screen y of the milestone frame
+        const int BoxTop = 149;          // screen y of the milestone frame (BB-04: 13 px lower for the boss line)
         const int BoxPad = 6;
         const int LinePitch = PixelFont.CellHeight;   // BB-FONT1: 13 px cells (was 9)
         /// <summary>Screen y of the NEXT GOAL box (60 px tall).</summary>
@@ -31,7 +31,7 @@ namespace BallBattle.View
         public static readonly Rect NewRunArea = new Rect(-80, -160, 160, 32);   // screen 368..400
         public static readonly Rect MenuArea = new Rect(-80, -200, 160, 32);     // screen 408..440
 
-        PixelText title, fights, record, bosses, best, retry;
+        PixelText title, fights, record, bosses, best, retry, bossNames;
         readonly PixelText[] boxLines = new PixelText[BoxLines];
         SpriteRenderer boxBorder, boxFill;
         NextGoalBox goal;
@@ -39,6 +39,8 @@ namespace BallBattle.View
         public NextGoalBox Goal => goal;
         public PixelText RetryText => retry;
         public PixelText BossesText => bosses;
+        /// <summary>BB-04: "SHELL KING BEATEN  MIMIC MET" (bosses this run met; empty when none).</summary>
+        public PixelText BossNamesText => bossNames;
         /// <summary>Non-empty lines in the milestone frame (tests).</summary>
         public List<string> BoxText { get; } = new List<string>();
 
@@ -51,7 +53,8 @@ namespace BallBattle.View
             v.record = RunUi.Text(root, art, 0, 148, 2);   // 148..174
             v.bosses = RunUi.Text(root, art, 0, 134, 1);   // 134..147
             v.best = RunUi.Text(root, art, 0, 121, 1);     // 121..134
-            v.retry = RunUi.Text(root, art, 0, 108, 1);    // 108..121
+            v.bossNames = RunUi.Text(root, art, 0, 108, 1);   // 108..121 (BB-04)
+            v.retry = RunUi.Text(root, art, 0, 95, 1);     // 95..108
 
             var left = NextGoalBox.LocalX(8);
             var top = NextGoalBox.LocalTop(BoxTop);
@@ -88,6 +91,7 @@ namespace BallBattle.View
             fights.Set(RunStrings.FightsWon(won, run.History.Count), Palette.Text);
             record.Set(line, Palette.Text);
             bosses.Set(RunStrings.Bosses(run.BossesDefeated), Palette.Text);
+            bossNames.Set(TextWrap.Cut(BossText.SummaryLine(run), TextWrap.MaxWidthOnScreen(1)), Palette.WallWarning);
             best.Set(RunStrings.BestFight(after.BestFight), Palette.TextDim);
             var retryAt = RetryUsedAtFight(run);
             retry.Set(retryAt > 0 ? RunStrings.RetryUsedAt(retryAt) : "", Palette.WallWarning);

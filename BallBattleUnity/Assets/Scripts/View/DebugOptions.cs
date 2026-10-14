@@ -34,6 +34,8 @@ namespace BallBattle.View
             trace = false;
             audioLogOn = null;
             forceDraw = null;
+            forceBossParsed = false;
+            forceBoss = null;
         }
 
         /// <summary>Trait id forced into the first offer, or null (normal play).</summary>
@@ -76,6 +78,53 @@ namespace BallBattle.View
         public static bool ForceDraw => forceDraw ?? (forceDraw = HasArg(Environment.GetCommandLineArgs(), ForceDrawArg)).Value;
         public static bool ParseAudioLog(string[] args) => HasArg(args, AudioLogArg);
         public static bool ParseForceDraw(string[] args) => HasArg(args, ForceDrawArg);
+
+        /// <summary>
+        /// -bbForceBoss &lt;shellking|magnet|mimic|warden&gt; (BB-04): Run mode only, off by default. The boss takes its own slot (fight 4
+        /// or 8) and, when the next fight is not already a boss fight, that fight too (RunState.ApplyForcedBoss). Never written into
+        /// the "last boss" history. Versus ignores it. Case, dashes, underscores and spaces are ignored ("Shell-King" works).
+        /// </summary>
+        public const string ForceBossArg = "-bbForceBoss";
+
+        static bool forceBossParsed;
+        static string forceBoss;
+
+        /// <summary>Boss id forced in Run mode, or null (normal play).</summary>
+        public static string ForceBoss
+        {
+            get
+            {
+                if (forceBossParsed) return forceBoss;
+                forceBossParsed = true;
+                forceBoss = ParseForceBoss(Environment.GetCommandLineArgs());
+                return forceBoss;
+            }
+        }
+
+        /// <summary>The boss id after -bbForceBoss in <paramref name="args"/>, or null (absent or unknown, with a warning).</summary>
+        public static string ParseForceBoss(string[] args)
+        {
+            if (args == null) return null;
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!string.Equals(args[i], ForceBossArg, StringComparison.OrdinalIgnoreCase)) continue;
+                var id = i + 1 < args.Length ? ResolveBossId(args[i + 1]) : null;
+                if (id == null) Debug.LogWarning($"[BallBattle] {ForceBossArg}: expected shellking, magnet, mimic or warden; ignored");
+                else Debug.Log($"[BallBattle] {ForceBossArg}: Run boss forced to {id}");
+                return id;
+            }
+            return null;
+        }
+
+        /// <summary>Boss id matching <paramref name="name"/> ignoring case, dashes, underscores and spaces; null if none.</summary>
+        public static string ResolveBossId(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return null;
+            var key = Normalize(name).Replace(" ", "");
+            foreach (var id in BallBattle.Sim.Boss.BossIds.All)
+                if (id == key) return id;
+            return null;
+        }
 
         static bool HasArg(string[] args, string name)
         {

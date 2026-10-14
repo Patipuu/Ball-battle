@@ -43,6 +43,7 @@ namespace BallBattle.View
             var art = arena.Art;
             Flow = new RunFlow(store);
             Flow.ForceTraitId = DebugOptions.ForceTrait;   // null unless launched with -bbForceTrait
+            Flow.ForceBossId = DebugOptions.ForceBoss;     // null unless launched with -bbForceBoss (Run only; Versus never reads it)
             title = RunTitleView.Create(transform, art);
             pick = PickWeaponView.Create(transform, art);
             startPick = StartPickView.Create(transform, art);
@@ -187,8 +188,12 @@ namespace BallBattle.View
         public static ArenaView.BossLook BossLookFor(BallBattle.Sim.Run.RunState run)
         {
             if (!BossArtEnabled || run == null || !run.IsBossFight) return ArenaView.BossLook.None;
-            var last = BallBattle.Sim.Run.RunTuning.BossFights[BallBattle.Sim.Run.RunTuning.BossFights.Length - 1];
-            return run.FightIndex == last ? ArenaView.BossLook.Mimic : ArenaView.BossLook.ShellKing;
+            switch (run.CurrentBossId)   // BB-04: only these two bosses have body art (MAGNET / WARDEN: their weapon ball)
+            {
+                case BallBattle.Sim.Boss.BossIds.ShellKing: return ArenaView.BossLook.ShellKing;
+                case BallBattle.Sim.Boss.BossIds.Mimic: return ArenaView.BossLook.Mimic;
+                default: return ArenaView.BossLook.None;
+            }
         }
         bool mismatchLogged;
 

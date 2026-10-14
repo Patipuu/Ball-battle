@@ -16,6 +16,7 @@ namespace BallBattle.Sim
                 if (!b.Alive) continue;
                 for (var k = 0; k < count; k++)
                 {
+                    if (!ObstacleActive(k)) continue;   // BB-04: switched off by a Warden step
                     var o = layout.Get(k);
                     var core = o.ClosestCore(b.Pos);
                     var delta = b.Pos - core;

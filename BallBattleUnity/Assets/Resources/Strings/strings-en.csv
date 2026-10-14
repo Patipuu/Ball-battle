@@ -5,3 +5,14 @@ run.boss_at.two,BOSS AT FIGHTS {0} AND {1}
 run.boss_at.many,BOSS AT FIGHTS {0}
 run.lose_once,LOSE ONCE: FREE PICK  RETRY AT {0}% HP
 versus.draw,DRAW
+boss.shellking.name,SHELL KING
+boss.shellking.hint,SHELL BLOCKS ONE SIDE. HIT ITS BACK.
+boss.magnet.name,MAGNET
+boss.magnet.hint,PULLS YOU IN EVERY 5S.
+boss.mimic.name,MIMIC
+boss.mimic.hint,COPIES YOUR WEAPON AND TRAITS.
+boss.warden.name,WARDEN
+boss.warden.hint,WALLS CLOSE EVERY 8S.
+boss.mimic.copies_you,COPIES YOU
+boss.summary.beaten,{0} BEATEN
+boss.summary.met,{0} MET

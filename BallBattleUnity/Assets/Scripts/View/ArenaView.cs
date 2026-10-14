@@ -111,6 +111,7 @@ namespace BallBattle.View
         ProjectileView projectileView;
         StatusView statusView;
         TraitBadgeView badges;
+        BossTelegraphView telegraph;
         Vector2[] prevPos = new Vector2[0];
         float[] prevAngle = new float[0];
         float accumulator;
@@ -146,7 +147,11 @@ namespace BallBattle.View
             projectileView = ProjectileView.Create(transform, Art.Pixel);
             statusView = StatusView.Create(transform, Art.Pixel);
             badges = TraitBadgeView.Create(transform, Art);
+            telegraph = BossTelegraphView.Create(transform, Art.Pixel);
         }
+
+        /// <summary>BB-04 boss telegraphs (tests).</summary>
+        public BossTelegraphView Telegraph => telegraph;
 
         /// <summary>Plain Versus match from two weapon ids.</summary>
         public void StartMatch(string weaponA, string weaponB, uint seed)
@@ -281,16 +286,20 @@ namespace BallBattle.View
         void Draw(float alpha, float dt)
         {
             frame.Render(Sim.Arena, Sim.ActiveTick, Sim.Config, ArenaId);
+            frame.ShowObstacles(Sim);   // BB-04: Warden steps switch obstacles off
+            var bossPos = Vector2.zero;
             for (var i = 0; i < Sim.Balls.Count; i++)
             {
                 var b = Sim.Balls[i];
                 var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X.ToFloat(), b.Pos.Y.ToFloat()), alpha);
+                if (i == Sim.BossBallIndex) bossPos = pos;
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg.ToFloat(), alpha);
                 ballViews[i].FitRadius(b.Radius.ToFloat());   // x1.2/x1.35/x1.5: pre-drawn sprite at scale 1; other sizes scale the base sprite
                 ballViews[i].Render(pos, angle, (b.Weapon.BladeInner + b.BladeShift).ToFloat(), b.Weapon.BladeLength.ToFloat(), b.Weapon.StatValue.ToFloat(), b.Alive, dt, b.HasTwinBlade ? (b.Weapon.BladeLength * b.TwinBladeScale).ToFloat() : 0f, b.Weapon.BladeThickness.ToFloat());
                 statusView.Render(i, b, pos, Sim.ActiveTick);
             }
             projectileView.Render(Sim);
+            telegraph.Render(Sim, bossPos);
             hud.Render(Sim, dt);
         }
 

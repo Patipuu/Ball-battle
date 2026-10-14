@@ -28,6 +28,8 @@ namespace BallBattle.Sim
         /// <summary>HP at match start (Run mode carries HP between fights). Clamped to MaxHp.</summary>
         public Fix Hp = -1;
         public Fix Radius = -1;
+        /// <summary>BB-04 boss mechanic (Run boss fights only); null = none. Single-use like weapons and traits.</summary>
+        public Boss.BossRule Boss;
 
         public BallLoadout(WeaponRule weapon) => Weapon = weapon;
 

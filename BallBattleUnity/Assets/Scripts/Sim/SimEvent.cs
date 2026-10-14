@@ -2,7 +2,7 @@ namespace BallBattle.Sim
 {
     public enum SimEventType : byte
     {
-        /// <summary>A=attacker, B=target, Value=damage, Point=contact.</summary>
+        /// <summary>A=attacker, B=target, Value=damage, Point=contact. Variant 1 = stopped by a boss shell (Value 0, the hit does not count).</summary>
         Hit,
         /// <summary>A,B = the two balls, Point=blade contact.</summary>
         Parry,
@@ -32,10 +32,12 @@ namespace BallBattle.Sim
         Damage,
         /// <summary>A=owner ball, B=projectile slot, Point=spawn position.</summary>
         ProjectileFired,
-        /// <summary>A=owner ball, B=target ball, Value=damage (0 if shield-blocked), Point=contact.</summary>
+        /// <summary>A=owner ball, B=target ball, Value=damage (0 if shield-blocked), Point=contact. Variant 1 = stopped by a boss shell.</summary>
         ProjectileHit,
         /// <summary>A=deflecting ball (new owner), B=projectile slot, Point=contact.</summary>
-        ProjectileDeflected
+        ProjectileDeflected,
+        /// <summary>BB-04 boss mechanic. Variant=(byte)Boss.BossEvent; A=boss ball, B=target ball (-1 none); Value/Point per BossEvent.</summary>
+        Boss
     }
 
     /// <summary>One thing that happened during a tick. View/audio react to these; they never read Sim internals for effects.</summary>

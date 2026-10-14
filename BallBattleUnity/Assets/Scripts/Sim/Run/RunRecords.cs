@@ -13,6 +13,8 @@ namespace BallBattle.Sim.Run
         public bool Retry;
         public string EnemyWeapon;
         public Fix HpAfter;
+        /// <summary>BB-04: boss fought ("" or null = not a boss fight).</summary>
+        public string BossId;
     }
 
     /// <summary>Serializable form of a Card (Card itself is an immutable struct).</summary>
@@ -40,6 +42,11 @@ namespace BallBattle.Sim.Run
             foreach (var t in run.Build.Traits)
                 if (!TraitRegistry.Exists(t.Id) || t.Level < 1 || t.Level > RunTuning.MaxTraitLevel) return false;
             if (run.Weapons.Count == 0 || run.EnemyWeapons.Count == 0 || run.EnemyTraits.Count == 0) return false;
+            // BB-04: one valid boss per slot, in its own slot; a forced (debug) boss must exist.
+            if (run.BossIds == null || run.BossIds.Count != RunTuning.BossFights.Length) return false;
+            for (var s = 0; s < run.BossIds.Count; s++)
+                if (Boss.BossIds.SlotOf(run.BossIds[s]) != s) return false;
+            if (!string.IsNullOrEmpty(run.ForcedBossId) && !Boss.BossIds.Exists(run.ForcedBossId)) return false;
             foreach (var w in run.Weapons) if (!WeaponExists(w)) return false;
             foreach (var w in run.EnemyWeapons) if (!WeaponExists(w)) return false;
             foreach (var t in run.Traits) if (!TraitRegistry.Exists(t)) return false;

@@ -7,28 +7,30 @@ using NUnit.Framework;
 namespace BallBattle.Tests
 {
     /// <summary>
-    /// 6a.6b/c: the save keeps version 2 and its JSON field names; RunSave / RunBuildSave / FightRecordSave hold the converted
+    /// 6a.6b/c: the save keeps its JSON field names (version 2; BB-04 made it 3 by adding boss fields, the fixture below is a v3 save
+    /// with the old float values, so the double → Fix conversion is still exercised); RunSave / RunBuildSave / FightRecordSave hold the converted
     /// fields as double. double → Fix on load: nearest, ties away from zero (SaveFix.ToFix); Fix → double on save: exact.
     /// Tests use MemorySaveStore only (never the real save file).
     /// </summary>
     public class SaveFixTests
     {
-        /// <summary>A v2 save as the float build wrote it (JsonUtility prints floats in their shortest form).</summary>
+        /// <summary>A save as the float build wrote it (JsonUtility prints floats in their shortest form), at version 3 with BB-04's boss slots.</summary>
         const string V2FloatSave =
-            "{\"Version\":2,\"Progress\":{\"Achievements\":[\"boss1\"],\"RunsPlayed\":3,\"RunsWon\":0,\"BestFight\":4}," +
+            "{\"Version\":3,\"Progress\":{\"Achievements\":[\"boss1\"],\"RunsPlayed\":3,\"RunsWon\":0,\"BestFight\":4}," +
             "\"HasRun\":true,\"Run\":{\"SeedBits\":-123456789,\"FightIndex\":2,\"RetryCount\":0,\"IsRetry\":false,\"StartPickPending\":false,\"Coins\":7," +
             "\"Build\":{\"WeaponId\":\"blade\",\"Traits\":[{\"Id\":\"vampire\",\"Level\":2}],\"DamagePct\":0.15,\"SpeedPct\":0.1,\"MaxHp\":120.0,\"Hp\":63.27,\"Radius\":0.0}," +
             "\"RerollCount\":1,\"PicksTaken\":0,\"PickedMask\":0,\"OfferCards\":[{\"Kind\":1,\"Id\":\"\",\"Level\":0}]," +
             "\"Weapons\":[\"blade\",\"fang\"],\"Traits\":[\"vampire\"],\"EnemyWeapons\":[\"blade\",\"fang\"],\"EnemyTraits\":[\"vampire\"],\"Achievements\":[]," +
             "\"History\":[{\"FightIndex\":0,\"Won\":true,\"Draw\":false,\"Retry\":false,\"EnemyWeapon\":\"fang\",\"HpAfter\":37.5}," +
             "{\"FightIndex\":1,\"Won\":true,\"Draw\":false,\"Retry\":false,\"EnemyWeapon\":\"blade\",\"HpAfter\":0.1}]," +
-            "\"FightLocked\":false,\"Over\":false,\"Won\":false},\"musicVol\":6,\"sfxVol\":8,\"oldRunNotice\":false}";
+            "\"FightLocked\":false,\"Over\":false,\"Won\":false,\"BossIds\":[\"shellking\",\"mimic\"],\"ForcedBossId\":\"\",\"ForcedBossFight\":-1}," +
+            "\"musicVol\":6,\"sfxVol\":8,\"oldRunNotice\":false}";
 
         [Test]
         public void OldFloatV2SaveLoadsToNearestFix()
         {
             var d = new MemorySaveStore { Json = V2FloatSave }.Load();
-            Assert.That(d.Version, Is.EqualTo(2));
+            Assert.That(d.Version, Is.EqualTo(3));
             Assert.That(d.HasRun, Is.True);
             var run = d.Run.ToRun();
             Assert.That(run.Build.DamagePct.Raw, Is.EqualTo(9830), "0.15 × 65536 = 9830.4");
@@ -55,7 +57,7 @@ namespace BallBattle.Tests
             Assert.That(Encoding.UTF8.GetBytes(b.Json), Is.EqualTo(Encoding.UTF8.GetBytes(a.Json)), "A and B byte-identical");
             StringAssert.Contains("\"DamagePct\":", a.Json);
             StringAssert.Contains("\"HpAfter\":37.5", a.Json);
-            StringAssert.Contains("\"Version\":2", a.Json);
+            StringAssert.Contains("\"Version\":3", a.Json);
         }
 
         [Test]

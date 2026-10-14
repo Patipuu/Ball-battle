@@ -7,7 +7,7 @@ namespace BallBattle.Sim.Run
     public static class RunTuning
     {
         public const int Fights = 8;
-        /// <summary>0-based fight indices of Shell King and Mimic (fights 4 and 8).</summary>
+        /// <summary>0-based fight indices of the boss slots (fights 4 and 8). BB-04: slot 0 = SHELL KING or MAGNET, slot 1 = MIMIC or WARDEN (Boss.BossIds.Slots).</summary>
         public static readonly int[] BossFights = { 3, 7 };
         public const int Retries = 1;
         /// <summary>0.6 (nearest Fix).</summary>
@@ -39,6 +39,7 @@ namespace BallBattle.Sim.Run
         public static readonly int[] EnemyMaxTraits = { 0, 1, 2 };
         public static readonly Fix[] EnemyHpPct = { 0, 0, Fix.Ratio(1, 10) };
         public static readonly Fix[] EnemyLevel2Chance = { 0, Fix.Ratio(1, 4), Fix.Ratio(1, 2) };
+        /// <summary>Pre-BB-04 boss HP / traits per stage. Legacy: EnemyGenerator now uses Boss.BossTuning per boss; kept for old sweeps and tests.</summary>
         public static readonly Fix[] BossHp = { 160, 220, 300 };
         public static readonly int[] BossTraits = { 0, 1, 2 };
         public static Fix BossRadius = 24;

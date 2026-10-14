@@ -19,6 +19,20 @@ namespace BallBattle.View
         public const string VersusDraw = "versus.draw";
 
         public static readonly string[] All = { StartPickNoReroll, BossAtOne, BossAtTwo, BossAtMany, LoseOnce, VersusDraw };
+
+        // ---- BB-04 bosses: EN only (Vietnamese is out of scope; VI falls back to EN), so they are not in All. ----
+        public const string BossShellKingName = "boss.shellking.name", BossShellKingHint = "boss.shellking.hint";
+        public const string BossMagnetName = "boss.magnet.name", BossMagnetHint = "boss.magnet.hint";
+        public const string BossMimicName = "boss.mimic.name", BossMimicHint = "boss.mimic.hint";
+        public const string BossWardenName = "boss.warden.name", BossWardenHint = "boss.warden.hint";
+        public const string BossCopiesYou = "boss.mimic.copies_you";
+        public const string BossBeaten = "boss.summary.beaten", BossMet = "boss.summary.met";
+
+        public static readonly string[] Boss =
+        {
+            BossShellKingName, BossShellKingHint, BossMagnetName, BossMagnetHint, BossMimicName, BossMimicHint,
+            BossWardenName, BossWardenHint, BossCopiesYou, BossBeaten, BossMet
+        };
     }
 
     /// <summary>

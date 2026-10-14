@@ -15,9 +15,19 @@ namespace BallBattle.Sim
         /// <summary>Alive and not pending death.</summary>
         static bool Active(BallState b) => b != null && b.Alive && b.Hp > Fix.Zero;
 
-        /// <summary>Damage a Weapon/Projectile hit will deal. No HP change yet; may use up a target shield charge.</summary>
-        Fix ComputeHitDamage(BallState attacker, BallState target, Fix baseDamage, DamageKind kind, out bool blocked)
+        /// <summary>
+        /// Damage a Weapon/Projectile hit will deal. No HP change yet; may use up a target shield charge. A boss shell (BB-04) is
+        /// checked first: then the hit deals 0, counts as blocked (no growth, no hooks), keeps the shield charge, and
+        /// <paramref name="shelled"/> is true.
+        /// </summary>
+        Fix ComputeHitDamage(BallState attacker, BallState target, Fix baseDamage, DamageKind kind, FixVec2 contact, out bool blocked, out bool shelled)
         {
+            shelled = BossBlocks(attacker, target, contact);
+            if (shelled)
+            {
+                blocked = true;
+                return Fix.Zero;
+            }
             var d = baseDamage * (Fix.One + attacker.Bonus.DamagePct);
             foreach (var t in attacker.Traits) d = t.ModifyOutgoingDamage(target, d, kind);
             blocked = d > Fix.Zero && target.Status.TryConsumeShield();

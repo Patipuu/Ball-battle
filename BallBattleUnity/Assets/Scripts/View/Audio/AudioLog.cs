@@ -59,6 +59,13 @@ namespace BallBattle.View
                 e.Type, e.Tick, sim != null ? sim.ActiveTick.ToString(CultureInfo.InvariantCulture) : "-", e.A, damage, hpChangedTick, cue,
                 allowed ? "yes" : "no");
 
+        /// <summary>BB-04 boss cue: "[Audio] Boss tick=.. active=.. event=ShellOn cue=boss_shellking_hit result=played|missing|gated".</summary>
+        public static string BossLine(SimEvent e, MatchSim sim, string cue, AudioDirector.BossCueResult result) =>
+            string.Format(CultureInfo.InvariantCulture,
+                "[Audio] Boss tick={0} active={1} event={2} cue={3} result={4}",
+                e.Tick, sim != null ? sim.ActiveTick.ToString(CultureInfo.InvariantCulture) : "-", (BallBattle.Sim.Boss.BossEvent)e.Variant, cue,
+                result.ToString().ToLowerInvariant());
+
         public static void Write(string line, AudioDirector director)
         {
             if (director != null)

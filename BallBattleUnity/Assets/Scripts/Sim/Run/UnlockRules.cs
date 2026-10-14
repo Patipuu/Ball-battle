@@ -14,8 +14,53 @@ namespace BallBattle.Sim.Run
         public int RunsWon;
         /// <summary>Furthest fight reached (1-based); 0 = never played.</summary>
         public int BestFight;
+        /// <summary>BB-04: boss id the last run had in each boss slot ("" = none yet). Index = slot (0 = fight 4, 1 = fight 8).</summary>
+        public List<string> LastBoss = new List<string>();
+        /// <summary>BB-04 Boss Codex: one entry per boss met so far.</summary>
+        public List<BossCodexEntry> BossCodex = new List<BossCodexEntry>();
 
         public bool Has(string achievement) => Achievements.Contains(achievement);
+
+        public string LastBossOf(int slot) => LastBoss != null && slot >= 0 && slot < LastBoss.Count ? LastBoss[slot] ?? "" : "";
+
+        public void SetLastBoss(int slot, string id)
+        {
+            if (LastBoss == null) LastBoss = new List<string>();
+            while (LastBoss.Count <= slot) LastBoss.Add("");
+            LastBoss[slot] = id ?? "";
+        }
+
+        /// <summary>Codex entry of a boss, or null when never met.</summary>
+        public BossCodexEntry Codex(string bossId)
+        {
+            if (BossCodex == null) return null;
+            foreach (var e in BossCodex)
+                if (e.Id == bossId) return e;
+            return null;
+        }
+
+        public bool BossMet(string bossId) => Codex(bossId)?.Met == true;
+        public bool BossDefeated(string bossId) => Codex(bossId)?.Defeated == true;
+
+        /// <summary>Record a fight against <paramref name="bossId"/>: met, and defeated when <paramref name="won"/>.</summary>
+        public void RecordBoss(string bossId, bool won)
+        {
+            if (string.IsNullOrEmpty(bossId)) return;
+            if (BossCodex == null) BossCodex = new List<BossCodexEntry>();
+            var e = Codex(bossId);
+            if (e == null) BossCodex.Add(e = new BossCodexEntry { Id = bossId });
+            e.Met = true;
+            if (won) e.Defeated = true;
+        }
+    }
+
+    /// <summary>BB-04 Boss Codex row: has the player met / beaten this boss (any run).</summary>
+    [Serializable]
+    public sealed class BossCodexEntry
+    {
+        public string Id;
+        public bool Met;
+        public bool Defeated;
     }
 
     /// <summary>
@@ -83,6 +128,7 @@ namespace BallBattle.Sim.Run
             if (last != null)
             {
                 if (last.FightIndex + 1 > p.BestFight) p.BestFight = last.FightIndex + 1;
+                p.RecordBoss(last.BossId, last.Won);   // BB-04 Boss Codex (rewards below stay mapped to the boss slots)
                 if (last.Won && last.FightIndex == RunTuning.BossFights[0]) Earn(Boss1);
                 if (last.Won && last.FightIndex == RunTuning.BossFights[1]) Earn(Boss2);
             }

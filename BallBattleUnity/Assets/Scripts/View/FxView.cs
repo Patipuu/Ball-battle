@@ -207,6 +207,12 @@ namespace BallBattle.View
             {
                 case SimEventType.Hit:
                 {
+                    if (e.Variant == 1)
+                    {
+                        // BB-04: stopped by Shell King's shell (0 damage): a spark on the shell, no flash, no number.
+                        particles.Burst(V(e.Point), 6, BossTelegraphView.ShellColor, 60f, 130f, 0.3f);
+                        break;
+                    }
                     var target = arena.Sim.Balls[e.B];
                     arena.GetBallView(e.B)?.Flash(FlashSeconds);
                     particles.Burst(V(e.Point), e.Value.ToFloat() >= 5f ? 7 : 5, BallColor(e.A), 50f, 110f, 0.35f, e.Value.ToFloat() >= 5f ? 2 : 1);
@@ -223,7 +229,8 @@ namespace BallBattle.View
                     particles.Burst(V(e.Point), 2, BallColor(e.A), 20f, 50f, 0.15f);
                     break;
                 case SimEventType.ProjectileHit:
-                    if (e.Value.ToFloat() > 0f)
+                    if (e.Variant == 1) particles.Burst(V(e.Point), 4, BossTelegraphView.ShellColor, 40f, 90f, 0.25f);   // BB-04 shell
+                    else if (e.Value.ToFloat() > 0f)
                     {
                         var hurt = arena.Sim.Balls[e.B];
                         arena.GetBallView(e.B)?.Flash(FlashSeconds);

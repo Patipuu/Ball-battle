@@ -9,6 +9,7 @@ namespace BallBattle.Sim
     {
         // 5: spike-walls hurt only in corner zones (BB-FIX1a), 3 damage, max 1 per ball per tick
         // 6: whole Sim in Q16.16 fixed point (6a.6b/c), same rules, integer rounding
-        public const int Rules = 7;   // 7: spike re-hit immunity (10 ActiveTicks per ball) + arena balance pass (BB-6c)
+        // 7: spike re-hit immunity (10 ActiveTicks per ball) + arena balance pass (BB-6c)
+        public const int Rules = 8;   // 8: Run boss pool v1 (BB-04): Shell King, Magnet, Mimic, Warden. Versus/round-robin results unchanged.
     }
 }

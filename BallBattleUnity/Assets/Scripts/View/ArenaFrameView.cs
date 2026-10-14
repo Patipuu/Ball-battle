@@ -34,6 +34,8 @@ namespace BallBattle.View
         int activeTeeth;
         ArenaLayout drawnLayout;
         Transform obstacleRoot;
+        /// <summary>One node per obstacle (its pixel rows), so a Warden step can hide a disabled one (BB-04).</summary>
+        readonly System.Collections.Generic.List<GameObject> obstacleNodes = new System.Collections.Generic.List<GameObject>();
         SpriteRenderer floor;
         readonly SpriteRenderer[] masks = new SpriteRenderer[4];
         readonly SpriteRenderer[] walls = new SpriteRenderer[4];
@@ -161,6 +163,27 @@ namespace BallBattle.View
             foreach (var wall in walls) wall.color = color;
         }
 
+        /// <summary>BB-04: hide obstacles the sim switched off (Warden step). Call after Render.</summary>
+        public void ShowObstacles(MatchSim sim)
+        {
+            for (var k = 0; k < obstacleNodes.Count; k++)
+            {
+                var on = sim == null || k >= sim.Layout.ObstacleCount || sim.ObstacleActive(k);
+                if (obstacleNodes[k] != null && obstacleNodes[k].activeSelf != on) obstacleNodes[k].SetActive(on);
+            }
+        }
+
+        /// <summary>Obstacles drawn now (tests).</summary>
+        public int ObstaclesShown
+        {
+            get
+            {
+                var n = 0;
+                foreach (var o in obstacleNodes) if (o != null && o.activeSelf) n++;
+                return n;
+            }
+        }
+
         /// <summary>Wall color drawn now (tests).</summary>
         public Color32 WallColor => shownWallColor;
 
@@ -271,9 +294,13 @@ namespace BallBattle.View
             var root = new GameObject("Obstacles");
             root.transform.SetParent(transform, false);
             obstacleRoot = root.transform;
+            obstacleNodes.Clear();
             for (var i = 0; i < layout.ObstacleCount; i++)
             {
                 var o = layout.Get(i);
+                var node = new GameObject("Obstacle" + i);
+                node.transform.SetParent(obstacleRoot, false);
+                obstacleNodes.Add(node);
                 var color = o.Damage > Fix.Zero ? SpikeColor : (o.Boost > Fix.Zero ? BumperColor : PostColor);
                 var steps = o.Shape == ObstacleShape.Circle ? 1 : Mathf.Max(1, Mathf.CeilToInt((o.B - o.A).Length.ToFloat()));
                 for (var s = 0; s < steps; s++)
@@ -284,7 +311,7 @@ namespace BallBattle.View
                     for (var dy = -r; dy < r; dy++)
                     {
                         var half = Mathf.Round(Mathf.Sqrt(r * r - (dy + 0.5f) * (dy + 0.5f)));
-                        var row = Quad(obstacleRoot, "Row", pixelSprite, color, ObstacleOrder);
+                        var row = Quad(node.transform, "Row", pixelSprite, color, ObstacleOrder);
                         var y = Mathf.Round(c.y) + dy;
                         Box(row, Mathf.Round(c.x) - half, y, Mathf.Round(c.x) + half, y + 1);
                     }

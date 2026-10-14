@@ -342,7 +342,7 @@ namespace BallBattle.Tests
             won.Won = true;
             UnlockRules.Record(p, won);
             Assert.That((p.RunsWon, p.RunsPlayed), Is.EqualTo((1, 2)));
-            Assert.That(SaveData.CurrentVersion, Is.EqualTo(2));
+            Assert.That(SaveData.CurrentVersion, Is.EqualTo(3));   // BB-04: v3 (boss slots, last boss, Boss Codex)
         }
     }
 }

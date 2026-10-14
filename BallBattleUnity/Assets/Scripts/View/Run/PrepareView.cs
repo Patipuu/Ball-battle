@@ -186,9 +186,12 @@ namespace BallBattle.View
             var foe = preview?.Balls[1];
 
             var enemy = run.Enemy;
-            enemyLabel.Set(boss ? "GIANT BOSS" : "ENEMY", boss ? Palette.WallWarning : Palette.TextDim);
+            var bossId = run.CurrentBossId;
+            enemyLabel.Set(boss ? BossText.Name(bossId) : "ENEMY", boss ? Palette.WallWarning : Palette.TextDim);
             SetBall(enemyIcon, enemyName, enemy.WeaponId, (foe != null ? foe.Radius.ToFloat() : (enemy.Radius > Fix.Zero ? enemy.Radius.ToFloat() : IconNativeRadius)) / IconNativeRadius);
-            SetTraits(enemyTraits, enemyTraits2, CardText.TraitLines(enemy, TraitsWidth));
+            if (bossId == BallBattle.Sim.Boss.BossIds.Mimic) enemyName.Set(BossText.CopiesYou, Palette.WallWarning);   // its loadout is the player's at fight start
+            if (boss) SetTraits(enemyTraits, enemyTraits2, BossLines(enemy, bossId, TraitsWidth));
+            else SetTraits(enemyTraits, enemyTraits2, CardText.TraitLines(enemy, TraitsWidth));
             enemyStats.Set(EnemyHpText((foe != null ? foe.Hp : enemy.MaxHp).ToFloat(), (foe != null ? foe.MaxHp : enemy.MaxHp).ToFloat()), Palette.TextDim);
 
             SetBall(youIcon, youName, run.Build.WeaponId, (you != null ? you.Radius.ToFloat() : IconNativeRadius) / IconNativeRadius);
@@ -222,6 +225,29 @@ namespace BallBattle.View
             line1.Set(lines.Count > 0 ? lines[0] : "", Palette.Text);
             line2.Set(lines.Count > 1 ? string.Join(" ", lines.GetRange(1, lines.Count - 1)) : "", Palette.Text);
         }
+
+        /// <summary>
+        /// BB-04 ENEMY box lines under a boss's name: its traits on the first line (when it rolled any; never for MIMIC, whose traits
+        /// are the player's), then the one-line hint, wrapped to two lines when there are no traits. At most two lines.
+        /// </summary>
+        public static System.Collections.Generic.List<string> BossLines(RunBuild enemy, string bossId, int width)
+        {
+            var lines = new System.Collections.Generic.List<string>();
+            if (bossId != BallBattle.Sim.Boss.BossIds.Mimic && enemy != null && enemy.Traits.Count > 0)
+                lines.Add(TextWrap.Cut(string.Join(" ", CardText.TraitNames(enemy)), width));
+            var hint = BossText.Hint(bossId);
+            if (lines.Count > 0) lines.Add(TextWrap.Cut(hint, width));
+            else
+            {
+                var words = new System.Collections.Generic.List<string>(hint.Split(' '));
+                foreach (var l in TextWrap.Items(words, "", " ", width)) if (lines.Count < 2) lines.Add(l);
+            }
+            return lines;
+        }
+
+        /// <summary>ENEMY box label, name and the two lines under it (tests).</summary>
+        public string EnemyLabelText => enemyLabel.Text;
+        public string EnemyLinesText => (enemyTraits.Text + " " + enemyTraits2.Text).Trim();
 
         /// <summary>Traits lines of the YOU box (tests).</summary>
         public string YouTraitsText => (youTraits.Text + " " + youTraits2.Text).Trim();

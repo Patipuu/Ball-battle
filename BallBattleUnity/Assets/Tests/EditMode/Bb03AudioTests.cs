@@ -294,16 +294,19 @@ namespace BallBattle.Tests
             Assert.That(changed, Is.EqualTo(new[] { 3, 0 }));
         }
 
-        // ---- boss cues are BB-04 ----
+        // ---- boss cues arrived in BB-04: only the seven named ids, and no clip for them exists yet ----
 
         [Test]
-        public void NoBossCueIsReferenced()
+        public void OnlyTheBb04BossCuesAreReferenced()
         {
-            foreach (var c in lib.Clips) Assert.That(c.name, Does.Not.StartWith("boss_"), c.name);
+            foreach (var c in lib.Clips) Assert.That(c.name, Does.Not.StartWith("boss_"), c.name + ": no boss clip is in the library yet");
             var ids = typeof(AudioIds).GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Where(f => f.FieldType == typeof(string)).Select(f => (string)f.GetValue(null))
                 .Concat(AudioIds.Cues).Concat(AudioIds.Music);
-            foreach (var id in ids) Assert.That(id, Does.Not.StartWith("boss_"), id);
+            foreach (var id in ids.Where(i => i != null && i.StartsWith("boss_")))
+                Assert.That(AudioIds.BossCues, Does.Contain(id), id);
+            Assert.That(AudioIds.BossCues, Is.EquivalentTo(new[] { "boss_shellking_warn", "boss_shellking_hit", "boss_magnet_warn", "boss_magnet_hit",
+                "boss_mimic_hit", "boss_warden_warn", "boss_warden_hit" }));
         }
     }
 }

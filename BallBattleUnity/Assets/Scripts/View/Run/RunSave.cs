@@ -36,6 +36,10 @@ namespace BallBattle.View
         public bool FightLocked;
         public bool Over;
         public bool Won;
+        /// <summary>BB-04 (save v3).</summary>
+        public List<string> BossIds = new List<string>();
+        public string ForcedBossId = "";
+        public int ForcedBossFight = -1;
 
         public static RunSave From(RunState r)
         {
@@ -48,7 +52,8 @@ namespace BallBattle.View
                 Weapons = new List<string>(r.Weapons), Traits = new List<string>(r.Traits),
                 EnemyWeapons = new List<string>(r.EnemyWeapons), EnemyTraits = new List<string>(r.EnemyTraits),
                 Achievements = new List<string>(r.Achievements),
-                FightLocked = r.FightLocked, Over = r.Over, Won = r.Won
+                FightLocked = r.FightLocked, Over = r.Over, Won = r.Won,
+                BossIds = new List<string>(r.BossIds), ForcedBossId = r.ForcedBossId ?? "", ForcedBossFight = r.ForcedBossFight
             };
             foreach (var o in r.OfferCards) s.OfferCards.Add(new OfferSlot { Kind = o.Kind, Id = o.Id, Level = o.Level });
             foreach (var h in r.History) s.History.Add(FightRecordSave.From(h));
@@ -64,7 +69,8 @@ namespace BallBattle.View
                 RerollCount = RerollCount, PicksTaken = PicksTaken, PickedMask = PickedMask,
                 Weapons = Copy(Weapons), Traits = Copy(Traits), EnemyWeapons = Copy(EnemyWeapons), EnemyTraits = Copy(EnemyTraits),
                 Achievements = Copy(Achievements),
-                FightLocked = FightLocked, Over = Over, Won = Won
+                FightLocked = FightLocked, Over = Over, Won = Won,
+                BossIds = Copy(BossIds), ForcedBossId = ForcedBossId ?? "", ForcedBossFight = ForcedBossFight
             };
             if (OfferCards != null)
                 foreach (var o in OfferCards) r.OfferCards.Add(new OfferSlot { Kind = o.Kind, Id = o.Id, Level = o.Level });
@@ -122,15 +128,19 @@ namespace BallBattle.View
         public bool Retry;
         public string EnemyWeapon;
         public double HpAfter;
+        /// <summary>BB-04 (save v3): boss fought, "" for a normal fight.</summary>
+        public string BossId = "";
 
         public static FightRecordSave From(FightRecord f) => new FightRecordSave
         {
-            FightIndex = f.FightIndex, Won = f.Won, Draw = f.Draw, Retry = f.Retry, EnemyWeapon = f.EnemyWeapon, HpAfter = SaveFix.ToDouble(f.HpAfter)
+            FightIndex = f.FightIndex, Won = f.Won, Draw = f.Draw, Retry = f.Retry, EnemyWeapon = f.EnemyWeapon, HpAfter = SaveFix.ToDouble(f.HpAfter),
+            BossId = f.BossId ?? ""
         };
 
         public FightRecord ToRecord() => new FightRecord
         {
-            FightIndex = FightIndex, Won = Won, Draw = Draw, Retry = Retry, EnemyWeapon = EnemyWeapon, HpAfter = SaveFix.ToFix(HpAfter)
+            FightIndex = FightIndex, Won = Won, Draw = Draw, Retry = Retry, EnemyWeapon = EnemyWeapon, HpAfter = SaveFix.ToFix(HpAfter),
+            BossId = BossId ?? ""
         };
     }
 

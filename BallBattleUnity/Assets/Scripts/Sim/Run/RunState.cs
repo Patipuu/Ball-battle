@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BallBattle.Sim.Boss;
 using BallBattle.Sim.Traits;
 using BallBattle.Sim.Weapons;
 
@@ -36,6 +37,12 @@ namespace BallBattle.Sim.Run
         /// <summary>Achievements earned during this run (for the summary; survives quitting).</summary>
         public List<string> Achievements = new List<string>();
         public List<FightRecord> History = new List<FightRecord>();
+        /// <summary>BB-04: boss of each boss slot (index = slot), chosen at run start by BossSelection. Never holds a forced boss.</summary>
+        public List<string> BossIds = new List<string>();
+        /// <summary>BB-04 debug (-bbForceBoss): boss that replaces its slot's boss and also fights at <see cref="ForcedBossFight"/>. "" = none.</summary>
+        public string ForcedBossId = "";
+        /// <summary>Extra fight (0-based) that meets the forced boss; -1 = none.</summary>
+        public int ForcedBossFight = -1;
         /// <summary>
         /// Set when a fight starts, cleared when its result is applied. A run saved while locked resumes straight
         /// into that fight, so quitting after seeing a result can never be used to change the build and retry.
@@ -45,7 +52,40 @@ namespace BallBattle.Sim.Run
         public bool Won;
 
         public uint Seed => unchecked((uint)SeedBits);
-        public bool IsBossFight => RunTuning.IsBoss(FightIndex);
+        /// <summary>A boss fight now: a boss slot, or the extra fight of a forced (debug) boss.</summary>
+        public bool IsBossFight => CurrentBossId != null;
+
+        /// <summary>BB-04: boss met at fight <paramref name="fightIndex"/>, or null for a normal fight. A forced boss wins over its slot's boss.</summary>
+        public string BossFor(int fightIndex)
+        {
+            var forced = !string.IsNullOrEmpty(ForcedBossId);
+            if (forced && fightIndex == ForcedBossFight) return ForcedBossId;
+            for (var s = 0; s < RunTuning.BossFights.Length; s++)
+            {
+                if (RunTuning.BossFights[s] != fightIndex) continue;
+                if (forced && Boss.BossIds.SlotOf(ForcedBossId) == s) return ForcedBossId;
+                return s < BossIds.Count && !string.IsNullOrEmpty(BossIds[s]) ? BossIds[s] : Boss.BossIds.Slots[s][0];
+            }
+            return null;
+        }
+
+        /// <summary>Boss of the current fight, or null.</summary>
+        public string CurrentBossId => BossFor(FightIndex);
+
+        /// <summary>
+        /// -bbForceBoss (debug, Run only): <paramref name="bossId"/> takes its own slot and, when the next fight to play is not a boss
+        /// fight (and is not locked), that fight too. BossIds (and so the "last boss" history) are not touched. Returns false for an
+        /// unknown id.
+        /// </summary>
+        public bool ApplyForcedBoss(string bossId)
+        {
+            if (!Boss.BossIds.Exists(bossId) || Over) return false;
+            // A locked fight (resumed mid-fight) must replay exactly: never change its enemy.
+            if (FightLocked && RunTuning.BossFights[Boss.BossIds.SlotOf(bossId)] == FightIndex) return false;
+            ForcedBossId = bossId;
+            if (!FightLocked && !RunTuning.IsBoss(FightIndex)) ForcedBossFight = FightIndex;
+            return true;
+        }
         public int BossesDefeated
         {
             get
@@ -77,6 +117,7 @@ namespace BallBattle.Sim.Run
             if (!StartChoices(seed, weapons).Contains(weaponId))
                 throw new ArgumentException($"'{weaponId}' is not one of this run's start choices", nameof(weaponId));
             var run = new RunState { SeedBits = unchecked((int)seed), Weapons = weapons, Traits = UnlockRules.Traits(progress) };
+            run.BossIds = BossSelection.Choose(seed, progress ?? new ProgressData());
             foreach (var w in WeaponRegistry.All) run.EnemyWeapons.Add(w.Id);
             foreach (var t in TraitRegistry.All) run.EnemyTraits.Add(t.Id);
             run.Build.WeaponId = weaponId;
@@ -85,7 +126,24 @@ namespace BallBattle.Sim.Run
             return run;
         }
 
-        public RunBuild Enemy => EnemyGenerator.Generate(Seed, FightIndex, EnemyWeapons, EnemyTraits);
+        /// <summary>
+        /// Opponent of the current fight. MIMIC (BB-04) copies the player's weapon and traits (same levels) as they are right now,
+        /// so CreateMatch (fight start) copies the final build, including cards picked after the preview.
+        /// </summary>
+        public RunBuild Enemy
+        {
+            get
+            {
+                var e = EnemyGenerator.Generate(Seed, FightIndex, EnemyWeapons, EnemyTraits, CurrentBossId);
+                if (e.BossId == Boss.BossIds.Mimic)
+                {
+                    e.WeaponId = Build.WeaponId;
+                    e.Traits = new List<TraitSlot>();
+                    foreach (var t in Build.Traits) e.Traits.Add(new TraitSlot(t.Id, t.Level));
+                }
+                return e;
+            }
+        }
 
         public int OfferCount => OfferCards.Count;
         public Card OfferCard(int index) => OfferCards[index].ToCard();
@@ -201,7 +259,7 @@ namespace BallBattle.Sim.Run
                 else Over = true;
             }
 
-            History.Add(new FightRecord { FightIndex = FightIndex, Won = won, Draw = match.WinnerIndex < 0, Retry = attemptedRetry, EnemyWeapon = Enemy.WeaponId, HpAfter = Build.Hp });
+            History.Add(new FightRecord { FightIndex = FightIndex, Won = won, Draw = match.WinnerIndex < 0, Retry = attemptedRetry, EnemyWeapon = Enemy.WeaponId, HpAfter = Build.Hp, BossId = CurrentBossId ?? "" });
             var last = FightIndex == RunTuning.Fights - 1;
             if (won) FightIndex++;
             RerollCount = 0;

@@ -173,7 +173,11 @@ namespace BallBattle.View
                     RequestHitEvent(e, sim, 0.6f);
                     break;
                 case SimEventType.ProjectileHit:
-                    if (e.Value.ToFloat() > 0f) RequestHitEvent(e, sim, 0.35f);
+                    // A shot stopped by a boss shell (Variant 1, 0 damage) keeps its normal hit cue (BB-04).
+                    if (e.Value.ToFloat() > 0f || e.Variant == 1) RequestHitEvent(e, sim, 0.35f);
+                    break;
+                case SimEventType.Boss:
+                    RequestBossCue(e, sim);
                     break;
                 case SimEventType.Parry:
                     RequestCue(AudioIds.Parry, e.Tick, 0.6f);
@@ -208,6 +212,26 @@ namespace BallBattle.View
         }
 
         bool Has(string id) => library != null && library.Has(id);
+
+        // ---------------- boss cues (BB-04) ----------------
+
+        public enum BossCueResult { None, Played, Missing, Gated }
+
+        /// <summary>
+        /// The cue of a boss event (AudioIds.BossCue): normal SFX bus at AudioIds.BossCueVolume, pitch 1, no jitter, through the same
+        /// per-tick gate as every match cue. A missing clip plays nothing (no fallback) and is reported as Missing. Events without a
+        /// cue (shell off, magnet end) return None. Logged when the audio log is on.
+        /// </summary>
+        public BossCueResult RequestBossCue(SimEvent e, MatchSim sim)
+        {
+            var id = AudioIds.BossCue((BallBattle.Sim.Boss.BossEvent)e.Variant);
+            if (id == null) return BossCueResult.None;
+            BossCueResult result;
+            if (!Has(id)) result = BossCueResult.Missing;
+            else result = RequestCue(id, e.Tick, AudioIds.BossCueVolume, AudioIds.BossCuePitch) ? BossCueResult.Played : BossCueResult.Gated;
+            if (AudioLog.Enabled) AudioLog.Write(AudioLog.BossLine(e, sim, id, result), this);
+            return result;
+        }
 
         // ---------------- hazards: wall bounces and obstacle hits (BB-SFX2) ----------------
 

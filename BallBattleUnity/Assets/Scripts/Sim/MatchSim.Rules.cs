@@ -17,17 +17,23 @@ namespace BallBattle.Sim
                     b.Vel.X = Config.MinHorizontalSpeed * sign;
                 }
 
-                var max = (Config.MaxSpeed + b.Weapon.MaxSpeedBonus) * (Fix.One + b.Bonus.SpeedPct);
-                var speedSq = b.Vel.LengthSq;
-                if (speedSq > FixMath.Sq(max))
-                {
-                    // A floored root can equal max while the squared speed is still above it. Use its ceiling,
-                    // then one raw rational division per axis; avoid quantizing a scale before multiplying.
-                    var lengthRaw = FixMath.Sqrt(speedSq).Raw;
-                    if ((long)lengthRaw * lengthRaw < speedSq) lengthRaw++;
-                    b.Vel = new FixVec2(FixMath.MulDiv(b.Vel.X, max.Raw, lengthRaw),
-                        FixMath.MulDiv(b.Vel.Y, max.Raw, lengthRaw));
-                }
+                ClampSpeed(b);
+            }
+        }
+
+        /// <summary>Scale the ball's velocity down to its normal speed cap (SpeedCap) when above it. Also used by the Magnet pull.</summary>
+        internal void ClampSpeed(BallState b)
+        {
+            var max = SpeedCap(b);
+            var speedSq = b.Vel.LengthSq;
+            if (speedSq > FixMath.Sq(max))
+            {
+                // A floored root can equal max while the squared speed is still above it. Use its ceiling,
+                // then one raw rational division per axis; avoid quantizing a scale before multiplying.
+                var lengthRaw = FixMath.Sqrt(speedSq).Raw;
+                if ((long)lengthRaw * lengthRaw < speedSq) lengthRaw++;
+                b.Vel = new FixVec2(FixMath.MulDiv(b.Vel.X, max.Raw, lengthRaw),
+                    FixMath.MulDiv(b.Vel.Y, max.Raw, lengthRaw));
             }
         }
 
@@ -134,10 +140,16 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Hash of the whole match state. Equal hashes ⇔ (practically) identical matches.</summary>
-        public ulong ComputeHash()
+        public ulong ComputeHash() => ComputeHash(SimVersion.Rules);
+
+        /// <summary>
+        /// The state hash with <paramref name="rules"/> in place of SimVersion.Rules. Tests pass an older Rules number to prove that a
+        /// Rules bump changed nothing else (BB-04: Versus goldens with the Rules field masked).
+        /// </summary>
+        public ulong ComputeHash(int rules)
         {
             var h = SimHash.Seed;
-            h = SimHash.Mix(h, SimVersion.Rules);
+            h = SimHash.Mix(h, rules);
             h = SimHash.Mix(SimHash.Mix(h, (uint)tuningFingerprint), (uint)(tuningFingerprint >> 32));
             h = SimHash.Mix(h, Tick);
             h = SimHash.Mix(h, ActiveTick);
@@ -153,6 +165,7 @@ namespace BallBattle.Sim
                 for (var j = 0; j < n; j++)
                     h = SimHash.Mix(h, parryCooldown[i, j]);
             for (var i = 0; i < n; i++) h = SimHash.Mix(h, spikeActiveTick[i]);
+            h = HashBosses(h);   // no-op without a boss rule
             return projectiles.HashInto(h);
         }
     }

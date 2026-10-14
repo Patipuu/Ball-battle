@@ -72,6 +72,7 @@ namespace BallBattle.Sim
                 loadouts[i].Weapon.Bind(config);
                 balls[i] = Spawn(i, loadouts.Count, loadouts[i]);
             }
+            BindBosses(loadouts);   // BB-04: Run boss fights only; a match without a boss rule is unchanged
         }
 
         /// <summary>Checks everything before binding anything, so a rejected set of loadouts can be fixed and reused.</summary>
@@ -82,6 +83,7 @@ namespace BallBattle.Sim
 
             var seenWeapons = new HashSet<WeaponRule>();
             var seenTraits = new HashSet<TraitRule>();
+            var seenBosses = new HashSet<Boss.BossRule>();
             for (var i = 0; i < loadouts.Count; i++)
             {
                 var l = loadouts[i];
@@ -89,6 +91,8 @@ namespace BallBattle.Sim
                 if (l.Weapon.IsBound || !seenWeapons.Add(l.Weapon))
                     throw new InvalidOperationException($"Weapon '{l.Weapon.Id}' instance is already used by a ball; create a new instance per ball and per match.");
                 if (l.Hp == Fix.Zero) throw new ArgumentException($"Loadout {i} starts with 0 HP", nameof(loadouts));
+                if (l.Boss != null && (l.Boss.IsBound || !seenBosses.Add(l.Boss)))
+                    throw new InvalidOperationException($"Boss rule '{l.Boss.Id}' instance is already used by a ball; create a new instance per ball and per match.");
                 for (var t = 0; t < l.Traits.Count; t++)
                 {
                     var trait = l.Traits[t];
@@ -155,6 +159,7 @@ namespace BallBattle.Sim
 
             ActiveTick++;
             Arena = Config.ArenaAt(ActiveTick);
+            if (bossRules.Length > 0) BossPreTick();   // BB-04: boss phases, pull, Warden walls (limits Arena)
 
             var substeps = SubstepCount();
             for (var s = 0; s < substeps && Ongoing; s++)

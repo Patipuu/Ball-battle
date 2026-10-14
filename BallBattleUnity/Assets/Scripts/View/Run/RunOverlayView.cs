@@ -120,7 +120,7 @@ namespace BallBattle.View
             {
                 var run = flow.Run;
                 if (state == RunFlow.State.Countdown)
-                    label.Set($"FIGHT {run.FightIndex + 1}/{RunTuning.Fights}" + (run.IsBossFight ? "  GIANT BOSS" : ""), run.IsBossFight ? Palette.WallWarning : Palette.Text);
+                    label.Set($"FIGHT {run.FightIndex + 1}/{RunTuning.Fights}" + (run.IsBossFight ? "  " + BossText.Name(run.CurrentBossId) : ""), run.IsBossFight ? Palette.WallWarning : Palette.Text);
                 if (state == RunFlow.State.Playing)
                 {
                     goTimer = GoSeconds;
