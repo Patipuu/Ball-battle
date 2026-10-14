@@ -150,6 +150,13 @@ namespace BallBattle.View
             var baseColor = hasArt ? look.WallColor : (Color32)Palette.Wall;   // spike arena: normal walls, spikes only in the corner zones
             var closing = art != null ? art.ClosingWallColor : (Color32)Palette.WallWarning;
             var zones = spikes ? ZoneSegments(config.Layout.SpikeCorners, arena) : NoZones;
+            if (FullWallSpikes)
+            {
+                var combined = new System.Collections.Generic.List<ZoneSegment>(FullWallSegments(arena, SpikedWallMask));
+                foreach (var zone in zones)
+                    if ((SpikedWallMask & (1 << (int)zone.Wall)) == 0) combined.Add(zone);
+                zones = combined.ToArray();
+            }
             var teethArt = hasArt && art.SpikeTooth != null;
             DrawTeeth(teethArt ? zones : NoZones);
             DrawZoneStrips(teethArt ? NoZones : zones);
@@ -203,9 +210,27 @@ namespace BallBattle.View
         /// (SpikeZones.Segments: SpikeZoneNum/SpikeZoneDen of each wall from the corner, on both walls meeting there, from the
         /// current, shrinking rect), converted to floats for drawing. The wall line (At) is the rounded edge the frame draws.
         /// </summary>
-        public static ZoneSegment[] ZoneSegments(SpikeCorner corners, ArenaRect arena)
+        public static ZoneSegment[] ZoneSegments(SpikeCorner corners, ArenaRect arena) => ToZones(SpikeZones.Segments(arena, corners), arena);
+
+        /// <summary>WARDEN spikes: the side walls and the ceiling of <paramref name="arena"/> along their full length (BB-6e: never the floor).</summary>
+        public static ZoneSegment[] FullWallSegments(ArenaRect arena, byte mask = 11)
         {
-            var segs = SpikeZones.Segments(arena, corners);
+            var segments = new System.Collections.Generic.List<SpikeSegment>();
+            foreach (var wall in new[] { ArenaWall.Top, ArenaWall.Left, ArenaWall.Right })
+            {
+                if ((mask & (1 << (int)wall)) == 0) continue;
+                var horizontal = wall == ArenaWall.Top;
+                segments.Add(new SpikeSegment { Wall = wall, From = horizontal ? arena.Left : arena.Bottom, To = horizontal ? arena.Right : arena.Top });
+            }
+            return ToZones(segments.ToArray(), arena);
+        }
+
+        /// <summary>Set by ArenaView each frame: the walls carry WARDEN spikes (teeth along every wall, BB-6d placeholder).</summary>
+        public byte SpikedWallMask { get; set; }
+        public bool FullWallSpikes => SpikedWallMask != 0;
+
+        static ZoneSegment[] ToZones(SpikeSegment[] segs, ArenaRect arena)
+        {
             var l = Mathf.Round(arena.Left.ToFloat());
             var r = Mathf.Round(arena.Right.ToFloat());
             var b = Mathf.Round(arena.Bottom.ToFloat());

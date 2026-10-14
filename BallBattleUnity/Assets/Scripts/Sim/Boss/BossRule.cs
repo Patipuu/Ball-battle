@@ -59,6 +59,12 @@ namespace BallBattle.Sim.Boss
             return false;
         }
 
+        /// <summary>
+        /// BB-6d: spike damage a wall contact deals to <paramref name="ball"/> from this boss (WARDEN's spiked walls), 0 for none. It
+        /// shares the normal spike rules: one hit per contact, the higher of this and a spike zone, the same 10-ActiveTick immunity.
+        /// </summary>
+        public virtual Fix WallSpikeDamage(BallState ball, ArenaWall wall) => Fix.Zero;
+
         /// <summary>The ball this boss acts on: the first other ball still alive (Run mode: the player, ball 0). Null if none.</summary>
         protected BallState Target
         {

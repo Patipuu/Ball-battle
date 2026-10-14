@@ -136,16 +136,17 @@ namespace BallBattle.SimTests
         /// Per-arena digests, re-pinned for the fixed-point sim (6a.6b/c; the digest now mixes the Fix raw HP values). Every
         /// arena is pinned exactly; old (float, BB-FIX1a) → new values are listed in docs/claude-runs/6a6bc-fix.md.
         /// Re-pinned for Rules 7 (BB-6c spike immunity + balance pass); old → new in docs/claude-runs/bb6c.md.
+        /// Re-pinned for Rules 9 (BB-6d: MIRROR on combat counters, MANTIS tuning); old → new in docs/claude-runs/bb6d.md.
         /// </summary>
         static readonly (string arena, ulong digest)[] ExpectedByArena =
         {
-            ("classic", 0x786EB4ED8E600275UL),
-            ("pillar", 0x8BAD41929FA62F8DUL),
-            ("bumpers", 0x49524358E9163D8BUL),
-            ("spike-walls", 0x59CFF559865DCA94UL),
-            ("low-gravity", 0x95930D9564206FD7UL),
-            ("tight", 0xCDB2F85B20F4826DUL),
-            ("wide", 0x322577563C60A74AUL),
+            ("classic", 0xE2F0DCC26B635C9AUL),
+            ("pillar", 0x3304994C3D467FCAUL),
+            ("bumpers", 0x55D70DE67781E84AUL),
+            ("spike-walls", 0x1A27AF4835C886F0UL),
+            ("low-gravity", 0x11B638762D9DF817UL),
+            ("tight", 0x23624466AFBE95DFUL),
+            ("wide", 0x96AD5272F0D8137FUL),
         };
 
         /// <summary>Winner, length and both final HPs of 8 weapons vs blade, seeds 1-2, on one arena.</summary>

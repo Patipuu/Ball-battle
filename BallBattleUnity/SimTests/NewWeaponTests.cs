@@ -110,7 +110,9 @@ namespace BallBattle.SimTests
             aegis.OnHitTaken(brawler, FT.X(10f), DamageKind.Weapon);
             Assert.That(brawler.Hp.F(), Is.EqualTo((FT.X(100f) - FT.X(10f) * WeaponTuning.AegisBodyReflectPct).F()).Within(1e-4f));
             aegis.OnHitTaken(brawler, FT.X(10f), DamageKind.Projectile);
-            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo((FT.X(50f) + FT.X(10f) * WeaponTuning.AegisShotAbsorbPct).F()).Within(1e-4f));
+            // BB-6d: a body blow is a guard (AegisGuardBody points of mend), the shot a smaller one (AegisGuardShot) plus the absorb.
+            Assert.That(m.Balls[0].Hp.F(), Is.EqualTo((FT.X(50f) + WeaponTuning.AegisMendPerGuard * (WeaponTuning.AegisGuardBody + WeaponTuning.AegisGuardShot)
+                                                        + FT.X(10f) * WeaponTuning.AegisShotAbsorbPct).F()).Within(1e-4f));
             m.Balls[0].Hp = FT.X(0f); // pending dead: no reflect
             var before = brawler.Hp;
             aegis.OnHitTaken(brawler, FT.X(10f), DamageKind.Weapon);
@@ -118,13 +120,26 @@ namespace BallBattle.SimTests
         }
 
         [Test]
-        public void AegisHitsHarderLateInTheFight()
+        public void AegisHitsHarderAfterEnoughGuards()
         {
+            // BB-6d: rage follows guards (parries + hits taken), not time.
             var aegis = new AegisRule();
-            var m = Duel(aegis, new HarmlessRule());
+            var m = Duel(aegis, new BladeRule());
+            var blade = m.Balls[1];
             var early = aegis.Damage(default);
-            for (var i = 0; i < WeaponTuning.AegisRageStartTicks + WeaponTuning.AegisRageRampTicks; i++) aegis.OnTick();
-            Assert.That(aegis.Damage(default).F(), Is.EqualTo((early * FT.X(2f)).F()).Within(0.01f));
+            for (var i = 0; i < 5000; i++) aegis.OnTick();
+            Assert.That(aegis.Damage(default), Is.EqualTo(early), "time alone changes nothing");
+            m.Balls[0].Hp = FT.X(50f);
+            var parries = 0;
+            while (aegis.Guards + WeaponTuning.AegisGuardMelee <= WeaponTuning.AegisRageStartGuards) { aegis.OnParry(blade); parries++; }
+            Assert.That(aegis.Damage(default), Is.EqualTo(early), "no rage up to AegisRageStartGuards points");
+            Assert.That(m.Balls[0].Hp, Is.EqualTo(FT.X(50f) + WeaponTuning.AegisMendPerGuard * (parries * WeaponTuning.AegisGuardMelee)), "each guard point mends");
+            var g0 = aegis.Guards;
+            var hits = 0;
+            while (aegis.Guards < WeaponTuning.AegisRageStartGuards + WeaponTuning.AegisRageRampGuards) { aegis.OnHitTaken(blade, FT.X(1f), DamageKind.Weapon); hits++; }
+            Assert.That(aegis.Guards - g0, Is.EqualTo(hits * WeaponTuning.AegisGuardMelee), "a blade hit taken = AegisGuardMelee points");
+            var rage = aegis.Guards - WeaponTuning.AegisRageStartGuards;
+            Assert.That(aegis.Damage(default), Is.EqualTo(early + early * rage / WeaponTuning.AegisRageRampGuards), "+1/ramp per point past the start");
         }
 
         [Test]

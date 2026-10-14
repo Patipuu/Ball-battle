@@ -3,13 +3,22 @@ namespace BallBattle.Sim.Weapons
 {
     /// <summary>
     /// Counter-fighter: a broad shield blade that barely scratches. When it parries, the blow it stopped comes back at
-    /// the attacker, and so does part of a body blow (Reflect damage); it absorbs most of a shot's damage and rages late in a fight. Each time it bumps a body the shield widens a little. Loses to poison and shots.
+    /// the attacker, and so does part of a body blow (Reflect damage); it absorbs part of a shot's damage. Each time it lands a hit
+    /// the shield widens a little. Loses to poison and shots.
+    /// BB-6d: its two clocks are now combat counters. Every guard (a parry against a blade or a blade hit taken: AegisGuardMelee
+    /// points; a body blow taken: AegisGuardBody; a shot taken: AegisGuardShot) mends AegisMendPerGuard HP per point (was
+    /// AegisRegenPerSecond per second) and counts toward rage (was the active-tick clock): after AegisRageStartGuards points each
+    /// further point adds 1/AegisRageRampGuards of the base damage. Power follows how much fighting happened, not how long the arena
+    /// kept the balls apart.
     /// </summary>
     public sealed class AegisRule : WeaponRule
     {
         public const string WeaponId = "aegis";
 
-        int ticks;
+        Fix guards;
+
+        /// <summary>Guard points so far this match.</summary>
+        public Fix Guards => guards;
 
         public AegisRule()
         {
@@ -25,15 +34,17 @@ namespace BallBattle.Sim.Weapons
         public override Fix Damage(in HitContext ctx)
         {
             var d = WeaponTuning.AegisChipDamage + (BladeThickness - WeaponTuning.AegisThickness) * WeaponTuning.AegisDamagePerWidth;
-            var rage = ticks - WeaponTuning.AegisRageStartTicks;
-            return rage > 0 ? d + FixMath.MulDiv(d, rage, WeaponTuning.AegisRageRampTicks) : d;   // d × (1 + rage / ramp)
+            var rage = guards - WeaponTuning.AegisRageStartGuards;
+            if (rage > WeaponTuning.AegisRageMaxGuards) rage = WeaponTuning.AegisRageMaxGuards;   // no runaway against a stream of shots
+            return rage > Fix.Zero ? d + d * rage / WeaponTuning.AegisRageRampGuards : d;   // d × (1 + rage / ramp)
         }
 
-        /// <summary>Slow regen (answers poison and chip damage) and the late-fight rage clock.</summary>
-        public override void OnTick()
+        /// <summary>A guard worth <paramref name="points"/>: mend a little per point and move the rage counter.</summary>
+        void Guard(Fix points, bool mend = true)
         {
-            ticks++;
-            if (ticks % MatchConfig.TicksPerSecond == 0) Sim.Heal(Self, WeaponTuning.AegisRegenPerSecond);
+            if (points <= Fix.Zero) return;
+            guards += points;
+            if (mend) Sim.Heal(Self, WeaponTuning.AegisMendPerGuard * points);
         }
 
         public override void OnHit(in HitContext ctx) => BladeThickness = FixMath.Min(WeaponTuning.AegisMaxThickness, BladeThickness + WeaponTuning.AegisWidthPerHit);
@@ -42,6 +53,9 @@ namespace BallBattle.Sim.Weapons
         public override void OnHitTaken(BallState attacker, Fix damage, DamageKind kind)
         {
             if (Self.Hp <= Fix.Zero) return;
+            if (kind == DamageKind.Projectile) Guard(WeaponTuning.AegisGuardShot);
+            else if (kind == DamageKind.Weapon)
+                Guard(attacker.Weapon.HasBlade ? WeaponTuning.AegisGuardMelee : WeaponTuning.AegisGuardBody, !(attacker.Weapon is AegisRule));   // no mend in a mirror
             if (kind == DamageKind.Projectile) { Sim.Heal(Self, damage * WeaponTuning.AegisShotAbsorbPct); return; }
             if (kind != DamageKind.Weapon || attacker.Weapon.HasBlade) return;
             Sim.DealDamage(Self, attacker, damage * WeaponTuning.AegisBodyReflectPct, DamageKind.Reflect);
@@ -49,12 +63,16 @@ namespace BallBattle.Sim.Weapons
 
         public override void OnParry(BallState other)
         {
-            if (Self.Hp <= Fix.Zero || !other.Weapon.HasBlade || other.Weapon is AegisRule) return; // two Aegis would only trade reflects until both fall
+            if (Self.Hp <= Fix.Zero || !other.Weapon.HasBlade) return;
+            // Between two Aegis the parry counts AegisGuardMirror points: their rage must end the mirror (only mirror matches use it).
+            var mirror = other.Weapon is AegisRule;
+            Guard(mirror ? WeaponTuning.AegisGuardMirror : WeaponTuning.AegisGuardMelee, !mirror);   // a mirror only rages: mending each other would never end it
+            if (other.Weapon is AegisRule) return; // two Aegis would only trade reflects until both fall
             var blow = other.Weapon.Damage(new HitContext(other.Vel.Length, Fix.Zero));
             Sim.DealDamage(Self, other, blow * WeaponTuning.AegisReflectPct, DamageKind.Reflect);
         }
 
-        // The width (BladeThickness) is hashed by the base class; the clock is hashed here.
-        protected override ulong HashState(ulong h) => SimHash.Mix(h, ticks);
+        // The width (BladeThickness) is hashed by the base class; the guard counter is hashed here.
+        protected override ulong HashState(ulong h) => SimHash.Mix(h, guards);
     }
 }

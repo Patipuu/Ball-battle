@@ -12,7 +12,7 @@ boss.magnet.hint,PULLS YOU IN EVERY 5S.
 boss.mimic.name,MIMIC
 boss.mimic.hint,COPIES YOUR WEAPON AND TRAITS.
 boss.warden.name,WARDEN
-boss.warden.hint,WALLS CLOSE EVERY 8S.
+boss.warden.hint,MOVING WALLS SPIKE YOU.
 boss.mimic.copies_you,COPIES YOU
 boss.summary.beaten,{0} BEATEN
 boss.summary.met,{0} MET

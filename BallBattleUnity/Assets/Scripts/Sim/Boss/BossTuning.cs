@@ -20,7 +20,7 @@ namespace BallBattle.Sim.Boss
         public static int ShellArcDeg = 120;
 
         // ---- MAGNET (fight 4): pulls the player toward its centre for a moment every cycle ----
-        public static Fix MagnetHp = 200;   // BB-04 it2: 160 -> 200 (+25%)
+        public static Fix MagnetHp = 225;   // BB-04: 200; BB-6e: 200 -> 225 (+12.5%)
         public static int MagnetTraits = 0;
         public static int MagnetFirstWarnTick = 120;
         public static int MagnetWarnTicks = 60;
@@ -36,16 +36,22 @@ namespace BallBattle.Sim.Boss
         public static Fix MimicHp = 275;   // BB-04 it2: 220 -> 275 (+25%)
 
         // ---- WARDEN (fight 8): the walls step in every few seconds ----
-        public static Fix WardenHp = 275;   // BB-04 it2: 220 -> 275 (+25%)
+        public static Fix WardenHp = 207;   // BB-6e: 275 -> 207 (-24.7% vs BB-04 it3), retained by BB-6f
         /// <summary>Random traits, as the fight-8 boss had before BB-04.</summary>
         public static int WardenTraits = 2;
-        public static int WardenFirstStepTick = 360;   // BB-04 it3: 480 -> 360 (-25%)
+        public static int WardenFirstStepTick = 450;   // BB-6e: 360 -> 450 (+25% vs BB-04 it3)
         public static int WardenStepEveryTicks = 480;
         public static int WardenWarnTicks = 60;
         /// <summary>Each step takes this percentage of the ORIGINAL width and height.</summary>
-        public static int WardenStepPct = 12;   // BB-04 it3: 10 -> 12 (+20%)
+        public static int WardenStepPct = 9;   // BB-6e: 12 -> 9 (-25% vs BB-04 it3)
         /// <summary>The walls stop at this percentage of the original size.</summary>
-        public static int WardenMinPct = 45;   // BB-04 it3: 60 -> 45 (-25%)
+        public static int WardenMinPct = 56;   // BB-6e: 45 -> 56 (+24.4% vs BB-04 it3)
+
+        /// <summary>BB-6f: newly moved sides/ceiling spike the player during this many ActiveTicks after a WARDEN step (60-240).</summary>
+        public static int SpikeWindowTicks = 144;   // BB-6f it2: 120 -> 144, WARDEN retry 74.2% -> 69.9%
+
+        /// <summary>Damage per contact during a WARDEN spike window (player only, never the floor).</summary>
+        public static Fix WardenSpikeDamage = 2;   // BB-6e it1: 2 (range 2-3)
 
         /// <summary>Number of steps the Warden can take ((100 − MinPct) / StepPct: 4 with the spec's 10%/60%, also 4 with 12%/45%).</summary>
         public static int WardenMaxSteps => WardenStepPct > 0 ? (100 - WardenMinPct) / WardenStepPct : 0;

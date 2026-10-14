@@ -14,30 +14,29 @@ namespace BallBattle.SimTests
 
         // Each digest combines all eight matches for the corresponding seed, 1001 through 1020 (classic arena only).
         // Re-pinned only after the 500-new-seeds-per-side behaviour sanity check (6a.6b/c v3).
-        // ComputeHash includes Rules and Fix raw state. Pinned for Rules 7 (BB-6c: spike immunity state + tuning; old -> new
-        // values in docs/claude-runs/bb6c.md). BB-04 (Rules 8) must not change any Versus result: these Rules-7 values are kept and
-        // checked with the Rules field masked (hash computed with Rules = 7), and only the Rules field may differ in ExpectedBySeed.
-        static readonly ulong[] ExpectedBySeedRules7 =
+        // ComputeHash includes Rules and Fix raw state. BB-6d (Rules 9) changes Versus on purpose (MIRROR grows on combat, MANTIS
+        // tuning), so both arrays were re-pinned once at the end of BB-6d, and again at the end of BB-6e (still Rules 9: WARDEN floor, MIRROR shot guard, WRECKER wall boost). ExpectedBySeedMasked is the same digest with the Rules field
+        // masked (hashed as 0): a later Rules-only bump must leave it unchanged. Old -> new values in docs/claude-runs/bb6d.md.
+        static readonly ulong[] ExpectedBySeedMasked =
         {
-            0x811EE019E6FF9EA5UL, 0xC1EBDB28D8A39134UL, 0xB594B3FC1A893861UL, 0x77292940629549A5UL, 0x6490DE3218A0494BUL,
-            0xA3B0EC99568C8285UL, 0x7B5D0CF71CE95692UL, 0x9518F1861721ABC0UL, 0x208606C6110A95B7UL, 0x2D13DAD3E301EC0DUL,
-            0x3A2DB9CEBB2D1F72UL, 0xEA097C749277748DUL, 0xB7B4CFCD4E373D85UL, 0xCB1A5E6CF7CFB24BUL, 0xB9E763B351ABC249UL,
-            0x64C75AB957AD6F77UL, 0xC1E7633A073D60B4UL, 0xE5C04579EFC31AD3UL, 0x0ED005F15E3BB30BUL, 0x7544B05225D4ECFDUL
-
+            0x7B733571A0A174EEUL, 0x8FEB52249BE8F4D7UL, 0x6C9C855BBB4930ACUL, 0x3A70B07E6E96604DUL, 0xD37BB5B3F9635AFEUL,
+            0x5108F3C2E47C5E80UL, 0xAA1B4E8FD0E5FBC5UL, 0x7C1B4642762C87B6UL, 0xA1A965D13107BD66UL, 0xB49F52E4B2D46E90UL,
+            0xF999F35EB17B7562UL, 0x33F4FBFECA4880CDUL, 0xAC19B1C7283763FBUL, 0xB4695EB2CC9B5E2CUL, 0x0DFDF4F2BD59D071UL,
+            0x6432E20EDAF4154AUL, 0x4A7C9B8824CD71DFUL, 0xD6CC8BD303003FA0UL, 0x9EF5905DDD58FA58UL, 0xCE4F568AA841F200UL
         };
 
-        /// <summary>Rules 8 (BB-04): the same matches; only the Rules field of the hash changed (see the masked test).</summary>
+        /// <summary>Rules 9 (BB-6d, re-pinned at the end of BB-6e).</summary>
         static readonly ulong[] ExpectedBySeed =
         {
-            0xFC278AB9A6DE20E1UL, 0x33FA9BB8C468D298UL, 0x49A9A7D4188E10ADUL, 0xD5B3FB8B0CA61051UL, 0xDF8360972E58C94FUL,
-            0xC2FCFDA2118DB38DUL, 0x194DBB261BDDAC66UL, 0xC504669D35C3AB74UL, 0x96F698F886006E03UL, 0xDD623B2EED691341UL,
-            0x85C3CB809D806AA6UL, 0x319FB12041AA6069UL, 0xF87C9B871BA92C85UL, 0x6570DAC441ECD09BUL, 0xD0F38E815B359529UL,
-            0xBC51977F375F8DA3UL, 0xABAFE0556A9BBB84UL, 0xF5735B8AD273999FUL, 0xFE333A3F5FAD7B1BUL, 0x2CECC837591FC039UL
+            0x2263C40910E58196UL, 0xF6D1E46153E04287UL, 0x69B4CFC5F081DECCUL, 0xEAAEF9D3BD339DCDUL, 0x75C116BBE433083EUL,
+            0x8ED498C2C17FC614UL, 0x4B2CEAB22AC45D35UL, 0x920286B10A5E0F66UL, 0xB95397FCA404E5DEUL, 0xD2608EADD4AB3484UL,
+            0x42DDA87E536FFEAAUL, 0xAFE354FF7B4D0EB9UL, 0xD47C7955621DE5ABUL, 0x39B4612A127592D0UL, 0xBD82BB1811202DF9UL,
+            0x3A67ECC40F96C9B6UL, 0xF81CEB9F71FF77FBUL, 0x8C96F8F64DA63264UL, 0x529D4DA548C5C994UL, 0xEB69BE3F546F6144UL
         };
 
         static ulong[] Digests(System.Func<MatchSim, ulong> hash, string label)
         {
-            var actual = new ulong[ExpectedBySeedRules7.Length];
+            var actual = new ulong[ExpectedBySeed.Length];
             for (var i = 0; i < actual.Length; i++)
             {
                 var seed = (uint)(1001 + i);
@@ -59,20 +58,20 @@ namespace BallBattle.SimTests
         }
 
         /// <summary>
-        /// BB-04 proof that the Rules 7 → 8 bump changed nothing in Versus: with the Rules field masked (the hash computed with the old
-        /// Rules number 7) every match hash equals its Rules-7 golden exactly: positions, velocities, HP, ticks, RNG, all of it.
+        /// Rules-independent pin of the same matches: the hash with the Rules field masked (computed with Rules = 0). BB-04 used this to
+        /// prove its Rules bump changed no Versus result; keep it for the next Rules-only bump (only ExpectedBySeed may change then).
         /// </summary>
         [Test]
         public void VersusGoldensWithTheRulesFieldMaskedAreUnchanged()
         {
-            Assert.That(SimVersion.Rules, Is.EqualTo(8));
-            Assert.That(Digests(m => m.ComputeHash(7), "masked"), Is.EqualTo(ExpectedBySeedRules7));
+            Assert.That(SimVersion.Rules, Is.EqualTo(9));
+            Assert.That(Digests(m => m.ComputeHash(0), "masked"), Is.EqualTo(ExpectedBySeedMasked));
         }
 
         [Test]
         public void FixedMatchHashesMatchAcrossPlatforms()
         {
-            var actual = Digests(m => m.ComputeHash(), "rules8");
+            var actual = Digests(m => m.ComputeHash(), "rules9");
             Assert.That(actual, Is.EqualTo(ExpectedBySeed));
         }
 

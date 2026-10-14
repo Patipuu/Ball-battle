@@ -80,6 +80,35 @@ namespace BallBattle.Sim
             return limited ? ArenaRect.Centered(w, h) : normal;
         }
 
+        /// <summary>Current effective bound, evaluated before/after a WARDEN step at the same ActiveTick.</summary>
+        internal ArenaRect BossLimitedArena => LimitedArena(Config.ArenaAt(ActiveTick));
+
+        /// <summary>Highest boss spike damage for this wall contact (0 outside a moved-wall window).</summary>
+        Fix BossWallSpike(BallState b, ArenaWall wall)
+        {
+            var d = Fix.Zero;
+            foreach (var boss in bossRules)
+            {
+                var s = boss.WallSpikeDamage(b, wall);
+                if (s > d) d = s;
+            }
+            return d;
+        }
+
+        /// <summary>Active WARDEN wall mask; shared by the drawing and damage rules.</summary>
+        public byte BossSpikedWallMask
+        {
+            get
+            {
+                byte mask = 0;
+                foreach (var boss in bossRules)
+                    if (boss is WardenRule w) mask |= w.SpikedWallMask;
+                return mask;
+            }
+        }
+
+        public bool BossSpikedWalls => BossSpikedWallMask != 0;
+
         /// <summary>Boss rules: emit a SimEventType.Boss event (Variant = kind).</summary>
         internal void EmitBoss(BossEvent kind, int a, int b, Fix value, FixVec2 point) => Emit(SimEventType.Boss, a, b, value, point, (byte)kind);
 

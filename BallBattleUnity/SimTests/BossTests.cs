@@ -346,8 +346,9 @@ namespace BallBattle.SimTests
             m.Balls[1].Pos = new FixVec2(a.Left + zone + 60, a.Top - m.Balls[1].Radius - 1);
             m.Balls[1].Vel = FT.V(0, 3);
             var bounces = StepCollect(m, 2).Where(e => e.Type == SimEventType.WallBounce).ToList();
-            Assert.That(bounces.Single(e => e.A == 0).Value, Is.EqualTo(ArenaTuning.SpikeWallDamage));
-            Assert.That(bounces.Single(e => e.A == 1).Value, Is.EqualTo(Fix.Zero));
+            // BB-6d: the player (ball 0) also meets WARDEN's spiked wall there: the higher of the two, once.
+            Assert.That(bounces.Single(e => e.A == 0).Value, Is.EqualTo(FixMath.Max(ArenaTuning.SpikeWallDamage, BossTuning.WardenSpikeDamage)));
+            Assert.That(bounces.Single(e => e.A == 1).Value, Is.EqualTo(Fix.Zero), "the Warden outside the zone: no damage (its own walls never hurt it)");
         }
 
         [Test]
@@ -364,6 +365,232 @@ namespace BallBattle.SimTests
             StepTo(m, WardenRule.StepTick(BossTuning.WardenMaxSteps) + 10, s => Stage.Park(s, FT.V(-40, 30), FT.V(30, 30)));
             Assert.That(m.ObstacleActive(0), Is.False, "never comes back");
             Assert.That(m.ObstacleActive(1), Is.True, "(0,-50) stays inside the smallest Warden walls");
+        }
+
+        // ---------------- WARDEN spiked walls (BB-6d) ----------------
+
+        /// <summary>Puts ball <paramref name="i"/> one px inside wall <paramref name="wall"/> (at height/position <paramref name="along"/>), moving into it.</summary>
+        static void IntoWall(MatchSim m, int i, ArenaWall wall, Fix along)
+        {
+            var a = m.Arena;
+            var b = m.Balls[i];
+            var r = b.Radius;
+            switch (wall)
+            {
+                case ArenaWall.Left: b.Pos = new FixVec2(a.Left + r + 1, along); b.Vel = FT.V(-3, 0); break;
+                case ArenaWall.Right: b.Pos = new FixVec2(a.Right - r - 1, along); b.Vel = FT.V(3, 0); break;
+                case ArenaWall.Top: b.Pos = new FixVec2(along, a.Top - r - 1); b.Vel = FT.V(0, 3); break;
+                default: b.Pos = new FixVec2(along, a.Bottom + r + 1); b.Vel = FT.V(0, -3); break;
+            }
+        }
+
+        /// <summary>One tick; the WallBounce damage per ball this tick (null = no bounce).</summary>
+        static Fix?[] BounceDamage(MatchSim m)
+        {
+            m.Step();
+            var d = new Fix?[m.Balls.Count];
+            foreach (var e in m.Events.Where(e => e.Type == SimEventType.WallBounce)) d[e.A] = (d[e.A] ?? Fix.Zero) + e.Value;
+            return d;
+        }
+
+        static void Park2(MatchSim s) => Stage.Park(s, FT.V(-30, 0), FT.V(30, 0));
+
+        [Test]
+        public void WardenSpikeWindowTuningStaysBetween60And240ActiveTicks() =>
+            Assert.That(BossTuning.SpikeWindowTicks, Is.InRange(60, 240));
+
+        [Test]
+        public void WardenWallsSpikeThePlayerAfterAStepButNotTheWarden()
+        {
+            var (m, _) = WardenFight(null, FT.V(-30, 0), FT.V(30, 0));
+            Assert.That(m.Layout.WallDamage, Is.EqualTo(Fix.Zero), "a plain arena: no spike zones");
+            StepTo(m, WardenRule.StepTick(1), Park2);
+            Assert.That(m.BossSpikedWalls, Is.True);
+            IntoWall(m, 0, ArenaWall.Left, Fix.Zero);
+            IntoWall(m, 1, ArenaWall.Right, Fix.Zero);
+            var hp0 = m.Balls[0].Hp;
+            var hp1 = m.Balls[1].Hp;
+            var d = BounceDamage(m);
+            Assert.That(d[0], Is.EqualTo(BossTuning.WardenSpikeDamage), "the player is spiked by the middle of a wall (full length)");
+            Assert.That(d[1], Is.EqualTo(Fix.Zero), "the Warden bounces off its own walls unhurt");
+            Assert.That(hp0 - m.Balls[0].Hp, Is.EqualTo(BossTuning.WardenSpikeDamage));
+            Assert.That(m.Balls[1].Hp, Is.EqualTo(hp1));
+        }
+
+        [TestCase(true, TestName = "WardenFloorNeverDamagesSidesAndCeilingDo_Gravity")]
+        [TestCase(false, TestName = "WardenFloorNeverDamagesSidesAndCeilingDo_NoGravity")]
+        public void WardenFloorNeverDamagesButTheSidesAndCeilingDo(bool gravity)
+        {
+            var (m, _) = WardenFight(null, FT.V(-30, 0), FT.V(30, 0));
+            if (gravity) m.Config.Gravity = new MatchConfig().Gravity;
+            StepTo(m, WardenRule.StepTick(1), Park2);
+            foreach (var wall in new[] { ArenaWall.Bottom, ArenaWall.Left, ArenaWall.Top, ArenaWall.Right, ArenaWall.Bottom })
+            {
+                StepTo(m, m.ActiveTick + ArenaTuning.SpikeImmunityTicks, Park2);   // out of any immunity first
+                IntoWall(m, 0, wall, Fix.Zero);
+                var hp = m.Balls[0].Hp;
+                var d = BounceDamage(m)[0];
+                var expected = wall == ArenaWall.Bottom ? Fix.Zero : BossTuning.WardenSpikeDamage;
+                Assert.That(d, Is.EqualTo(expected), wall + (wall == ArenaWall.Bottom ? ": the floor never spikes" : ": spiked"));
+                Assert.That(hp - m.Balls[0].Hp, Is.EqualTo(expected));
+            }
+        }
+
+        [Test]
+        public void NoWardenSpikesBeforeTheFirstStep()
+        {
+            var (m, _) = WardenFight(null, FT.V(-30, 0), FT.V(30, 0));
+            StepTo(m, WardenRule.StepTick(1) - 2, Park2);
+            Assert.That(m.BossSpikedWalls, Is.False);
+            IntoWall(m, 0, ArenaWall.Top, Fix.Zero);
+            var hp = m.Balls[0].Hp;
+            var d = BounceDamage(m);
+            Assert.That(d[0], Is.EqualTo(Fix.Zero));
+            Assert.That(m.Balls[0].Hp, Is.EqualTo(hp));
+        }
+
+        [Test]
+        public void WardenSpikesUseTheTenActiveTickImmunity()
+        {
+            var (m, _) = WardenFight(null, FT.V(-30, 0), FT.V(30, 0));
+            StepTo(m, WardenRule.StepTick(1), Park2);
+            IntoWall(m, 0, ArenaWall.Left, Fix.Zero);
+            Assert.That(BounceDamage(m)[0], Is.EqualTo(BossTuning.WardenSpikeDamage));
+            var hitAt = m.ActiveTick;
+            IntoWall(m, 0, ArenaWall.Top, Fix.Zero);
+            m.ExtendHitstop(15);   // hit-stop does not count toward the immunity
+            Fix? again = null;
+            while (again == null) again = BounceDamage(m)[0];
+            Assert.That(m.ActiveTick - hitAt, Is.LessThan(ArenaTuning.SpikeImmunityTicks));
+            Assert.That(again, Is.EqualTo(Fix.Zero), "immune");
+            StepTo(m, hitAt + ArenaTuning.SpikeImmunityTicks - 1, Park2);
+            IntoWall(m, 0, ArenaWall.Right, Fix.Zero);
+            Assert.That(BounceDamage(m)[0], Is.EqualTo(BossTuning.WardenSpikeDamage), "hurts again 10 active ticks later");
+        }
+
+        [TestCase(3.0, 2.25, TestName = "WardenSpikeOverSpikeZoneDealsTheHigherOnce_Warden")]
+        [TestCase(2.0, 2.25, TestName = "WardenSpikeOverSpikeZoneDealsTheHigherOnce_Zone")]
+        public void WardenSpikeOverASpikeZoneDealsTheHigherOnceWithASharedImmunity(double warden, double zone)
+        {
+            var saved = BossTuning.WardenSpikeDamage;
+            try
+            {
+                BossTuning.WardenSpikeDamage = FT.X(warden);
+                var layout = new ArenaLayout(null, FT.X(zone), SpikeCorner.All);
+                var (m, _) = WardenFight(layout, FT.V(-30, 0), FT.V(30, 0));
+                StepTo(m, WardenRule.StepTick(1), Park2);
+                var a = m.Arena;
+                // Into the top-left corner: both walls, inside the corner spike zones and on WARDEN's spiked walls.
+                var b = m.Balls[0];
+                b.Pos = new FixVec2(a.Left + b.Radius + 1, a.Top - b.Radius - 1);
+                b.Vel = FT.V(-3, 3);
+                var hp = b.Hp;
+                var d = BounceDamage(m);
+                var higher = FT.X(System.Math.Max(warden, zone));
+                Assert.That(d[0], Is.EqualTo(higher), "one hit at the higher value, never the sum");
+                Assert.That(hp - b.Hp, Is.EqualTo(higher));
+                // A spike-zone contact right after is blocked by the same (shared) immunity.
+                b.Pos = new FixVec2(a.Left + b.Radius + 1, a.Top - b.Radius - 4);
+                b.Vel = FT.V(-3, 0);
+                Assert.That(BounceDamage(m)[0], Is.EqualTo(Fix.Zero), "shared 10-ActiveTick immunity");
+            }
+            finally { BossTuning.WardenSpikeDamage = saved; }
+        }
+
+        [Test]
+        public void AfterTheNormalShrinkWardenSpikesSitOnTheActiveSmallerWall()
+        {
+            var saved = BossTuning.WardenFirstStepTick;
+            try
+            {
+                BossTuning.WardenFirstStepTick = 5401;
+                var (m, _) = WardenFight(null, FT.V(-10, 0), FT.V(30, 0));
+                m.Config.ShrinkStartTick = 5400;
+                m.Config.ShrinkDurationTicks = 20; // stage a normal bound overtaking WARDEN during even a 60-tick window
+                StepTo(m, 5430, s => Stage.Park(s, FT.V(-10, 0), FT.V(30, 0)));
+                Assert.That(m.BossSpikedWalls, Is.True);
+                Assert.That(m.Config.ArenaAt(m.ActiveTick).Width, Is.LessThan(WardenRule.SizeAfter(m.Config.ArenaWidth, 1)));
+                Assert.That(m.Arena.Width, Is.EqualTo(m.Config.ArenaAt(m.ActiveTick).Width));
+                IntoWall(m, 0, ArenaWall.Left, Fix.Zero);
+                Assert.That(BounceDamage(m)[0], Is.EqualTo(BossTuning.WardenSpikeDamage), "the open window follows the active smaller wall");
+            }
+            finally { BossTuning.WardenFirstStepTick = saved; }
+        }
+
+        [Test]
+        public void WardenSpikeWindowExpiresExactlyAndPausesDuringHitstop()
+        {
+            var (m, warden) = WardenFight();
+            var first = WardenRule.StepTick(1);
+            StepTo(m, first, Park2);
+            IntoWall(m, 0, ArenaWall.Left, Fix.Zero);
+            Assert.That(BounceDamage(m)[0], Is.EqualTo(BossTuning.WardenSpikeDamage));
+            m.ExtendHitstop(200);
+            for (var i = 0; i < 200; i++) m.Step();
+            Assert.That(m.ActiveTick, Is.EqualTo(first + 1));
+            Assert.That(warden.WallsSpiked, Is.True);
+            StepTo(m, first + BossTuning.SpikeWindowTicks - 1, Park2);
+            Assert.That(warden.WallSpikeDamage(m.Balls[0], ArenaWall.Left), Is.EqualTo(BossTuning.WardenSpikeDamage), "last included tick");
+            IntoWall(m, 0, ArenaWall.Left, Fix.Zero);
+            var hp = m.Balls[0].Hp;
+            Assert.That(BounceDamage(m)[0], Is.EqualTo(Fix.Zero), "end-exclusive boundary is a normal wall");
+            Assert.That(m.Balls[0].Hp, Is.EqualTo(hp));
+            Assert.That(m.BossSpikedWallMask, Is.Zero);
+            Assert.That(warden.WallSpikeDamage(m.Balls[0], ArenaWall.Left), Is.EqualTo(Fix.Zero));
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void WardenOnlySpikesTheAxisItsStepActuallyMoved(bool widthAlreadyMinimum)
+        {
+            var (m, warden) = WardenFight();
+            m.Config.ShrinkStartTick = 0;
+            m.Config.ShrinkDurationTicks = 1;
+            m.Config.MinArenaWidth = widthAlreadyMinimum ? 100 : m.Config.ArenaWidth;
+            m.Config.MinArenaHeight = widthAlreadyMinimum ? m.Config.ArenaHeight : 100;
+            StepTo(m, WardenRule.StepTick(1), s => Stage.Park(s, FT.V(-20, -20), FT.V(20, 20)));
+            Assert.That(warden.IsWallSpiked(ArenaWall.Left), Is.EqualTo(!widthAlreadyMinimum));
+            Assert.That(warden.IsWallSpiked(ArenaWall.Right), Is.EqualTo(!widthAlreadyMinimum));
+            Assert.That(warden.IsWallSpiked(ArenaWall.Top), Is.EqualTo(widthAlreadyMinimum));
+            Assert.That(warden.IsWallSpiked(ArenaWall.Bottom), Is.False);
+            var unmoved = widthAlreadyMinimum ? ArenaWall.Left : ArenaWall.Top;
+            IntoWall(m, 0, unmoved, Fix.Zero);
+            Assert.That(BounceDamage(m)[0], Is.EqualTo(Fix.Zero), "contact with the unmoved wall never spikes");
+            Stage.Park(m, FT.V(-20, -20), FT.V(20, 20));
+            IntoWall(m, 0, widthAlreadyMinimum ? ArenaWall.Top : ArenaWall.Left, -20);
+            Assert.That(BounceDamage(m)[0], Is.EqualTo(BossTuning.WardenSpikeDamage));
+        }
+
+        [Test]
+        public void WardenStepWithNormalArenaAlreadyMinimumOpensNoWindow()
+        {
+            var (m, _) = WardenFight();
+            m.Config.ShrinkStartTick = 0;
+            m.Config.ShrinkDurationTicks = 1;
+            StepTo(m, WardenRule.StepTick(1), s => Stage.Park(s, FT.V(-20, -20), FT.V(20, 20)));
+            Assert.That(m.BossSpikedWalls, Is.False);
+            IntoWall(m, 0, ArenaWall.Top, -20);
+            Assert.That(BounceDamage(m)[0], Is.EqualTo(Fix.Zero));
+        }
+
+        [Test]
+        public void WardenAtItsFloorAndNormalShrinkAfter5400NeverOpenAnotherWindow()
+        {
+            var (m, warden) = WardenFight();
+            m.Config.ShrinkStartTick = 5400;
+            var last = WardenRule.StepTick(BossTuning.WardenMaxSteps);
+            StepTo(m, last + BossTuning.SpikeWindowTicks, Park2);
+            Assert.That(warden.WallsSpiked, Is.False);
+            StepTo(m, WardenRule.StepTick(BossTuning.WardenMaxSteps + 1), Park2);
+            Assert.That(warden.Steps, Is.EqualTo(BossTuning.WardenMaxSteps));
+            Assert.That(warden.WallsSpiked, Is.False, "no step beyond WARDEN's floor");
+            for (; m.ActiveTick < 7300;)
+            {
+                m.Step(); Park2(m);
+                Assert.That(warden.WallsSpiked, Is.False, "normal per-tick shrink never opens a window");
+            }
+            IntoWall(m, 0, ArenaWall.Left, Fix.Zero);
+            Assert.That(BounceDamage(m)[0], Is.EqualTo(Fix.Zero));
         }
 
         // ---------------- selection ----------------

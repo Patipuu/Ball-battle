@@ -85,12 +85,34 @@ namespace BallBattle.Sim
                 if (!bounced || !Active(b)) continue;
                 if (b.Weapon.WallSpeedBoost > Fix.Zero) b.Vel = b.Vel * (Fix.One + b.Weapon.WallSpeedBoost);
                 var dealt = Fix.Zero;
-                if (wallDamage > Fix.Zero && !SpikeImmune(b.Index) && HitsSpikeZone(arena, b.Pos, xWall, yWall))
+                // Spike zone and (BB-6d) WARDEN's spiked walls: one hit per contact at the higher damage, one shared immunity.
+                var zone = wallDamage > Fix.Zero && HitsSpikeZone(arena, b.Pos, xWall, yWall) ? wallDamage : Fix.Zero;
+                // BB-6f: check each bounced wall against the last WARDEN step's active window/moved-wall mask.
+                var boss = Fix.Zero;
+                byte bossWalls = 0;
+                if (bossRules.Length > 0)
+                {
+                    if (xWall.HasValue)
+                    {
+                        boss = BossWallSpike(b, xWall.Value);
+                        if (boss > Fix.Zero) bossWalls |= (byte)(1 << (int)xWall.Value);
+                    }
+                    if (yWall.HasValue)
+                    {
+                        var yDamage = BossWallSpike(b, yWall.Value);
+                        boss = FixMath.Max(boss, yDamage);
+                        if (yDamage > Fix.Zero) bossWalls |= (byte)(1 << (int)yWall.Value);
+                    }
+                }
+                var spike = boss > zone ? boss : zone;
+                if (spike > Fix.Zero && !SpikeImmune(b.Index))
                 {
                     spikeActiveTick[b.Index] = ActiveTick;
-                    dealt = DealDamage(null, b, wallDamage, DamageKind.Hazard, false);
+                    dealt = DealDamage(null, b, spike, DamageKind.Hazard, false);
                 }
-                Emit(SimEventType.WallBounce, b.Index, -1, dealt, b.Pos);
+                // WARDEN-only source metadata for diagnostics: exact contact walls, one damage source even at corners.
+                var variant = dealt > Fix.Zero && boss > Fix.Zero && boss >= zone ? (byte)(128 | bossWalls) : (byte)0;
+                Emit(SimEventType.WallBounce, b.Index, -1, dealt, b.Pos, variant);
                 if (Active(b)) OnBallBounced(b);
             }
             ResolveDeaths();

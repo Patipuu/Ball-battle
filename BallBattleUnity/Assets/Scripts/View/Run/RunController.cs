@@ -44,6 +44,7 @@ namespace BallBattle.View
             Flow = new RunFlow(store);
             Flow.ForceTraitId = DebugOptions.ForceTrait;   // null unless launched with -bbForceTrait
             Flow.ForceBossId = DebugOptions.ForceBoss;     // null unless launched with -bbForceBoss (Run only; Versus never reads it)
+            Flow.ForceArenaId = DebugOptions.ForceArena;   // null unless launched with -bbForceArena (Run only; Versus never reads it)
             title = RunTitleView.Create(transform, art);
             pick = PickWeaponView.Create(transform, art);
             startPick = StartPickView.Create(transform, art);
@@ -74,7 +75,7 @@ namespace BallBattle.View
             {
                 Debug.Log(FightLog("prepared", sim));
                 arena.MarkedBall = 0;   // ball 0 is always the player in Run mode
-                arena.ArenaId = Flow.Run.ArenaId;   // floor tiles and wall colors of this fight's arena
+                arena.ArenaId = Flow.FightArenaId;   // floor tiles and wall colors of this fight's arena (-bbForceArena aware)
                 arena.Boss = BossLookFor(Flow.Run);
                 arena.StartMatch(sim, "YOU", Flow.Run.IsBossFight ? "BOSS" : "FOE");
                 // Stat cards taken this run: HUD badges with the card icons (DAMAGE, SPEED CAP, MAX HP).
@@ -172,7 +173,7 @@ namespace BallBattle.View
                 case RunFlow.State.Title: title.Show(Flow); break;
                 case RunFlow.State.PickWeapon: pick.Show(Flow.StartChoices); break;
                 case RunFlow.State.StartPick: startPick.Show(Flow.Run); break;
-                case RunFlow.State.Prepare: prepare.Show(Flow.Run); break;
+                case RunFlow.State.Prepare: prepare.ArenaOverride = Flow.ForceArenaId; prepare.Show(Flow.Run); break;
                 case RunFlow.State.FightResult: result.Show(Flow.LastReport); break;
                 case RunFlow.State.Summary: summary.Show(Flow.Run, Flow.Progress); break;
             }

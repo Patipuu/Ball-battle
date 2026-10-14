@@ -36,6 +36,8 @@ namespace BallBattle.View
             forceDraw = null;
             forceBossParsed = false;
             forceBoss = null;
+            forceArenaParsed = false;
+            forceArena = null;
         }
 
         /// <summary>Trait id forced into the first offer, or null (normal play).</summary>
@@ -123,6 +125,54 @@ namespace BallBattle.View
             var key = Normalize(name).Replace(" ", "");
             foreach (var id in BallBattle.Sim.Boss.BossIds.All)
                 if (id == key) return id;
+            return null;
+        }
+
+        /// <summary>
+        /// -bbForceArena &lt;classic|pillar|bumpers|spike-walls|low-gravity|tight|wide&gt; (BB-6d QA): Run mode only, off by default. Every
+        /// Run fight started while it is set uses that arena (RunFlow.ForceArenaId → RunState.CreateMatch(config)); combines with
+        /// -bbForceBoss. The run's own arena choice (RunState.ArenaId from the fight seed), its history and every seed stay untouched.
+        /// Versus ignores it. Unknown id: one warning, ignored. Case, dashes, underscores and spaces are ignored ("Low_Gravity").
+        /// </summary>
+        public const string ForceArenaArg = "-bbForceArena";
+
+        static bool forceArenaParsed;
+        static string forceArena;
+
+        /// <summary>Arena id forced in Run mode, or null (normal play). Parsed once (so an unknown id warns once).</summary>
+        public static string ForceArena
+        {
+            get
+            {
+                if (forceArenaParsed) return forceArena;
+                forceArenaParsed = true;
+                forceArena = ParseForceArena(Environment.GetCommandLineArgs());
+                return forceArena;
+            }
+        }
+
+        /// <summary>The arena id after -bbForceArena in <paramref name="args"/>, or null (absent or unknown, with a warning).</summary>
+        public static string ParseForceArena(string[] args)
+        {
+            if (args == null) return null;
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!string.Equals(args[i], ForceArenaArg, StringComparison.OrdinalIgnoreCase)) continue;
+                var id = i + 1 < args.Length ? ResolveArenaId(args[i + 1]) : null;
+                if (id == null) Debug.LogWarning($"[BallBattle] {ForceArenaArg}: unknown arena '{(i + 1 < args.Length ? args[i + 1] : "")}', ignored");
+                else Debug.Log($"[BallBattle] {ForceArenaArg}: every Run fight uses arena {id}");
+                return id;
+            }
+            return null;
+        }
+
+        /// <summary>ArenaRegistry id matching <paramref name="name"/> ignoring case, dashes, underscores and spaces; null if none.</summary>
+        public static string ResolveArenaId(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return null;
+            var key = Normalize(name).Replace(" ", "");
+            foreach (var e in BallBattle.Sim.ArenaRegistry.All)
+                if (Normalize(e.Id) == key) return e.Id;
             return null;
         }
 

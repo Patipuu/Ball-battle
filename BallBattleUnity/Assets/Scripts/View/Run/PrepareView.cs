@@ -181,7 +181,7 @@ namespace BallBattle.View
             purse.Set($"RETRY {(run.RetryCount == 0 ? "1" : "USED")}   COINS {run.Coins}", Palette.Text);
 
             // Numbers exactly as the fight starts: the same match RunFlow will create, spawn hooks (Heavy, Glass Cannon) applied.
-            var preview = run.Over ? null : run.CreateMatch();
+            var preview = run.Over ? null : ArenaOverride != null ? run.CreateMatch(ArenaRegistry.Create(ArenaOverride)) : run.CreateMatch();
             var you = preview?.Balls[0];
             var foe = preview?.Balls[1];
 
@@ -197,7 +197,7 @@ namespace BallBattle.View
             SetBall(youIcon, youName, run.Build.WeaponId, (you != null ? you.Radius.ToFloat() : IconNativeRadius) / IconNativeRadius);
             SetTraits(youTraits, youTraits2, CardText.TraitLines(run.Build, TraitsWidth));
             youStats.Set(you != null ? CardText.Stats(run.Build, you.Hp.ToFloat(), you.MaxHp.ToFloat()) : CardText.Stats(run.Build), Palette.TextDim);
-            ShowArena(run.ArenaId);
+            ShowArena(ArenaOverride ?? run.ArenaId);
 
             var cost = run.NextPickCost;
             pickHint.Set(cost < 0 ? "NO MORE PICKS - FIGHT!" : cost == 0 ? "PICK ONE CARD - FREE" : $"BUY ONE MORE: {cost} COINS",
@@ -236,7 +236,8 @@ namespace BallBattle.View
             if (bossId != BallBattle.Sim.Boss.BossIds.Mimic && enemy != null && enemy.Traits.Count > 0)
                 lines.Add(TextWrap.Cut(string.Join(" ", CardText.TraitNames(enemy)), width));
             var hint = BossText.Hint(bossId);
-            if (lines.Count > 0) lines.Add(TextWrap.Cut(hint, width));
+            if (lines.Count > 0 && PixelFont.MeasureWidth(hint) > width) lines.Clear();   // BB-6e: a hint that needs two lines wins over the traits
+            if (lines.Count > 0) lines.Add(hint);
             else
             {
                 var words = new System.Collections.Generic.List<string>(hint.Split(' '));
@@ -248,6 +249,9 @@ namespace BallBattle.View
         /// <summary>ENEMY box label, name and the two lines under it (tests).</summary>
         public string EnemyLabelText => enemyLabel.Text;
         public string EnemyLinesText => (enemyTraits.Text + " " + enemyTraits2.Text).Trim();
+
+        /// <summary>-bbForceArena (BB-6d QA): the arena the next fight will really use, shown instead of the run's own. Null = normal.</summary>
+        public string ArenaOverride { get; set; }
 
         /// <summary>Traits lines of the YOU box (tests).</summary>
         public string YouTraitsText => (youTraits.Text + " " + youTraits2.Text).Trim();

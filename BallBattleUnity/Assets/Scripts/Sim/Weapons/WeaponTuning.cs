@@ -22,7 +22,7 @@ namespace BallBattle.Sim.Weapons
         public static Fix FangLength = 16;
         public static Fix FangStartSpin = 8;
         public static Fix FangStartSpinGain = 3;
-        public static Fix FangSpinGainDecay = Fix.Ratio(47, 50);   // BB-6c: 0.98 -> 0.94
+        public static Fix FangSpinGainDecay = Fix.Ratio(23, 25);   // BB-6c: 0.98 -> 0.94; BB-6d: 0.94 -> 0.92 (tight MANTIS chains)
         public static Fix FangMaxSpin = 40;
         public static Fix FangStartDamage = 1;
         public static Fix FangDamagePerHit = Fix.Ratio(2, 5);
@@ -43,7 +43,7 @@ namespace BallBattle.Sim.Weapons
         public static Fix BrawlerSpeedBonusPerHit = Fix.Ratio(1, 2);
         public static Fix BrawlerSpeedBonusPerWall = Fix.Ratio(3, 20);   // BB-6c: 0.2 -> 0.15
         public static Fix BrawlerMaxSpeedBonus = 4;
-        public static Fix BrawlerWallSpeedBoost = Fix.Ratio(2, 25);
+        public static Fix BrawlerWallSpeedBoost = Fix.Ratio(19, 250);   // BB-6e: 0.08 -> 0.076 (-5%; WRECKER vs MANTIS on bumpers)
 
         // Volley: stubby blade; every interval a fan of arrows along the blade; each melee hit adds an arrow.
         public static Fix VolleyLength = 12;
@@ -78,10 +78,23 @@ namespace BallBattle.Sim.Weapons
         public static Fix AegisMaxThickness = 14;
         public static Fix AegisReflectPct = Fix.Ratio(9, 20);   // BB-6c: 0.4 -> 0.45
         public static Fix AegisShotAbsorbPct = Fix.Ratio(3, 20);   // BB-6c: 0.2 -> 0.15
-        public static Fix AegisRegenPerSecond = Fix.Ratio(3, 16);   // BB-6c: 0.25 -> 0.1875
-        /// <summary>After this many active ticks Aegis hits harder and harder (ends Aegis mirrors); +100% per ramp.</summary>
-        public static int AegisRageStartTicks = 675;   // BB-6c: 900 -> 675
-        public static int AegisRageRampTicks = 750;   // BB-6c: 600 -> 750
+        // BB-6d: MIRROR grows on combat, not time. Guard points per combat event: a parry against a blade or a blade hit taken
+        // (AegisGuardMelee), a body blow taken (AegisGuardBody), a shot taken (AegisGuardShot; shots stay its weakness).
+        // Replaces AegisRegenPerSecond (heal per second) and AegisRageStartTicks / AegisRageRampTicks (rage clock).
+        // BB-6e: guard points are Fix, so a shot can be worth a fraction (structure unchanged).
+        public static Fix AegisGuardMelee = 3;
+        public static Fix AegisGuardBody = 2;
+        public static Fix AegisGuardShot = Fix.Ratio(5, 4);   // BB-6e: 1 -> 1.25 (SPARKLER vs MIRROR; 1.375 and 1.5 push MIRROR vs HIVE on bumpers over 80)
+        /// <summary>A parry between two Aegis (mirror match only): rage builds fast and no guard from an Aegis mends, so the mirror ends
+        /// (weapon gate: median &lt;= 90 s).</summary>
+        public static Fix AegisGuardMirror = 9;
+        /// <summary>HP healed per guard point (was a time regen).</summary>
+        public static Fix AegisMendPerGuard = Fix.Ratio(3, 25);
+        /// <summary>After this many guard points Aegis hits harder and harder (ends Aegis mirrors); +100% per AegisRageRampGuards more.</summary>
+        public static Fix AegisRageStartGuards = 18;
+        public static Fix AegisRageRampGuards = 27;
+        /// <summary>Rage counts at most this many guard points past the start (+AegisRageMaxGuards/AegisRageRampGuards, about +300%).</summary>
+        public static Fix AegisRageMaxGuards = 80;
 
         // Rig: every melee hit drops a turret (ghost emplacement); turrets shoot together.
         public static Fix RigLength = 18;

@@ -207,10 +207,12 @@ namespace BallBattle.Sim.Boss
     }
 
     /// <summary>
-    /// WARDEN: at WardenFirstStepTick (480) and every WardenStepEveryTicks after, the walls step in by WardenStepPct (10%) of the
-    /// ORIGINAL width and height, down to WardenMinPct (60%), each step announced WardenWarnTicks (60) before. The arena is the smaller
+    /// WARDEN: at WardenFirstStepTick and every WardenStepEveryTicks after, the walls step in by WardenStepPct of the
+    /// ORIGINAL width and height, down to WardenMinPct, each step announced WardenWarnTicks before. The arena is the smaller
     /// of this and the normal shrink per axis. On a step MatchSim pushes balls caught outside back in (no damage, no bounce),
     /// separates them with the normal ball-ball resolution and disables obstacles whose centre is now outside.
+    /// BB-6f: only sides/ceiling actually moved by a WARDEN step spike the player, for SpikeWindowTicks ActiveTicks.
+    /// Normal shrink movement never opens a window. Spikes follow the active smaller bound while that window lasts.
     /// </summary>
     public sealed class WardenRule : BossRule
     {
@@ -218,6 +220,9 @@ namespace BallBattle.Sim.Boss
 
         public int Steps { get; private set; }
         public bool Warning { get; private set; }
+
+        byte movedWalls;
+        int spikeUntilActiveTick;
 
         /// <summary>ActiveTick of step number <paramref name="step"/> (1-based).</summary>
         public static int StepTick(int step) => BossTuning.WardenFirstStepTick + (step - 1) * BossTuning.WardenStepEveryTicks;
@@ -236,12 +241,31 @@ namespace BallBattle.Sim.Boss
             }
             if (Sim.ActiveTick == next)
             {
+                // Compare limits at THIS tick on both sides of our step: normal per-tick shrink is excluded.
+                var before = Sim.BossLimitedArena;
                 Steps++;
+                var after = Sim.BossLimitedArena;
+                movedWalls = 0;
+                if (after.Left > before.Left) movedWalls |= (byte)(1 << (int)ArenaWall.Left);
+                if (after.Right < before.Right) movedWalls |= (byte)(1 << (int)ArenaWall.Right);
+                if (after.Top < before.Top) movedWalls |= (byte)(1 << (int)ArenaWall.Top);
+                spikeUntilActiveTick = movedWalls != 0 ? Sim.ActiveTick + BossTuning.SpikeWindowTicks : 0;
                 Warning = false;
                 Sim.RequestPushIn();
                 Sim.EmitBoss(BossEvent.WardenStep, Self.Index, -1, SizeAfter(Sim.Config.ArenaWidth, Steps), Self.Pos);
             }
         }
+
+        /// <summary>Window includes the step tick, excludes step tick + SpikeWindowTicks, and pauses during hit-stop.</summary>
+        public bool WallsSpiked => movedWalls != 0 && Sim.ActiveTick < spikeUntilActiveTick;
+
+        /// <summary>Bit per ArenaWall for the currently spiked walls (always excludes Bottom); View reads the same mask.</summary>
+        public byte SpikedWallMask => WallsSpiked ? movedWalls : (byte)0;
+
+        public bool IsWallSpiked(ArenaWall wall) => (SpikedWallMask & (1 << (int)wall)) != 0;
+
+        public override Fix WallSpikeDamage(BallState ball, ArenaWall wall) =>
+            ball != Self && IsWallSpiked(wall) ? BossTuning.WardenSpikeDamage : Fix.Zero;
 
         public override bool ArenaLimit(out Fix width, out Fix height)
         {
@@ -254,10 +278,14 @@ namespace BallBattle.Sim.Boss
         {
             h = SimHash.Mix(h, Steps);
             h = SimHash.Mix(h, Warning);
+            h = SimHash.Mix(h, (int)movedWalls);
+            h = SimHash.Mix(h, spikeUntilActiveTick);
+            h = SimHash.Mix(h, BossTuning.SpikeWindowTicks);
             h = SimHash.Mix(h, BossTuning.WardenFirstStepTick);
             h = SimHash.Mix(h, BossTuning.WardenStepEveryTicks);
             h = SimHash.Mix(h, BossTuning.WardenWarnTicks);
             h = SimHash.Mix(h, BossTuning.WardenStepPct);
+            h = SimHash.Mix(h, BossTuning.WardenSpikeDamage);
             return SimHash.Mix(h, BossTuning.WardenMinPct);
         }
     }

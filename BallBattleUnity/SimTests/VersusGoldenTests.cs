@@ -14,8 +14,8 @@ namespace BallBattle.SimTests
     /// </summary>
     public class VersusGoldenTests
     {
-        /// <summary>Recomputed for SimVersion 7 (BB-6c: spike immunity + Fang/Brawler tuning). Was 0xDA949C380918B81DUL.</summary>
-        const ulong ExpectedDigest = 0x6EBF6B88AB6F72B3UL;
+        /// <summary>Recomputed for SimVersion 9 (BB-6d: MANTIS FangSpinGainDecay 0.94 -> 0.92). Was 0x6EBF6B88AB6F72B3UL (Rules 7/8).</summary>
+        const ulong ExpectedDigest = 0x6DD06D6CCE44FA99UL;   // BB-6e (still Rules 9): was 0x6045CAC4FB5E7C2EUL (BB-6d)
 
         /// <summary>The four Step 1 weapons only: later weapons have their own balance gate.</summary>
         static readonly string[] Step1Ids = { "blade", "fang", "pike", "brawler" };

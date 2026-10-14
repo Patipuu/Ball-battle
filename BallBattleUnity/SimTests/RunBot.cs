@@ -28,7 +28,10 @@ namespace BallBattle.SimTests
         public static Result Play(uint seed, Policy policy) => Play(seed, policy, null);
 
         /// <summary><paramref name="onFight"/> (BB-04 reports) sees every finished match before its result is applied.</summary>
-        public static Result Play(uint seed, Policy policy, Action<RunState, MatchSim> onFight)
+        public static Result Play(uint seed, Policy policy, Action<RunState, MatchSim> onFight) => Play(seed, policy, onFight, null);
+
+        /// <summary><paramref name="onStep"/> (BB-6e diagnostics) sees the match after every Step.</summary>
+        public static Result Play(uint seed, Policy policy, Action<RunState, MatchSim> onFight, Action<RunState, MatchSim> onStep)
         {
             var progress = BotProgress();
             var choices = RunState.StartChoices(seed, UnlockRules.Weapons(progress));
@@ -44,7 +47,7 @@ namespace BallBattle.SimTests
                 else PickGreedy(run);
 
                 var m = run.CreateMatch();
-                while (m.Outcome == MatchOutcome.Ongoing) m.Step();
+                while (m.Outcome == MatchOutcome.Ongoing) { m.Step(); onStep?.Invoke(run, m); }
                 onFight?.Invoke(run, m);
                 run.ApplyResult(m);
             }

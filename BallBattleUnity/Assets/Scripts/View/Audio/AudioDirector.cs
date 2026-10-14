@@ -167,6 +167,11 @@ namespace BallBattle.View
         public void OnSimEvent(SimEvent e, MatchSim sim)
         {
             TrackHp(e, sim);
+            if (AudioLog.Enabled)
+            {
+                var shell = ShellTrace.Line(e, sim);   // BB-6d QA: SHELL KING shield trace in the audio log file
+                if (shell != null) AudioLog.Write(shell, this);
+            }
             switch (e.Type)
             {
                 case SimEventType.Hit:
@@ -253,11 +258,21 @@ namespace BallBattle.View
         /// <summary>A bounce that took spike damage plays spike_hit when that clip exists, else the plain wall sound (never both).</summary>
         public static string WallBounceCue(float spikeDamage, Func<string, bool> hasClip) => HazardCue(SimEventType.WallBounce, spikeDamage, hasClip);
 
+        // BB-6d: per ball, the tick of its last spike_hit, so the same contact never also plays a wall cue in that tick.
+        readonly System.Collections.Generic.Dictionary<int, int> spikeTickByBall = new System.Collections.Generic.Dictionary<int, int>();
+
         void RequestHazard(SimEvent e, MatchSim sim, float volume, float pitch)
         {
             var damage = e.Value.ToFloat();
             var id = HazardCue(e.Type, damage, Has);
-            var allowed = RequestCue(id, e.Tick, volume, pitch);
+            bool allowed;
+            if (id == AudioIds.Wall && spikeTickByBall.TryGetValue(e.A, out var spikeTick) && spikeTick == e.Tick)
+                allowed = false;   // this ball already played spike_hit this tick: one contact = one cue
+            else
+            {
+                allowed = RequestCue(id, e.Tick, volume, pitch);
+                if (id == AudioIds.SpikeHit) spikeTickByBall[e.A] = e.Tick;
+            }
             if (AudioLog.Enabled) AudioLog.Write(AudioLog.Line(e, sim, damage, LastHpChangeTick(e.A), id, allowed), this);
         }
 
@@ -294,6 +309,7 @@ namespace BallBattle.View
         public void OnMatchStarted()
         {
             simGate.Reset();
+            spikeTickByBall.Clear();
             seenHp = new float[0];
             hpChangedAt = new int[0];
             pendingResult = null;

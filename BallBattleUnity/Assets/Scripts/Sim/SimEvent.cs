@@ -6,7 +6,8 @@ namespace BallBattle.Sim
         Hit,
         /// <summary>A,B = the two balls, Point=blade contact.</summary>
         Parry,
-        /// <summary>A=ball, Value=spike-wall damage taken (0 if none), Point=contact.</summary>
+        /// <summary>A=ball, Value=spike-wall damage taken (0 if none), Point=contact. WARDEN damage: Variant bit 7 set, low bits are
+        /// the contacted spiked ArenaWall mask; all non-WARDEN contacts retain Variant 0.</summary>
         WallBounce,
         /// <summary>A,B = balls, Value=closing speed.</summary>
         BallBounce,

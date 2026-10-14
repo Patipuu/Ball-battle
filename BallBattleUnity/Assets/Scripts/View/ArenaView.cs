@@ -243,6 +243,12 @@ namespace BallBattle.View
                         traceFieldsWriter.WriteLine(SimTrace.FieldsLine(Sim));
                     }
                     var events = Sim.Events;
+                    if (traceWriter != null)
+                        for (var i = 0; i < events.Count; i++)
+                        {
+                            var shell = ShellTrace.Line(events[i], Sim);   // BB-6d QA: SHELL KING hits with the shell ON
+                            if (shell != null) traceWriter.WriteLine(shell);
+                        }
                     for (var i = 0; i < events.Count; i++) SimEventRaised?.Invoke(events[i]);
                     if (Sim.Outcome != MatchOutcome.Ongoing && !endReported)
                     {
@@ -285,6 +291,7 @@ namespace BallBattle.View
 
         void Draw(float alpha, float dt)
         {
+            frame.SpikedWallMask = Sim.BossSpikedWallMask;   // BB-6f: draw only the moved walls, only during the window
             frame.Render(Sim.Arena, Sim.ActiveTick, Sim.Config, ArenaId);
             frame.ShowObstacles(Sim);   // BB-04: Warden steps switch obstacles off
             var bossPos = Vector2.zero;

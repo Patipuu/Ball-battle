@@ -26,6 +26,7 @@ namespace BallBattle.SimTests
         public sealed class Fight
         {
             public string Boss;
+            public string Arena;
             public bool Retry;
             public bool Won;
             public bool Cap;
@@ -116,7 +117,7 @@ namespace BallBattle.SimTests
                 {
                     var boss = run.CurrentBossId;
                     if (boss == null) return;
-                    list.Add(new Fight { Boss = boss, Retry = run.IsRetry, Won = m.WinnerIndex == 0, Cap = m.EndReason == MatchEndReason.TimeCap, Active = m.ActiveTick });
+                    list.Add(new Fight { Boss = boss, Arena = run.ArenaId, Retry = run.IsRetry, Won = m.WinnerIndex == 0, Cap = m.EndReason == MatchEndReason.TimeCap, Active = m.ActiveTick });
                 });
             });
             return new BotStats { Runs = runs, RunsWon = results.Count(x => x.Won), Fights = fights.SelectMany(f => f).ToList() };
@@ -200,6 +201,65 @@ namespace BallBattle.SimTests
     }
 
     /// <summary>
+    /// BB-6e WARDEN per arena (Explicit): 1000 Greedy runs; for every WARDEN fight its arena, whether the player won, and the WARDEN spike
+    /// hits on the player (damaging wall bounces after the first step, outside any normal spike zone hit) split side walls vs ceiling
+    /// (the wall nearest to the ball after the bounce). Env: BB_RUNS (1000), BB_REPORT.
+    /// </summary>
+    [Explicit("BB-6e WARDEN per-arena diagnostic"), Category("Slow"), NonParallelizable]
+    public class WardenArenaReport
+    {
+        sealed class Row { public int Fights, Won, Side, Ceiling, Floor; }
+
+        [Test]
+        public void WardenPerArena()
+        {
+            var runs = int.TryParse(Environment.GetEnvironmentVariable("BB_RUNS"), out var n) ? n : 1000;
+            var rows = new Dictionary<string, Row>();
+            var gate = new object();
+            Parallel.For(0, runs, i =>
+            {
+                int side = 0, ceil = 0, floor = 0;
+                RunBot.Play((uint)(i + 1), RunBot.Policy.Greedy, (run, m) =>
+                {
+                    if (run.CurrentBossId != BossIds.Warden) return;
+                    lock (gate)
+                    {
+                        if (!rows.TryGetValue(run.ArenaId, out var r)) rows[run.ArenaId] = r = new Row();
+                        r.Fights++;
+                        if (m.WinnerIndex == 0) r.Won++;
+                        r.Side += side; r.Ceiling += ceil; r.Floor += floor;
+                    }
+                    side = ceil = floor = 0;
+                }, (run, m) =>
+                {
+                    if (run.CurrentBossId != BossIds.Warden || !m.BossSpikedWalls) return;
+                    foreach (var e in m.Events)
+                    {
+                        if (e.Type != SimEventType.WallBounce || e.A != 0 || e.Value <= Fix.Zero) continue;
+                        var b = m.Balls[0];
+                        var a = m.Arena;
+                        var dSide = FixMath.Min(b.Pos.X - a.Left, a.Right - b.Pos.X);
+                        var dTop = a.Top - b.Pos.Y;
+                        var dBottom = b.Pos.Y - a.Bottom;
+                        if (dBottom < dSide && dBottom < dTop) floor++;
+                        else if (dTop < dSide) ceil++;
+                        else side++;
+                    }
+                });
+            });
+            var sb = new StringBuilder("## WARDEN per arena (Greedy, " + runs + " runs)\n\n| arena | WARDEN fights | player win % | spike hits per fight: side | ceiling | floor (normal corner zones only) |\n|---|---|---|---|---|---|\n");
+            foreach (var e in ArenaRegistry.All)
+            {
+                if (!rows.TryGetValue(e.Id, out var r) || r.Fights == 0) { sb.AppendLine($"| {e.Id} | 0 | - | - | - | - |"); continue; }
+                sb.AppendLine($"| {e.Id} | {r.Fights} | {100.0 * r.Won / r.Fights:0.0} | {(double)r.Side / r.Fights:0.00} | {(double)r.Ceiling / r.Fights:0.00} | {(double)r.Floor / r.Fights:0.00} |");
+            }
+            TestContext.Out.WriteLine(sb.ToString());
+            var path = Environment.GetEnvironmentVariable("BB_REPORT");
+            if (!string.IsNullOrEmpty(path)) File.WriteAllText(path, sb.ToString());
+        }
+    }
+
+    /// <summary>
     /// BB-04 boss balance gate (Explicit, run separately): 1000 RunBot runs per bot and 100 seeds per weapon per boss. Targets from the
     /// BB-04 spec: Greedy 25-40% and Random 1-6% run wins (existing thresholds); per boss the Greedy bot beats it 45-80% at fight 4 and
     /// 35-70% at fight 8 (per run that met it, the retry counted); no player weapon below 25% against any boss; time-capped boss fights
@@ -219,7 +279,7 @@ namespace BallBattle.SimTests
         }
 
         [TestCase(BossIds.ShellKing, 45.0, 80.0)]
-        [TestCase(BossIds.Magnet, 45.0, 80.0)]
+        [TestCase(BossIds.Magnet, 45.0, 77.0)]
         [TestCase(BossIds.Mimic, 35.0, 70.0)]
         [TestCase(BossIds.Warden, 35.0, 70.0)]
         public void GreedyBeatsEachBossInItsBand(string boss, double min, double max) =>
@@ -237,6 +297,17 @@ namespace BallBattle.SimTests
         {
             var bad = BossIds.All.Where(b => R.CapPct(b) > 1.0).Select(b => $"{b}: {R.CapPct(b):0.0}%").ToList();
             Assert.That(bad, Is.Empty);
+        }
+
+        [Test]
+        public void GreedyWardenWinRateAtLeast15PercentOnEveryArena()
+        {
+            foreach (var arena in ArenaRegistry.All)
+            {
+                var fights = R.Greedy.Fights.Where(f => f.Boss == BossIds.Warden && f.Arena == arena.Id).ToList();
+                Assert.That(fights.Count, Is.GreaterThan(0), arena.Id + ": sampled WARDEN fights");
+                Assert.That(100.0 * fights.Count(f => f.Won) / fights.Count, Is.GreaterThanOrEqualTo(15.0), arena.Id);
+            }
         }
     }
 }

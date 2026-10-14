@@ -39,6 +39,15 @@ namespace BallBattle.View
         /// <summary>Tester switch (-bbForceBoss, BB-04): this boss takes its slot and the next non-boss fight. Null = normal play.</summary>
         public string ForceBossId { get; set; }
 
+        /// <summary>
+        /// Tester switch (-bbForceArena, BB-6d): every fight started while set uses this arena. View-side only: RunState.ArenaId, the
+        /// saved run and every seed are untouched. Null = normal play.
+        /// </summary>
+        public string ForceArenaId { get; set; }
+
+        /// <summary>Arena of the current fight as played: the forced one, else the run's own (RunState.ArenaId).</summary>
+        public string FightArenaId => Run == null ? null : ForceArenaId ?? Run.ArenaId;
+
         /// <summary>Damage totals of the fight being played; the arena feeds it the sim's events (RunController).</summary>
         public FightStats Stats { get; } = new FightStats();
 
@@ -179,7 +188,7 @@ namespace BallBattle.View
 
         void StartFight()
         {
-            match = Run.CreateMatch();
+            match = ForceArenaId != null ? Run.CreateMatch(ArenaRegistry.Create(ForceArenaId)) : Run.CreateMatch();
             Stats.Reset(match);
             MatchPrepared?.Invoke(match);
             timer = CountdownSeconds;
