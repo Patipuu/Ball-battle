@@ -20,9 +20,10 @@ namespace BallBattle.Sim
         /// checked first: then the hit deals 0, counts as blocked (no growth, no hooks), keeps the shield charge, and
         /// <paramref name="shelled"/> is true.
         /// </summary>
-        Fix ComputeHitDamage(BallState attacker, BallState target, Fix baseDamage, DamageKind kind, FixVec2 contact, out bool blocked, out bool shelled)
+        Fix ComputeHitDamage(BallState attacker, BallState target, Fix baseDamage, DamageKind kind, FixVec2 contact, out bool blocked, out bool shelled,
+            out int arcAngleTenths)
         {
-            shelled = BossBlocks(attacker, target, contact);
+            shelled = BossBlocks(attacker, target, contact, out arcAngleTenths);
             if (shelled)
             {
                 blocked = true;

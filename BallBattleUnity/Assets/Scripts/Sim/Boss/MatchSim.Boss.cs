@@ -7,7 +7,7 @@ namespace BallBattle.Sim
     /// BB-04 boss hooks. A match without a boss rule (every Versus match, every normal Run fight) never enters this code: no extra
     /// state, no extra hash input, identical results. With a boss: BossPreTick runs once per active tick right after the arena update
     /// (boss phases, events, pull), then the arena rect is limited by the bosses (Warden) and, on a Warden step, balls caught outside
-    /// are pushed back in and obstacles whose centre is outside are disabled for the rest of the match.
+    /// are pushed back in. Obstacles buried by a moving wall (BB-FIX2, CoverObstacles) are disabled for the rest of the match.
     /// </summary>
     public sealed partial class MatchSim
     {
@@ -46,6 +46,7 @@ namespace BallBattle.Sim
             bossRules = rules.ToArray();
             bossOwner = owners.ToArray();
             obstacleOff = new bool[layout.ObstacleCount];
+            coverArena = Arena;
         }
 
         /// <summary>Ball index of each boss rule.</summary>
@@ -59,10 +60,11 @@ namespace BallBattle.Sim
                 if (balls[bossOwner[i]].Alive) bossRules[i].OnActiveTick();
             }
             Arena = LimitedArena(Config.ArenaAt(ActiveTick));
+            CoverObstacles(coverArena, Arena);
+            coverArena = Arena;
             if (!pushInRequested) return;
             pushInRequested = false;
             PushInside();
-            DisableObstaclesOutside();
         }
 
         /// <summary>The normal arena, made smaller per axis by every boss limit (Warden). Unchanged without a limit.</summary>
@@ -161,25 +163,60 @@ namespace BallBattle.Sim
             return false;
         }
 
-        void DisableObstaclesOutside()
+        /// <summary>Arena rect the obstacles were last checked against (BB-FIX2; part of the boss hash).</summary>
+        ArenaRect coverArena;
+
+        /// <summary>
+        /// BB-FIX2 "buried" rule (boss fights). On an ActiveTick where a wall moves in (a WARDEN step, or the normal shrink after
+        /// ShrinkStartTick), every obstacle that the moved wall now overlaps, or leaves a gap behind smaller than a ball diameter (the
+        /// smallest ball), is switched off for the rest of the match on that same tick. Walls that did not move are not checked, so the
+        /// starting layout is never switched off. The drawing (ArenaFrameView.ShowObstacles) and every collision read ObstacleActive,
+        /// so they agree by construction.
+        /// </summary>
+        void CoverObstacles(ArenaRect before, ArenaRect now)
         {
             if (obstacleOff == null) return;
-            var a = Arena;
+            var right = now.Right < before.Right;
+            var left = now.Left > before.Left;
+            var top = now.Top < before.Top;
+            var bottom = now.Bottom > before.Bottom;
+            if (!right && !left && !top && !bottom) return;
+            var diameter = SmallestBallRadius() * 2;
             for (var k = 0; k < obstacleOff.Length; k++)
             {
                 if (obstacleOff[k]) continue;
                 var o = layout.Get(k);
-                var c = o.Shape == ObstacleShape.Circle ? o.A : (o.A + o.B) / 2;
-                if (c.X < a.Left || c.X > a.Right || c.Y < a.Bottom || c.Y > a.Top) obstacleOff[k] = true;
+                var b = o.Shape == ObstacleShape.Circle ? o.A : o.B;
+                var minX = FixMath.Min(o.A.X, b.X) - o.Radius;
+                var maxX = FixMath.Max(o.A.X, b.X) + o.Radius;
+                var minY = FixMath.Min(o.A.Y, b.Y) - o.Radius;
+                var maxY = FixMath.Max(o.A.Y, b.Y) + o.Radius;
+                if ((right && now.Right - maxX < diameter) || (left && minX - now.Left < diameter)
+                    || (top && now.Top - maxY < diameter) || (bottom && minY - now.Bottom < diameter))
+                    obstacleOff[k] = true;
             }
         }
 
-        /// <summary>Is a Weapon/Projectile hit on <paramref name="target"/> at <paramref name="contact"/> stopped by a boss rule (Shell King)?</summary>
-        bool BossBlocks(BallState attacker, BallState target, FixVec2 contact)
+        Fix SmallestBallRadius()
         {
+            var r = balls[0].Radius;
+            for (var i = 1; i < balls.Length; i++) if (balls[i].Radius < r) r = balls[i].Radius;
+            return r;
+        }
+
+        /// <summary>Is a Weapon/Projectile hit on <paramref name="target"/> at <paramref name="contact"/> stopped by a boss rule (Shell King)?</summary>
+        /// <paramref name="arcAngleTenths"/>: BB-FIX2, the angle the shell judged (tenths of a degree), -1 when none did.
+        bool BossBlocks(BallState attacker, BallState target, FixVec2 contact, out int arcAngleTenths)
+        {
+            arcAngleTenths = -1;
             if (bossRules.Length == 0) return false;
             for (var i = 0; i < bossRules.Length; i++)
-                if (bossOwner[i] == target.Index && bossRules[i].BlocksHit(attacker, contact)) return true;
+            {
+                if (bossOwner[i] != target.Index) continue;
+                var a = bossRules[i].HitArcAngleTenths(attacker, contact);
+                if (a >= 0 && arcAngleTenths < 0) arcAngleTenths = a;
+                if (bossRules[i].BlocksHit(attacker, contact)) return true;
+            }
             return false;
         }
 
@@ -190,7 +227,10 @@ namespace BallBattle.Sim
             for (var i = 0; i < bossRules.Length; i++) h = bossRules[i].HashInto(SimHash.Mix(h, bossOwner[i]));
             h = SimHash.Mix(h, pushInRequested);
             for (var k = 0; k < obstacleOff.Length; k++) h = SimHash.Mix(h, obstacleOff[k]);
-            return h;
+            h = SimHash.Mix(h, coverArena.Left);
+            h = SimHash.Mix(h, coverArena.Right);
+            h = SimHash.Mix(h, coverArena.Bottom);
+            return SimHash.Mix(h, coverArena.Top);
         }
     }
 }

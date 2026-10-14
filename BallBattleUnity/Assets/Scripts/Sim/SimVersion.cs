@@ -11,6 +11,7 @@ namespace BallBattle.Sim
         // 6: whole Sim in Q16.16 fixed point (6a.6b/c), same rules, integer rounding
         // 7: spike re-hit immunity (10 ActiveTicks per ball) + arena balance pass (BB-6c)
         // 8: Run boss pool v1 (BB-04): Shell King, Magnet, Mimic, Warden. Versus/round-robin results unchanged.
-        public const int Rules = 10;   // BB-10a: one signature skill per weapon, Run skill branches
+        // 10: BB-10a: one signature skill per weapon, Run skill branches
+        public const int Rules = 11;   // BB-FIX2: SHELL KING arc judged at the hit to 0.1 degree (60.0 blocks); boss fights: walls bury obstacles
     }
 }

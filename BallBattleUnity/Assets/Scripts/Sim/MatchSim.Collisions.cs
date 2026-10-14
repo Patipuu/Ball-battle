@@ -39,13 +39,14 @@ namespace BallBattle.Sim
 
                     Fix abDamage = Fix.Zero, baDamage = Fix.Zero;
                     bool abBlocked = false, baBlocked = false, abShelled = false, baShelled = false;
+                    int abArc = -1, baArc = -1;
                     HitContext abCtx = default, baCtx = default;
-                    if (abHit) { abCtx = MakeContext(a, b); abDamage = ComputeHitDamage(a, b, SafeDamage(a.Weapon, abCtx), DamageKind.Weapon, abContact, out abBlocked, out abShelled); }
-                    if (baHit) { baCtx = MakeContext(b, a); baDamage = ComputeHitDamage(b, a, SafeDamage(b.Weapon, baCtx), DamageKind.Weapon, baContact, out baBlocked, out baShelled); }
+                    if (abHit) { abCtx = MakeContext(a, b); abDamage = ComputeHitDamage(a, b, SafeDamage(a.Weapon, abCtx), DamageKind.Weapon, abContact, out abBlocked, out abShelled, out abArc); }
+                    if (baHit) { baCtx = MakeContext(b, a); baDamage = ComputeHitDamage(b, a, SafeDamage(b.Weapon, baCtx), DamageKind.Weapon, baContact, out baBlocked, out baShelled, out baArc); }
 
                     // Both HP changes first, then both sets of hooks: a heal-on-hit cannot outrun the other ball's blow.
-                    if (abHit) ApplyHit(a, b, abDamage, abBlocked, abCtx, abContact, abShelled);
-                    if (baHit) ApplyHit(b, a, baDamage, baBlocked, baCtx, baContact, baShelled);
+                    if (abHit) ApplyHit(a, b, abDamage, abBlocked, abCtx, abContact, abShelled, abArc);
+                    if (baHit) ApplyHit(b, a, baDamage, baBlocked, baCtx, baContact, baShelled, baArc);
                     if (abHit && !abBlocked) RunHitHooks(a, b, abDamage, DamageKind.Weapon);
                     if (baHit && !baBlocked) RunHitHooks(b, a, baDamage, DamageKind.Weapon);
                     ResolveDeaths();
@@ -135,7 +136,7 @@ namespace BallBattle.Sim
             if (ticks > HitstopRemaining) HitstopRemaining = ticks;
         }
 
-        void ApplyHit(BallState attacker, BallState target, Fix damage, bool blocked, in HitContext ctx, FixVec2 contact, bool shelled = false)
+        void ApplyHit(BallState attacker, BallState target, Fix damage, bool blocked, in HitContext ctx, FixVec2 contact, bool shelled = false, int arcAngleTenths = -1)
         {
             var cooldown = attacker.Weapon.HitCooldownTicks >= 0 ? attacker.Weapon.HitCooldownTicks : Config.HitCooldownTicks;
             attacker.HitCooldown[target.Index] = cooldown;
@@ -150,7 +151,7 @@ namespace BallBattle.Sim
             {
                 // BB-04 Shell King: a Hit event with 0 damage (the View plays the normal hit cue) that does not count: no HitCount,
                 // no weapon growth, no StatChanged, no hooks.
-                Emit(SimEventType.Hit, attacker.Index, target.Index, Fix.Zero, contact, 1);
+                Emit(SimEventType.Hit, attacker.Index, target.Index, Fix.Zero, contact, 1, arcAngleTenths: arcAngleTenths);
                 return;
             }
             if (blocked)
@@ -161,7 +162,7 @@ namespace BallBattle.Sim
 
             attacker.HitCount++;
             attacker.Weapon.OnHit(ctx);
-            Emit(SimEventType.Hit, attacker.Index, target.Index, damage, contact);
+            Emit(SimEventType.Hit, attacker.Index, target.Index, damage, contact, arcAngleTenths: arcAngleTenths);
             Emit(SimEventType.StatChanged, attacker.Index, -1, Fix.Zero, attacker.Pos);
             ApplyHitHp(attacker, target, damage);
         }

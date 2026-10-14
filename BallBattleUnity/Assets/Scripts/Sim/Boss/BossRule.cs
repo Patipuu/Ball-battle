@@ -51,6 +51,13 @@ namespace BallBattle.Sim.Boss
         /// <summary>A Weapon/Projectile hit on Self at <paramref name="contact"/>: true = it deals 0 and counts as no hit (no growth, no on-hit hooks). Pure.</summary>
         public virtual bool BlocksHit(BallState attacker, FixVec2 contact) => false;
 
+        /// <summary>
+        /// BB-FIX2: the angle (tenths of a degree, 0..1800) this rule's BlocksHit judged for a hit by <paramref name="attacker"/> at
+        /// <paramref name="contact"/>, or -1 when it judged none. The Sim puts it on the Hit/ProjectileHit event so a trace logs the
+        /// exact number the block used. Pure.
+        /// </summary>
+        public virtual int HitArcAngleTenths(BallState attacker, FixVec2 contact) => -1;
+
         /// <summary>Upper bound on the arena size at the current ActiveTick, or false for none.</summary>
         public virtual bool ArenaLimit(out Fix width, out Fix height)
         {

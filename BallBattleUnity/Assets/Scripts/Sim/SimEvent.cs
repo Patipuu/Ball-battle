@@ -60,6 +60,10 @@ namespace BallBattle.Sim
         public int SkillLevel;
         public Skills.SkillBranch SkillBranch;
         public bool Reflected;
+        /// <summary>BB-FIX2: Hit/ProjectileHit on a boss whose shell judged it (SHELL KING, shell ON): ArcAngleTenths is the contact angle to
+        /// the shell's facing that the block test used (tenths of a degree, 0..1800). False (and 0) otherwise.</summary>
+        public bool ArcMeasured;
+        public int ArcAngleTenths;
     }
 
     public enum MatchOutcome : byte

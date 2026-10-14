@@ -351,20 +351,25 @@ namespace BallBattle.SimTests
             Assert.That(bounces.Single(e => e.A == 1).Value, Is.EqualTo(Fix.Zero), "the Warden outside the zone: no damage (its own walls never hurt it)");
         }
 
+        /// <summary>BB-FIX2: a WARDEN step buries an obstacle when the moved wall overlaps it or leaves a gap behind it smaller than a
+        /// ball diameter (was: centre outside). (100,100) r5: right/top gap after step 1 = 104.65 - 105 &lt; 0. (0,-50) r8: bottom gap
+        /// 46.65 / 36.3 / 25.95 after steps 1 / 2 / 3, so it goes at step 3.</summary>
         [Test]
-        public void ObstaclesWhoseCentreIsOutsideTheNewWallsAreDisabled()
+        public void ObstaclesBuriedByAWardenStepAreDisabledOnThatTick()
         {
             var layout = new ArenaLayout(new[] { Obstacle.Circle(FT.V(100, 100), 5), Obstacle.Circle(FT.V(0, -50), 8, boost: Fix.Ratio(1, 10)) });
             var (m, _) = WardenFight(layout, FT.V(-60, 30), FT.V(40, 30));
+            StepTo(m, WardenRule.StepTick(1) - 1, s => Stage.Park(s, FT.V(-60, 30), FT.V(40, 30)));
+            Assert.That(m.ObstacleActive(0), Is.True, "untouched before the first step");
             StepTo(m, WardenRule.StepTick(1), s => Stage.Park(s, FT.V(-60, 30), FT.V(40, 30)));
-            Assert.That(m.ObstacleActive(0), Is.True, "(100,100) still inside after step 1");
-            StepTo(m, WardenRule.StepTick(2), s => Stage.Park(s, FT.V(-60, 30), FT.V(40, 30)));
-            Assert.That(WardenRule.SizeAfter(m.Config.ArenaWidth, 2) / 2, Is.LessThan(Fix.FromInt(100)), "fixture: step 2 puts (100,100) outside");
-            Assert.That(m.ObstacleActive(0), Is.False, "(100,100) outside after step 2");
+            Assert.That(m.ObstacleActive(0), Is.False, "(100,100) buried by step 1");
             Assert.That(m.ObstacleActive(1), Is.True);
+            StepTo(m, WardenRule.StepTick(3) - 1, s => Stage.Park(s, FT.V(-40, 30), FT.V(30, 30)));
+            Assert.That(m.ObstacleActive(1), Is.True, "(0,-50): gap 36.3 after step 2, still on");
+            StepTo(m, WardenRule.StepTick(3), s => Stage.Park(s, FT.V(-40, 30), FT.V(30, 30)));
+            Assert.That(m.ObstacleActive(1), Is.False, "(0,-50): gap 25.95 < 32 after step 3");
             StepTo(m, WardenRule.StepTick(BossTuning.WardenMaxSteps) + 10, s => Stage.Park(s, FT.V(-40, 30), FT.V(30, 30)));
-            Assert.That(m.ObstacleActive(0), Is.False, "never comes back");
-            Assert.That(m.ObstacleActive(1), Is.True, "(0,-50) stays inside the smallest Warden walls");
+            Assert.That(m.ObstacleActive(0) || m.ObstacleActive(1), Is.False, "never come back");
         }
 
         // ---------------- WARDEN spiked walls (BB-6d) ----------------

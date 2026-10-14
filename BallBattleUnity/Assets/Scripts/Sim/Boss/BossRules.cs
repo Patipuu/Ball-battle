@@ -91,16 +91,36 @@ namespace BallBattle.Sim.Boss
 
         public override bool BlocksHit(BallState attacker, FixVec2 contact) => ShellOn && attacker != Self && InArc(contact);
 
-        /// <summary>Is <paramref name="point"/> within the shell's arc seen from the boss centre? (cos of the angle to Facing >= cos(arc/2).)</summary>
+        public override int HitArcAngleTenths(BallState attacker, FixVec2 contact) =>
+            ShellOn && attacker != Self ? ContactAngleTenths(contact) : -1;
+
+        /// <summary>
+        /// BB-FIX2: is <paramref name="point"/> within the shell's arc seen from the boss centre? The spec's test: the contact point's
+        /// angle to Facing, rounded to 0.1 degree, is at most ShellArcDeg/2 (60.0 blocks, 60.1 does not). One number for the block and the
+        /// trace (ContactAngleTenths, carried on the hit event), measured at the moment of the hit.
+        /// </summary>
         public bool InArc(FixVec2 point)
         {
-            var v = point - Self.Pos;
-            var length = v.Length;
-            if (length <= Fix.Zero) return false;
-            return FixVec2.DotFix(v, Facing) >= length * HalfArcCos;
+            var a = ContactAngleTenths(point);
+            return a >= 0 && a <= HalfArcTenths;
         }
 
-        static Fix HalfArcCos => FixedTrig.Cos(BossTuning.ShellArcDeg * 5);   // tenths of a degree: arc/2 × 10
+        /// <summary>
+        /// Unsigned angle between Facing and (<paramref name="point"/> − boss centre) in tenths of a degree (0 = dead centre, 1800 = the
+        /// back), or -1 when the point is the centre. The vector is turned into the shell's own frame (along Facing, across it) and
+        /// measured with one FixedTrig.Atan2, so it is rounded once, to the nearest 0.1 degree.
+        /// </summary>
+        public int ContactAngleTenths(FixVec2 point)
+        {
+            var v = point - Self.Pos;
+            if (v.X.Raw == 0 && v.Y.Raw == 0) return -1;
+            var along = FixVec2.DotFix(v, Facing);
+            var across = v.Y * Facing.X - v.X * Facing.Y;
+            var a = FixedTrig.Atan2(across, along);
+            return a > 1800 ? 3600 - a : a;
+        }
+
+        static int HalfArcTenths => BossTuning.ShellArcDeg * 5;   // tenths of a degree: arc/2 × 10
 
         protected override ulong HashState(ulong h)
         {
