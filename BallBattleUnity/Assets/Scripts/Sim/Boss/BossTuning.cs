@@ -9,7 +9,7 @@ namespace BallBattle.Sim.Boss
     public static class BossTuning
     {
         // ---- SHELL KING (fight 4): a 120-degree shell that blocks weapon and projectile hits on one side ----
-        public static Fix ShellKingHp = 150;   // BB-04 it1: 160 -> 150 (-6.25%)
+        public static Fix ShellKingHp = 156;   // BB-04 it1: 160 -> 150 (-6.25%); BB-BAL1: 150 -> 156 (+4%)
         public static int ShellKingTraits = 0;
         /// <summary>ActiveTick of the first warning.</summary>
         public static int ShellFirstWarnTick = 60;
@@ -36,7 +36,7 @@ namespace BallBattle.Sim.Boss
         public static Fix MimicHp = 275;   // BB-04 it2: 220 -> 275 (+25%)
 
         // ---- WARDEN (fight 8): the walls step in every few seconds ----
-        public static Fix WardenHp = 207;   // BB-6e: 275 -> 207 (-24.7% vs BB-04 it3), retained by BB-6f
+        public static Fix WardenHp = 230;   // BB-6e: 275 -> 207 (-24.7% vs BB-04 it3), retained by BB-6f; BB-BAL1: 207 -> 230 (+11.1%)
         /// <summary>Random traits, as the fight-8 boss had before BB-04.</summary>
         public static int WardenTraits = 2;
         public static int WardenFirstStepTick = 450;   // BB-6e: 360 -> 450 (+25% vs BB-04 it3)
@@ -51,7 +51,7 @@ namespace BallBattle.Sim.Boss
         public static int SpikeWindowTicks = 144;   // BB-6f it2: 120 -> 144, WARDEN retry 74.2% -> 69.9%
 
         /// <summary>Damage per contact during a WARDEN spike window (player only, never the floor).</summary>
-        public static Fix WardenSpikeDamage = 2;   // BB-6e it1: 2 (range 2-3)
+        public static Fix WardenSpikeDamage = 3;   // BB-6e it1: 2 (range 2-3); BB-BAL1: 2 -> 3
 
         /// <summary>Number of steps the Warden can take ((100 − MinPct) / StepPct: 4 with the spec's 10%/60%, also 4 with 12%/45%).</summary>
         public static int WardenMaxSteps => WardenStepPct > 0 ? (100 - WardenMinPct) / WardenStepPct : 0;

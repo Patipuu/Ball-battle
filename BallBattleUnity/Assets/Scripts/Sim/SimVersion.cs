@@ -12,6 +12,7 @@ namespace BallBattle.Sim
         // 7: spike re-hit immunity (10 ActiveTicks per ball) + arena balance pass (BB-6c)
         // 8: Run boss pool v1 (BB-04): Shell King, Magnet, Mimic, Warden. Versus/round-robin results unchanged.
         // 10: BB-10a: one signature skill per weapon, Run skill branches
-        public const int Rules = 11;   // BB-FIX2: SHELL KING arc judged at the hit to 0.1 degree (60.0 blocks); boss fights: walls bury obstacles
+        // 11: BB-FIX2: SHELL KING arc judged at the hit to 0.1 degree (60.0 blocks); boss fights: walls bury obstacles
+        public const int Rules = 12;   // BB-BAL1: combined balance pass after skills (values only)
     }
 }

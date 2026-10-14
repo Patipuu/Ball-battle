@@ -35,7 +35,7 @@ namespace BallBattle.SimTests
         public void RandomBotWins1To6Percent() => Assert.That(WinPct(random), Is.InRange(1.0, 6.0), $"N={Runs}, measured {WinPct(random):0.0}%");
 
         [Test]
-        // Temporary floor 22% accepted after BB-6f; revisit in the combined balance pass.
+        // Floor 22%: base-4 bot snapshot (Greedy starts only with the 4 base weapons).
         public void GreedyBotWins22To40Percent() => Assert.That(WinPct(greedy), Is.InRange(22.0, 40.0), $"N={Runs}, measured {WinPct(greedy):0.0}%");
     }
 }

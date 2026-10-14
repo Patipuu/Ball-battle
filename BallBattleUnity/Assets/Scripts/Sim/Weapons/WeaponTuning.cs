@@ -24,8 +24,8 @@ namespace BallBattle.Sim.Weapons
         public static Fix FangStartSpinGain = 3;
         public static Fix FangSpinGainDecay = Fix.Ratio(23, 25);   // BB-6c: 0.98 -> 0.94; BB-6d: 0.94 -> 0.92 (tight MANTIS chains)
         public static Fix FangMaxSpin = 40;
-        public static Fix FangStartDamage = 1;
-        public static Fix FangDamagePerHit = Fix.Ratio(2, 5);
+        public static Fix FangStartDamage = Fix.Ratio(23, 20);   // BB-BAL1: 1 -> 1.15 (+15%)
+        public static Fix FangDamagePerHit = Fix.Ratio(11, 25);   // BB-BAL1: 0.4 -> 0.44 (+10%)
         public static int FangHitCooldownTicks = 3;
         public static Fix FangKnockbackScale = Fix.Ratio(3, 10);
 
@@ -37,7 +37,7 @@ namespace BallBattle.Sim.Weapons
         public static Fix PikeMaxLength = 90;
 
         // Brawler: no blade; body damage scales with its own speed; speed cap grows on hits and wall bounces.
-        public static Fix BrawlerStartDamagePerSpeed = Fix.Ratio(1, 10);
+        public static Fix BrawlerStartDamagePerSpeed = Fix.Ratio(9, 100);   // BB-BAL1: 0.1 -> 0.09 (-10%)
         public static Fix BrawlerDamagePerSpeedPerHit = Fix.Ratio(1, 100);
         public static Fix BrawlerStartSpeedBonus = -3;
         public static Fix BrawlerSpeedBonusPerHit = Fix.Ratio(1, 2);
@@ -55,14 +55,14 @@ namespace BallBattle.Sim.Weapons
         public static Fix VolleySpreadDeg = 8;
         public static Fix VolleyArrowSpeed = 5;
         public static Fix VolleyArrowRadius = Fix.Ratio(3, 2);
-        public static Fix VolleyArrowDamage = Fix.Ratio(9, 10);
+        public static Fix VolleyArrowDamage = Fix.Ratio(43, 50);   // BB-BAL1: 0.9 -> 0.86 (-4.4%)
         public static int VolleyArrowLifetimeTicks = 180;
 
         // Venom: wide slow blade; the poison stack allowance grows per hit.
         public static Fix VenomLength = 22;
         public static Fix VenomThickness = 6;
         public static Fix VenomSpin = 4;
-        public static Fix VenomMeleeDamage = Fix.Ratio(3, 2);
+        public static Fix VenomMeleeDamage = Fix.Ratio(33, 20);   // BB-BAL1: 1.5 -> 1.65 (+10%)
         public static Fix VenomDamagePerHit = Fix.Ratio(3, 16);   // BB-6c: 0.25 -> 0.1875
         public static Fix VenomDps = 1;
         public static int VenomSeconds = 4;
@@ -71,13 +71,13 @@ namespace BallBattle.Sim.Weapons
         public static Fix AegisLength = 22;
         public static Fix AegisThickness = 7;
         public static Fix AegisSpin = 3;
-        public static Fix AegisChipDamage = Fix.Ratio(7, 10);
+        public static Fix AegisChipDamage = Fix.Ratio(4, 5);   // BB-BAL1: 0.7 -> 0.8 (+14.3%)
         public static Fix AegisDamagePerWidth = Fix.Ratio(1, 4);
         public static Fix AegisBodyReflectPct = Fix.Ratio(9, 16);   // BB-6c: 0.5 -> 0.5625
         public static Fix AegisWidthPerHit = Fix.Ratio(5, 16);   // BB-6c: 0.25 -> 0.3125
         public static Fix AegisMaxThickness = 14;
         public static Fix AegisReflectPct = Fix.Ratio(9, 20);   // BB-6c: 0.4 -> 0.45
-        public static Fix AegisShotAbsorbPct = Fix.Ratio(3, 20);   // BB-6c: 0.2 -> 0.15
+        public static Fix AegisShotAbsorbPct = Fix.Ratio(17, 100);   // BB-6c: 0.2 -> 0.15; BB-BAL1: 0.15 -> 0.17 (+13.3%)
         // BB-6d: MIRROR grows on combat, not time. Guard points per combat event: a parry against a blade or a blade hit taken
         // (AegisGuardMelee), a body blow taken (AegisGuardBody), a shot taken (AegisGuardShot; shots stay its weakness).
         // Replaces AegisRegenPerSecond (heal per second) and AegisRageStartTicks / AegisRageRampTicks (rage clock).
@@ -89,9 +89,9 @@ namespace BallBattle.Sim.Weapons
         /// (weapon gate: median &lt;= 90 s).</summary>
         public static Fix AegisGuardMirror = 9;
         /// <summary>HP healed per guard point (was a time regen).</summary>
-        public static Fix AegisMendPerGuard = Fix.Ratio(3, 25);
+        public static Fix AegisMendPerGuard = Fix.Ratio(69, 500);   // BB-BAL1: 0.12 -> 0.138 (+15%)
         /// <summary>After this many guard points Aegis hits harder and harder (ends Aegis mirrors); +100% per AegisRageRampGuards more.</summary>
-        public static Fix AegisRageStartGuards = 18;
+        public static Fix AegisRageStartGuards = Fix.Ratio(31, 2);   // BB-BAL1: 18 -> 15.5 (-13.9%)
         public static Fix AegisRageRampGuards = 27;
         /// <summary>Rage counts at most this many guard points past the start (+AegisRageMaxGuards/AegisRageRampGuards, about +300%).</summary>
         public static Fix AegisRageMaxGuards = 80;
@@ -106,7 +106,7 @@ namespace BallBattle.Sim.Weapons
         public static int RigFireIntervalTicks = 68;
         public static Fix RigShotSpeed = Fix.Ratio(7, 2);
         public static Fix RigShotRadius = Fix.Ratio(3, 2);
-        public static Fix RigShotDamage = Fix.Ratio(11, 10);
+        public static Fix RigShotDamage = Fix.Ratio(23, 20);   // BB-BAL1: 1.1 -> 1.15 (+4.5%)
         public static int RigShotLifetimeTicks = 150;
 
         /// <summary>

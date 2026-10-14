@@ -40,11 +40,16 @@ namespace BallBattle.SimTests
 
         /// <summary><paramref name="onStep"/> (BB-6e diagnostics) sees the match after every Step.</summary>
         public static Result Play(uint seed, Policy policy, Action<RunState, MatchSim> onFight, Action<RunState, MatchSim> onStep)
+            => Play(seed, policy, onFight, onStep, null);
+
+        /// <summary>BB-BAL1: <paramref name="forcedWeapon"/> replaces the start weapon (any of the 8, unlocked or not); null = normal.</summary>
+        public static Result Play(uint seed, Policy policy, Action<RunState, MatchSim> onFight, Action<RunState, MatchSim> onStep, string forcedWeapon)
         {
             var progress = BotProgress();
             var choices = RunState.StartChoices(seed, UnlockRules.Weapons(progress));
             var rng = new SimRandom(seed ^ 0xB07B07u);
             var run = RunState.Start(seed, choices[(int)(rng.NextUInt() % (uint)choices.Count)], progress);
+            if (forcedWeapon != null) run.Build.WeaponId = forcedWeapon;
             if (policy == Policy.Random) PickRandom(run, rng);
             else PickGreedyStart(run);
 
@@ -78,7 +83,7 @@ namespace BallBattle.SimTests
         {
             var best = Best(run);
             if (best < 0) best = Enumerable.Range(0, run.OfferCount).Where(run.CanPick).DefaultIfEmpty(-1).First();
-            if (best >= 0) Take(run, best, BallBattle.Sim.Skills.SkillChoice.Choose(run.Build));
+            if (best >= 0) Take(run, best, GreedyBranch(run, best));
         }
 
         /// <summary>Heal when low, else upgrade/add traits, else damage, else max HP; rerolls bad hands, buys a second card when rich.</summary>
@@ -91,8 +96,47 @@ namespace BallBattle.SimTests
                 if (best < 0) best = Enumerable.Range(0, run.OfferCount).Where(run.CanPick).DefaultIfEmpty(-1).First();
                 if (best < 0 || !run.CanPick(best)) return;
                 if (pick > 0 && run.Coins < RunTuning.ExtraPickCost + run.NextRerollCost) return;
-                Take(run, best, BallBattle.Sim.Skills.SkillChoice.Choose(run.Build));
+                Take(run, best, GreedyBranch(run, best));
             }
+        }
+
+        /// <summary>Fixed seeds per level-1 SKILL UP decision (BB-BAL1).</summary>
+        public const int BranchTrialSeeds = 8;
+
+        /// <summary>
+        /// BB-BAL1: Greedy picks a skill branch by measurement. Only the level-1 SKILL UP chooses (later levels keep the branch): its
+        /// current build is played with branch A and with branch B against the next fight's known opponent on that fight's arena,
+        /// BranchTrialSeeds seeds derived from the run seed and fight index. Higher win count wins; tie: lower total damage taken;
+        /// tie again: A. Bot logic only, no gameplay change; deterministic.
+        /// </summary>
+        internal static BallBattle.Sim.Skills.SkillBranch GreedyBranch(RunState run, int index)
+        {
+            var card = run.OfferCard(index);
+            if (card.Kind != CardKind.SkillUp || run.Build.SkillLevel != 1) return run.Build.SkillBranch;
+            var a = TrialBranch(run, card, BallBattle.Sim.Skills.SkillBranch.A);
+            var b = TrialBranch(run, card, BallBattle.Sim.Skills.SkillBranch.B);
+            if (b.wins != a.wins) return b.wins > a.wins ? BallBattle.Sim.Skills.SkillBranch.B : BallBattle.Sim.Skills.SkillBranch.A;
+            return b.damageTaken < a.damageTaken ? BallBattle.Sim.Skills.SkillBranch.B : BallBattle.Sim.Skills.SkillBranch.A;
+        }
+
+        static (int wins, long damageTaken) TrialBranch(RunState run, Card card, BallBattle.Sim.Skills.SkillBranch branch)
+        {
+            var build = run.Build.Clone();
+            card.ApplyTo(build, branch);
+            var wins = 0;
+            long taken = 0;
+            for (var k = 0; k < BranchTrialSeeds; k++)
+            {
+                var seed = RunTuning.Derive(run.Seed, 7000 + run.FightIndex, k);
+                var m = new MatchSim(ArenaRegistry.Create(run.ArenaId), seed, new[] { build.ToLoadout(), run.Enemy.ToLoadout() });
+                m.ApplySpawnHooks();
+                var start = m.Balls[0].Hp;
+                while (m.Outcome == MatchOutcome.Ongoing) m.Step();
+                if (m.WinnerIndex == 0) wins++;
+                var end = m.Balls[0].Hp > Fix.Zero ? m.Balls[0].Hp : Fix.Zero;
+                taken += (start - end).Raw;
+            }
+            return (wins, taken);
         }
 
         /// <summary>Index of the most wanted card, or -1 if none is worth it.</summary>

@@ -20,19 +20,22 @@ namespace BallBattle.Sim.Skills
         bool B => Level > 1 && Branch == SkillBranch.B;
         public int CooldownTicks => Definition.WeaponId == "pike" ? 540 : Definition.WeaponId == "fang" || Definition.WeaponId == "aegis" || Definition.WeaponId == "rig" ? 720 :
             Definition.WeaponId == "volley" ? (A ? (Level == 2 ? 600 : 480) : 720) : 600;
-        public int DurationTicks => Definition.WeaponId == "fang" ? (A ? 180 + Rank * 90 : 180) :
-            Definition.WeaponId == "pike" ? (B ? 120 + Rank * 60 : 120) :
-            Definition.WeaponId == "brawler" ? (B ? 90 + Rank * 60 : 90) :
-            Definition.WeaponId == "venom" ? 240 : Definition.WeaponId == "aegis" ? (A ? 120 + Rank * 40 : 120) : 0;
+        // BB-BAL1 (Run-only, levels 2-3): fang A per rank 90 -> 103, pike B 60 -> 69, brawler B 60 -> 69, aegis A 40 -> 46 (+15%).
+        public int DurationTicks => Definition.WeaponId == "fang" ? (A ? 180 + Rank * 103 : 180) :
+            Definition.WeaponId == "pike" ? (B ? 120 + Rank * 69 : 120) :
+            Definition.WeaponId == "brawler" ? (B ? 90 + Rank * 69 : 90) :
+            Definition.WeaponId == "venom" ? 240 : Definition.WeaponId == "aegis" ? (A ? 120 + Rank * 46 : 120) : 0;
         public int HitCharges => A && Definition.WeaponId == "blade" ? 3 + Rank * 2 : 3;
-        public Fix HitBonus => B && Definition.WeaponId == "blade" ? Fix.Ratio(Level, 2) : Fix.Half;
-        public Fix SpinGainMultiplier => B ? (Level == 2 ? Fix.Ratio(3, 2) : (Fix)2) : Fix.One;
-        public Fix LengthBonus => A ? Fix.Ratio(Level + 1, 6) : Fix.Ratio(1, 3);
-        public Fix BodyMultiplier => A ? (Level == 2 ? Fix.Ratio(7, 4) : (Fix)2) : Fix.Ratio(3, 2);
+        // BB-BAL1 (Run-only, levels 2-3, +15%): blade B Level/2 -> Level*23/40; fang B 1.5/2 -> 1.725/2.3; pike A (Level+1)/6 -> (Level+1)*23/120.
+        public Fix HitBonus => B && Definition.WeaponId == "blade" ? Fix.Ratio(Level * 23, 40) : Fix.Half;
+        public Fix SpinGainMultiplier => B ? (Level == 2 ? Fix.Ratio(69, 40) : Fix.Ratio(23, 10)) : Fix.One;
+        public Fix LengthBonus => A ? Fix.Ratio((Level + 1) * 23, 120) : Fix.Ratio(1, 3);
+        public Fix BodyMultiplier => A ? (Level == 2 ? Fix.Ratio(161, 80) : Fix.Ratio(23, 10)) : Fix.Ratio(27, 20);   // BB-BAL1: base/B 1.5 -> 1.35 (-10%); A L2/L3 1.75/2 -> 2.0125/2.3 (+15%, Run only)
         public Fix ArrowBonus => B ? Fix.Ratio(Rank, 4) : Fix.Zero;
-        public Fix DrainFraction => A ? (Level == 2 ? Fix.Ratio(2, 3) : Fix.Ratio(3, 4)) : Fix.Half;
-        public int PoisonExtraTicks => B ? Rank * 60 : 0;
-        public Fix ParryReflect => B ? (Level == 2 ? Fix.Ratio(2, 3) : Fix.Ratio(3, 4)) : Fix.Ratio(3, 5);
+        // BB-BAL1 (Run-only, levels 2-3, +15%): venom A 2/3, 3/4 -> 23/30, 69/80; venom B 60 -> 69 per rank; aegis B 2/3, 3/4 -> 23/30, 69/80.
+        public Fix DrainFraction => A ? (Level == 2 ? Fix.Ratio(23, 30) : Fix.Ratio(69, 80)) : Fix.Half;
+        public int PoisonExtraTicks => B ? Rank * 69 : 0;
+        public Fix ParryReflect => B ? (Level == 2 ? Fix.Ratio(23, 30) : Fix.Ratio(69, 80)) : Fix.Ratio(3, 5);
         public int VolleyCharges => A ? 2 + Rank : 2;
         public int DeployCount => B ? Rank : 0;
         public Fix ReadyFraction => sim.ActiveTick >= ReadyAt ? Fix.One : Fix.Ratio(CooldownTicks - (ReadyAt - sim.ActiveTick), CooldownTicks);

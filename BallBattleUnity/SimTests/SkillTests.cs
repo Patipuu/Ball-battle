@@ -37,10 +37,10 @@ namespace BallBattle.SimTests
                 {
                     var cd = ids[i] == "volley" && spec.Branch == SkillBranch.A ? (spec.Level == 2 ? 600 : 480) : cooldowns[i];
                     var duration = durations[i];
-                    if (ids[i] == "fang" && spec.Branch == SkillBranch.A) duration = spec.Level == 2 ? 270 : 360;
-                    if (ids[i] == "pike" && spec.Branch == SkillBranch.B) duration = spec.Level == 2 ? 180 : 240;
-                    if (ids[i] == "brawler" && spec.Branch == SkillBranch.B) duration = spec.Level == 2 ? 150 : 210;
-                    if (ids[i] == "aegis" && spec.Branch == SkillBranch.A) duration = spec.Level == 2 ? 160 : 200;
+                    if (ids[i] == "fang" && spec.Branch == SkillBranch.A) duration = spec.Level == 2 ? 283 : 386;   // BB-BAL1: per rank 90 -> 103
+                    if (ids[i] == "pike" && spec.Branch == SkillBranch.B) duration = spec.Level == 2 ? 189 : 258;   // BB-BAL1: per rank 60 -> 69
+                    if (ids[i] == "brawler" && spec.Branch == SkillBranch.B) duration = spec.Level == 2 ? 159 : 228;   // BB-BAL1: per rank 60 -> 69
+                    if (ids[i] == "aegis" && spec.Branch == SkillBranch.A) duration = spec.Level == 2 ? 166 : 212;   // BB-BAL1: per rank 40 -> 46
                     yield return new TestCaseData(ids[i], spec.Level, spec.Branch, cd, duration);
                 }
         }
@@ -81,21 +81,21 @@ namespace BallBattle.SimTests
         {
             var bladeA = Fight("blade",3,SkillBranch.A).Balls[0].Skill; var bladeB = Fight("blade",3,SkillBranch.B).Balls[0].Skill;
             Assert.That((bladeA.HitCharges,bladeA.HitBonus), Is.EqualTo((7,Fix.Half)));
-            Assert.That((bladeB.HitCharges,bladeB.HitBonus), Is.EqualTo((3,Fix.Ratio(3,2))));
-            Assert.That(Fight("fang",2,SkillBranch.B).Balls[0].Skill.SpinGainMultiplier, Is.EqualTo(Fix.Ratio(3,2)));
-            Assert.That(Fight("fang",3,SkillBranch.B).Balls[0].Skill.SpinGainMultiplier, Is.EqualTo((Fix)2));
-            Assert.That(Fight("pike",2,SkillBranch.A).Balls[0].Skill.LengthBonus, Is.EqualTo(Fix.Half));
-            Assert.That(Fight("pike",3,SkillBranch.A).Balls[0].Skill.LengthBonus, Is.EqualTo(Fix.Ratio(2,3)));
-            Assert.That(Fight("brawler",2,SkillBranch.A).Balls[0].Skill.BodyMultiplier, Is.EqualTo(Fix.Ratio(7,4)));
-            Assert.That(Fight("brawler",3,SkillBranch.A).Balls[0].Skill.BodyMultiplier, Is.EqualTo((Fix)2));
+            Assert.That((bladeB.HitCharges,bladeB.HitBonus), Is.EqualTo((3,Fix.Ratio(69,40))));   // BB-BAL1: 3/2 -> 69/40
+            Assert.That(Fight("fang",2,SkillBranch.B).Balls[0].Skill.SpinGainMultiplier, Is.EqualTo(Fix.Ratio(69,40)));
+            Assert.That(Fight("fang",3,SkillBranch.B).Balls[0].Skill.SpinGainMultiplier, Is.EqualTo(Fix.Ratio(23,10)));
+            Assert.That(Fight("pike",2,SkillBranch.A).Balls[0].Skill.LengthBonus, Is.EqualTo(Fix.Ratio(69,120)));
+            Assert.That(Fight("pike",3,SkillBranch.A).Balls[0].Skill.LengthBonus, Is.EqualTo(Fix.Ratio(92,120)));
+            Assert.That(Fight("brawler",2,SkillBranch.A).Balls[0].Skill.BodyMultiplier, Is.EqualTo(Fix.Ratio(161,80)));
+            Assert.That(Fight("brawler",3,SkillBranch.A).Balls[0].Skill.BodyMultiplier, Is.EqualTo(Fix.Ratio(23,10)));
             Assert.That(Fight("volley",2,SkillBranch.B).Balls[0].Skill.ArrowBonus, Is.EqualTo(Fix.Ratio(1,4)));
             Assert.That(Fight("volley",3,SkillBranch.B).Balls[0].Skill.ArrowBonus, Is.EqualTo(Fix.Half));
-            Assert.That(Fight("venom",2,SkillBranch.A).Balls[0].Skill.DrainFraction, Is.EqualTo(Fix.Ratio(2,3)));
-            Assert.That(Fight("venom",3,SkillBranch.A).Balls[0].Skill.DrainFraction, Is.EqualTo(Fix.Ratio(3,4)));
-            Assert.That(Fight("venom",2,SkillBranch.B).Balls[0].Skill.PoisonExtraTicks, Is.EqualTo(60));
-            Assert.That(Fight("venom",3,SkillBranch.B).Balls[0].Skill.PoisonExtraTicks, Is.EqualTo(120));
-            Assert.That(Fight("aegis",2,SkillBranch.B).Balls[0].Skill.ParryReflect, Is.EqualTo(Fix.Ratio(2,3)));
-            Assert.That(Fight("aegis",3,SkillBranch.B).Balls[0].Skill.ParryReflect, Is.EqualTo(Fix.Ratio(3,4)));
+            Assert.That(Fight("venom",2,SkillBranch.A).Balls[0].Skill.DrainFraction, Is.EqualTo(Fix.Ratio(23,30)));
+            Assert.That(Fight("venom",3,SkillBranch.A).Balls[0].Skill.DrainFraction, Is.EqualTo(Fix.Ratio(69,80)));
+            Assert.That(Fight("venom",2,SkillBranch.B).Balls[0].Skill.PoisonExtraTicks, Is.EqualTo(69));
+            Assert.That(Fight("venom",3,SkillBranch.B).Balls[0].Skill.PoisonExtraTicks, Is.EqualTo(138));
+            Assert.That(Fight("aegis",2,SkillBranch.B).Balls[0].Skill.ParryReflect, Is.EqualTo(Fix.Ratio(23,30)));
+            Assert.That(Fight("aegis",3,SkillBranch.B).Balls[0].Skill.ParryReflect, Is.EqualTo(Fix.Ratio(69,80)));
             Assert.That((Fight("rig",2,SkillBranch.A).Balls[0].Skill.VolleyCharges,Fight("rig",3,SkillBranch.A).Balls[0].Skill.VolleyCharges), Is.EqualTo((3,4)));
             Assert.That((Fight("rig",2,SkillBranch.B).Balls[0].Skill.DeployCount,Fight("rig",3,SkillBranch.B).Balls[0].Skill.DeployCount), Is.EqualTo((1,2)));
         }
@@ -164,7 +164,7 @@ namespace BallBattle.SimTests
             var m=Fight("fang",3,SkillBranch.B); Satisfy(m); To(m,720);
             var fang=(FangRule)m.Balls[0].Weapon; fang.SpinDegPerTick=0; var gain=fang.SpinGain;
             fang.OnHit(new HitContext(Fix.Zero,Fix.Zero));
-            Assert.That(fang.SpinGain,Is.EqualTo(gain)); Assert.That(fang.SpinDegPerTick,Is.EqualTo(FixMath.Min(WeaponTuning.FangMaxSpin,gain*2)));
+            Assert.That(fang.SpinGain,Is.EqualTo(gain)); Assert.That(fang.SpinDegPerTick,Is.EqualTo(FixMath.Min(WeaponTuning.FangMaxSpin,gain*Fix.Ratio(23,10))));   // BB-BAL1: fury L3 2 -> 2.3
             To(m,900); fang.OnHit(new HitContext(Fix.Zero,Fix.Zero));
             Assert.That(fang.SpinGain,Is.EqualTo(gain*WeaponTuning.FangSpinGainDecay));
         }
@@ -173,7 +173,7 @@ namespace BallBattle.SimTests
         {
             var m=Fight("brawler"); To(m,600); var b=m.Balls[0]; var skill=b.Skill;
             Assert.That(b.Vel.Length,Is.EqualTo(m.Config.MaxSpeed+b.Weapon.MaxSpeedBonus));
-            Assert.That(skill.ModifyHit(4,DamageKind.Weapon),Is.EqualTo((Fix)6));
+            Assert.That(skill.ModifyHit(4,DamageKind.Weapon),Is.EqualTo((Fix)4*Fix.Ratio(27,20)));   // BB-BAL1: x1.5 -> x1.35
             skill.LandedHit(DamageKind.Weapon); Assert.That(skill.Active,Is.True);
             Assert.That(skill.ModifyHit(4,DamageKind.Weapon),Is.EqualTo((Fix)4));
         }
@@ -195,7 +195,7 @@ namespace BallBattle.SimTests
             To(m,599); var before=m.Balls[0].Hp; Park(m); m.Step();
             Assert.That(m.Balls[0].Hp-before,Is.EqualTo(Fix.One),"half of the owner's 2 damage, not half of all 3");
             m.ApplyPoison(m.Balls[1],m.Balls[0],1,120);
-            Assert.That(m.Balls[1].Status.Poison[3].TicksLeft,Is.EqualTo(240));
+            Assert.That(m.Balls[1].Status.Poison[3].TicksLeft,Is.EqualTo(300));   // BB-BAL1: 120 + 138 = 258, rounded up to whole seconds
         }
         [Test]
         public void OverclockHalvesExactlyItsNextTwoTurretIntervals()
