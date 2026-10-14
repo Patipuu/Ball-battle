@@ -55,7 +55,17 @@ namespace BallBattle.View
                 FightLocked = r.FightLocked, Over = r.Over, Won = r.Won,
                 BossIds = new List<string>(r.BossIds), ForcedBossId = r.ForcedBossId ?? "", ForcedBossFight = r.ForcedBossFight
             };
-            foreach (var o in r.OfferCards) s.OfferCards.Add(new OfferSlot { Kind = o.Kind, Id = o.Id, Level = o.Level });
+            foreach (var o in r.OfferCards)
+            {
+                var kind = o.Kind;
+                var level = o.Level;
+                if (r.SkillOverride.HasValue && kind == CardKind.SkillUp)
+                {
+                    if (r.Build.SkillLevel == 3) kind = CardKind.MaxHp;
+                    else level = r.Build.SkillLevel + 1;
+                }
+                s.OfferCards.Add(new OfferSlot { Kind = kind, Id = o.Id, Level = level });
+            }
             foreach (var h in r.History) s.History.Add(FightRecordSave.From(h));
             return s;
         }
@@ -92,6 +102,8 @@ namespace BallBattle.View
         public double MaxHp = SaveFix.ToDouble(RunTuning.PlayerStartHp);
         public double Hp = SaveFix.ToDouble(RunTuning.PlayerStartHp);
         public double Radius;
+        public int SkillLevel = 1;
+        public BallBattle.Sim.Skills.SkillBranch SkillBranch;
 
         public static RunBuildSave From(RunBuild b)
         {
@@ -99,7 +111,8 @@ namespace BallBattle.View
             {
                 WeaponId = b.WeaponId,
                 DamagePct = SaveFix.ToDouble(b.DamagePct), SpeedPct = SaveFix.ToDouble(b.SpeedPct),
-                MaxHp = SaveFix.ToDouble(b.MaxHp), Hp = SaveFix.ToDouble(b.Hp), Radius = SaveFix.ToDouble(b.Radius)
+                MaxHp = SaveFix.ToDouble(b.MaxHp), Hp = SaveFix.ToDouble(b.Hp), Radius = SaveFix.ToDouble(b.Radius),
+                SkillLevel = b.SkillLevel, SkillBranch = b.SkillBranch
             };
             foreach (var t in b.Traits) s.Traits.Add(new TraitSlot(t.Id, t.Level));
             return s;
@@ -111,7 +124,8 @@ namespace BallBattle.View
             {
                 WeaponId = WeaponId,
                 DamagePct = SaveFix.ToFix(DamagePct), SpeedPct = SaveFix.ToFix(SpeedPct),
-                MaxHp = SaveFix.ToFix(MaxHp), Hp = SaveFix.ToFix(Hp), Radius = SaveFix.ToFix(Radius)
+                MaxHp = SaveFix.ToFix(MaxHp), Hp = SaveFix.ToFix(Hp), Radius = SaveFix.ToFix(Radius),
+                SkillLevel = SkillLevel, SkillBranch = SkillBranch
             };
             if (Traits != null)
                 foreach (var t in Traits) b.Traits.Add(new TraitSlot(t.Id, t.Level));

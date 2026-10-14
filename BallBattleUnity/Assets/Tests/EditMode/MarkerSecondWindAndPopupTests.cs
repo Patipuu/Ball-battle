@@ -383,6 +383,7 @@ namespace BallBattle.Tests
                 f.Fight();
                 f.Tick(2.1f);
                 var m = lastMatch;
+                if (index < RunTuning.BossFights[0]) m.Balls[1].Hp = Fix.One; // ordinary lead-in fights only: guarantee the persistence fixture reaches the real boss
                 if (PlayCheckingSecondWind(m, $"fight {index + 1}")) fired.Add(index + 1);
                 f.OnMatchEnded(m);
                 f.Tick(2.1f);

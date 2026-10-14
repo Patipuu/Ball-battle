@@ -66,6 +66,7 @@ namespace BallBattle.Sim
 
         bool TryDeflect(ref Projectile p, int slot)
         {
+            if (p.Reflected) return false;
             foreach (var b in balls)
             {
                 if (!Active(b) || b.Index == p.Owner || !b.Weapon.HasBlade) continue;
@@ -84,6 +85,7 @@ namespace BallBattle.Sim
                 if (into < Fix.Zero) p.Vel -= normal * (into * 2);
                 p.Pos = closest + normal * reach;
                 p.Owner = b.Index;
+                p.Reflected = true;
                 p.HitMask = 0;
                 Emit(SimEventType.ProjectileDeflected, b.Index, slot, Fix.Zero, closest);
                 b.Weapon.OnDeflect(slot);
@@ -107,7 +109,7 @@ namespace BallBattle.Sim
                 var contact = b.Pos + delta.NormalizedOr(FallbackNormal) * b.Radius;
                 var damage = ComputeHitDamage(owner, b, p.Damage > Fix.Zero ? p.Damage : Fix.Zero, DamageKind.Projectile, contact, out var blocked, out var shelled);
                 b.Vel += p.Vel.NormalizedOr(FallbackNormal) * (Config.HitKnockback * Config.ProjectileKnockbackScale * (Fix.One - b.KnockbackResist));
-                Emit(SimEventType.ProjectileHit, owner.Index, b.Index, damage, contact, (byte)(shelled ? 1 : 0));
+                Emit(SimEventType.ProjectileHit, owner.Index, b.Index, damage, contact, (byte)(shelled ? 1 : 0), p.Reflected);
                 if (shelled)
                 {
                     // BB-04 Shell King: 0 damage, no hooks; the shot is still spent on this ball.
@@ -119,7 +121,7 @@ namespace BallBattle.Sim
                 else
                 {
                     ApplyHitHp(owner, b, damage);
-                    RunHitHooks(owner, b, damage, DamageKind.Projectile);
+                    if (!p.Reflected) RunHitHooks(owner, b, damage, DamageKind.Projectile);
                 }
 
                 p.HitMask |= 1 << b.Index;

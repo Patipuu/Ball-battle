@@ -23,6 +23,9 @@ namespace BallBattle.Sim
 
         public static string Line(MatchSim sim) => sim.Tick.ToString(CultureInfo.InvariantCulture) + " " + Hash(sim).ToString("X16", CultureInfo.InvariantCulture);
 
+        public static string SkillLine(SimEvent e) =>
+            $"{e.Type} ball={e.A} skill={e.SkillId} level={e.SkillLevel} branch={e.SkillBranch} ActiveTick={e.ActiveTick} Tick={e.Tick}";
+
         /// <summary>Q16.16 raw bits as hex.</summary>
         public static string Bits(Fix value) => "0x" + unchecked((uint)value.Raw).ToString("X8", CultureInfo.InvariantCulture);
 

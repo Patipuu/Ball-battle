@@ -32,6 +32,8 @@ namespace BallBattle.Sim.Run
         public Fix Radius;
         /// <summary>BB-04: boss mechanic of a generated boss (Boss.BossIds); null for the player and normal enemies.</summary>
         public string BossId;
+        public int SkillLevel = 1;
+        public Skills.SkillBranch SkillBranch;
 
         /// <summary>HP is kept in whole points (what the screen shows), never below 1 while alive.</summary>
         public void SetHp(Fix hp) => Hp = FixMath.Max(Fix.One, FixMath.Min(MaxHp, FixMath.RoundToEven(hp)));
@@ -53,7 +55,9 @@ namespace BallBattle.Sim.Run
                 Bonus = new StatBonus { DamagePct = DamagePct, SpeedPct = SpeedPct },
                 MaxHp = MaxHp,
                 Hp = Hp,
-                Radius = Radius
+                Radius = Radius,
+                SkillLevel = SkillLevel,
+                SkillBranch = SkillBranch
             };
             foreach (var t in Traits) l.Traits.Add(TraitRegistry.Create(t.Id, t.Level));
             if (!string.IsNullOrEmpty(BossId)) l.Boss = Boss.BossRegistry.Create(BossId);

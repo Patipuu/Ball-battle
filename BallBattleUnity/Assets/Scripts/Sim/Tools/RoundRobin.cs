@@ -40,6 +40,8 @@ namespace BallBattle.Sim.Tools
             public string Arena, WeaponA, WeaponB;
             public int Matches, WinsA, WinsB, Draws, MaxTicks, MaxActiveTicks;
             public long TotalTicks, TotalActiveTicks;
+            public int TimeCaps;
+            public long SkillFiresA, SkillFiresB;
             /// <summary>Median × 2 (an integer even when the count is even).</summary>
             public long MedianTicks2, MedianActiveTicks2;
             /// <summary>ActiveTick of every match, sorted (per-weapon medians are taken over these).</summary>
@@ -130,9 +132,16 @@ namespace BallBattle.Sim.Tools
         /// <summary>Same match as <see cref="Play"/>, also returning MatchSim.ActiveTick at the end (read only, after the last step).</summary>
         public static (int winner, int ticks, int activeTicks) PlayDetailed(string arena, string weaponA, string weaponB, uint seed, int maxTicks)
         {
+            var stats = PlayStats(arena, weaponA, weaponB, seed, maxTicks);
+            return (stats.winner, stats.ticks, stats.activeTicks);
+        }
+
+        static (int winner, int ticks, int activeTicks, int skillA, int skillB, bool cap) PlayStats(string arena, string weaponA, string weaponB, uint seed, int maxTicks)
+        {
             var m = new MatchSim(ArenaRegistry.Create(arena), seed, new[] { WeaponRegistry.Create(weaponA), WeaponRegistry.Create(weaponB) });
             while (m.Outcome == MatchOutcome.Ongoing && (maxTicks <= 0 || m.Tick < maxTicks)) m.Step();
-            return (m.Outcome == MatchOutcome.Ongoing ? -1 : m.WinnerIndex, m.Tick, m.ActiveTick);
+            return (m.Outcome == MatchOutcome.Ongoing ? -1 : m.WinnerIndex, m.Tick, m.ActiveTick,
+                m.Balls[0].Skill?.FireCount ?? 0, m.Balls[1].Skill?.FireCount ?? 0, m.EndReason == MatchEndReason.TimeCap);
         }
 
         /// <summary>Median × 2 of a sorted array (0 when empty).</summary>
@@ -164,7 +173,8 @@ namespace BallBattle.Sim.Tools
                 var active = new int[o.Seeds];
                 for (var i = 0; i < o.Seeds; i++)
                 {
-                    var (winner, t, at) = PlayDetailed(p.Arena, p.WeaponA, p.WeaponB, Seed(p.WeaponA, p.WeaponB, i + o.SeedOffset), o.MaxTicks);
+                    var (winner, t, at, skillA, skillB, cap) = PlayStats(p.Arena, p.WeaponA, p.WeaponB, Seed(p.WeaponA, p.WeaponB, i + o.SeedOffset), o.MaxTicks);
+                    p.SkillFiresA += skillA; p.SkillFiresB += skillB; if (cap) p.TimeCaps++;
                     if (winner == 0) p.WinsA++;
                     else if (winner == 1) p.WinsB++;
                     else p.Draws++;

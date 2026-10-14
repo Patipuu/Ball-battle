@@ -6,6 +6,7 @@ namespace BallBattle.Sim.Weapons
         public const string WeaponId = "pike";
 
         public Fix CurrentDamage { get; private set; } = WeaponTuning.PikeStartDamage;
+        Fix baseLength = WeaponTuning.PikeStartLength;
 
         public PikeRule()
         {
@@ -23,10 +24,13 @@ namespace BallBattle.Sim.Weapons
         public override void OnHit(in HitContext ctx)
         {
             CurrentDamage += WeaponTuning.PikeGrowthPerHit;
-            BladeLength += WeaponTuning.PikeGrowthPerHit;
-            if (BladeLength > WeaponTuning.PikeMaxLength) BladeLength = WeaponTuning.PikeMaxLength;
+            baseLength = FixMath.Min(WeaponTuning.PikeMaxLength, baseLength + WeaponTuning.PikeGrowthPerHit);
+            RefreshLength();
         }
 
-        protected override ulong HashState(ulong h) => SimHash.Mix(h, CurrentDamage);
+        internal void RefreshLength() => BladeLength = FixMath.Min(WeaponTuning.PikeMaxLength,
+            baseLength * (Fix.One + (Self?.Skill != null && Self.Skill.Active ? Self.Skill.LengthBonus : Fix.Zero)));
+
+        protected override ulong HashState(ulong h) => SimHash.Mix(SimHash.Mix(h, CurrentDamage), baseLength);
     }
 }

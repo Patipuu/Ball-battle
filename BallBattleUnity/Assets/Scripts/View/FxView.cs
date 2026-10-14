@@ -205,6 +205,10 @@ namespace BallBattle.View
             pendingTick.Add(e);
             switch (e.Type)
             {
+                case SimEventType.SkillFired:
+                    arena.GetBallView(e.A)?.Flash(FlashSeconds);
+                    popups.ShowText(V(e.Point), arena.Sim.Balls[e.A].Skill.Definition.Name, Palette.Text, arena.Sim.Arena);
+                    break;
                 case SimEventType.Hit:
                 {
                     if (e.Variant == 1)

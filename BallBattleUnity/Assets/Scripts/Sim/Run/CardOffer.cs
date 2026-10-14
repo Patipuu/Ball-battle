@@ -24,7 +24,7 @@ namespace BallBattle.Sim.Run
         }
 
         public static Card[] Generate(uint runSeed, int fightIndex, int reroll, RunBuild build,
-            IReadOnlyList<string> weapons, IReadOnlyList<string> traits)
+            IReadOnlyList<string> weapons, IReadOnlyList<string> traits, int? skillLevelOverride = null)
         {
             var cards = new List<Card>();
             var weights = new List<Fix>();
@@ -43,10 +43,8 @@ namespace BallBattle.Sim.Run
             Add(new Card(CardKind.DamageUp), StatWeight);
             Add(new Card(CardKind.SpeedUp), StatWeight);
 
-            var swaps = new List<string>();
-            foreach (var w in weapons)
-                if (w != build.WeaponId && KeepsAllTraits(build, w)) swaps.Add(w);
-            foreach (var w in swaps) Add(new Card(CardKind.SwapWeapon, w), SwapWeightTotal / swaps.Count);
+            var skillLevel = skillLevelOverride ?? build.SkillLevel;
+            if (skillLevel < 3) Add(new Card(CardKind.SkillUp, build.WeaponId, skillLevel + 1), SwapWeightTotal);
 
             if (build.Hurt) Add(new Card(CardKind.Heal), build.Hp < FixMath.MulDiv(build.MaxHp, 6, 10) ? 3 : 1);
             Add(new Card(CardKind.MaxHp), MaxHpWeight);

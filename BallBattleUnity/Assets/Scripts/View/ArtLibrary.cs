@@ -117,6 +117,7 @@ namespace BallBattle.View
                 case BallBattle.Sim.Run.CardKind.MaxHp: return CardMaxHp;
                 case BallBattle.Sim.Run.CardKind.Heal: return CardHeal;
                 case BallBattle.Sim.Run.CardKind.SwapWeapon: return CardSwap;
+                case BallBattle.Sim.Run.CardKind.SkillUp: return CardSwap; // placeholder upgrade icon, no new asset required
                 default: return null;
             }
         }

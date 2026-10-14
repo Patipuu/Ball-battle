@@ -30,6 +30,8 @@ namespace BallBattle.Sim
         public Fix Radius = -1;
         /// <summary>BB-04 boss mechanic (Run boss fights only); null = none. Single-use like weapons and traits.</summary>
         public Boss.BossRule Boss;
+        public int SkillLevel = 1;
+        public Skills.SkillBranch SkillBranch;
 
         public BallLoadout(WeaponRule weapon) => Weapon = weapon;
 

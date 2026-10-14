@@ -128,9 +128,10 @@ namespace BallBattle.Sim
             Emit(SimEventType.MatchEnd, winner, -1, Fix.Zero, FixVec2.Zero);
         }
 
-        void Emit(SimEventType type, int a, int b, Fix value, FixVec2 point, byte variant = 0)
+        void Emit(SimEventType type, int a, int b, Fix value, FixVec2 point, byte variant = 0, bool reflected = false)
         {
-            Events.Add(new SimEvent { Type = type, Tick = Tick, A = a, B = b, Value = value, Point = point, Variant = variant });
+            Events.Add(new SimEvent { Type = type, Tick = Tick, ActiveTick = ActiveTick, A = a, B = b, Value = value, Point = point, Variant = variant,
+                Reflected = reflected || type == SimEventType.Damage && variant == (byte)DamageKind.Reflect });
         }
 
         public void TriggerTrait(string traitId, BallState ball, Fix value)

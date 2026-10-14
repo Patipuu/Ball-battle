@@ -18,6 +18,8 @@ namespace BallBattle.View
         sealed class Side
         {
             public PixelText Name, Hp, Stat;
+            public PixelText Skill;
+            public SpriteRenderer SkillBack, SkillFill;
             /// <summary>Player marker arrow before "YOU" (Run mode); hidden otherwise.</summary>
             public SpriteRenderer Arrow;
             public Vector3 NameHome;
@@ -66,13 +68,20 @@ namespace BallBattle.View
             float y(float fromArenaEdge) => top ? 115f + fromArenaEdge : -115f - fromArenaEdge - 10f;
             const float left = -BarWidth / 2f;
             const float right = BarWidth / 2f;
-            var nameY = top ? y(78) : y(66);
-            var barY = top ? y(62) : y(80);
-            var statY = top ? y(48) : y(94);
+            var nameY = top ? y(78) : -168f;
+            var barY = top ? y(62) : -186f;
+            var statY = top ? y(48) : -204f;
 
             s.Name = PixelText.Create(transform, top ? "NameTop" : "NameBottom", art.Font, new Vector2(left, nameY), PixelText.Align.Left, 2, Order);
             s.Hp = PixelText.Create(transform, top ? "HpTop" : "HpBottom", art.Font, new Vector2(right, nameY), PixelText.Align.Right, 2, Order);
             s.Stat = PixelText.Create(transform, top ? "StatTop" : "StatBottom", art.Font, new Vector2(left, statY), PixelText.Align.Left, 1, Order);
+            s.Skill = PixelText.Create(transform, top ? "SkillTop" : "SkillBottom", art.Font, new Vector2(left, statY - 13), PixelText.Align.Left, 1, Order);
+            s.SkillBack = Bar(art.Pixel, Palette.Wall, Order, left, statY - 16, BarWidth);
+            s.SkillFill = Bar(art.Pixel, Palette.TextDim, Order + 1, left, statY - 16, BarWidth);
+            s.SkillBack.transform.localScale = new Vector3(BarWidth, 1, 1);
+            s.SkillFill.transform.localScale = new Vector3(BarWidth, 1, 1);
+            s.SkillBack.transform.localPosition = new Vector3(0, statY - 15.5f, 0);
+            s.SkillFill.transform.localPosition = new Vector3(0, statY - 15.5f, 0);
             s.NameHome = s.Name.transform.localPosition;
             var arrow = new GameObject(top ? "YouArrowTop" : "YouArrowBottom");
             arrow.transform.SetParent(transform, false);
@@ -149,6 +158,13 @@ namespace BallBattle.View
                 }
 
                 var w = ball.Weapon;
+                var skill = ball.Skill;
+                s.Skill.Set(skill == null ? "" : SkillText.Line(w.Id, skill.Level, skill.Branch), Palette.TextDim);
+                s.SkillBack.enabled = skill != null;
+                var cooldownWidth = skill == null ? 0 : Mathf.Round(BarWidth * skill.ReadyFraction.ToFloat());
+                s.SkillFill.enabled = skill != null && cooldownWidth > 0;
+                s.SkillFill.transform.localScale = new Vector3(cooldownWidth, 1, 1);
+                s.SkillFill.transform.localPosition = new Vector3(left + cooldownWidth / 2, s.SkillBack.transform.localPosition.y, 0);
                 if (!w.StatValue.Equals(s.ShownStat))
                 {
                     s.ShownStat = w.StatValue.ToFloat();

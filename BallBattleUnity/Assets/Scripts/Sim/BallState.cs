@@ -5,6 +5,7 @@ namespace BallBattle.Sim
     {
         public readonly int Index;
         public readonly WeaponRule Weapon;
+        public Skills.SkillState Skill { get; internal set; }
         /// <summary>Passive traits, hooks called in array order. Empty for a plain Versus ball.</summary>
         public readonly TraitRule[] Traits;
         public readonly StatusEffects Status = new StatusEffects();
@@ -68,6 +69,8 @@ namespace BallBattle.Sim
             h = SimHash.Mix(h, KnockbackResist);
             h = Status.HashInto(h);
             for (var i = 0; i < Traits.Length; i++) h = Traits[i].HashInto(h);
+            h = SimHash.Mix(h, Skill != null);
+            if (Skill != null) h = Skill.HashInto(h);
             return Weapon.HashInto(h);
         }
     }

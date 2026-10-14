@@ -38,6 +38,8 @@ namespace BallBattle.View
             forceBoss = null;
             forceArenaParsed = false;
             forceArena = null;
+            forceSkillParsed = false;
+            forceSkill = null;
         }
 
         /// <summary>Trait id forced into the first offer, or null (normal play).</summary>
@@ -135,6 +137,33 @@ namespace BallBattle.View
         /// Versus ignores it. Unknown id: one warning, ignored. Case, dashes, underscores and spaces are ignored ("Low_Gravity").
         /// </summary>
         public const string ForceArenaArg = "-bbForceArena";
+
+        public const string ForceSkillArg = "-bbForceSkill";
+        static bool forceSkillParsed;
+        static BallBattle.Sim.Skills.SkillSpec? forceSkill;
+        public static BallBattle.Sim.Skills.SkillSpec? ForceSkill
+        {
+            get
+            {
+                if (!forceSkillParsed) { forceSkillParsed = true; forceSkill = ParseForceSkill(Environment.GetCommandLineArgs()); }
+                return forceSkill;
+            }
+        }
+        public static BallBattle.Sim.Skills.SkillSpec? ParseForceSkill(string[] args)
+        {
+            if (args == null) return null;
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!string.Equals(args[i], ForceSkillArg, StringComparison.OrdinalIgnoreCase)) continue;
+                var key = i + 1 < args.Length ? args[i + 1].ToLowerInvariant() : "";
+                if (key == "1") return new BallBattle.Sim.Skills.SkillSpec(1);
+                if (key == "2a" || key == "2b" || key == "3a" || key == "3b")
+                    return new BallBattle.Sim.Skills.SkillSpec(key[0] - '0', key[1] == 'a' ? BallBattle.Sim.Skills.SkillBranch.A : BallBattle.Sim.Skills.SkillBranch.B);
+                Debug.LogWarning("[BallBattle] -bbForceSkill: expected 1, 2a, 2b, 3a or 3b; ignored");
+                return null;
+            }
+            return null;
+        }
 
         static bool forceArenaParsed;
         static string forceArena;

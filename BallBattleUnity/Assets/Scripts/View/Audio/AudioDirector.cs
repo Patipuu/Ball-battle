@@ -184,6 +184,10 @@ namespace BallBattle.View
                 case SimEventType.Boss:
                     RequestBossCue(e, sim);
                     break;
+                case SimEventType.SkillFired:
+                    var skillCue = "skill_" + e.SkillId;
+                    if (Has(skillCue)) RequestCue(skillCue, e.Tick, 0.8f, 1f);
+                    break;
                 case SimEventType.Parry:
                     RequestCue(AudioIds.Parry, e.Tick, 0.6f);
                     break;

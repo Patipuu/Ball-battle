@@ -111,7 +111,11 @@ namespace BallBattle.Sim.Run
             return choices;
         }
 
-        public static RunState Start(uint seed, string weaponId, ProgressData progress)
+        [NonSerialized] public Skills.SkillSpec? SkillOverride;
+        public int EffectiveSkillLevel => SkillOverride?.Level ?? Build.SkillLevel;
+        public Skills.SkillBranch EffectiveSkillBranch => SkillOverride?.Branch ?? Build.SkillBranch;
+
+        public static RunState Start(uint seed, string weaponId, ProgressData progress, Skills.SkillSpec? forceSkill = null)
         {
             var weapons = UnlockRules.Weapons(progress);
             if (!StartChoices(seed, weapons).Contains(weaponId))
@@ -121,6 +125,7 @@ namespace BallBattle.Sim.Run
             foreach (var w in WeaponRegistry.All) run.EnemyWeapons.Add(w.Id);
             foreach (var t in TraitRegistry.All) run.EnemyTraits.Add(t.Id);
             run.Build.WeaponId = weaponId;
+            run.SkillOverride = forceSkill;
             run.StartPickPending = true;
             run.DealOffer();
             return run;
@@ -138,6 +143,8 @@ namespace BallBattle.Sim.Run
                 if (e.BossId == Boss.BossIds.Mimic)
                 {
                     e.WeaponId = Build.WeaponId;
+                    e.SkillLevel = EffectiveSkillLevel;
+                    e.SkillBranch = EffectiveSkillBranch;
                     e.Traits = new List<TraitSlot>();
                     foreach (var t in Build.Traits) e.Traits.Add(new TraitSlot(t.Id, t.Level));
                 }
@@ -146,7 +153,13 @@ namespace BallBattle.Sim.Run
         }
 
         public int OfferCount => OfferCards.Count;
-        public Card OfferCard(int index) => OfferCards[index].ToCard();
+        public Card OfferCard(int index)
+        {
+            var card = OfferCards[index].ToCard();
+            if (SkillOverride.HasValue && card.Kind == CardKind.SkillUp)
+                return EffectiveSkillLevel < 3 ? new Card(CardKind.SkillUp, Build.WeaponId, EffectiveSkillLevel + 1) : new Card(CardKind.MaxHp);
+            return card;
+        }
         public bool IsPicked(int index) => (PickedMask & (1 << index)) != 0;
 
         void DealOffer()
@@ -155,7 +168,7 @@ namespace BallBattle.Sim.Run
             if (Over) return;
             var offerSeed = IsRetry && StartPickPending ? RunTuning.Derive(Seed, 4001 + FightIndex, 0)
                 : StartPickPending ? RunTuning.Derive(Seed, 4000, 0) : Seed;
-            foreach (var c in CardOffer.Generate(offerSeed, FightIndex, RerollCount, Build, Weapons, Traits))
+            foreach (var c in CardOffer.Generate(offerSeed, FightIndex, RerollCount, Build, Weapons, Traits, EffectiveSkillLevel))
                 OfferCards.Add(OfferSlot.From(c));
         }
 
@@ -168,6 +181,7 @@ namespace BallBattle.Sim.Run
                     var level = Build.TraitLevel(c.Id);
                     return c.Level == 1 ? level == 0 && Build.Traits.Count < RunTuning.MaxTraits : level == c.Level - 1;
                 case CardKind.SwapWeapon: return c.Id != Build.WeaponId;
+                case CardKind.SkillUp: return EffectiveSkillLevel < 3 && c.Level == EffectiveSkillLevel + 1;
                 case CardKind.Heal: return Build.Hurt;
                 default: return true;
             }
@@ -193,14 +207,17 @@ namespace BallBattle.Sim.Run
             DealOffer();
         }
 
-        public void Pick(int index)
+        public void Pick(int index, Skills.SkillBranch branch = Skills.SkillBranch.A)
         {
             if (!CanPick(index)) throw new InvalidOperationException($"Cannot pick card {index} now");
             var card = OfferCard(index);
+            if (card.Kind == CardKind.SkillUp && SkillOverride.HasValue && EffectiveSkillLevel > 1) branch = EffectiveSkillBranch;
             Coins -= NextPickCost;
             PicksTaken++;
             PickedMask |= 1 << index;
-            card.ApplyTo(Build);
+            card.ApplyTo(Build, branch);
+            if (card.Kind == CardKind.SkillUp && SkillOverride.HasValue)
+                SkillOverride = new Skills.SkillSpec(EffectiveSkillLevel + 1, EffectiveSkillLevel == 1 ? branch : EffectiveSkillBranch);
             if (StartPickPending)
             {
                 StartPickPending = false;
@@ -220,10 +237,18 @@ namespace BallBattle.Sim.Run
         /// Fresh match for the current fight (ball 0 = player, ball 1 = enemy) with spawn hooks applied, so the
         /// countdown already shows final sizes and HP. Locking the run is RunFlow's job (it also saves).
         /// </summary>
-        public MatchSim CreateMatch(MatchConfig config = null)
+        public MatchSim CreateMatch(MatchConfig config = null, Skills.SkillSpec? forceSkill = null)
         {
             if (Over) throw new InvalidOperationException("Run is over");
-            var m = new MatchSim(config ?? ArenaRegistry.Create(ArenaId), FightSeed, new[] { Build.ToLoadout(), Enemy.ToLoadout() });
+            var player = Build.ToLoadout();
+            var enemy = Enemy.ToLoadout();
+            forceSkill = SkillOverride ?? forceSkill;
+            if (forceSkill.HasValue)
+            {
+                player.SkillLevel = forceSkill.Value.Level; player.SkillBranch = forceSkill.Value.Branch;
+                if (enemy.Boss is Boss.MimicRule) { enemy.SkillLevel = player.SkillLevel; enemy.SkillBranch = player.SkillBranch; }
+            }
+            var m = new MatchSim(config ?? ArenaRegistry.Create(ArenaId), FightSeed, new[] { player, enemy });
             m.ApplySpawnHooks();
             return m;
         }

@@ -19,19 +19,19 @@ namespace BallBattle.SimTests
         // masked (hashed as 0): a later Rules-only bump must leave it unchanged. Old -> new values in docs/claude-runs/bb6d.md.
         static readonly ulong[] ExpectedBySeedMasked =
         {
-            0x7B733571A0A174EEUL, 0x8FEB52249BE8F4D7UL, 0x6C9C855BBB4930ACUL, 0x3A70B07E6E96604DUL, 0xD37BB5B3F9635AFEUL,
-            0x5108F3C2E47C5E80UL, 0xAA1B4E8FD0E5FBC5UL, 0x7C1B4642762C87B6UL, 0xA1A965D13107BD66UL, 0xB49F52E4B2D46E90UL,
-            0xF999F35EB17B7562UL, 0x33F4FBFECA4880CDUL, 0xAC19B1C7283763FBUL, 0xB4695EB2CC9B5E2CUL, 0x0DFDF4F2BD59D071UL,
-            0x6432E20EDAF4154AUL, 0x4A7C9B8824CD71DFUL, 0xD6CC8BD303003FA0UL, 0x9EF5905DDD58FA58UL, 0xCE4F568AA841F200UL
+            0xB08A3E8532EB75EBUL, 0x821A3EB95657CB56UL, 0xF7AD8BBCF8DC1960UL, 0xF254144217407D67UL, 0xFE274C2FF70CE0A3UL,
+            0xCF97B7BEEB54EEEDUL, 0xEBDAE17F7A61BFE5UL, 0x870C0CCBDD1F660BUL, 0xC4575675F591A221UL, 0x49F51F9BD9383AD0UL,
+            0x1C0EB81F63004706UL, 0x1DCD11D667DE8704UL, 0x7316918634282CF4UL, 0x16A268215B6317E6UL, 0x0FE14F5F692918ECUL,
+            0x438D84AC34BDA54EUL, 0xDB301CB2B1D7B3E0UL, 0xE8701EAC69CD65B0UL, 0x49B44B94068D6E98UL, 0x11977DC067D5C643UL
         };
 
         /// <summary>Rules 9 (BB-6d, re-pinned at the end of BB-6e).</summary>
         static readonly ulong[] ExpectedBySeed =
         {
-            0x2263C40910E58196UL, 0xF6D1E46153E04287UL, 0x69B4CFC5F081DECCUL, 0xEAAEF9D3BD339DCDUL, 0x75C116BBE433083EUL,
-            0x8ED498C2C17FC614UL, 0x4B2CEAB22AC45D35UL, 0x920286B10A5E0F66UL, 0xB95397FCA404E5DEUL, 0xD2608EADD4AB3484UL,
-            0x42DDA87E536FFEAAUL, 0xAFE354FF7B4D0EB9UL, 0xD47C7955621DE5ABUL, 0x39B4612A127592D0UL, 0xBD82BB1811202DF9UL,
-            0x3A67ECC40F96C9B6UL, 0xF81CEB9F71FF77FBUL, 0x8C96F8F64DA63264UL, 0x529D4DA548C5C994UL, 0xEB69BE3F546F6144UL
+            0xA518CFAAA4AB71F3UL, 0x42F710633954DDB2UL, 0x6DD0388483739098UL, 0xC47CD7871E3A034BUL, 0xA54A12BA320B4423UL,
+            0xDAACBEE377CB13F5UL, 0x56CEDF75327ED721UL, 0x02D1A8069B1D1F13UL, 0x0D5DD14F35474681UL, 0xC86D38B3110E1258UL,
+            0x3EC79E31F463CFB6UL, 0x7391C407F5397C70UL, 0x5FC45BC93A2CB930UL, 0x9D59061858545702UL, 0xD71809752C5A9AC8UL,
+            0x5A24210AA10C94FEUL, 0xC3F8837D6FD98C6CUL, 0x26B44DD5BEFFDD50UL, 0x99DE2F84C29503C4UL, 0x0430C2F848D877D3UL
         };
 
         static ulong[] Digests(System.Func<MatchSim, ulong> hash, string label)
@@ -62,16 +62,16 @@ namespace BallBattle.SimTests
         /// prove its Rules bump changed no Versus result; keep it for the next Rules-only bump (only ExpectedBySeed may change then).
         /// </summary>
         [Test]
-        public void VersusGoldensWithTheRulesFieldMaskedAreUnchanged()
+        public void MaskedMatchHashesMatchTheSignatureSkillGolden()
         {
-            Assert.That(SimVersion.Rules, Is.EqualTo(9));
+            Assert.That(SimVersion.Rules, Is.EqualTo(10));
             Assert.That(Digests(m => m.ComputeHash(0), "masked"), Is.EqualTo(ExpectedBySeedMasked));
         }
 
         [Test]
         public void FixedMatchHashesMatchAcrossPlatforms()
         {
-            var actual = Digests(m => m.ComputeHash(), "rules9");
+            var actual = Digests(m => m.ComputeHash(), "rules10");
             Assert.That(actual, Is.EqualTo(ExpectedBySeed));
         }
 

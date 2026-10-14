@@ -28,7 +28,7 @@ namespace BallBattle.Sim
                 blocked = true;
                 return Fix.Zero;
             }
-            var d = baseDamage * (Fix.One + attacker.Bonus.DamagePct);
+            var d = (attacker.Skill?.ModifyHit(baseDamage, kind) ?? baseDamage) * (Fix.One + attacker.Bonus.DamagePct);
             foreach (var t in attacker.Traits) d = t.ModifyOutgoingDamage(target, d, kind);
             blocked = d > Fix.Zero && target.Status.TryConsumeShield();
             if (blocked) return Fix.Zero;
@@ -45,6 +45,7 @@ namespace BallBattle.Sim
 
         static void RunHitHooks(BallState attacker, BallState target, Fix damage, DamageKind kind)
         {
+            attacker.Skill?.LandedHit(kind);
             attacker.Weapon.OnHitDealt(target, damage, kind);
             foreach (var t in attacker.Traits) t.OnHitDealt(target, damage, kind);
             target.Weapon.OnHitTaken(attacker, damage, kind);
@@ -92,6 +93,7 @@ namespace BallBattle.Sim
         {
             if (!Ongoing || !Active(target) || dps <= Fix.Zero || ticks <= 0) return;
             var src = source != null ? source.Index : -1;
+            if (source?.Skill != null && source.Skill.Active && source.Weapon is Weapons.VenomRule) ticks += source.Skill.PoisonExtraTicks;
             target.Status.AddPoison(dps, WholeSeconds(ticks), src);
             Emit(SimEventType.StatusApplied, target.Index, src, dps, target.Pos, (byte)StatusKind.Poison);
         }
@@ -120,6 +122,8 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Once per active tick: advance status timers, apply poison pulses, then regen pulses.</summary>
+        Fix[] poisonSourceDamage;
+
         void TickStatusEffects()
         {
             if (!Ongoing) return;
@@ -127,12 +131,22 @@ namespace BallBattle.Sim
             {
                 if (!b.Alive) continue;
                 var s = b.Status;
-                var poison = s.TickPoison(out var mainSource);
+                if (poisonSourceDamage == null) poisonSourceDamage = new Fix[balls.Length];
+                for (var i = 0; i < poisonSourceDamage.Length; i++) poisonSourceDamage[i] = Fix.Zero;
+                var poison = s.TickPoison(out var mainSource, poisonSourceDamage);
                 if (poison > Fix.Zero)
                 {
                     var source = mainSource >= 0 ? balls[mainSource] : null;
                     var dealt = DealDamage(source, b, poison, DamageKind.Status, false);
                     if (dealt > Fix.Zero) Emit(SimEventType.StatusTick, b.Index, mainSource, dealt, b.Pos, (byte)StatusKind.Poison);
+                    if (dealt > Fix.Zero)
+                        for (var i = 0; i < balls.Length; i++)
+                        {
+                            var owner = balls[i];
+                            if (poisonSourceDamage[i] <= Fix.Zero || owner.Skill == null || !owner.Skill.Active || !(owner.Weapon is Weapons.VenomRule)) continue;
+                            var share = FixMath.MulDiv(dealt, poisonSourceDamage[i].Raw, poison.Raw);
+                            Heal(owner, share * owner.Skill.DrainFraction);
+                        }
                 }
 
                 var regen = s.TickRegen();

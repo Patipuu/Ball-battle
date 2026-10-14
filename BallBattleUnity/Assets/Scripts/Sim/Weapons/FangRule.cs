@@ -28,9 +28,9 @@ namespace BallBattle.Sim.Weapons
         public override void OnHit(in HitContext ctx)
         {
             CurrentDamage += WeaponTuning.FangDamagePerHit;
-            SpinDegPerTick += SpinGain;
+            SpinDegPerTick += SpinGain * (Self?.Skill != null && Self.Skill.Active ? Self.Skill.SpinGainMultiplier : Fix.One);
             if (SpinDegPerTick > WeaponTuning.FangMaxSpin) SpinDegPerTick = WeaponTuning.FangMaxSpin;
-            SpinGain *= WeaponTuning.FangSpinGainDecay;
+            if (Self?.Skill == null || !Self.Skill.Active) SpinGain *= WeaponTuning.FangSpinGainDecay;
         }
 
         protected override ulong HashState(ulong h) => SimHash.Mix(SimHash.Mix(h, SpinGain), CurrentDamage);

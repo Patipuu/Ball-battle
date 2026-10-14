@@ -9,8 +9,8 @@ namespace BallBattle.View
     [Serializable]
     public sealed class SaveData
     {
-        /// <summary>3 = BB-04 (boss slots and forced boss in the run, last boss + Boss Codex in progress). Older saves: SaveMigration.</summary>
-        public const int CurrentVersion = 3;
+        /// <summary>4 = BB-10a signature skill level and branch. Older saves: SaveMigration.</summary>
+        public const int CurrentVersion = 4;
         public int Version = CurrentVersion;
         public ProgressData Progress = new ProgressData();
         public bool HasRun;
@@ -24,7 +24,8 @@ namespace BallBattle.View
     }
 
     /// <summary>
-    /// Upgrades an older save in place (both stores call it on Load). v1 → v2 and v2 → v3 (BB-04 bosses, Rules 8) follow the same
+    /// Upgrades an older save in place (both stores call it on Load). v3 → v4 preserves the run and history, starts skills at level 1,
+    /// and converts unpicked Swap offers to SKILL UP. v1 → v2 and v2 → v3 (BB-04 bosses, Rules 8) follow the same
     /// rule: the run in progress cannot be converted (the sim changed under it), so it is dropped; as compensation it counts as having reached its current fight (BestFight), it is NOT
     /// counted as played/won/lost, and oldRunNotice is set so the player is told once. Achievements, unlocks and every other
     /// record stay as they were (unlocks come from achievements; the next goal is recomputed from progress on demand). BB-04 fields
@@ -35,6 +36,22 @@ namespace BallBattle.View
         public static SaveData Upgrade(SaveData data)
         {
             if (data == null || data.Version >= SaveData.CurrentVersion) return data;
+            if (data.Version == 3)
+            {
+                if (data.Run?.Build != null)
+                {
+                    data.Run.Build.SkillLevel = 1;
+                    data.Run.Build.SkillBranch = BallBattle.Sim.Skills.SkillBranch.None;
+                    for (var i = 0; i < data.Run.OfferCards.Count; i++)
+                    {
+                        var card = data.Run.OfferCards[i];
+                        if (card.Kind != CardKind.SwapWeapon || (data.Run.PickedMask & (1 << i)) != 0) continue;
+                        card.Kind = CardKind.SkillUp; card.Id = data.Run.Build.WeaponId; card.Level = 2;
+                    }
+                }
+                data.Version = SaveData.CurrentVersion;
+                return data; // v3 history, held weapon, picked legacy offers and progress are preserved
+            }
             if (data.Progress == null) data.Progress = new ProgressData();
             if (data.HasRun && data.Run != null)
             {
@@ -86,7 +103,7 @@ namespace BallBattle.View
             {
                 var data = JsonUtility.FromJson<SaveData>(File.ReadAllText(Path));
                 if (data == null || data.Version > SaveData.CurrentVersion) return Reset("unknown version");
-                SaveMigration.Upgrade(data);   // older save: keep progress, drop the run (with compensation + notice)
+                SaveMigration.Upgrade(data);   // v3 keeps the run; incompatible v1/v2 keep progress with compensation + notice
                 if (data.Progress == null) data.Progress = new ProgressData();
                 return data;
             }

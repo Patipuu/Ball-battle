@@ -8,6 +8,14 @@ namespace BallBattle.SimTests
     /// <summary>Headless run players for difficulty measurement (Phase 2 now, tuned in Phase 7).</summary>
     static class RunBot
     {
+        [System.ThreadStatic] public static Action<RunState, Card, BallBattle.Sim.Skills.SkillBranch> PickObserved;
+
+        static void Take(RunState run, int index, BallBattle.Sim.Skills.SkillBranch branch)
+        {
+            var card = run.OfferCard(index);
+            PickObserved?.Invoke(run, card, branch);
+            run.Pick(index, branch);
+        }
         public enum Policy { Random, Greedy }
 
         public readonly struct Result
@@ -57,14 +65,20 @@ namespace BallBattle.SimTests
         static void PickRandom(RunState run, SimRandom rng)
         {
             var options = Enumerable.Range(0, run.OfferCount).Where(run.CanPick).ToArray();
-            if (options.Length > 0) run.Pick(options[(int)(rng.NextUInt() % (uint)options.Length)]);
+            if (options.Length > 0)
+            {
+                var index = options[(int)(rng.NextUInt() % (uint)options.Length)];
+                var branch = run.OfferCard(index).Kind == CardKind.SkillUp && run.Build.SkillLevel == 1 && rng.NextBool() ?
+                    BallBattle.Sim.Skills.SkillBranch.B : BallBattle.Sim.Skills.SkillBranch.A;
+                Take(run, index, branch);
+            }
         }
 
         internal static void PickGreedyStart(RunState run)
         {
             var best = Best(run);
             if (best < 0) best = Enumerable.Range(0, run.OfferCount).Where(run.CanPick).DefaultIfEmpty(-1).First();
-            if (best >= 0) run.Pick(best);
+            if (best >= 0) Take(run, best, BallBattle.Sim.Skills.SkillChoice.Choose(run.Build));
         }
 
         /// <summary>Heal when low, else upgrade/add traits, else damage, else max HP; rerolls bad hands, buys a second card when rich.</summary>
@@ -77,7 +91,7 @@ namespace BallBattle.SimTests
                 if (best < 0) best = Enumerable.Range(0, run.OfferCount).Where(run.CanPick).DefaultIfEmpty(-1).First();
                 if (best < 0 || !run.CanPick(best)) return;
                 if (pick > 0 && run.Coins < RunTuning.ExtraPickCost + run.NextRerollCost) return;
-                run.Pick(best);
+                Take(run, best, BallBattle.Sim.Skills.SkillChoice.Choose(run.Build));
             }
         }
 
@@ -94,6 +108,7 @@ namespace BallBattle.SimTests
                 {
                     CardKind.Heal => run.Build.Hp < run.Build.MaxHp / 2 ? 10 : 1,
                     CardKind.Trait => c.Level == 2 ? 8 : 7,
+                    CardKind.SkillUp => run.Build.SkillLevel == 2 ? 8 : 7,
                     CardKind.DamageUp => 6,
                     CardKind.MaxHp => 4,
                     CardKind.SpeedUp => 3,

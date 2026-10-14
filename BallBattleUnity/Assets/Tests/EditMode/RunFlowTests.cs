@@ -246,7 +246,7 @@ namespace BallBattle.Tests
                 progress.Achievements.Add(UnlockRules.Boss3);
                 progress.RunsPlayed = 9;
                 progress.RunsWon = 2;
-                var old = new SaveData { Version = SaveData.CurrentVersion - 1, Progress = progress, HasRun = true };
+                var old = new SaveData { Version = 2, Progress = progress, HasRun = true }; // v3 is migrated in BB-10a
                 var file = new FileSaveStore(Path.Combine(dir, "save.json"));
                 File.WriteAllText(file.Path, JsonUtility.ToJson(old));
 

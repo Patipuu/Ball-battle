@@ -24,6 +24,9 @@ namespace BallBattle.View
         public const float CardTextRight = 123f;
         /// <summary>Traits lines in the ENEMY / YOU boxes: from x -74 to 121.</summary>
         const int TraitsWidth = 195;
+        PixelText youSkill, enemySkill;
+        readonly SkillBranchButtons[] skillButtons = new SkillBranchButtons[RunTuning.OfferSize];
+        public event Action<int, BallBattle.Sim.Skills.SkillBranch> SkillPicked;
         /// <summary>Gap between the REROLL button and the reason line under it.</summary>
         public const float RerollReasonGap = 2f;
         /// <summary>Bottom of the scale-1 reason line: its top is RerollReasonGap below the button.</summary>
@@ -95,7 +98,8 @@ namespace BallBattle.View
             RunUi.Box(root, art, -125, 113, 125, 196);
             enemyLabel = RunUi.Text(root, art, -119, 181, 1, PixelText.Align.Left);
             enemyIcon = RunUi.Icon(root, new Vector2(-100, 152), RunUi.Order + 3);
-            enemyName = RunUi.Text(root, art, -74, 154, 2, PixelText.Align.Left);
+            enemyName = RunUi.Text(root, art, -74, 167, 1, PixelText.Align.Left);
+            enemySkill = RunUi.Text(root, art, -74, 154, 1, PixelText.Align.Left);
             enemyTraits = RunUi.Text(root, art, -74, 141, 1, PixelText.Align.Left);
             enemyTraits2 = RunUi.Text(root, art, -74, 128, 1, PixelText.Align.Left);
             enemyStats = RunUi.Text(root, art, -74, 115, 1, PixelText.Align.Left);
@@ -107,7 +111,8 @@ namespace BallBattle.View
             RunUi.Box(root, art, -125, 26, 125, 109);
             RunUi.Text(root, art, -119, 94, 1, PixelText.Align.Left, "YOU", Palette.TextDim);
             youIcon = RunUi.Icon(root, new Vector2(-100, 67), RunUi.Order + 3);
-            youName = RunUi.Text(root, art, -74, 67, 2, PixelText.Align.Left);
+            youName = RunUi.Text(root, art, -74, 80, 1, PixelText.Align.Left);
+            youSkill = RunUi.Text(root, art, -74, 67, 1, PixelText.Align.Left);
             youTraits = RunUi.Text(root, art, -74, 54, 1, PixelText.Align.Left);
             youTraits2 = RunUi.Text(root, art, -74, 41, 1, PixelText.Align.Left);
             youStats = RunUi.Text(root, art, -74, 28, 1, PixelText.Align.Left);
@@ -119,6 +124,7 @@ namespace BallBattle.View
                 var area = CardArea(i);
                 cards[i] = RunUi.Button(root, art, area, null, 1, Palette.Wall, () => { if (!TapSwallowed) OnCardClicked(index); });
                 cards[i].ClickCue = null;   // card_pick (RunFlow.CardTaken) or ui_denied, decided in OnCardClicked
+                skillButtons[i] = new SkillBranchButtons(cards[i].transform, art, area, branch => SkillPicked?.Invoke(index, branch));
                 // Art v1: 9-slice frame over the button fill, 4 px stripe on the left, trait icon at 2x, then the text.
                 var frameGo = new GameObject("Frame");
                 frameGo.transform.SetParent(cards[i].transform, false);
@@ -186,6 +192,9 @@ namespace BallBattle.View
             var foe = preview?.Balls[1];
 
             var enemy = run.Enemy;
+            youSkill.Set(SkillText.Line(run.Build.WeaponId, run.EffectiveSkillLevel, run.EffectiveSkillBranch), Palette.TextDim);
+            enemySkill.Set(boss && run.CurrentBossId != BallBattle.Sim.Boss.BossIds.Mimic ? "" :
+                SkillText.Line(enemy.WeaponId, enemy.SkillLevel, enemy.SkillBranch), Palette.TextDim);
             var bossId = run.CurrentBossId;
             enemyLabel.Set(boss ? BossText.Name(bossId) : "ENEMY", boss ? Palette.WallWarning : Palette.TextDim);
             SetBall(enemyIcon, enemyName, enemy.WeaponId, (foe != null ? foe.Radius.ToFloat() : (enemy.Radius > Fix.Zero ? enemy.Radius.ToFloat() : IconNativeRadius)) / IconNativeRadius);
@@ -318,6 +327,8 @@ namespace BallBattle.View
                 cardFrames[i].color = Color.white;
             }
             FitTitle(i, face.Title, cardTitles[i].TextColor);
+            var branchButtonsOn = skillButtons[i].Show(run, i);
+            if (branchButtonsOn) { cardDetails[i].Set("", Palette.TextDim); cardDetails2[i].Set("", Palette.TextDim); }
         }
 
         /// <summary>
@@ -451,6 +462,7 @@ namespace BallBattle.View
         void OnCardClicked(int i)
         {
             if (ConfirmOpen) return;
+            if (run != null && run.OfferCard(i).Kind == CardKind.SkillUp && run.EffectiveSkillLevel == 1) return;
             if (run != null && !run.CanPick(i))
             {
                 cardBlink[i] = BlinkSeconds;   // taken or blocked: blink the card and its reason instead of doing nothing

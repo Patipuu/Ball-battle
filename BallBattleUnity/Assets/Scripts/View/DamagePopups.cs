@@ -113,6 +113,9 @@ namespace BallBattle.View
             Spawn(Place(at, Format(damage), s, null), damage, color, s);
         }
 
+        public void ShowText(Vector2 at, string text, Color32 color, ArenaRect arena) =>
+            SpawnText(Place(at, text, 1, arena), text, color, 1);
+
         /// <summary>
         /// Where a new number of <paramref name="scale"/> starts so that it stays at least StackStep px from every number on
         /// screen it shares columns with, for both their lifetimes, then inside the arena.

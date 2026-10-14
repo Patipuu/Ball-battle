@@ -8,6 +8,9 @@ namespace BallBattle.View
     public sealed class StartPickView : MonoBehaviour
     {
         public event Action<int> CardPicked;
+        public event Action<int, BallBattle.Sim.Skills.SkillBranch> SkillPicked;
+        readonly SkillBranchButtons[] skillButtons = new SkillBranchButtons[RunTuning.OfferSize];
+        RunState shownRun;
         ArtLibrary art;
         PixelText title1, title2, nextFight, weapon, noReroll;
 
@@ -43,7 +46,12 @@ namespace BallBattle.View
             {
                 var index = i;
                 var area = CardArea(i);
-                view.cards[i] = RunUi.Button(root, art, area, " ", 1, Palette.Wall, () => view.CardPicked?.Invoke(index));
+                view.cards[i] = RunUi.Button(root, art, area, " ", 1, Palette.Wall, () =>
+                {
+                    if (view.shownRun?.OfferCard(index).Kind == CardKind.SkillUp && view.shownRun.EffectiveSkillLevel == 1) return;
+                    view.CardPicked?.Invoke(index);
+                });
+                view.skillButtons[i] = new SkillBranchButtons(view.cards[i].transform, art, area, branch => view.SkillPicked?.Invoke(index, branch));
                 view.cards[i].ClickCue = null;   // a taken card plays card_pick (RunFlow.CardTaken)
                 var card = view.cards[i].transform;
                 card.Find("Label").gameObject.SetActive(false); // PixelButton retains its accessible title; the card face draws it.
@@ -77,6 +85,7 @@ namespace BallBattle.View
 
         public void Show(RunState run)
         {
+            shownRun = run;
             gameObject.SetActive(true);
             title1.Set("CHOOSE", Palette.WallWarning);
             title2.Set(run.IsRetry ? "YOUR RETRY" : "YOUR START", Palette.WallWarning);
@@ -104,6 +113,14 @@ namespace BallBattle.View
                 detail1[i].SetHighlighted(face.Detail1, Palette.Text, CardFace.NumberColor);
                 detail2[i].SetHighlighted(face.Detail2, Palette.Text, CardFace.NumberColor);
                 rarity[i].Set(face.Frame.ToString().ToUpperInvariant(), Palette.TextDim);
+                var branchButtonsOn = skillButtons[i].Show(run, i);
+                if (branchButtonsOn)
+                {
+                    rarity[i].Set("", Palette.TextDim);
+                    detail2[i].Set("", Palette.TextDim);
+                    cards[i].transform.Find("TapToPick").gameObject.SetActive(false);
+                }
+                else cards[i].transform.Find("TapToPick").gameObject.SetActive(true);
             }
         }
 

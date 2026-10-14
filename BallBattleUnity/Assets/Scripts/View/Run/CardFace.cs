@@ -63,6 +63,7 @@ namespace BallBattle.View
                 case CardKind.DamageUp: return new Color32(255, 120, 110, 255);
                 case CardKind.Heal: return new Color32(140, 240, 220, 255);
                 case CardKind.SwapWeapon: return new Color32(190, 210, 255, 255);
+                case CardKind.SkillUp: return new Color32(190, 210, 255, 255);
                 case CardKind.Trait: return new Color32(180, 120, 240, 255);   // traits use TraitBadgeView.ColorOf instead
                 default: return Palette.WallWarning;
             }

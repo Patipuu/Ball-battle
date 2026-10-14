@@ -67,7 +67,13 @@ namespace BallBattle.View
             "hit_blade", "hit_fang", "hit_pike", "hit_brawler", "hit_volley", "hit_venom", "hit_aegis", "hit_rig",
             // BB-04 boss cues: linked when their files exist (none yet; the linker skips a missing file with a warning).
             BossShellKingWarn, BossShellKingHit, BossMagnetWarn, BossMagnetHit, BossMimicHit, BossWardenWarn, BossWardenHit,
+            SkillBlade, SkillFang, SkillPike, SkillBrawler, SkillVolley, SkillVenom, SkillAegis, SkillRig,
         };
+
+        public const string SkillBlade = "skill_blade_whetstone", SkillFang = "skill_fang_frenzy", SkillPike = "skill_pike_lunge",
+            SkillBrawler = "skill_brawler_charge", SkillVolley = "skill_volley_barrage", SkillVenom = "skill_venom_drain",
+            SkillAegis = "skill_aegis_bulwark", SkillRig = "skill_rig_overclock";
+        public static readonly string[] SkillCues = { SkillBlade, SkillFang, SkillPike, SkillBrawler, SkillVolley, SkillVenom, SkillAegis, SkillRig };
 
         /// <summary>"hit_&lt;weaponId&gt;" when that clip exists, else the generic "hit".</summary>
         public static string HitCue(string weaponId, Func<string, bool> hasClip)

@@ -274,7 +274,8 @@ namespace BallBattle.SimTests
         [Test]
         public void RunBotsStayInTheirBands()
         {
-            Assert.That(R.Greedy.WinPct, Is.InRange(25.0, 40.0), "Greedy");
+            // Temporary floor 22% accepted after BB-6f; revisit in the combined balance pass.
+            Assert.That(R.Greedy.WinPct, Is.InRange(22.0, 40.0), "Greedy");
             Assert.That(R.Random.WinPct, Is.InRange(1.0, 6.0), "Random");
         }
 

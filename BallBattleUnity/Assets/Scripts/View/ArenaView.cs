@@ -155,7 +155,14 @@ namespace BallBattle.View
 
         /// <summary>Plain Versus match from two weapon ids.</summary>
         public void StartMatch(string weaponA, string weaponB, uint seed)
-            => StartMatch(new MatchSim(ArenaRegistry.Create(ArenaId), seed, new[] { WeaponRegistry.Create(weaponA), WeaponRegistry.Create(weaponB) }));
+        {
+            var spec = ForceSkill ?? DebugOptions.ForceSkill;
+            var a = new BallLoadout(WeaponRegistry.Create(weaponA));
+            var b = new BallLoadout(WeaponRegistry.Create(weaponB));
+            if (spec.HasValue) { a.SkillLevel = b.SkillLevel = spec.Value.Level; a.SkillBranch = b.SkillBranch = spec.Value.Branch; }
+            StartMatch(new MatchSim(ArenaRegistry.Create(ArenaId), seed, new[] { a, b }));
+        }
+        public BallBattle.Sim.Skills.SkillSpec? ForceSkill { get; set; }
 
         /// <summary>Show and run a match built elsewhere (Run mode: loadouts with traits, HP, size). Tags label the HUD names.</summary>
         public void StartMatch(MatchSim sim, string tagA = null, string tagB = null)
@@ -249,7 +256,16 @@ namespace BallBattle.View
                             var shell = ShellTrace.Line(events[i], Sim);   // BB-6d QA: SHELL KING hits with the shell ON
                             if (shell != null) traceWriter.WriteLine(shell);
                         }
-                    for (var i = 0; i < events.Count; i++) SimEventRaised?.Invoke(events[i]);
+                    for (var i = 0; i < events.Count; i++)
+                    {
+                        if (events[i].Type == SimEventType.SkillFired || events[i].Type == SimEventType.SkillEnded)
+                        {
+                            var line = SimTrace.SkillLine(events[i]);
+                            if (traceFieldsWriter != null) traceFieldsWriter.WriteLine(line);
+                            if (DebugOptions.Trace) Debug.Log("[BallBattle] " + line);
+                        }
+                        SimEventRaised?.Invoke(events[i]);
+                    }
                     if (Sim.Outcome != MatchOutcome.Ongoing && !endReported)
                     {
                         endReported = true;

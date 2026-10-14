@@ -4,6 +4,7 @@ namespace BallBattle.Sim
     public struct Projectile
     {
         public bool Active;
+        public bool Reflected;
         /// <summary>Ball index that owns it (cannot hit or be deflected by its owner). Changes when deflected.</summary>
         public int Owner;
         public FixVec2 Pos;
@@ -26,6 +27,7 @@ namespace BallBattle.Sim
             h = SimHash.Mix(h, Active);
             if (!Active) return h;
             h = SimHash.Mix(h, Owner);
+            h = SimHash.Mix(h, Reflected);
             h = SimHash.Mix(h, Pos);
             h = SimHash.Mix(h, Vel);
             h = SimHash.Mix(h, Radius);

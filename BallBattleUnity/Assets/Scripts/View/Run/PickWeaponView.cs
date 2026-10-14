@@ -21,7 +21,7 @@ namespace BallBattle.View
             var v = root.gameObject.AddComponent<PickWeaponView>();
             v.art = art;
             RunUi.Text(root, art, 0, 150, 2, initial: "CHOOSE YOUR WEAPON");
-            RunUi.Text(root, art, 0, 134, 1, initial: "YOU CAN SWAP LATER WITH CARDS", color: Palette.TextDim);
+            RunUi.Text(root, art, 0, 134, 1, initial: "ONE SIGNATURE SKILL. TWO BRANCHES", color: Palette.TextDim);
             return v;
         }
 
@@ -40,11 +40,14 @@ namespace BallBattle.View
             for (var i = 0; i < choices.Count; i++)
             {
                 var id = choices[i];
-                var area = new Rect(-total / 2 + i * (Tile + Gap), 20, Tile, Tile + 10);
+                var area = new Rect(-total / 2 + i * (Tile + Gap), -90, Tile, 190);
                 var b = PixelButton.Create(tilesRoot, "Pick_" + id, art, area, null, 1, Palette.Floor, Palette.Look(id).Body, Palette.Text, RunUi.Order + 2);
-                RunUi.Icon(b.transform, new Vector2(area.center.x, area.yMin + 46), b.IconOrder).sprite = art.Get(id).Ball;
-                var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.center.x, area.yMin + 8), PixelText.Align.Center, 1, b.IconOrder);
+                RunUi.Icon(b.transform, new Vector2(area.center.x, 73), b.IconOrder).sprite = art.Get(id).Ball;
+                var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.center.x, 42), PixelText.Align.Center, 1, b.IconOrder);
                 name.Set(RunUi.WeaponName(id), Palette.Look(id).Body);
+                WeaponProfileView.Create(b.transform, art, new Vector2(area.center.x, 27), Tile, false).Show(id);
+                PixelText.Create(b.transform, "Signature", art.Font, new Vector2(area.center.x, -58), PixelText.Align.Center, 1, b.IconOrder)
+                    .Set(BallBattle.Sim.Skills.SkillDefinition.ForWeapon(id).Name, Palette.Text);
                 b.Clicked += () => WeaponPicked?.Invoke(id);
             }
         }

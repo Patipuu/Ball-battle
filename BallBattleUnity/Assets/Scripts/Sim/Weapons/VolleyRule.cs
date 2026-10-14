@@ -44,6 +44,11 @@ namespace BallBattle.Sim.Weapons
         {
             if (++timer < WeaponTuning.VolleyIntervalTicks) return;
             timer = 0;
+            FireVolley(Fix.Zero);
+        }
+
+        internal void FireVolley(Fix extraDamage)
+        {
             var foe = WeaponAim.NearestFoe(Sim, Self);
             if (foe == null) return;
             var aim = (foe.Pos - Self.Pos).NormalizedOr(FixVec2.Right);
@@ -54,7 +59,9 @@ namespace BallBattle.Sim.Weapons
                 var dir = new FixVec2(
                     aim.X * rotation.X - aim.Y * rotation.Y,
                     aim.X * rotation.Y + aim.Y * rotation.X);
-                Sim.FireProjectile(Self, Self.Pos + dir * (Self.Radius + 3), dir * WeaponTuning.VolleyArrowSpeed, arrow);
+                var spec = arrow;
+                spec.Damage += extraDamage;
+                Sim.FireProjectile(Self, Self.Pos + dir * (Self.Radius + 3), dir * WeaponTuning.VolleyArrowSpeed, spec);
             }
         }
 

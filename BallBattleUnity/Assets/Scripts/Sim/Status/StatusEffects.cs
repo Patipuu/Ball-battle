@@ -73,7 +73,9 @@ namespace BallBattle.Sim
         }
 
         /// <summary>Advances poison one tick. Returns total damage of stacks pulsing now; <paramref name="mainSource"/> = source of the strongest of them.</summary>
-        public Fix TickPoison(out int mainSource)
+        public Fix TickPoison(out int mainSource) => TickPoison(out mainSource, null);
+
+        internal Fix TickPoison(out int mainSource, Fix[] sourceDamage)
         {
             var total = Fix.Zero;
             var mainDps = Fix.Zero;
@@ -86,6 +88,7 @@ namespace BallBattle.Sim
                 if (--p.PulseIn > 0) continue;
                 p.PulseIn = PulseTicks;
                 total += p.Dps;
+                if (sourceDamage != null && p.Source >= 0 && p.Source < sourceDamage.Length) sourceDamage[p.Source] += p.Dps;
                 if (p.Dps > mainDps) { mainDps = p.Dps; mainSource = p.Source; }
             }
             return total;

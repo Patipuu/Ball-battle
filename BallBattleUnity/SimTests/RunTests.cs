@@ -29,6 +29,7 @@ namespace BallBattle.SimTests
             List<string> Play()
             {
                 var run = NewRun(1236);   // BB-6c: Rules 7 ends seed 1234 after 2 fights; 1236 plays 8
+                run.Build.MaxHp = run.Build.Hp = 2000; // replay fixture must cover several fights independently of balance changes
                 var log = new List<string>();
                 while (!run.Over)
                 {

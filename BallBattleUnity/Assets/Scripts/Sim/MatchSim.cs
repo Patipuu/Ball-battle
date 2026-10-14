@@ -91,6 +91,8 @@ namespace BallBattle.Sim
                 if (l.Weapon.IsBound || !seenWeapons.Add(l.Weapon))
                     throw new InvalidOperationException($"Weapon '{l.Weapon.Id}' instance is already used by a ball; create a new instance per ball and per match.");
                 if (l.Hp == Fix.Zero) throw new ArgumentException($"Loadout {i} starts with 0 HP", nameof(loadouts));
+                if ((l.Boss == null || l.Boss is Boss.MimicRule) && Skills.SkillDefinition.ForWeapon(l.Weapon.Id) != null &&
+                    !Skills.SkillSpec.Valid(l.SkillLevel, l.SkillBranch)) throw new ArgumentException("Invalid skill level/branch", nameof(loadouts));
                 if (l.Boss != null && (l.Boss.IsBound || !seenBosses.Add(l.Boss)))
                     throw new InvalidOperationException($"Boss rule '{l.Boss.Id}' instance is already used by a ball; create a new instance per ball and per match.");
                 for (var t = 0; t < l.Traits.Count; t++)
@@ -125,6 +127,8 @@ namespace BallBattle.Sim
                 Bonus = l.Bonus
             };
             l.Weapon.Attach(this, b);
+            if ((l.Boss == null || l.Boss is Boss.MimicRule) && Skills.SkillDefinition.ForWeapon(l.Weapon.Id) != null)
+                b.Skill = new Skills.SkillState(this, b, l.SkillLevel, l.SkillBranch);
             foreach (var t in traits) t.Bind(this, b);
 
             // Spread evenly across the width, upper half, with a seeded jitter. Slot centre = (index + 1/2) / count of the width.
@@ -160,6 +164,7 @@ namespace BallBattle.Sim
             ActiveTick++;
             Arena = Config.ArenaAt(ActiveTick);
             if (bossRules.Length > 0) BossPreTick();   // BB-04: boss phases, pull, Warden walls (limits Arena)
+            SkillsPreTick();
 
             var substeps = SubstepCount();
             for (var s = 0; s < substeps && Ongoing; s++)

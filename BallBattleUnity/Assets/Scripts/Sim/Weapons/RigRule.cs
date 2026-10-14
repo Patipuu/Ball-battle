@@ -36,12 +36,18 @@ namespace BallBattle.Sim.Weapons
 
         public int TurretCount => count;
         public FixVec2 GetTurret(int index) => turrets[index];
+        internal void BeginOverclock() => timer = 0;
 
         public override Fix Damage(in HitContext ctx) => damage;
 
         public override void OnHit(in HitContext ctx)
         {
             damage += WeaponTuning.RigDamagePerHit;
+            PlaceTurret();
+        }
+
+        internal void PlaceTurret()
+        {
             if (count < turrets.Length) { turrets[count++] = Self.Pos; return; }
             turrets[next] = Self.Pos;
             next = (next + 1) % turrets.Length;
@@ -51,7 +57,8 @@ namespace BallBattle.Sim.Weapons
         {
             DropTurretsOutsideArena();
             if (count == 0) { timer = 0; return; }
-            if (++timer < WeaponTuning.RigFireIntervalTicks) return;
+            var interval = Self.Skill != null && Self.Skill.Active ? WeaponTuning.RigFireIntervalTicks / 2 : WeaponTuning.RigFireIntervalTicks;
+            if (++timer < interval) return;
             timer = 0;
             var foe = WeaponAim.NearestFoe(Sim, Self);
             if (foe == null) return;
@@ -60,6 +67,7 @@ namespace BallBattle.Sim.Weapons
                 var dir = (foe.Pos - turrets[i]).NormalizedOr(FixVec2.Right);
                 Sim.FireProjectile(Self, turrets[i] + dir * (WeaponTuning.RigTurretRadius + 1), dir * WeaponTuning.RigShotSpeed, shot);
             }
+            Self.Skill?.TurretVolley();
         }
 
         void DropTurretsOutsideArena()

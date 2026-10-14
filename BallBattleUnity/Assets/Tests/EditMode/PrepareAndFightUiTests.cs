@@ -59,7 +59,7 @@ namespace BallBattle.Tests
             var run = RunState.Start(77, "blade", new ProgressData());
             var view = StartPickView.Create(root.transform, art);
             view.Show(run);
-            var buttons = view.GetComponentsInChildren<PixelButton>(false);
+            var buttons = view.GetComponentsInChildren<PixelButton>(false).Where(b => b.name != "SkillA" && b.name != "SkillB").ToArray();
             Assert.That(buttons.Length, Is.EqualTo(3));
             for (var i = 0; i < buttons.Length; i++)
                 Assert.That(buttons[i].LabelText, Is.EqualTo(CardText.Title(run.OfferCard(i))));

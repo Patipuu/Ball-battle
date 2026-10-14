@@ -45,6 +45,7 @@ namespace BallBattle.View
             Flow.ForceTraitId = DebugOptions.ForceTrait;   // null unless launched with -bbForceTrait
             Flow.ForceBossId = DebugOptions.ForceBoss;     // null unless launched with -bbForceBoss (Run only; Versus never reads it)
             Flow.ForceArenaId = DebugOptions.ForceArena;   // null unless launched with -bbForceArena (Run only; Versus never reads it)
+            Flow.ForceSkill = DebugOptions.ForceSkill;
             title = RunTitleView.Create(transform, art);
             pick = PickWeaponView.Create(transform, art);
             startPick = StartPickView.Create(transform, art);
@@ -59,6 +60,8 @@ namespace BallBattle.View
             pick.WeaponPicked += id => Flow.ChooseWeapon(id);
             startPick.CardPicked += i => Flow.PickStart(i);
             prepare.CardPicked += i => Flow.Pick(i);
+            startPick.SkillPicked += (i, branch) => Flow.PickStart(i, branch);
+            prepare.SkillPicked += (i, branch) => Flow.Pick(i, branch);
             prepare.RerollRequested += () => Flow.Reroll();
             prepare.FightRequested += () => Flow.Fight();
             overlay.SpeedToggled += () =>

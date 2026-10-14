@@ -140,13 +140,13 @@ namespace BallBattle.SimTests
         /// </summary>
         static readonly (string arena, ulong digest)[] ExpectedByArena =
         {
-            ("classic", 0xE2F0DCC26B635C9AUL),
-            ("pillar", 0x3304994C3D467FCAUL),
-            ("bumpers", 0x55D70DE67781E84AUL),
-            ("spike-walls", 0x1A27AF4835C886F0UL),
-            ("low-gravity", 0x11B638762D9DF817UL),
-            ("tight", 0x23624466AFBE95DFUL),
-            ("wide", 0x96AD5272F0D8137FUL),
+            ("classic", 0x7086F4ABD59EE32BUL),
+            ("pillar", 0xE71BE338CA076227UL),
+            ("bumpers", 0x874AC199717945E3UL),
+            ("spike-walls", 0x27C4EED9159FC1D1UL),
+            ("low-gravity", 0x98EC101962AC8887UL),
+            ("tight", 0x1684331AD46763C3UL),
+            ("wide", 0x7FAE7C234750222BUL),
         };
 
         /// <summary>Winner, length and both final HPs of 8 weapons vs blade, seeds 1-2, on one arena.</summary>

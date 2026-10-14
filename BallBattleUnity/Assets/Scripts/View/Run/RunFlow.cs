@@ -44,6 +44,7 @@ namespace BallBattle.View
         /// saved run and every seed are untouched. Null = normal play.
         /// </summary>
         public string ForceArenaId { get; set; }
+        public BallBattle.Sim.Skills.SkillSpec? ForceSkill { get; set; }
 
         /// <summary>Arena of the current fight as played: the forced one, else the run's own (RunState.ArenaId).</summary>
         public string FightArenaId => Run == null ? null : ForceArenaId ?? Run.ArenaId;
@@ -122,7 +123,7 @@ namespace BallBattle.View
         {
             if (Current != State.PickWeapon || !StartChoices.Contains(weaponId)) return;
             if (save.HasRun) UnlockRules.RecordAbandoned(save.Progress);
-            Run = RunState.Start(pendingSeed, weaponId, save.Progress);
+            Run = RunState.Start(pendingSeed, weaponId, save.Progress, ForceSkill);
             BossSelection.Remember(save.Progress, Run);   // BB-04: before any forced boss, so -bbForceBoss never enters the history
             if (ForceBossId != null) Run.ApplyForcedBoss(ForceBossId);
             UnityEngine.Debug.Log(RunStartLog(pendingSeed, weaponId, ForceTraitId) + $", bosses {string.Join("/", Run.BossIds)}" + (ForceBossId != null ? $", -bbForceBoss {ForceBossId}" : ""));
@@ -139,6 +140,7 @@ namespace BallBattle.View
         {
             if (Current != State.Title || !HasSavedRun) return;
             Run = save.Run.ToRun();
+            Run.SkillOverride = ForceSkill;
             UnityEngine.Debug.Log($"[BallBattle] Run resumed: seed {Run.Seed}, fight {Run.FightIndex + 1}");
             var changed = DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
             if (ForceBossId != null && Run.ForcedBossId != ForceBossId) changed |= Run.ApplyForcedBoss(ForceBossId);
@@ -157,20 +159,20 @@ namespace BallBattle.View
             Changed?.Invoke();
         }
 
-        public void Pick(int index)
+        public void Pick(int index, BallBattle.Sim.Skills.SkillBranch branch = BallBattle.Sim.Skills.SkillBranch.A)
         {
             if (Current != State.Prepare || !Run.CanPick(index)) return;
-            Run.Pick(index);
+            Run.Pick(index, branch);
             Persist();
             CardTaken?.Invoke();
             Changed?.Invoke();
         }
 
-        public void PickStart(int index)
+        public void PickStart(int index, BallBattle.Sim.Skills.SkillBranch branch = BallBattle.Sim.Skills.SkillBranch.A)
         {
             if (Current != State.StartPick || !Run.CanPick(index)) return;
             var retry = Run.IsRetry;
-            Run.Pick(index);
+            Run.Pick(index, branch);
             if (retry) Run.FightLocked = true;
             Persist();
             CardTaken?.Invoke();
@@ -188,7 +190,7 @@ namespace BallBattle.View
 
         void StartFight()
         {
-            match = ForceArenaId != null ? Run.CreateMatch(ArenaRegistry.Create(ForceArenaId)) : Run.CreateMatch();
+            match = Run.CreateMatch(ForceArenaId != null ? ArenaRegistry.Create(ForceArenaId) : null, ForceSkill);
             Stats.Reset(match);
             MatchPrepared?.Invoke(match);
             timer = CountdownSeconds;

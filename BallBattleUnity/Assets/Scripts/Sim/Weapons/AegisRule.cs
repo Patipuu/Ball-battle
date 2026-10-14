@@ -58,7 +58,7 @@ namespace BallBattle.Sim.Weapons
                 Guard(attacker.Weapon.HasBlade ? WeaponTuning.AegisGuardMelee : WeaponTuning.AegisGuardBody, !(attacker.Weapon is AegisRule));   // no mend in a mirror
             if (kind == DamageKind.Projectile) { Sim.Heal(Self, damage * WeaponTuning.AegisShotAbsorbPct); return; }
             if (kind != DamageKind.Weapon || attacker.Weapon.HasBlade) return;
-            Sim.DealDamage(Self, attacker, damage * WeaponTuning.AegisBodyReflectPct, DamageKind.Reflect);
+            Sim.DealDamage(Self, attacker, damage * (Self.Skill != null && Self.Skill.Active ? Fix.Ratio(3, 4) : WeaponTuning.AegisBodyReflectPct), DamageKind.Reflect);
         }
 
         public override void OnParry(BallState other)
@@ -69,7 +69,7 @@ namespace BallBattle.Sim.Weapons
             Guard(mirror ? WeaponTuning.AegisGuardMirror : WeaponTuning.AegisGuardMelee, !mirror);   // a mirror only rages: mending each other would never end it
             if (other.Weapon is AegisRule) return; // two Aegis would only trade reflects until both fall
             var blow = other.Weapon.Damage(new HitContext(other.Vel.Length, Fix.Zero));
-            Sim.DealDamage(Self, other, blow * WeaponTuning.AegisReflectPct, DamageKind.Reflect);
+            Sim.DealDamage(Self, other, blow * (Self.Skill != null && Self.Skill.Active ? Self.Skill.ParryReflect : WeaponTuning.AegisReflectPct), DamageKind.Reflect);
         }
 
         // The width (BladeThickness) is hashed by the base class; the guard counter is hashed here.

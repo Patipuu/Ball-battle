@@ -269,7 +269,7 @@ namespace BallBattle.Tests
         [Test]
         public void EveryCardInThePoolHasAnIcon()
         {
-            var cards = new List<Card> { new Card(CardKind.DamageUp), new Card(CardKind.SpeedUp), new Card(CardKind.MaxHp), new Card(CardKind.Heal), new Card(CardKind.SwapWeapon, BladeRule.WeaponId) };
+            var cards = new List<Card> { new Card(CardKind.DamageUp), new Card(CardKind.SpeedUp), new Card(CardKind.MaxHp), new Card(CardKind.Heal), new Card(CardKind.SwapWeapon, BladeRule.WeaponId), new Card(CardKind.SkillUp, BladeRule.WeaponId, 2) };
             foreach (var t in TraitRegistry.All) { cards.Add(new Card(CardKind.Trait, t.Id, 1)); cards.Add(new Card(CardKind.Trait, t.Id, 2)); }
             foreach (var c in cards)
             {
@@ -342,7 +342,7 @@ namespace BallBattle.Tests
             won.Won = true;
             UnlockRules.Record(p, won);
             Assert.That((p.RunsWon, p.RunsPlayed), Is.EqualTo((1, 2)));
-            Assert.That(SaveData.CurrentVersion, Is.EqualTo(3));   // BB-04: v3 (boss slots, last boss, Boss Codex)
+            Assert.That(SaveData.CurrentVersion, Is.EqualTo(4));   // BB-10a: signature skill level/branch
         }
     }
 }

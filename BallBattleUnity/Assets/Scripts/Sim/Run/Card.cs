@@ -13,7 +13,8 @@ namespace BallBattle.Sim.Run
         /// <summary>Heal RunTuning.HealCardPct of max HP.</summary>
         Heal,
         /// <summary>+RunTuning.MaxHpCardBonus max HP (and HP).</summary>
-        MaxHp
+        MaxHp,
+        SkillUp
     }
 
     /// <summary>One choice offered before a fight.</summary>
@@ -33,7 +34,7 @@ namespace BallBattle.Sim.Run
         }
 
         /// <summary>Applies the card to a build (assumes it was offered for this build).</summary>
-        public void ApplyTo(RunBuild b)
+        public void ApplyTo(RunBuild b, Skills.SkillBranch branch = Skills.SkillBranch.A)
         {
             switch (Kind)
             {
@@ -45,6 +46,15 @@ namespace BallBattle.Sim.Run
                 case CardKind.DamageUp: b.DamagePct += RunTuning.DamageCardPct; break;
                 case CardKind.SpeedUp: b.SpeedPct += RunTuning.SpeedCardPct; break;
                 case CardKind.SwapWeapon: b.WeaponId = Id; break;
+                case CardKind.SkillUp:
+                    if (b.SkillLevel >= 3) throw new InvalidOperationException("Skill is already level 3");
+                    if (b.SkillLevel == 1)
+                    {
+                        if (branch != Skills.SkillBranch.A && branch != Skills.SkillBranch.B) throw new ArgumentException("Choose A or B");
+                        b.SkillBranch = branch;
+                    }
+                    b.SkillLevel++;
+                    break;
                 case CardKind.Heal: b.SetHp(b.Hp + b.MaxHp * RunTuning.HealCardPct); break;
                 case CardKind.MaxHp:
                     b.MaxHp += RunTuning.MaxHpCardBonus;

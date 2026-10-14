@@ -44,6 +44,8 @@ namespace BallBattle.View
         NextGoalBox goal;
         RunState savedRun;
         SettingsView settings;
+        SkillCodexView codex;
+        readonly WeaponProfileView[] profiles = new WeaponProfileView[2];
         Transform noticePage;
         Action noticeOk;
 
@@ -79,6 +81,8 @@ namespace BallBattle.View
             settings = SettingsView.Create(transform, art, Order);
             settings.BackRequested += ShowHub;
             BuildNotice(art);
+            codex = SkillCodexView.Create(transform, art);
+            codex.Closed += ShowHub;
             SetRunInfo(new ProgressData(), null);
             ShowHub();
         }
@@ -108,6 +112,9 @@ namespace BallBattle.View
             var vs = PixelButton.Create(hub, "Versus", art, VersusArea, RunStrings.Versus, 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             vs.Clicked += ShowVersus;
             VersusButton = vs;
+            var codexButton = PixelButton.Create(hub, "CodexButton", art, new Rect(-60, -160, 120, 26), "CODEX", 1,
+                Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
+            codexButton.Clicked += () => { hub.gameObject.SetActive(false); codex.Show(); };
             BuildGear(art);
         }
         /// <summary>12x12 gear: 1 px frame, a 6x6 ring with a 2x2 hole and four teeth (whole pixels).</summary>
@@ -144,15 +151,17 @@ namespace BallBattle.View
             BuildRow(art, 1, "BALL 2", 80, 78);     // label 80..93, tiles 4..78
 
             versus = PixelText.Create(p, "Versus", art.Font, new Vector2(0, -24), PixelText.Align.Center, 2, Order + 4);   // -24..2
+            profiles[0] = WeaponProfileView.Create(p, art, new Vector2(-65, -39), 123);
+            profiles[1] = WeaponProfileView.Create(p, art, new Vector2(65, -39), 123);
 
-            var arenaBtn = PixelButton.Create(p, "ArenaPick", art, new Rect(-60, -56, 120, 24), "", 1,
+            var arenaBtn = PixelButton.Create(p, "ArenaPick", art, new Rect(-125, -140, 120, 24), "", 1,
                                               Palette.Floor, Palette.Wall, Palette.Text, Order + 2);
             arenaBtn.Clicked += () => { arenaIndex = (arenaIndex + 1) % ArenaRegistry.All.Count; Refresh(); };
-            arenaLabel = PixelText.Create(p, "ArenaLabel", art.Font, new Vector2(0, -50), PixelText.Align.Center, 1, Order + 4);   // inside -56..-32
-            var random = PixelButton.Create(p, "Random", art, new Rect(-60, -88, 120, 24), "RANDOM", 1,
+            arenaLabel = PixelText.Create(p, "ArenaLabel", art.Font, new Vector2(-65, -134), PixelText.Align.Center, 1, Order + 4);
+            var random = PixelButton.Create(p, "Random", art, new Rect(5, -140, 120, 24), "RANDOM", 1,
                                             Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             random.Clicked += Randomize;
-            var start = PixelButton.Create(p, "Start", art, new Rect(-80, -130, 160, 32), "START", 2,
+            var start = PixelButton.Create(p, "Start", art, new Rect(-80, -180, 160, 32), "START", 2,
                                            Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
             start.Clicked += () => StartRequested?.Invoke(selected[0], selected[1]);
             StartButton = start;
@@ -218,6 +227,7 @@ namespace BallBattle.View
                     tiles[side][i].SetColors(on ? Palette.HpBack : Palette.Floor, on ? (Color32)Palette.Look(ids[i]).Body : Palette.Wall);
                 }
             arenaLabel.Set("ARENA: " + ArenaRegistry.All[arenaIndex].DisplayName, Palette.Text);
+            for (var side = 0; side < 2; side++) profiles[side].Show(selected[side]);
             versus.Set($"{WeaponNames.Of(selected[0])} VS {WeaponNames.Of(selected[1])}", Palette.Text);
         }
         /// <summary>
@@ -255,6 +265,7 @@ namespace BallBattle.View
 
         public void ShowHub()
         {
+            codex?.Hide();
             CloseSettings();
             noticePage.gameObject.SetActive(false);
             SetHubInput(true);

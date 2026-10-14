@@ -29,6 +29,7 @@ namespace BallBattle.View
                 case CardKind.DamageUp: return $"DAMAGE +{Pct(RunTuning.DamageCardPct.ToFloat())}%";
                 case CardKind.SpeedUp: return $"SPEED CAP +{Pct(RunTuning.SpeedCardPct.ToFloat())}%";
                 case CardKind.SwapWeapon: return "SWAP TO " + WeaponNames.Of(c.Id);
+                case CardKind.SkillUp: return "SKILL UP";
                 case CardKind.Heal: return $"HEAL {Pct(RunTuning.HealCardPct.ToFloat())}%";
                 case CardKind.MaxHp: return $"MAX HP +{FixMath.FloorToInt(RunTuning.MaxHpCardBonus)}";
                 default: return c.Kind.ToString().ToUpperInvariant();
@@ -44,6 +45,7 @@ namespace BallBattle.View
                 case CardKind.DamageUp: return $"MELEE BODY AND SHOT HITS +{Pct(RunTuning.DamageCardPct.ToFloat())}%";
                 case CardKind.SpeedUp: return $"TOP SPEED +{Pct(RunTuning.SpeedCardPct.ToFloat())}%. START SPEED SAME";
                 case CardKind.SwapWeapon: return "NEW WEAPON. KEEPS TRAITS AND STATS";
+                case CardKind.SkillUp: return c.Level == 2 ? "CHOOSE YOUR SKILL BRANCH" : "STRENGTHEN YOUR BRANCH TO LV 3";
                 case CardKind.Heal: return $"HEAL {Pct(RunTuning.HealCardPct.ToFloat())}% OF MAX HP NOW";
                 case CardKind.MaxHp:
                     var hp = FixMath.FloorToInt(RunTuning.MaxHpCardBonus);
@@ -61,6 +63,7 @@ namespace BallBattle.View
                 case CardKind.DamageUp: return "NOT POISON SPIKES OR THORNS";
                 case CardKind.SpeedUp: return WeaponNames.Of(BrawlerRule.WeaponId) + ": MORE SPEED IS MORE DMG";
                 case CardKind.SwapWeapon: return "ONLY OFFERED IF ALL TRAITS STILL WORK";
+                case CardKind.SkillUp: return "ONE SKILL. AUTO TRIGGER";
                 case CardKind.Heal: return "HP CARRIES TO NEXT FIGHTS";
                 default: return "";
             }

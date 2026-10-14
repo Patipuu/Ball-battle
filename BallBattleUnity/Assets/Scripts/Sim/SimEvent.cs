@@ -38,7 +38,9 @@ namespace BallBattle.Sim
         /// <summary>A=deflecting ball (new owner), B=projectile slot, Point=contact.</summary>
         ProjectileDeflected,
         /// <summary>BB-04 boss mechanic. Variant=(byte)Boss.BossEvent; A=boss ball, B=target ball (-1 none); Value/Point per BossEvent.</summary>
-        Boss
+        Boss,
+        SkillFired,
+        SkillEnded
     }
 
     /// <summary>One thing that happened during a tick. View/audio react to these; they never read Sim internals for effects.</summary>
@@ -53,6 +55,11 @@ namespace BallBattle.Sim
         /// <summary>Sub-type for events that need one (see each SimEventType); 0 otherwise.</summary>
         public byte Variant;
         public string TraitId;
+        public int ActiveTick;
+        public string SkillId;
+        public int SkillLevel;
+        public Skills.SkillBranch SkillBranch;
+        public bool Reflected;
     }
 
     public enum MatchOutcome : byte
