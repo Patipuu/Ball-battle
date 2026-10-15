@@ -342,7 +342,7 @@ namespace BallBattle.Tests
             won.Won = true;
             UnlockRules.Record(p, won);
             Assert.That((p.RunsWon, p.RunsPlayed), Is.EqualTo((1, 2)));
-            Assert.That(SaveData.CurrentVersion, Is.EqualTo(4));   // BB-10a: signature skill level/branch
+            Assert.That(SaveData.CurrentVersion, Is.EqualTo(5));   // BB-10a: signature skill level/branch
         }
     }
 }

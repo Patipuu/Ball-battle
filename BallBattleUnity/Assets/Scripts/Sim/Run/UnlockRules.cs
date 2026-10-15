@@ -20,6 +20,14 @@ namespace BallBattle.Sim.Run
         public List<BossCodexEntry> BossCodex = new List<BossCodexEntry>();
         /// <summary>UI-TUT1: first-run tips already shown (TutorialCoach ids). Old saves load it empty.</summary>
         public List<string> SeenTips = new List<string>();
+        /// <summary>BB-12a (save v5): per-ball level and shards; old saves load it empty (every ball LV1).</summary>
+        public List<Meta.BallProgress> Balls = new List<Meta.BallProgress>();
+        /// <summary>BB-12a: gold for ball upgrades.</summary>
+        public int Gold;
+        /// <summary>BB-12a: chests opened so far (part of the next chest's seed).</summary>
+        public int ChestsOpened;
+        /// <summary>BB-12a: earned chests not opened yet (welcome chests for old saves).</summary>
+        public List<Meta.ChestTier> PendingChests = new List<Meta.ChestTier>();
 
         public bool Has(string achievement) => Achievements.Contains(achievement);
 

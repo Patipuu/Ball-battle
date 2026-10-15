@@ -30,7 +30,7 @@ namespace BallBattle.Tests
         public void OldFloatV2SaveLoadsToNearestFix()
         {
             var d = new MemorySaveStore { Json = V2FloatSave }.Load();
-            Assert.That(d.Version, Is.EqualTo(4));
+            Assert.That(d.Version, Is.EqualTo(5));
             Assert.That(d.HasRun, Is.True);
             var run = d.Run.ToRun();
             Assert.That(run.Build.DamagePct.Raw, Is.EqualTo(9830), "0.15 × 65536 = 9830.4");
@@ -57,7 +57,7 @@ namespace BallBattle.Tests
             Assert.That(Encoding.UTF8.GetBytes(b.Json), Is.EqualTo(Encoding.UTF8.GetBytes(a.Json)), "A and B byte-identical");
             StringAssert.Contains("\"DamagePct\":", a.Json);
             StringAssert.Contains("\"HpAfter\":37.5", a.Json);
-            StringAssert.Contains("\"Version\":4", a.Json);
+            StringAssert.Contains("\"Version\":5", a.Json);
         }
 
         [Test]

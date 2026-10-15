@@ -71,7 +71,7 @@ namespace BallBattle.Tests
             run.History.Add(new FightRecord{FightIndex=0,Won=true,EnemyWeapon="fang",HpAfter=80});
             var data=new SaveData{Version=3,HasRun=true,Run=RunSave.From(run)};
             SaveMigration.Upgrade(data);
-            Assert.That((data.Version,data.HasRun),Is.EqualTo((4,true)));
+            Assert.That((data.Version,data.HasRun),Is.EqualTo((SaveData.CurrentVersion,true)));
             Assert.That(data.Run.History.Count,Is.EqualTo(1)); Assert.That(data.Run.History[0].EnemyWeapon,Is.EqualTo("fang"));
             Assert.That(data.Run.OfferCards[0].Kind,Is.EqualTo(CardKind.SwapWeapon));
             Assert.That(data.Run.OfferCards[1].Kind,Is.EqualTo(CardKind.SkillUp));

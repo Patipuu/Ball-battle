@@ -122,7 +122,11 @@ namespace BallBattle.View
         public void ChooseWeapon(string weaponId)
         {
             if (Current != State.PickWeapon || !StartChoices.Contains(weaponId)) return;
-            if (save.HasRun) UnlockRules.RecordAbandoned(save.Progress);
+            if (save.HasRun)
+            {
+                UnlockRules.RecordAbandoned(save.Progress);
+                LastChest = AwardAbandoned(save.Progress, save.Run);   // BB-12a: an abandoned run that played a fight still earns its chest
+            }
             Run = RunState.Start(pendingSeed, weaponId, save.Progress, ForceSkill);
             BossSelection.Remember(save.Progress, Run);   // BB-04: before any forced boss, so -bbForceBoss never enters the history
             if (ForceBossId != null) Run.ApplyForcedBoss(ForceBossId);
@@ -257,6 +261,7 @@ namespace BallBattle.View
             var before = FightReport.Snapshot.Of(Run);
             Run.ApplyResult(finished);
             UnlockRules.Record(save.Progress, Run);
+            if (Run.Over) LastChest = BallBattle.Sim.Meta.MetaRules.AwardRun(save.Progress, Run);   // BB-12a: saved by Persist below
             ApplyForceBossToNewFight();   // BB-VIEW3: a force deferred by a resumed retry starts with the next new fight
             LastReport = FightReport.Build(finished, Stats, before, Run, ForceArenaId);
             Go(State.FightResult);   // result screen first, then Prepare (or the summary)
@@ -268,6 +273,19 @@ namespace BallBattle.View
         {
             if (Current != State.FightResult) return;
             Go(Run.Over ? State.Summary : Run.StartPickPending ? State.StartPick : State.Prepare);
+        }
+
+        /// <summary>BB-12a: the chest the last finished (or abandoned) run earned, already applied to Progress; null when none.</summary>
+        public BallBattle.Sim.Meta.ChestResult LastChest { get; private set; }
+
+        /// <summary>BB-12a: chest of a saved run that a new run replaces (tier from its fight history).</summary>
+        public static BallBattle.Sim.Meta.ChestResult AwardAbandoned(ProgressData p, RunSave saved)
+        {
+            if (p == null || saved?.History == null) return null;
+            var furthest = -1;
+            foreach (var h in saved.History) if (h.Won && h.FightIndex > furthest) furthest = h.FightIndex;
+            var tier = BallBattle.Sim.Meta.MetaRules.TierFor(false, furthest, saved.History.Count);
+            return tier.HasValue ? BallBattle.Sim.Meta.MetaRules.Open(p, tier.Value, saved.Build?.WeaponId, unchecked((uint)saved.SeedBits)) : null;
         }
 
         /// <summary>UI-TUT1: has the first-run tip <paramref name="id"/> been shown (and closed) already.</summary>
