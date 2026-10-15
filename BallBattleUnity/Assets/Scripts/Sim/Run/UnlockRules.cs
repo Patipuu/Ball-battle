@@ -18,6 +18,8 @@ namespace BallBattle.Sim.Run
         public List<string> LastBoss = new List<string>();
         /// <summary>BB-04 Boss Codex: one entry per boss met so far.</summary>
         public List<BossCodexEntry> BossCodex = new List<BossCodexEntry>();
+        /// <summary>UI-TUT1: first-run tips already shown (TutorialCoach ids). Old saves load it empty.</summary>
+        public List<string> SeenTips = new List<string>();
 
         public bool Has(string achievement) => Achievements.Contains(achievement);
 

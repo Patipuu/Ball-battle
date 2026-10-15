@@ -23,10 +23,16 @@ namespace BallBattle.View
 
         /// <summary>Main button (24,160) 222x48.</summary>
         public static readonly Rect RunArea = new Rect(-111, 32, 222, 48);
-        /// <summary>VERSUS button (64,326) 142x30.</summary>
-        public static readonly Rect VersusArea = new Rect(-71, -116, 142, 30);
+        /// <summary>UI-MENU1: one column of same-size buttons under the NEXT GOAL box, each with a one-line explanation under it.</summary>
+        public static readonly Rect VersusArea = new Rect(-71, -100, 142, 30);
         /// <summary>UI-UX2: CODEX matches VERSUS (same size and label scale).</summary>
-        public static readonly Rect CodexArea = new Rect(-71, -156, 142, 30);
+        public static readonly Rect CodexArea = new Rect(-71, -150, 142, 30);
+        public static readonly Rect HowToArea = new Rect(-71, -200, 142, 30);
+        public const string VersusLine = "WATCH ANY TWO BALLS FIGHT";
+        public const string CodexLine = "WHAT EVERY BALL DOES";
+        public const string StartHere = "NEW? START HERE";
+        /// <summary>Title letters take the ball colours in turn (space skipped).</summary>
+        public static readonly string[] TitleColors = { "blade", "volley", "fang", "pike", "venom", "aegis", "rig", "blade", "volley", "fang" };
         public static readonly Rect VersusBackArea = new Rect(-60, -214, 120, 32);
 
         public event Action<string, string> StartRequested;
@@ -52,6 +58,17 @@ namespace BallBattle.View
         readonly WeaponProfileView[] profiles = new WeaponProfileView[2];
         Transform noticePage;
         Action noticeOk;
+        // UI-MENU1: lively hub
+        PixelText title;
+        MenuBackdrop backdrop;
+        Transform startHere;
+        SpriteRenderer runShine;
+        HowToPlayView howTo;
+        public MenuBackdrop Backdrop => backdrop;
+        public PixelText Title => title;
+        public bool StartHereShown => startHere != null && startHere.gameObject.activeSelf;
+        public HowToPlayView HowTo => howTo;
+        public SpriteRenderer RunShine => runShine;
 
         /// <summary>Settings page closed (BACK, Esc, any other page): volumes are saved then, if they changed.</summary>
         public event Action SettingsClosed;
@@ -87,6 +104,9 @@ namespace BallBattle.View
             BuildNotice(art);
             codex = SkillCodexView.Create(transform, art);
             codex.Closed += ShowHub;
+            howTo = HowToPlayView.Create(transform, art);
+            howTo.Closed += ShowHub;
+            howTo.StartRequested += PressRun;
             SetRunInfo(new ProgressData(), null);
             ShowHub();
         }
@@ -100,11 +120,18 @@ namespace BallBattle.View
 
         void BuildHub(ArtLibrary art)
         {
-            Text(hub, art, "BALL BATTLE", 0, 129, 3, Palette.Text);                  // top 96
+            backdrop = MenuBackdrop.Create(hub, art, Order + 1);   // under every hub element (buttons and boxes start at Order + 2)
+            title = PixelText.Create(hub, "BALL BATTLE", art.Font, new Vector2(0, 135), PixelText.Align.Center, 3, Order + 4);
+            title.EnableShadow(Palette.Outline, new Vector2(0, -3));
+            title.Set("BALL BATTLE", Palette.Text);
+            ColorTitle();
             Text(hub, art, "WEAPON BALL AUTO BATTLER", 0, 115, 1, Palette.TextDim);  // top 120
 
             runButton = PixelButton.Create(hub, "Run", art, RunArea, null, 1, Palette.WallWarning, Palette.WallWarning, Palette.Background, Order + 2);
             runButton.Clicked += PressRun;
+            runShine = PixelRect.Create(runButton.transform, "Shine", art.Pixel, new Color32(255, 244, 200, 150), runButton.IconOrder);
+            runShine.enabled = false;
+            BuildStartHere(art);
             var o = runButton.IconOrder + 1;
             runLabel = PixelText.Create(runButton.transform, "RunLabel", art.Font, new Vector2(0, 36), PixelText.Align.Center, 3, o);           // cell 36..75
             continueLabel = PixelText.Create(runButton.transform, "ContinueLabel", art.Font, new Vector2(0, 52), PixelText.Align.Center, 2, o); // cell 52..78
@@ -119,8 +146,59 @@ namespace BallBattle.View
             var codexButton = PixelButton.Create(hub, "CodexButton", art, CodexArea, "CODEX", 2,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             codexButton.Clicked += () => { hub.gameObject.SetActive(false); codex.Show(); };
+            Text(hub, art, VersusLine, 0, VersusArea.yMin - 15, 1, Palette.TextDim);   // cell under the button
+            Text(hub, art, CodexLine, 0, CodexArea.yMin - 15, 1, Palette.TextDim);
+            var howButton = PixelButton.Create(hub, "HowToButton", art, HowToArea, "HOW TO PLAY", 2,
+                Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
+            howButton.Clicked += () => { hub.gameObject.SetActive(false); howTo.Show(); };
             BuildGear(art);
         }
+        void ColorTitle()
+        {
+            var k = 0;
+            for (var i = 0; i < title.Text.Length; i++)
+            {
+                if (title.Text[i] == ' ') continue;
+                title.SetGlyphColor(i, Palette.Look(TitleColors[k % TitleColors.Length]).Body);
+                k++;
+            }
+        }
+
+        /// <summary>"NEW? START HERE" with two small down arrows, between the tagline and RUN; only before the first run.</summary>
+        void BuildStartHere(ArtLibrary art)
+        {
+            startHere = new GameObject("StartHere").transform;
+            startHere.SetParent(hub, false);
+            var t = PixelText.Create(startHere, StartHere, art.Font, new Vector2(0, 86), PixelText.Align.Center, 1, Order + 4);
+            t.Set(StartHere, Palette.WallWarning);
+            foreach (var x in new[] { -52f, 52f })
+                for (var row = 0; row < 3; row++)   // rows 5, 3, 1 px wide from top to bottom: points down at RUN
+                    PixelRect.Set(PixelRect.Create(startHere, "Arrow", art.Pixel, Palette.WallWarning, Order + 4), x - 2 + row, 93 - 2 * row, x + 3 - row, 95 - 2 * row);
+            startHere.gameObject.SetActive(false);
+        }
+
+        void Update()
+        {
+            if (hub != null && hub.gameObject.activeInHierarchy) Animate(Time.unscaledTime);
+        }
+
+        /// <summary>UI-MENU1 hub animation at time <paramref name="t"/> (s): title wave, START HERE bob, a shine across RUN every 3.2 s.</summary>
+        public void Animate(float t)
+        {
+            for (var i = 0; i < title.Text.Length; i++)
+                title.SetGlyphOffsetY(i, Mathf.Round(2f * Mathf.Sin(t * 2.4f - i * 0.55f)));
+            if (startHere.gameObject.activeSelf)
+                startHere.localPosition = new Vector3(0f, Mathf.Round(Mathf.Sin(t * 4f)), 0f);
+            var phase = t % ShinePeriod;
+            runShine.enabled = phase < ShineSweep;
+            if (runShine.enabled)
+            {
+                var x = Mathf.Round(Mathf.Lerp(RunArea.xMin + 1, RunArea.xMax - 4, phase / ShineSweep));
+                PixelRect.Set(runShine, x, RunArea.yMin + 1, x + 2, RunArea.yMax - 1);
+            }
+        }
+        public const float ShinePeriod = 3.2f, ShineSweep = 0.7f;
+
         /// <summary>12x12 gear: 1 px frame, a 6x6 ring with a 2x2 hole and four teeth (whole pixels).</summary>
         void BuildGear(ArtLibrary art)
         {
@@ -260,6 +338,7 @@ namespace BallBattle.View
                 continueLine.Set("", Palette.Background);
             }
             goal.Show(progress, savedRun);   // BB-VIEW3: the saved run's bosses name the boss goals
+            startHere.gameObject.SetActive(savedRun == null && (progress == null || progress.RunsPlayed == 0));   // UI-MENU1: brand-new player
         }
 
         public bool HasSavedRun => savedRun != null;
@@ -276,6 +355,7 @@ namespace BallBattle.View
         public void ShowHub()
         {
             codex?.Hide();
+            howTo?.Hide();
             CloseSettings();
             noticePage.gameObject.SetActive(false);
             SetHubInput(true);
@@ -286,6 +366,7 @@ namespace BallBattle.View
 
         public void ShowVersus()
         {
+            howTo?.Hide();
             CloseSettings();
             noticePage.gameObject.SetActive(false);
             SetHubInput(true);

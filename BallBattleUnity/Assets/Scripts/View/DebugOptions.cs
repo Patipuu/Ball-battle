@@ -76,6 +76,11 @@ namespace BallBattle.View
         /// <summary>-bbForceDraw: Versus only, the first round to resolve ends the match as a draw (MatchFlow.ForceDraw). Off by default; Run mode ignores it.</summary>
         public const string ForceDrawArg = "-bbForceDraw";
 
+        /// <summary>UI-TUT1 -bbNoTips: no first-run tips (QA automation on fresh saves). Off by default.</summary>
+        public const string NoTipsArg = "-bbNoTips";
+        static bool? noTips;
+        public static bool NoTips => noTips ?? (noTips = HasArg(Environment.GetCommandLineArgs(), NoTipsArg)).Value;
+
         static bool? audioLogOn, forceDraw;   // parsed once (read on every hazard cue)
 
         public static bool AudioLogOn => audioLogOn ?? (audioLogOn = HasArg(Environment.GetCommandLineArgs(), AudioLogArg)).Value;

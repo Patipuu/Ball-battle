@@ -240,6 +240,13 @@ namespace BallBattle.Tests
         }
 
         [Test]
+        public void FightTipTalksAboutTapping()
+        {
+            var tip = TutorialCoach.Tips.First(t => t.Id == "fight");
+            Assert.That(tip.Line1 + " " + tip.Line2, Does.Contain("TAP"));
+        }
+
+        [Test]
         public void CaptureTapScreens()
         {
             var dir = Environment.GetEnvironmentVariable("BB_TAP1_OUT");

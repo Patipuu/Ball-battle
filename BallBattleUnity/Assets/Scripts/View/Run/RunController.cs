@@ -17,6 +17,7 @@ namespace BallBattle.View
         RunOverlayView overlay;
         RunSummaryView summary;
         RunResultView result;
+        TutorialCoach coach;
         TapView tap;
         RunFlow.State shown = RunFlow.State.Closed;
         bool dirty;
@@ -26,7 +27,10 @@ namespace BallBattle.View
         public PrepareView Prepare => prepare;
         public RunResultView Result => result;
         public RunSummaryView Summary => summary;
+        public TutorialCoach Coach => coach;
         public TapView Tap => tap;
+        public PickWeaponView Pick => pick;
+        public StartPickView StartPick => startPick;
 
         public event Action Closed;
 
@@ -55,6 +59,7 @@ namespace BallBattle.View
             overlay = RunOverlayView.Create(transform, art);
             summary = RunSummaryView.Create(transform, art);
             result = RunResultView.Create(transform, art);
+            coach = TutorialCoach.Create(transform, art);   // UI-TUT1: first-run tips over the screens
             tap = TapView.Create(transform, arena);   // TAP-4: tap to strike during Run fights
 
             title.ContinueRequested += () => Flow.Continue();
@@ -143,6 +148,7 @@ namespace BallBattle.View
             overlay.Hide();
             summary.Hide();
             result.Hide();
+            coach.Hide();
             tap?.Tick(null, 0f);
             shown = RunFlow.State.Closed;
         }
@@ -185,6 +191,17 @@ namespace BallBattle.View
                 case RunFlow.State.FightResult: result.Show(Flow.LastReport); break;
                 case RunFlow.State.Summary: summary.Show(Flow.Run, Flow.Progress); break;
             }
+            // UI-TUT1: the next first-run tip for this screen, if any (closes a tip left from another screen).
+            Transform screenRoot = null;
+            switch (s)
+            {
+                case RunFlow.State.PickWeapon: screenRoot = pick.transform; break;
+                case RunFlow.State.StartPick: screenRoot = startPick.transform; break;
+                case RunFlow.State.Prepare: screenRoot = prepare.transform; break;
+                case RunFlow.State.FightResult: screenRoot = result.transform; break;
+            }
+            if (screenRoot != null) coach.Offer(Flow, s, screenRoot);
+            else if (coach.Showing) coach.Hide();
         }
 
         /// <summary>

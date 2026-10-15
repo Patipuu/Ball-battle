@@ -21,6 +21,9 @@ namespace BallBattle.View
         string current;
         Color32 currentColor;
         bool highlighted;
+        bool shadowOn;
+        Color32 shadowColor;
+        Vector2 shadowOffset;
 
         /// <summary><paramref name="font"/> (the old 3x5 atlas, ArtLibrary.Font) is no longer drawn; kept so callers stay unchanged.</summary>
         public static PixelText Create(Transform parent, string name, Texture2D font, Vector2 position, Align align, int scale, int sortingOrder)
@@ -91,6 +94,7 @@ namespace BallBattle.View
                 sr.sprite = g.Sprite;
                 sr.color = color;
                 sr.transform.localPosition = new Vector3(x, 0f, 0f);
+                if (shadowOn) UpdateShadow(sr);
                 x += (g.Width + PixelFont.Spacing) * scale;
             }
         }
@@ -109,6 +113,47 @@ namespace BallBattle.View
             for (var i = 0; i < text.Length && i < glyphs.Count; i++)
                 if (IsNumberChar(text, i)) glyphs[i].color = numberColor;
         }
+
+        /// <summary>
+        /// UI-MENU1: a drop shadow under every glyph (same glyph sprite, <paramref name="color"/>, <paramref name="offset"/> whole
+        /// screen px), drawn one sorting order below the text. Part of this text, so it counts as one text in layout checks.
+        /// </summary>
+        public void EnableShadow(Color32 color, Vector2 offset)
+        {
+            shadowOn = true; shadowColor = color; shadowOffset = offset;
+            var text = current; current = null;
+            if (text != null) Set(text, currentColor);
+        }
+        public bool HasShadow => shadowOn;
+
+        void UpdateShadow(SpriteRenderer glyph)
+        {
+            var t = glyph.transform.Find("sh");
+            SpriteRenderer sh;
+            if (t == null)
+            {
+                var go = new GameObject("sh");
+                go.transform.SetParent(glyph.transform, false);
+                sh = go.AddComponent<SpriteRenderer>();
+            }
+            else sh = t.GetComponent<SpriteRenderer>();
+            sh.sprite = glyph.sprite;
+            sh.enabled = glyph.enabled;
+            sh.color = shadowColor;
+            sh.sortingOrder = sortingOrder - 1;
+            sh.transform.localPosition = new Vector3(shadowOffset.x / scale, shadowOffset.y / scale, 0f);   // glyph space is scaled
+        }
+
+        /// <summary>UI-MENU1: colour of one character (animated titles). Set() with new text or colour redraws all glyphs.</summary>
+        public void SetGlyphColor(int index, Color32 color) { if (index >= 0 && index < glyphs.Count) glyphs[index].color = color; }
+        /// <summary>UI-MENU1: whole-pixel vertical offset of one character (wave). Set() with new text puts glyphs back at 0.</summary>
+        public void SetGlyphOffsetY(int index, float dy)
+        {
+            if (index < 0 || index >= glyphs.Count) return;
+            var t = glyphs[index].transform;
+            t.localPosition = new Vector3(t.localPosition.x, Mathf.Round(dy), 0f);
+        }
+        public float GlyphOffsetY(int index) => index >= 0 && index < glyphs.Count ? glyphs[index].transform.localPosition.y : 0f;
 
         /// <summary>Color of character <paramref name="index"/> as drawn (tests).</summary>
         public Color32 GlyphColor(int index) => index < glyphs.Count ? (Color32)glyphs[index].color : currentColor;

@@ -270,6 +270,19 @@ namespace BallBattle.View
             Go(Run.Over ? State.Summary : Run.StartPickPending ? State.StartPick : State.Prepare);
         }
 
+        /// <summary>UI-TUT1: has the first-run tip <paramref name="id"/> been shown (and closed) already.</summary>
+        public bool TipSeen(string id) => save?.Progress?.SeenTips != null && save.Progress.SeenTips.Contains(id);
+
+        /// <summary>UI-TUT1: remember tips as shown, saved at once (the run part of the save is left as last persisted).</summary>
+        public void MarkTipsSeen(params string[] ids)
+        {
+            if (save == null) return;
+            var p = save.Progress ?? (save.Progress = new ProgressData());
+            if (p.SeenTips == null) p.SeenTips = new System.Collections.Generic.List<string>();
+            foreach (var id in ids) if (!p.SeenTips.Contains(id)) p.SeenTips.Add(id);
+            store.Save(save);
+        }
+
         void Persist()
         {
             save.HasRun = Run != null && !Run.Over;
