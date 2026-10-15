@@ -29,6 +29,9 @@ namespace BallBattle.View
         PixelText[] labels, values;
         PixelText consequence, carry, runLine;
         PixelText traitTriggered;
+        /// <summary>BB-FIX4: after a lost boss fight, the boss name and its Prepare hint (BossText.NameAndHint), under the NEXT box.</summary>
+        readonly PixelText[] bossHint = new PixelText[3];
+        static readonly float[] BossHintY = { -62f, -75f, -88f };   // cells -62..-49, -75..-62, -88..-75: NEXT box ends -38, NEXT FIGHT starts -118
         GameObject nextBox;
         PixelText nextHeader, nextName, nextTraits, nextTraits2, nextStats;
         /// <summary>Next enemy's traits lines: from x -74 to 120.</summary>
@@ -82,6 +85,8 @@ namespace BallBattle.View
             nextTraits2 = RunUi.Text(n, art, -74, -22, 1, PixelText.Align.Left);  // -22..-9 (only when the traits need two lines)
             nextStats = RunUi.Text(n, art, -112, -35, 1, PixelText.Align.Left);   // -35..-22
 
+            for (var i = 0; i < bossHint.Length; i++) bossHint[i] = RunUi.Text(root, art, 0, BossHintY[i], 1);
+
             continueButton = RunUi.Button(root, art, ContinueArea, "NEXT FIGHT", 2, Palette.WallWarning, () => ContinueRequested?.Invoke());
         }
 
@@ -129,6 +134,9 @@ namespace BallBattle.View
                 nextTraits2.Set(lines.Count > 1 ? string.Join(" ", lines.GetRange(1, lines.Count - 1)) : "", Palette.Text);
                 nextStats.Set(r.NextStats, Palette.Text);
             }
+            var hint = BossHint(r);
+            for (var i = 0; i < bossHint.Length; i++)
+                bossHint[i].Set(i < hint.Count ? hint[i] : "", i == 0 ? Palette.WallWarning : Palette.Text);   // Prepare: name gold, hint white
             continueButton.SetText(r.RunOver ? "SUMMARY" : "NEXT FIGHT", Palette.WallWarning);
         }
 
@@ -144,6 +152,12 @@ namespace BallBattle.View
         public string TitleText => title.Text;
         public string Value(int row) => values[row].Text;
         public PixelText FoeHealedLine => foeHealed;
+
+        /// <summary>BB-FIX4: boss name + hint lines on this screen: only after a boss fight that was not won; empty otherwise.</summary>
+        public static System.Collections.Generic.List<string> BossHint(FightReport r) =>
+            r == null || r.Outcome == FightOutcome.Win ? new System.Collections.Generic.List<string>() : BossText.NameAndHint(r.BossId);
+        /// <summary>The boss hint lines as drawn (tests).</summary>
+        public PixelText BossHintLine(int i) => bossHint[i];
 
         /// <summary>"FOE HEALED +x" (x rounded down), or "" when the enemy did not heal this fight.</summary>
         public static string FoeHealedText(FightReport r) => r != null && r.EnemyHealed > 0f ? "FOE HEALED +" + HpText.Floor(r.EnemyHealed) : "";

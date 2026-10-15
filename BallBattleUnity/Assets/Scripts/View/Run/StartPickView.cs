@@ -13,6 +13,9 @@ namespace BallBattle.View
         RunState shownRun;
         ArtLibrary art;
         PixelText title1, title2, nextFight, weapon, noReroll;
+        /// <summary>BB-FIX4: CHOOSE YOUR RETRY of a boss fight: the boss name and its Prepare hint (BossText.NameAndHint), under the footer.</summary>
+        readonly PixelText[] bossHint = new PixelText[3];
+        static readonly float[] BossHintY = { -117f, -130f, -143f };   // cells -117..-104, -130..-117, -143..-130: the footer band ends -97
 
         /// <summary>Footer hint "NO REROLL ON START PICK" (tests).</summary>
         public PixelText NoRerollText => noReroll;
@@ -79,6 +82,7 @@ namespace BallBattle.View
             PixelRect.Set(PixelRect.Create(root, "FooterBand", art.Pixel, RunUi.Panel, RunUi.Order + 2), -127, -97, 127, -64);
             view.noReroll = RunUi.Text(root, art, -119, -79, 1, PixelText.Align.Left, RunStrings.StartPickNoReroll, Palette.TextDim);        // cell -79..-66
             view.nextFight = RunUi.Text(root, art, -119, -93, 1, PixelText.Align.Left, "YOUR FIRST FIGHT STARTS AFTER THIS", Palette.TextDim);   // cell -93..-80
+            for (var i = 0; i < view.bossHint.Length; i++) view.bossHint[i] = RunUi.Text(root, art, 0, BossHintY[i], 1);
             view.Hide();
             return view;
         }
@@ -114,6 +118,8 @@ namespace BallBattle.View
                 detail2[i].SetHighlighted(face.Detail2, Palette.Text, CardFace.NumberColor);
                 rarity[i].Set(face.Frame.ToString().ToUpperInvariant(), Palette.TextDim);
                 var branchButtonsOn = skillButtons[i].Show(run, i);
+                // BB-FIX4: with the branch buttons on, the 2x icon sits 1 px above their top edge (it used to dip 4 px under it).
+                icons[i].transform.localPosition = new Vector3(-101, branchButtonsOn ? CardArea(i).yMin + SkillBranchButtons.Top + 1 + 14 : CardArea(i).yMax - 30, 0);
                 if (branchButtonsOn)
                 {
                     rarity[i].Set("", Palette.TextDim);
@@ -123,7 +129,17 @@ namespace BallBattle.View
                 }
                 else cards[i].transform.Find("TapToPick").gameObject.SetActive(true);
             }
+
+            var hint = BossHint(run);
+            for (var i = 0; i < bossHint.Length; i++)
+                bossHint[i].Set(i < hint.Count ? hint[i] : "", i == 0 ? Palette.WallWarning : Palette.Text);   // Prepare: name gold, hint white
         }
+
+        /// <summary>BB-FIX4: boss name + hint lines on this screen: only on the retry pick of a boss fight; empty otherwise.</summary>
+        public static System.Collections.Generic.List<string> BossHint(RunState run) =>
+            run != null && run.IsRetry ? BossText.NameAndHint(run.CurrentBossId) : new System.Collections.Generic.List<string>();
+        /// <summary>The boss hint lines as drawn (tests).</summary>
+        public PixelText BossHintLine(int i) => bossHint[i];
 
         public void Hide() => gameObject.SetActive(false);
     }

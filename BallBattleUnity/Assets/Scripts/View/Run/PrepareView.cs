@@ -23,7 +23,7 @@ namespace BallBattle.View
         /// <summary>Card text (title, details) stays left of this x (2 px inside the card's right edge).</summary>
         public const float CardTextRight = 123f;
         /// <summary>Traits lines in the ENEMY / YOU boxes: from x -74 to 121.</summary>
-        const int TraitsWidth = 195;
+        public const int TraitsWidth = 195;
         PixelText youSkill, enemySkill;
         readonly SkillBranchButtons[] skillButtons = new SkillBranchButtons[RunTuning.OfferSize];
         public event Action<int, BallBattle.Sim.Skills.SkillBranch> SkillPicked;
@@ -223,7 +223,7 @@ namespace BallBattle.View
                 var has = i < run.OfferCount;
                 cards[i].gameObject.SetActive(has);
                 if (!has) continue;
-                ApplyFace(i, CardFace.For(ShownCard(run, i), art));
+                ApplyFace(i, ShownFace(run, i, art));
                 StyleCard(i);
             }
 
@@ -236,6 +236,24 @@ namespace BallBattle.View
 
         // OfferCard projects unpicked QA offers from the effective skill level. A taken slot must retain its stored identity.
         public static Card ShownCard(RunState state, int slot) => state.IsPicked(slot) ? state.OfferCards[slot].ToCard() : state.OfferCard(slot);
+
+        /// <summary>
+        /// BB-FIX4: the face of slot <paramref name="slot"/>. A taken level-2 SKILL UP (the branch pick) names the branch the run took
+        /// ("SKILL UP - RAPID", that branch's effect line) instead of the offer text "CHOOSE YOUR SKILL BRANCH".
+        /// </summary>
+        public static CardFace ShownFace(RunState state, int slot, ArtLibrary art)
+        {
+            var card = ShownCard(state, slot);
+            var face = CardFace.For(card, art);
+            var branch = state.EffectiveSkillBranch;
+            if (state.IsPicked(slot) && card.Kind == CardKind.SkillUp && card.Level == 2 && branch != BallBattle.Sim.Skills.SkillBranch.None)
+            {
+                var data = BallBattle.Sim.Skills.SkillDefinition.ForWeapon(state.Build.WeaponId);
+                face.Title = CardText.Title(card) + " - " + data.BranchName(branch);
+                face.Detail1 = branch == BallBattle.Sim.Skills.SkillBranch.A ? data.SummaryA : data.SummaryB;
+            }
+            return face;
+        }
 
         /// <summary>Up to two traits lines (wrapped between traits); a third line, which three traits never need, joins the second.</summary>
         static void SetTraits(PixelText line1, PixelText line2, System.Collections.Generic.List<string> lines)
@@ -338,6 +356,11 @@ namespace BallBattle.View
             FitTitle(i, face.Title, cardTitles[i].TextColor);
             var branchButtonsOn = skillButtons[i].Show(run, i);
             if (branchButtonsOn) { cardDetails[i].Set("", Palette.TextDim); cardDetails2[i].Set("", Palette.TextDim); }
+            // BB-FIX4: with the branch buttons on, the icon sits 1 px above their top edge at 1x (a 28 px 2x icon does not fit a 58 px
+            // card above a 28 px button); otherwise the usual 2x icon, centred.
+            var area = CardArea(i);
+            cardIcons[i].transform.localPosition = new Vector3(area.xMin + 22, branchButtonsOn ? area.yMin + SkillBranchButtons.Top + 1 + 7 : area.yMin + CardHeight / 2f, 0f);
+            cardIcons[i].transform.localScale = branchButtonsOn ? Vector3.one : new Vector3(2f, 2f, 1f);
         }
 
         /// <summary>
@@ -353,7 +376,13 @@ namespace BallBattle.View
             var tagLeft = string.IsNullOrEmpty(tag) ? float.PositiveInfinity : 117f - PixelFont.MeasureWidth(tag);
             var right = Mathf.Min(tagLeft - TitleTagGap, CardTextRight);   // the 2x title must clear the tag and the card edge
             string line1 = null, line2 = null;
-            if (x + PixelFont.MeasureWidth(title) * 2 > right)
+            // BB-FIX4: a taken branch pick ("SKILL UP - REACH") stays one 1x line beside the tag instead of breaking after the dash.
+            if (x + PixelFont.MeasureWidth(title) * 2 > right && title.Contains(" - ") && x + PixelFont.MeasureWidth(title) + TitleTagGap <= tagLeft)
+            {
+                line1 = title;
+                line2 = "";
+            }
+            else if (x + PixelFont.MeasureWidth(title) * 2 > right)
                 for (var at = title.LastIndexOf(' '); at > 0; at = title.LastIndexOf(' ', at - 1))
                 {
                     var a = title.Substring(0, at);

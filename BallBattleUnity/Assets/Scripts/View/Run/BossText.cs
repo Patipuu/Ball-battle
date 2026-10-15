@@ -32,6 +32,19 @@ namespace BallBattle.View
             }
         }
 
+        /// <summary>
+        /// BB-FIX4: the boss name, then its Prepare hint wrapped exactly as the Prepare ENEMY box wraps it (at most two lines), for the
+        /// loss result and CHOOSE YOUR RETRY screens. Same strings as Prepare (Name / Hint); empty list for an unknown or empty id.
+        /// </summary>
+        public static List<string> NameAndHint(string bossId)
+        {
+            var lines = new List<string>();
+            if (string.IsNullOrEmpty(bossId) || string.IsNullOrEmpty(Hint(bossId))) return lines;
+            lines.Add(Name(bossId));
+            lines.AddRange(PrepareView.BossLines(null, bossId, PrepareView.TraitsWidth));
+            return lines;
+        }
+
         /// <summary>MIMIC's preview name: "COPIES YOU" (its weapon and traits are only known when the fight starts).</summary>
         public static string CopiesYou => StringTable.Get(StringKeys.BossCopiesYou);
 

@@ -168,6 +168,20 @@ namespace BallBattle.View
         }
         public BallBattle.Sim.Skills.SkillSpec? ForceSkill { get; set; }
 
+        /// <summary>
+        /// BB-FIX4: the -bbTrace console copy of a MIRROR [Reflect] line. With -bbAudioLog on, AudioLog.Write (AudioDirector) already
+        /// prints the same line to the console, so it reached Player.log twice; the trace copy is now skipped then. One line per
+        /// reflect in Player.log either way; audio_log.txt is untouched. Returns true when it logged.
+        /// </summary>
+        public static bool TraceReflect(SimEvent e, MatchSim sim, bool trace)
+        {
+            if (!trace || AudioLog.Enabled) return false;
+            var line = AudioLog.ReflectLine(e, sim);
+            if (line == null) return false;
+            Debug.Log(line);
+            return true;
+        }
+
         /// <summary>Show and run a match built elsewhere (Run mode: loadouts with traits, HP, size). Tags label the HUD names.</summary>
         public void StartMatch(MatchSim sim, string tagA = null, string tagB = null)
         {
@@ -265,11 +279,7 @@ namespace BallBattle.View
                     for (var i = 0; i < events.Count; i++)
                     {
                         bossArt.OnEvent(events[i], Sim);
-                        if (DebugOptions.Trace)
-                        {
-                            var reflect = AudioLog.ReflectLine(events[i], Sim);
-                            if (reflect != null) Debug.Log(reflect);
-                        }
+                        TraceReflect(events[i], Sim, DebugOptions.Trace);
                         if (events[i].Type == SimEventType.SkillFired || events[i].Type == SimEventType.SkillEnded)
                         {
                             var line = SimTrace.SkillLine(events[i]);

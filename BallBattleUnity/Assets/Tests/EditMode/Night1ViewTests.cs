@@ -83,7 +83,9 @@ namespace BallBattle.Tests
             run.Pick(2, SkillBranch.A); view.Show(run);
             Assert.That(view.CardTag(2).Text, Is.EqualTo("TAKEN"));
             Assert.That(PrepareView.ShownCard(run, 2).Kind, Is.EqualTo(CardKind.SkillUp));
-            Assert.That(view.CardTitle(2), Is.EqualTo("SKILL UP"));
+            // BB-FIX4: a taken branch pick (LV2) names its branch; the forced run's card is the LV3 card (no branch pick), still generic.
+            var title = view.TitleWrapped(2) ? (view.CardTitleLine(2, 1).Text + " " + view.CardTitleLine(2, 2).Text).Trim() : view.CardTitle(2);
+            Assert.That(title, Is.EqualTo(forced ? "SKILL UP" : "SKILL UP - " + SkillDefinition.ForWeapon(run.Build.WeaponId).BranchA));
             return view;
         }
         [TestCase(0, false)] [TestCase(1, false)] [TestCase(2, false)]

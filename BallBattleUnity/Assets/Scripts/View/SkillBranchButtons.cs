@@ -8,6 +8,8 @@ namespace BallBattle.View
     public sealed class SkillBranchButtons
     {
         public readonly PixelButton A, B;
+        /// <summary>BB-FIX4: top edge of the branch buttons, px above the card bottom (2 + 28). A card icon stays fully above it.</summary>
+        public const float Top = 30f;
         readonly PixelText effectA, effectB;
         RunState run;
         int index;
