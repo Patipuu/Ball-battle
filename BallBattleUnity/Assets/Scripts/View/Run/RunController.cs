@@ -19,6 +19,7 @@ namespace BallBattle.View
         RunResultView result;
         TutorialCoach coach;
         TapView tap;
+        ChestView chest;
         RunFlow.State shown = RunFlow.State.Closed;
         bool dirty;
 
@@ -29,6 +30,7 @@ namespace BallBattle.View
         public RunSummaryView Summary => summary;
         public TutorialCoach Coach => coach;
         public TapView Tap => tap;
+        public ChestView Chest => chest;
         public PickWeaponView Pick => pick;
         public StartPickView StartPick => startPick;
 
@@ -61,6 +63,8 @@ namespace BallBattle.View
             result = RunResultView.Create(transform, art);
             coach = TutorialCoach.Create(transform, art);   // UI-TUT1: first-run tips over the screens
             tap = TapView.Create(transform, arena);   // TAP-4: tap to strike during Run fights
+            chest = ChestView.Create(transform, art);   // BB-12b: the run's chest, over the summary / start pick
+            chest.Collected += () => { Flow.MarkChestShown(); dirty = true; };
 
             title.ContinueRequested += () => Flow.Continue();
             title.NewRunRequested += () => Flow.NewRun(NewSeed());
@@ -150,6 +154,7 @@ namespace BallBattle.View
             result.Hide();
             coach.Hide();
             tap?.Tick(null, 0f);
+            chest?.Hide();
             shown = RunFlow.State.Closed;
         }
 
@@ -200,7 +205,12 @@ namespace BallBattle.View
                 case RunFlow.State.Prepare: screenRoot = prepare.transform; break;
                 case RunFlow.State.FightResult: screenRoot = result.transform; break;
             }
-            if (screenRoot != null) coach.Offer(Flow, s, screenRoot);
+            // BB-12b: a chest earned by the run that just ended (summary) or by the saved run a new run replaced (start pick)
+            // comes first; tips wait until it is collected.
+            if (Flow.ChestToShow != null && (s == RunFlow.State.Summary || s == RunFlow.State.StartPick) && !chest.IsOpen)
+                chest.Show(Flow.ChestToShow, Flow.Progress, Flow.ChestCaption, summary.transform, startPick.transform);
+            if (chest.IsOpen) { if (coach.Showing) coach.Hide(); }
+            else if (screenRoot != null) coach.Offer(Flow, s, screenRoot);
             else if (coach.Showing) coach.Hide();
         }
 

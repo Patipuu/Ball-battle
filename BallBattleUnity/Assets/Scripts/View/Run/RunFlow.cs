@@ -126,6 +126,8 @@ namespace BallBattle.View
             {
                 UnlockRules.RecordAbandoned(save.Progress);
                 LastChest = AwardAbandoned(save.Progress, save.Run);   // BB-12a: an abandoned run that played a fight still earns its chest
+                LastChestAbandoned = true;
+                chestToShow = LastChest != null;
             }
             Run = RunState.Start(pendingSeed, weaponId, save.Progress, ForceSkill);
             BossSelection.Remember(save.Progress, Run);   // BB-04: before any forced boss, so -bbForceBoss never enters the history
@@ -261,7 +263,12 @@ namespace BallBattle.View
             var before = FightReport.Snapshot.Of(Run);
             Run.ApplyResult(finished);
             UnlockRules.Record(save.Progress, Run);
-            if (Run.Over) LastChest = BallBattle.Sim.Meta.MetaRules.AwardRun(save.Progress, Run);   // BB-12a: saved by Persist below
+            if (Run.Over)
+            {
+                LastChest = BallBattle.Sim.Meta.MetaRules.AwardRun(save.Progress, Run);   // BB-12a: saved by Persist below
+                LastChestAbandoned = false;
+                chestToShow = LastChest != null;
+            }
             ApplyForceBossToNewFight();   // BB-VIEW3: a force deferred by a resumed retry starts with the next new fight
             LastReport = FightReport.Build(finished, Stats, before, Run, ForceArenaId);
             Go(State.FightResult);   // result screen first, then Prepare (or the summary)
@@ -277,6 +284,16 @@ namespace BallBattle.View
 
         /// <summary>BB-12a: the chest the last finished (or abandoned) run earned, already applied to Progress; null when none.</summary>
         public BallBattle.Sim.Meta.ChestResult LastChest { get; private set; }
+        /// <summary>BB-12b: LastChest came from a saved run that a new run replaced.</summary>
+        public bool LastChestAbandoned { get; private set; }
+        bool chestToShow;
+        /// <summary>BB-12b: the chest the CHEST screen still has to show (null once COLLECT closed it).</summary>
+        public BallBattle.Sim.Meta.ChestResult ChestToShow => chestToShow ? LastChest : null;
+        public void MarkChestShown() => chestToShow = false;
+        /// <summary>BB-12b: line under the chest title.</summary>
+        public string ChestCaption => LastChestAbandoned ? "FROM YOUR LAST RUN" :
+            LastChest == null ? "" : LastChest.Tier == BallBattle.Sim.Meta.ChestTier.Gold ? "RUN WON" :
+            LastChest.Tier == BallBattle.Sim.Meta.ChestTier.Silver ? "BOSS 1 BEATEN" : "RUN OVER";
 
         /// <summary>BB-12a: chest of a saved run that a new run replaces (tier from its fight history).</summary>
         public static BallBattle.Sim.Meta.ChestResult AwardAbandoned(ProgressData p, RunSave saved)

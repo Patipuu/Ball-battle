@@ -40,6 +40,11 @@ namespace BallBattle.View
         public event Action RunRequested;
         /// <summary>CONTINUE RUN: open Run mode and resume the saved run.</summary>
         public event Action ContinueRequested;
+        /// <summary>BB-12b: the OPEN CHEST button (welcome chests waiting in ProgressData.PendingChests).</summary>
+        public event Action ChestRequested;
+        /// <summary>BB-12b: top-left of the hub, shown only while chests wait.</summary>
+        public static readonly Rect ChestArea = new Rect(-127, 206, 76, 24);
+        public PixelButton ChestButton { get; private set; }
 
         readonly string[] selected = new string[2];
         PixelButton[][] tiles;
@@ -152,7 +157,13 @@ namespace BallBattle.View
                 Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
             howButton.Clicked += () => { hub.gameObject.SetActive(false); howTo.Show(); };
             BuildGear(art);
+            ChestButton = PixelButton.Create(hub, "ChestButton", art, ChestArea, "OPEN CHEST", 1, Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
+            ChestButton.Clicked += () => ChestRequested?.Invoke();
+            ChestButton.gameObject.SetActive(false);
         }
+
+        /// <summary>BB-12b: label of the chest button for <paramref name="waiting"/> chests ("" = hidden).</summary>
+        public static string ChestLabel(int waiting) => waiting <= 0 ? "" : waiting == 1 ? "OPEN CHEST" : "CHESTS X" + waiting;
         void ColorTitle()
         {
             var k = 0;
@@ -339,6 +350,9 @@ namespace BallBattle.View
             }
             goal.Show(progress, savedRun);   // BB-VIEW3: the saved run's bosses name the boss goals
             startHere.gameObject.SetActive(savedRun == null && (progress == null || progress.RunsPlayed == 0));   // UI-MENU1: brand-new player
+            var waiting = progress?.PendingChests?.Count ?? 0;   // BB-12b: welcome chests
+            ChestButton.gameObject.SetActive(waiting > 0);
+            if (waiting > 0) ChestButton.SetText(ChestLabel(waiting), Palette.WallWarning);
         }
 
         public bool HasSavedRun => savedRun != null;

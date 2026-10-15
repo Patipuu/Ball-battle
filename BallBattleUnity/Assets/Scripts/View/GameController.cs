@@ -33,6 +33,9 @@ namespace BallBattle.View
             Overlay = OverlayView.Create(transform, Arena.Art);
             store = FileSaveStore.Default();
             Run = RunController.Create(transform, Arena, store);
+            menuChest = ChestView.Create(transform, Arena.Art);   // BB-12b: welcome chests opened from the menu
+            menuChest.Collected += RefreshMenuInfo;
+            Menu.ChestRequested += OpenWaitingChest;
             var fx = Arena.GetComponent<FxView>();
             Audio = AudioDirector.Create(transform, fx != null ? fx.Sfx : null, store);
             WireAudio();
@@ -149,6 +152,26 @@ namespace BallBattle.View
         }
 
         void Start() { if (!HeadlessRoundRobin.Active) Flow.ToMenu(); }
+
+        ChestView menuChest;
+        public ChestView MenuChest => menuChest;
+
+        /// <summary>BB-12b: OPEN CHEST on the hub opens the first waiting chest; it is applied and saved before it is shown.</summary>
+        public void OpenWaitingChest()
+        {
+            if (menuChest.IsOpen || Flow.Current != MatchFlow.State.Menu) return;
+            var data = store.Load();
+            var result = BallBattle.Sim.Meta.MetaRules.OpenPending(data.Progress, unchecked((uint)data.Progress.RunsPlayed * 2654435761u + 97u));
+            if (result == null) { RefreshMenuInfo(); return; }
+            store.Save(data);
+            menuChest.Show(result, data.Progress, "WELCOME BACK", Menu.transform);
+        }
+
+        void RefreshMenuInfo()
+        {
+            var (progress, resumable) = Run.Flow.PeekSave();
+            Menu.SetRunInfo(progress, resumable);
+        }
 
         /// <summary>Versus round totals for the end-of-fight log line (Run mode keeps its own in RunFlow.Stats).</summary>
         readonly FightStats versusStats = new FightStats();
