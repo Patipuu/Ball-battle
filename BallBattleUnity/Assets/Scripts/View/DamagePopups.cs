@@ -113,6 +113,34 @@ namespace BallBattle.View
             Spawn(Place(at, Format(damage), s, null), damage, color, s);
         }
 
+        /// <summary>
+        /// UI-UX2 (QA bc3c460 finding 2): where a skill word starts so that, over its whole rise, it does not cover another ball
+        /// (a boss body is 48 px). Tried in order: above the caster, below it, left, right; the first whose ink box (rise included)
+        /// stays clear of every other ball's circle box wins; none clear = above the caster (the old spot was its centre).
+        /// </summary>
+        public static Vector2 SkillWordStart(Vector2 caster, float radius, string text, IReadOnlyList<(Vector2 centre, float radius)> others)
+        {
+            var width = PixelFont.MeasureWidth(text);
+            var inkTop = InkTop(1); var inkBottom = InkBottom(1);
+            var candidates = new[]
+            {
+                new Vector2(caster.x, caster.y + radius + 2f - inkBottom),                  // ink starts 2 px above the ball
+                new Vector2(caster.x, caster.y - radius - 2f - inkTop - Rise),              // ink (risen) ends 2 px under it
+                new Vector2(caster.x - radius - 2f - width / 2f, caster.y - inkBottom),    // left of it
+                new Vector2(caster.x + radius + 2f + width / 2f, caster.y - inkBottom),    // right of it
+            };
+            foreach (var c in candidates)
+            {
+                var start = StartRect(c, text, 1);
+                var swept = new Rect(start.xMin, start.yMin, start.width, start.height + Rise);
+                var clear = true;
+                foreach (var o in others)
+                    if (swept.Overlaps(new Rect(o.centre.x - o.radius, o.centre.y - o.radius, 2f * o.radius, 2f * o.radius))) { clear = false; break; }
+                if (clear) return new Vector2(Mathf.Round(c.x), Mathf.Round(c.y));
+            }
+            return new Vector2(Mathf.Round(candidates[0].x), Mathf.Round(candidates[0].y));
+        }
+
         public void ShowText(Vector2 at, string text, Color32 color, ArenaRect arena) =>
             SpawnText(Place(at, text, 1, arena), text, color, 1);
 

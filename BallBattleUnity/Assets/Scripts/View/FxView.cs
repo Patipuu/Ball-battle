@@ -210,7 +210,14 @@ namespace BallBattle.View
             {
                 case SimEventType.SkillFired:
                     arena.GetBallView(e.A)?.Flash(FlashSeconds);
-                    popups.ShowText(V(e.Point), arena.Sim.Balls[e.A].Skill.Definition.Name, Palette.Text, arena.Sim.Arena);
+                {
+                    var caster = arena.Sim.Balls[e.A];
+                    var others = new List<(Vector2, float)>();
+                    foreach (var b in arena.Sim.Balls)
+                        if (b != caster && b.Alive) others.Add((V(b.Pos), b.Radius.ToFloat()));
+                    var word = caster.Skill.Definition.Name;
+                    popups.ShowText(DamagePopups.SkillWordStart(V(e.Point), caster.Radius.ToFloat(), word, others), word, Palette.Text, arena.Sim.Arena);
+                }
                     break;
                 case SimEventType.Hit:
                 {

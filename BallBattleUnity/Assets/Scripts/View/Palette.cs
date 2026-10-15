@@ -14,7 +14,8 @@ namespace BallBattle.View
         public static readonly Color32 WallWarning = new Color32(232, 180, 60, 255);
         public static readonly Color32 Outline = new Color32(20, 18, 28, 255);
         public static readonly Color32 Text = new Color32(232, 232, 240, 255);
-        public static readonly Color32 TextDim = new Color32(140, 140, 168, 255);
+        /// <summary>Secondary text. UI-UX2: was 140,140,168 (4.3-5.8:1 on the dark panels, hard to read at 1x); now about 7-8:1.</summary>
+        public static readonly Color32 TextDim = new Color32(170, 170, 196, 255);
         public static readonly Color32 HpBack = new Color32(48, 40, 56, 255);
         public static readonly Color32 HpLost = new Color32(120, 40, 48, 255);
         public static readonly Color32 Hot = new Color32(255, 70, 50, 255);

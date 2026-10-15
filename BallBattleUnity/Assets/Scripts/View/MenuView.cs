@@ -25,6 +25,8 @@ namespace BallBattle.View
         public static readonly Rect RunArea = new Rect(-111, 32, 222, 48);
         /// <summary>VERSUS button (64,326) 142x30.</summary>
         public static readonly Rect VersusArea = new Rect(-71, -116, 142, 30);
+        /// <summary>UI-UX2: CODEX matches VERSUS (same size and label scale).</summary>
+        public static readonly Rect CodexArea = new Rect(-71, -156, 142, 30);
         public static readonly Rect VersusBackArea = new Rect(-60, -214, 120, 32);
 
         public event Action<string, string> StartRequested;
@@ -114,7 +116,7 @@ namespace BallBattle.View
             var vs = PixelButton.Create(hub, "Versus", art, VersusArea, RunStrings.Versus, 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             vs.Clicked += ShowVersus;
             VersusButton = vs;
-            var codexButton = PixelButton.Create(hub, "CodexButton", art, new Rect(-60, -160, 120, 26), "CODEX", 1,
+            var codexButton = PixelButton.Create(hub, "CodexButton", art, CodexArea, "CODEX", 2,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             codexButton.Clicked += () => { hub.gameObject.SetActive(false); codex.Show(); };
             BuildGear(art);

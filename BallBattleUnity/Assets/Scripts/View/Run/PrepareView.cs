@@ -591,7 +591,7 @@ namespace BallBattle.View
             var halfH = Mathf.Round(config.ArenaHeight.ToFloat() * scale * 0.5f);
             // Same colors and floor tile as the fight (arena_colors.json, floor_<id>), the tile drawn at half size.
             var hasArt = art.TryArena(arenaId, out var look);
-            var wall = hasArt ? look.WallColor : (Color32)Palette.Wall;
+            var wall = PreviewWall(hasArt ? look.WallColor : (Color32)Palette.Wall);
             Rect(wall, -halfW - 1, -halfH - 1, halfW + 1, halfH + 1, 3);
             Rect(hasArt ? look.FloorColor : (Color32)Palette.Floor, -halfW, -halfH, halfW, halfH, 4);
             if (hasArt && look.Floor != null)
@@ -607,6 +607,9 @@ namespace BallBattle.View
                 sr.sortingOrder = RunUi.Order + 4;
                 previewFloor = sr;
             }
+            // UI-UX2: the fight floors are near-black (10-46 lum); on the dark Prepare panel the sketch read as an empty box.
+            // A light veil over the floor (not the fight's colours) makes the arena shape and its obstacles readable at 1x.
+            Rect(PreviewVeil, -halfW, -halfH, halfW, halfH, 5);
             if (layout.WallDamage > Fix.Zero)
             {
                 // spike_tooth color: a 1 px band inside the walls, only along the corner spike zones (as in the fight; the
@@ -618,10 +621,10 @@ namespace BallBattle.View
                     var to = Mathf.Round(z.To.ToFloat() * scale);
                     switch (z.Wall)
                     {
-                        case ArenaWall.Top: Rect(tooth, from, halfH - 1, to, halfH, 5); break;
-                        case ArenaWall.Bottom: Rect(tooth, from, -halfH, to, -halfH + 1, 5); break;
-                        case ArenaWall.Left: Rect(tooth, -halfW, from, -halfW + 1, to, 5); break;
-                        default: Rect(tooth, halfW - 1, from, halfW, to, 5); break;
+                        case ArenaWall.Top: Rect(tooth, from, halfH - SpikeBand, to, halfH, 6); break;
+                        case ArenaWall.Bottom: Rect(tooth, from, -halfH, to, -halfH + SpikeBand, 6); break;
+                        case ArenaWall.Left: Rect(tooth, -halfW, from, -halfW + SpikeBand, to, 6); break;
+                        default: Rect(tooth, halfW - SpikeBand, from, halfW, to, 6); break;
                     }
                 }
             }
@@ -629,18 +632,25 @@ namespace BallBattle.View
             {
                 var mw = Mathf.Round(config.MinArenaWidth.ToFloat() * scale * 0.5f);
                 var mh = Mathf.Round(config.MinArenaHeight.ToFloat() * scale * 0.5f);
-                Rect(Palette.HpBack, -mw, -mh, mw, mh, 5);   // where the shrinking walls end
+                Rect(Palette.HpBack, -mw, -mh, mw, mh, 6);   // where the shrinking walls end
             }
             for (var i = 0; i < layout.ObstacleCount; i++)
             {
                 var o = layout.Get(i);
-                var r = Mathf.Max(1f, Mathf.Round(o.Radius.ToFloat() * scale));
+                var r = Mathf.Max(MinObstacleHalf, Mathf.Round(o.Radius.ToFloat() * scale));
                 var color = o.Damage > Fix.Zero ? new Color32(210, 60, 60, 255) : o.Boost > Fix.Zero ? new Color32(240, 170, 60, 255) : new Color32(120, 130, 150, 255);
                 var x = Mathf.Round(o.A.X.ToFloat() * scale);
                 var y = Mathf.Round(o.A.Y.ToFloat() * scale);
-                Rect(color, x - r, y - r, x + r, y + r, 6);
+                Rect(color, x - r, y - r, x + r, y + r, 7);
             }
         }
+
+        /// <summary>UI-UX2 preview only: white veil over the floor, and walls lifted 40% toward white.</summary>
+        public static readonly Color32 PreviewVeil = new Color32(255, 255, 255, 34);
+        /// <summary>UI-UX2 preview only: spike zones 2 px thick (were 1), obstacles at least 4x4 px (were 2x2).</summary>
+        public const float SpikeBand = 2f, MinObstacleHalf = 2f;
+        public static Color32 PreviewWall(Color32 c) => Color32.Lerp(c, new Color32(255, 255, 255, 255), 0.4f);
+        public Transform ArenaPreviewRoot => arenaRoot;
 
         void Rect(Color32 color, float left, float bottom, float right, float top, int orderOffset)
         {
