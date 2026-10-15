@@ -217,7 +217,7 @@ namespace BallBattle.View
                 var has = i < run.OfferCount;
                 cards[i].gameObject.SetActive(has);
                 if (!has) continue;
-                ApplyFace(i, CardFace.For(run.OfferCard(i), art));
+                ApplyFace(i, CardFace.For(ShownCard(run, i), art));
                 StyleCard(i);
             }
 
@@ -227,6 +227,9 @@ namespace BallBattle.View
             if (rerollWhy != null) rerollReason.Set(rerollWhy, Blocked);
             else rerollReason.Set(RerollAgainText(run), Palette.TextDim);   // reroll is repeatable: say it costs again
         }
+
+        // OfferCard projects unpicked QA offers from the effective skill level. A taken slot must retain its stored identity.
+        public static Card ShownCard(RunState state, int slot) => state.IsPicked(slot) ? state.OfferCards[slot].ToCard() : state.OfferCard(slot);
 
         /// <summary>Up to two traits lines (wrapped between traits); a third line, which three traits never need, joins the second.</summary>
         static void SetTraits(PixelText line1, PixelText line2, System.Collections.Generic.List<string> lines)
@@ -300,7 +303,7 @@ namespace BallBattle.View
         void StyleCard(int i)
         {
             if (run == null || i >= run.OfferCount) return;
-            var card = run.OfferCard(i);
+            var card = ShownCard(run, i);
             var taken = run.IsPicked(i);
             var why = taken ? null : BlockReason(run, i);
             var blink = cardBlink[i] > 0f;

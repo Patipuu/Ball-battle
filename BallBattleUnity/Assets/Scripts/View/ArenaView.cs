@@ -255,9 +255,16 @@ namespace BallBattle.View
                         {
                             var shell = ShellTrace.Line(events[i], Sim);   // BB-6d QA: SHELL KING hits with the shell ON
                             if (shell != null) traceWriter.WriteLine(shell);
+                            var reflect = AudioLog.ReflectLine(events[i], Sim);
+                            if (reflect != null) traceWriter.WriteLine(reflect);
                         }
                     for (var i = 0; i < events.Count; i++)
                     {
+                        if (DebugOptions.Trace)
+                        {
+                            var reflect = AudioLog.ReflectLine(events[i], Sim);
+                            if (reflect != null) Debug.Log(reflect);
+                        }
                         if (events[i].Type == SimEventType.SkillFired || events[i].Type == SimEventType.SkillEnded)
                         {
                             var line = SimTrace.SkillLine(events[i]);

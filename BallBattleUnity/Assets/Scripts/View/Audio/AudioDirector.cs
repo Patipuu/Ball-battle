@@ -183,6 +183,8 @@ namespace BallBattle.View
             {
                 var shell = ShellTrace.Line(e, sim);   // BB-6d QA: SHELL KING shield trace in the audio log file
                 if (shell != null) AudioLog.Write(shell, this);
+                var reflect = AudioLog.ReflectLine(e, sim);
+                if (reflect != null) AudioLog.Write(reflect, this);
             }
             switch (e.Type)
             {
@@ -198,7 +200,8 @@ namespace BallBattle.View
                     break;
                 case SimEventType.SkillFired:
                     var skillCue = "skill_" + e.SkillId;
-                    if (Has(skillCue)) RequestCue(skillCue, e.Tick, 0.8f, 1f);
+                    var skillPlayed = Has(skillCue) && RequestCue(skillCue, e.Tick, 0.8f, 1f);
+                    if (AudioLog.Enabled) AudioLog.Write(AudioLog.SkillLine(e, skillCue, skillPlayed), this);
                     break;
                 case SimEventType.Parry:
                     RequestCue(AudioIds.Parry, e.Tick, 0.6f);

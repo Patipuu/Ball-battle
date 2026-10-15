@@ -38,7 +38,7 @@ namespace BallBattle.View
             view.art = art;
             view.title1 = RunUi.Text(root, art, -110, 212, 2, PixelText.Align.Left);   // x3 no longer fits the top: x2, cells 212..238
             view.title2 = RunUi.Text(root, art, -110, 186, 2, PixelText.Align.Left);   // 186..212
-            RunUi.Text(root, art, -110, 171, 1, PixelText.Align.Left, "FREE PICK 1 OF 3", Palette.TextDim);
+            RunUi.Text(root, art, -110, 171, 1, PixelText.Align.Left, "FREE PICK", Palette.TextDim);
             PixelRect.Set(PixelRect.Create(root, "HeadingRule", art.Pixel, Palette.Wall, RunUi.Order + 3), -110, 166, 110, 167);
             view.weaponIcon = RunUi.Icon(root, new Vector2(98, 202), RunUi.Order + 3);
             view.weapon = RunUi.Text(root, art, 98, 178, 1);
@@ -117,6 +117,7 @@ namespace BallBattle.View
                 if (branchButtonsOn)
                 {
                     rarity[i].Set("", Palette.TextDim);
+                    detail1[i].Set("", Palette.TextDim);
                     detail2[i].Set("", Palette.TextDim);
                     cards[i].transform.Find("TapToPick").gameObject.SetActive(false);
                 }

@@ -66,6 +66,20 @@ namespace BallBattle.View
                 e.Tick, sim != null ? sim.ActiveTick.ToString(CultureInfo.InvariantCulture) : "-", (BallBattle.Sim.Boss.BossEvent)e.Variant, cue,
                 result.ToString().ToLowerInvariant());
 
+        public static string SkillLine(SimEvent e, string cue, bool played) =>
+            string.Format(CultureInfo.InvariantCulture, "[Skill] tick={0} ball={1} skill={2} branch={3} cue={4} result={5}",
+                e.Tick, e.A, e.SkillId, e.SkillLevel == 1 ? "1" : e.SkillLevel + e.SkillBranch.ToString(), cue, played ? "played" : "missing");
+
+        // Existing Damage(Reflect) describes body/parry reflection; ProjectileDeflected describes a shot.
+        // Events have no arrow/turret subtype, so do not infer one from a projectile's later owner/state.
+        public static string ReflectLine(SimEvent e, MatchSim sim)
+        {
+            if (sim == null || e.A < 0 || e.A >= sim.Balls.Count || sim.Balls[e.A].Weapon.Id != "aegis") return null;
+            if (e.Type != SimEventType.ProjectileDeflected && !(e.Type == SimEventType.Damage && e.Variant == (byte)DamageKind.Reflect)) return null;
+            return string.Format(CultureInfo.InvariantCulture, "[Reflect] tick={0} ball={1} projectile={2}",
+                e.Tick, e.A, e.Type == SimEventType.ProjectileDeflected ? "projectile" : "none");
+        }
+
         /// <summary>
         /// BB-VIEW3 music line: "[Music] start track=music_battle slot=0 t=12.34", "[Music] stop track=music_menu slot=1 t=12.94",
         /// "[Music] track=music_result screen=VersusResult result=start|same t=..", "[Music] fadeout track=music_battle cue=fight_win t=..".
