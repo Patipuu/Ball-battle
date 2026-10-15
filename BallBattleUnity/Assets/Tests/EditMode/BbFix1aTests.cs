@@ -183,7 +183,7 @@ namespace BallBattle.Tests
                 var r = config.ArenaAt(tick);
                 frame.Render(r, tick, config, ArenaRegistry.SpikeWalls);
                 var zones = ArenaFrameView.ZoneSegments(config.Layout.SpikeCorners, r);
-                var expected = zones.Sum(z => Mathf.FloorToInt(z.Length / ArenaFrameView.ToothSpacing));
+                var expected = zones.Sum(z => ArenaFrameView.ToothCount(z.From, z.To));   // BB-FIX5: teeth span the whole zone
                 Assert.That(frame.TeethShown, Is.EqualTo(expected), $"tick {tick}");
                 var all4 = 2 * Mathf.FloorToInt((r.Width / ArenaFrameView.ToothSpacing).ToFloat()) + 2 * Mathf.FloorToInt((r.Height / ArenaFrameView.ToothSpacing).ToFloat());
                 Assert.That(frame.TeethShown, Is.LessThan(all4 / 2), "not along whole walls");

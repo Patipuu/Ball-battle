@@ -24,6 +24,8 @@ namespace BallBattle.View
 
         /// <summary>Spike teeth (art v1) every this many px along each wall of a spike arena.</summary>
         public const int ToothSpacing = 8;
+        /// <summary>spike_tooth width in px (6x4 art).</summary>
+        public const int ToothWidth = 6;
         public const int ToothOrder = ObstacleOrder + 1;
 
         Sprite pixelSprite;
@@ -200,6 +202,8 @@ namespace BallBattle.View
 
         /// <summary>Spike teeth shown now (tests).</summary>
         public int TeethShown => activeTeeth;
+        /// <summary>Position of shown tooth <paramref name="i"/> (tests).</summary>
+        public Vector3 ToothPosition(int i) => teeth[i].transform.localPosition;
 
         /// <summary>Spike zone strips shown now when there is no tooth art (tests).</summary>
         public int ZoneStripsShown => activeStrips;
@@ -288,10 +292,23 @@ namespace BallBattle.View
             activeStrips = zones.Length;
         }
 
+        /// <summary>BB-FIX5: teeth along [from, to]: enough to span it (rounded out to whole px) about ToothSpacing apart.</summary>
+        public static int ToothCount(float from, float to)
+        {
+            var span = Mathf.Ceil(Mathf.Max(from, to)) - Mathf.Floor(Mathf.Min(from, to));
+            return span < ToothWidth ? 0 : Mathf.RoundToInt((span - ToothWidth) / ToothSpacing) + 1;
+        }
+
         int Edge(int n, float from, float to, float at, float angle, bool horizontal)
         {
-            var count = Mathf.FloorToInt((to - from) / ToothSpacing);
-            var start = Mathf.Round((from + to) * 0.5f - (count - 1) * ToothSpacing * 0.5f);
+            var count = ToothCount(from, to);
+            // BB-FIX5: the teeth span the whole zone, rounded out to whole px (a 34.5 px corner zone draws 35 px): the outer two sit at
+            // the zone ends and the rest are spread evenly between them, about ToothSpacing apart. They used to be a centred block of
+            // floor(length / 8) teeth, which left 2-3 px of bare wall at each end (30 px of teeth in a 34.5 px zone).
+            var first = Mathf.Floor(Mathf.Min(from, to)) + ToothWidth * 0.5f;
+            var last = Mathf.Ceil(Mathf.Max(from, to)) - ToothWidth * 0.5f;
+            var step = count > 1 ? (last - first) / (count - 1) : 0f;
+            if (count == 1) first = Mathf.Round((first + last) * 0.5f);
             for (var i = 0; i < count; i++, n++)
             {
                 if (n >= teeth.Count)
@@ -305,7 +322,7 @@ namespace BallBattle.View
                 }
                 var tooth = teeth[n];
                 tooth.enabled = true;
-                var along = start + i * ToothSpacing;
+                var along = Mathf.Round(first + i * step);
                 tooth.transform.localPosition = horizontal ? new Vector3(along, at, 0f) : new Vector3(at, along, 0f);
                 tooth.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
             }

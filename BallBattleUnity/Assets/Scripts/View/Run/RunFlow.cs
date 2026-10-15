@@ -132,6 +132,21 @@ namespace BallBattle.View
             Go(State.StartPick);
         }
 
+        /// <summary>
+        /// BB-FIX5: the -bbForceSkill override for a resumed run. The save never holds the forced level (BB-10a), only the SKILL UPs the
+        /// player really took: each one raised the saved build by one level while the unsaved override rose with it. So the forced
+        /// level plus the SKILL UPs taken since (build level - 1), capped at 3, is where the run really was; the branch is the forced
+        /// one (or the build's when the flag is level 1). Before, CONTINUE reset to the flag's level and dropped a LV3 taken under 2a.
+        /// </summary>
+        public static BallBattle.Sim.Skills.SkillSpec? ResumedSkillOverride(BallBattle.Sim.Skills.SkillSpec? force, RunBuild build)
+        {
+            if (!force.HasValue) return null;
+            var level = System.Math.Min(3, force.Value.Level + build.SkillLevel - 1);
+            if (level <= 1) return new BallBattle.Sim.Skills.SkillSpec(1);
+            var branch = force.Value.Level > 1 ? force.Value.Branch : build.SkillBranch;
+            return new BallBattle.Sim.Skills.SkillSpec(level, branch);
+        }
+
         /// <summary>Logged when a run starts, so a tester can report the seed and replay the same run.</summary>
         public static string RunStartLog(uint seed, string weaponId, string forceTraitId) =>
             $"[BallBattle] Run started: seed {seed}, weapon {weaponId}" + (forceTraitId != null ? $", -bbForceTrait {forceTraitId}" : "");
@@ -140,7 +155,7 @@ namespace BallBattle.View
         {
             if (Current != State.Title || !HasSavedRun) return;
             Run = save.Run.ToRun();
-            Run.SkillOverride = ForceSkill;
+            Run.SkillOverride = ResumedSkillOverride(ForceSkill, Run.Build);
             UnityEngine.Debug.Log($"[BallBattle] Run resumed: seed {Run.Seed}, fight {Run.FightIndex + 1}");
             var changed = DebugOptions.ApplyForcedTrait(Run, ForceTraitId);
             changed |= ApplyForceBossToNewFight();

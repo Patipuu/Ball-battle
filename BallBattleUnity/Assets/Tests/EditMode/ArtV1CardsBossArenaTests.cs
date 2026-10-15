@@ -308,7 +308,7 @@ namespace BallBattle.Tests
                 {
                     // BB-FIX1a: teeth only along the corner spike zones (1/5 of each wall at TL and BR).
                     var zones = ArenaFrameView.ZoneSegments(sim.Config.Layout.SpikeCorners, sim.Arena);
-                    var expected = zones.Sum(z => Mathf.FloorToInt(z.Length / ArenaFrameView.ToothSpacing));
+                    var expected = zones.Sum(z => ArenaFrameView.ToothCount(z.From, z.To));   // BB-FIX5: teeth span the whole zone
                     Assert.That(view.Frame.TeethShown, Is.EqualTo(expected), "teeth along the spike zones only");
                 }
                 else Assert.That(view.Frame.TeethShown, Is.Zero);
