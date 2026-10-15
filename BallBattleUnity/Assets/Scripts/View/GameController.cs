@@ -35,6 +35,8 @@ namespace BallBattle.View
             Run = RunController.Create(transform, Arena, store);
             menuChest = ChestView.Create(transform, Arena.Art);   // BB-12b: welcome chests opened from the menu
             menuChest.Collected += RefreshMenuInfo;
+            Menu.Store = store;   // BB-12c: BALLS reads and saves progress
+            Menu.BallsClosed += RefreshMenuInfo;
             Menu.ChestRequested += OpenWaitingChest;
             var fx = Arena.GetComponent<FxView>();
             Audio = AudioDirector.Create(transform, fx != null ? fx.Sfx : null, store);

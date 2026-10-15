@@ -24,10 +24,13 @@ namespace BallBattle.View
         /// <summary>Main button (24,160) 222x48.</summary>
         public static readonly Rect RunArea = new Rect(-111, 32, 222, 48);
         /// <summary>UI-MENU1: one column of same-size buttons under the NEXT GOAL box, each with a one-line explanation under it.</summary>
-        public static readonly Rect VersusArea = new Rect(-71, -100, 142, 30);
+        /// <summary>BB-12c: BALLS joins the column at the top; the four buttons are 26 px tall, 40 px apart.</summary>
+        public static readonly Rect BallsArea = new Rect(-71, -94, 142, 26);
+        public static readonly Rect VersusArea = new Rect(-71, -136, 142, 26);
         /// <summary>UI-UX2: CODEX matches VERSUS (same size and label scale).</summary>
-        public static readonly Rect CodexArea = new Rect(-71, -150, 142, 30);
-        public static readonly Rect HowToArea = new Rect(-71, -200, 142, 30);
+        public static readonly Rect CodexArea = new Rect(-71, -178, 142, 26);
+        public static readonly Rect HowToArea = new Rect(-71, -222, 142, 26);
+        public const string BallsLine = "LEVEL UP WITH CHEST SHARDS";
         public const string VersusLine = "WATCH ANY TWO BALLS FIGHT";
         public const string CodexLine = "WHAT EVERY BALL DOES";
         public const string StartHere = "NEW? START HERE";
@@ -45,6 +48,16 @@ namespace BallBattle.View
         /// <summary>BB-12b: top-left of the hub, shown only while chests wait.</summary>
         public static readonly Rect ChestArea = new Rect(-127, 206, 76, 24);
         public PixelButton ChestButton { get; private set; }
+        /// <summary>BB-12c: the BALLS page and its button ("UP!" badge when a ball can level now).</summary>
+        public PixelButton BallsButton { get; private set; }
+        public BallsView Balls => balls;
+        public bool BallsBadgeShown => ballsBadge != null && ballsBadge.Text.Length > 0;
+        /// <summary>Set by GameController: BALLS reads and saves progress through it.</summary>
+        public ISaveStore Store { get; set; }
+        /// <summary>BALLS closed (GameController refreshes the hub: gold, badge).</summary>
+        public event Action BallsClosed;
+        BallsView balls;
+        PixelText ballsBadge;
 
         readonly string[] selected = new string[2];
         PixelButton[][] tiles;
@@ -109,6 +122,8 @@ namespace BallBattle.View
             BuildNotice(art);
             codex = SkillCodexView.Create(transform, art);
             codex.Closed += ShowHub;
+            balls = BallsView.Create(transform, art);
+            balls.Closed += () => { ShowHub(); BallsClosed?.Invoke(); };
             howTo = HowToPlayView.Create(transform, art);
             howTo.Closed += ShowHub;
             howTo.StartRequested += PressRun;
@@ -145,14 +160,18 @@ namespace BallBattle.View
             Text(hub, art, RunStrings.RulesSummary, 0, 17, 1, Palette.TextDim);   // cell 17..30, under the RUN button (32)
             goal = NextGoalBox.Create(hub, art, 8, 244, Order);
 
+            BallsButton = PixelButton.Create(hub, "BallsButton", art, BallsArea, "BALLS", 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
+            BallsButton.Clicked += ShowBalls;
+            ballsBadge = PixelText.Create(BallsButton.transform, "Badge", art.Font, new Vector2(BallsArea.xMax - 6, BallsArea.yMin + 7), PixelText.Align.Right, 1, BallsButton.IconOrder + 1);
+            Text(hub, art, BallsLine, 0, BallsArea.yMin - 14, 1, Palette.TextDim);
             var vs = PixelButton.Create(hub, "Versus", art, VersusArea, RunStrings.Versus, 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             vs.Clicked += ShowVersus;
             VersusButton = vs;
             var codexButton = PixelButton.Create(hub, "CodexButton", art, CodexArea, "CODEX", 2,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             codexButton.Clicked += () => { hub.gameObject.SetActive(false); codex.Show(); };
-            Text(hub, art, VersusLine, 0, VersusArea.yMin - 15, 1, Palette.TextDim);   // cell under the button
-            Text(hub, art, CodexLine, 0, CodexArea.yMin - 15, 1, Palette.TextDim);
+            Text(hub, art, VersusLine, 0, VersusArea.yMin - 14, 1, Palette.TextDim);   // cell under the button
+            Text(hub, art, CodexLine, 0, CodexArea.yMin - 14, 1, Palette.TextDim);
             var howButton = PixelButton.Create(hub, "HowToButton", art, HowToArea, "HOW TO PLAY", 2,
                 Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
             howButton.Clicked += () => { hub.gameObject.SetActive(false); howTo.Show(); };
@@ -353,6 +372,23 @@ namespace BallBattle.View
             var waiting = progress?.PendingChests?.Count ?? 0;   // BB-12b: welcome chests
             ChestButton.gameObject.SetActive(waiting > 0);
             if (waiting > 0) ChestButton.SetText(ChestLabel(waiting), Palette.WallWarning);
+            ballsBadge.Set(AnyUpgrade(progress) ? "UP!" : "", BallsView.UpColor);   // BB-12c
+        }
+
+        /// <summary>BB-12c: some unlocked ball can level up now.</summary>
+        public static bool AnyUpgrade(ProgressData p)
+        {
+            if (p == null) return false;
+            foreach (var id in UnlockRules.Weapons(p))
+                if (BallBattle.Sim.Meta.MetaRules.CanUpgrade(p, id)) return true;
+            return false;
+        }
+
+        /// <summary>BB-12c: open the BALLS page over the hub.</summary>
+        public void ShowBalls()
+        {
+            hub.gameObject.SetActive(false);
+            balls.Show(Store);
         }
 
         public bool HasSavedRun => savedRun != null;
@@ -370,6 +406,7 @@ namespace BallBattle.View
         {
             codex?.Hide();
             howTo?.Hide();
+            if (balls != null && balls.IsOpen) balls.gameObject.SetActive(false);
             CloseSettings();
             noticePage.gameObject.SetActive(false);
             SetHubInput(true);
