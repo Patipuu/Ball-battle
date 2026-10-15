@@ -192,7 +192,7 @@ namespace BallBattle.Tests
             Assert.That(view.Frame.TeethShown + view.Frame.ZoneStripsShown, Is.Zero, "classic: no spikes before the first step");
             StepToFirstWardenStep(m);
             view.Advance(0f);
-            Assert.That(view.Frame.TeethShown + view.Frame.ZoneStripsShown, Is.GreaterThan(0), "spikes drawn along the walls after the step");
+            Assert.That(view.Frame.TeethShown + view.Frame.ZoneStripsShown + view.BossArt.StripsShown, Is.GreaterThan(0), "spikes drawn along the walls after the step");
             Assert.That(view.Frame.FullWallSpikes, Is.True);
             var first = m.ActiveTick;
             while (m.ActiveTick < first + BossTuning.SpikeWindowTicks)
@@ -202,7 +202,7 @@ namespace BallBattle.Tests
             }
             view.Advance(0f);
             Assert.That(view.Frame.FullWallSpikes, Is.False, "window expires on ActiveTick, independent of drawing frames");
-            Assert.That(view.Frame.TeethShown + view.Frame.ZoneStripsShown, Is.Zero, "classic has no normal spikes to draw after expiry");
+            Assert.That(view.Frame.TeethShown + view.Frame.ZoneStripsShown + view.BossArt.StripsShown, Is.Zero, "classic has no normal spikes to draw after expiry");
         }
 
         [TestCase((byte)8, ArenaWall.Top)]

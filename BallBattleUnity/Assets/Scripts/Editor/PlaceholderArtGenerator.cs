@@ -155,6 +155,7 @@ namespace BallBattle.EditorTools
             lib.ShellKing = Real("boss/shellking.png");
             lib.ShellKingGlow = Real("boss/shellking_glow.png");
             lib.Mimic = new[] { Real("boss/mimic_idle.png"), Real("boss/mimic_wp.png"), Real("boss/mimic_sh.png"), Real("boss/mimic_ps.png"), Real("boss/mimic_rf.png") };
+            Art2Linker.Link(lib); // v2 overlays/bodies; original 64px base sprites remain.
 
             var colors = ReadArenaColors(out var closing);
             var arenas = new List<ArtLibrary.ArenaArt>();

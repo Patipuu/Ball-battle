@@ -138,7 +138,7 @@ namespace BallBattle.View
                 UsesSizedSprite = preSized;
                 scaleDirty = true;
             }
-            SetScale(simRadius / NativeRadius);
+            SetScale(customBody ? Mathf.Max(1, Mathf.RoundToInt(simRadius / NativeRadius)) : simRadius / NativeRadius);
         }
 
         /// <summary>Library the sized sprites come from (set by ArenaView / tests).</summary>

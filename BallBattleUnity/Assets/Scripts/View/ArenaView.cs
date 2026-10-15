@@ -55,7 +55,7 @@ namespace BallBattle.View
         public ArenaFrameView Frame => frame;
 
         /// <summary>How a boss ball is drawn (art v1). Sizes and hitboxes stay the sim's; only the body sprite changes.</summary>
-        public enum BossLook { None, ShellKing, Mimic }
+        public enum BossLook { None, ShellKing, Mimic, Magnet, Warden }
 
         /// <summary>Boss look applied to <see cref="BossBall"/> in the next StartMatch (Run sets it per fight; Versus: None).</summary>
         public BossLook Boss { get; set; } = BossLook.None;
@@ -98,7 +98,8 @@ namespace BallBattle.View
             MimicShown = ArtLibrary.MimicLook.Idle;
             if (Boss == BossLook.None) return;
             var v = GetBallView(BossBall);
-            var sprite = Boss == BossLook.ShellKing ? Art.ShellKing : Art.MimicSprite(ArtLibrary.MimicLook.Idle);
+            var sprite = Boss == BossLook.ShellKing ? Art.ShellKing : Boss == BossLook.Magnet ? Art.MagnetBody :
+                Boss == BossLook.Warden ? Art.WardenBody : Art.MimicSprite(ArtLibrary.MimicLook.Idle);
             if (v != null && sprite != null) v.SetBodySprite(sprite, ArtLibrary.BossBodyRadius);   // drawn at its own size: no x1.5
         }
 
@@ -112,6 +113,7 @@ namespace BallBattle.View
         StatusView statusView;
         TraitBadgeView badges;
         BossTelegraphView telegraph;
+        BossArtView bossArt;
         Vector2[] prevPos = new Vector2[0];
         float[] prevAngle = new float[0];
         float accumulator;
@@ -148,10 +150,12 @@ namespace BallBattle.View
             statusView = StatusView.Create(transform, Art.Pixel);
             badges = TraitBadgeView.Create(transform, Art);
             telegraph = BossTelegraphView.Create(transform, Art.Pixel);
+            bossArt = BossArtView.Create(transform, Art);
         }
 
         /// <summary>BB-04 boss telegraphs (tests).</summary>
         public BossTelegraphView Telegraph => telegraph;
+        public BossArtView BossArt => bossArt;
 
         /// <summary>Plain Versus match from two weapon ids.</summary>
         public void StartMatch(string weaponA, string weaponB, uint seed)
@@ -260,6 +264,7 @@ namespace BallBattle.View
                         }
                     for (var i = 0; i < events.Count; i++)
                     {
+                        bossArt.OnEvent(events[i], Sim);
                         if (DebugOptions.Trace)
                         {
                             var reflect = AudioLog.ReflectLine(events[i], Sim);
@@ -315,6 +320,7 @@ namespace BallBattle.View
         void Draw(float alpha, float dt)
         {
             frame.SpikedWallMask = Sim.BossSpikedWallMask;   // BB-6f: draw only the moved walls, only during the window
+            frame.WardenArtEnabled = RunController.BossArtEnabled && Art.WardenSpikeLeftOn != null;
             frame.Render(Sim.Arena, Sim.ActiveTick, Sim.Config, ArenaId);
             frame.ShowObstacles(Sim);   // BB-04: Warden steps switch obstacles off
             var bossPos = Vector2.zero;
@@ -330,6 +336,7 @@ namespace BallBattle.View
             }
             projectileView.Render(Sim);
             telegraph.Render(Sim, bossPos);
+            bossArt.Render(Sim, bossPos);
             hud.Render(Sim, dt);
         }
 

@@ -198,6 +198,12 @@ namespace BallBattle.View
             var bossId = run.CurrentBossId;
             enemyLabel.Set(boss ? BossText.Name(bossId) : "ENEMY", boss ? Palette.WallWarning : Palette.TextDim);
             SetBall(enemyIcon, enemyName, enemy.WeaponId, (foe != null ? foe.Radius.ToFloat() : (enemy.Radius > Fix.Zero ? enemy.Radius.ToFloat() : IconNativeRadius)) / IconNativeRadius);
+            if (RunController.BossArtEnabled && art.BossBody(bossId) != null)
+            {
+                enemyIcon.sprite = art.BossBody(bossId);
+                var scale = Mathf.Max(1, Mathf.RoundToInt((foe != null ? foe.Radius.ToFloat() : 24) / ArtLibrary.BossBodyRadius));
+                enemyIcon.transform.localScale = new Vector3(scale, scale, 1);
+            }
             if (bossId == BallBattle.Sim.Boss.BossIds.Mimic) enemyName.Set(BossText.CopiesYou, Palette.WallWarning);   // its loadout is the player's at fight start
             if (boss) SetTraits(enemyTraits, enemyTraits2, BossLines(enemy, bossId, TraitsWidth));
             else SetTraits(enemyTraits, enemyTraits2, CardText.TraitLines(enemy, TraitsWidth));

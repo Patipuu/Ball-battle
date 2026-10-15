@@ -215,7 +215,9 @@ namespace BallBattle.Tests
 
             Assert.That(v.ArenaLabel, Is.EqualTo("ARENA " + ArenaRegistry.Get(run.ArenaId).DisplayName));
             Assert.That(v.ArenaPreviewPieces, Is.GreaterThanOrEqualTo(2), "floor + wall at least");
-            Assert.That(v.EnemyIcon.bounds.size.x, Is.EqualTo((foe.Radius * 2).ToFloat()).Within(0.01f), "boss icon at its real size");
+            Assert.That(v.EnemyIcon.sprite, Is.SameAs(art.BossBody(run.CurrentBossId)));
+            Assert.That(v.EnemyIcon.transform.localScale.x, Is.EqualTo(Mathf.Round(v.EnemyIcon.transform.localScale.x)), "boss art uses integer scale");
+            Assert.That(v.EnemyIcon.bounds.size.x, Is.EqualTo(64f * v.EnemyIcon.transform.localScale.x).Within(0.01f), "64px art canvas includes transparent padding around the 24px body radius");
         }
 
         // ---- 10. Taken cards look different ----

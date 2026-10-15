@@ -265,10 +265,10 @@ namespace BallBattle.Tests
         [Test]
         public void RunPicksShellKingForEarlierBossesAndMimicForTheLast()
         {
-            // 3d: boss art is OFF until the sim has Shell King / Mimic (v4); the switch still picks them when enabled.
+            // ART-2 enables the dedicated boss bodies; the switch still supports disabling them.
             var run = RunState.Start(62, FirstChoice(62), new ProgressData());
             run.FightIndex = RunTuning.BossFights[0];
-            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.None), "off before v4");
+            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.ShellKing), "ART-2 enabled");
             var was = RunController.BossArtEnabled;
             try
             {
@@ -279,6 +279,8 @@ namespace BallBattle.Tests
                 Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.ShellKing));
                 run.FightIndex = RunTuning.BossFights[RunTuning.BossFights.Length - 1];
                 Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.Mimic));
+                RunController.BossArtEnabled = false;
+                Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.None), "explicitly disabled art keeps the fallback");
             }
             finally { RunController.BossArtEnabled = was; }
         }

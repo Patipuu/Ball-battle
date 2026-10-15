@@ -234,24 +234,24 @@ namespace BallBattle.Tests
             }
         }
 
-        // ---- 5. Boss before v4 = its weapon's _48 ball, same on Prepare and in the arena ----
+        // ART-2: dedicated boss body, same on Prepare and in the arena.
 
         [Test]
-        public void BossIsItsWeaponsPreDrawnBallOnPrepareAndInTheArena()
+        public void BossUsesItsDedicatedArtOnPrepareAndInTheArena()
         {
             var run = RunState.Start(64, FirstChoice(64), new ProgressData());
             run.FightIndex = RunTuning.BossFights[0];
-            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.None), "Shell King / Mimic off until v4");
+            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.ShellKing));
             run.FightIndex = RunTuning.BossFights[RunTuning.BossFights.Length - 1];
-            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.None));
+            Assert.That(RunController.BossLookFor(run), Is.EqualTo(ArenaView.BossLook.Mimic));
             run.FightIndex = RunTuning.BossFights[0];
 
             var prepare = PrepareView.Create(root.transform, art);
             prepare.Show(run);
             var enemy = run.Enemy.WeaponId;
-            var expected = art.Get(enemy).Ball48;
+            var expected = art.ShellKing;
             Assert.That(expected, Is.Not.Null);
-            Assert.That(prepare.EnemyIcon.sprite, Is.SameAs(expected), "Prepare: ball_<id>_48");
+            Assert.That(prepare.EnemyIcon.sprite, Is.SameAs(expected), "Prepare: dedicated boss body");
             Assert.That(prepare.EnemyIcon.transform.localScale.x, Is.EqualTo(1f), "drawn at its own size");
 
             var view = root.AddComponent<ArenaView>();

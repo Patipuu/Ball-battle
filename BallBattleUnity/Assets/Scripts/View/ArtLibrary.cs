@@ -68,6 +68,22 @@ namespace BallBattle.View
         /// <summary>Indexed by MimicLook.</summary>
         public Sprite[] Mimic = new Sprite[5];
 
+        [Header("ART-2 boss v2 overlays and bodies")]
+        public const string BossSpriteFolder = "Assets/Art/Sprites/boss/v2";
+        public Sprite MagnetBody, WardenBody, ShellWarn, ShellOn, MagnetWarn, MagnetPull;
+        public Sprite[] MimicFlashes = new Sprite[3];
+        public Sprite WardenSpikeLeftOn, WardenSpikeLeftFade, WardenSpikeRightOn, WardenSpikeRightFade, WardenSpikeTopOn, WardenSpikeTopFade;
+        public Sprite WardenWallflash, BumperRings, SpikeWallsThumbnail;
+        [Serializable] public struct RoleArt { public string Role; public Sprite Icon; }
+        public RoleArt[] Roles = new RoleArt[0];
+        public Sprite RoleIcon(string role)
+        {
+            foreach (var entry in Roles) if (entry.Role == role) return entry.Icon;
+            return null;
+        }
+        public Sprite BossBody(string id) => id == "shellking" ? ShellKing : id == "magnet" ? MagnetBody :
+            id == "warden" ? WardenBody : id == "mimic" ? MimicSprite(MimicLook.Idle) : null;
+
         [Header("Art v1: arenas")]
         public ArenaArt[] Arenas = new ArenaArt[0];
         public Color32 ClosingWallColor = new Color32(232, 180, 60, 255);

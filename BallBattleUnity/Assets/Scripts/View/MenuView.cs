@@ -37,6 +37,8 @@ namespace BallBattle.View
         PixelButton[][] tiles;
         PixelText versus;
         PixelText arenaLabel;
+        SpriteRenderer arenaThumbnail;
+        Sprite spikeWallsThumbnail;
         int arenaIndex;
         Transform hub, versusPage;
         PixelButton runButton;
@@ -153,6 +155,10 @@ namespace BallBattle.View
             versus = PixelText.Create(p, "Versus", art.Font, new Vector2(0, -24), PixelText.Align.Center, 2, Order + 4);   // -24..2
             profiles[0] = WeaponProfileView.Create(p, art, new Vector2(-65, -39), 123);
             profiles[1] = WeaponProfileView.Create(p, art, new Vector2(65, -39), 123);
+            spikeWallsThumbnail = art.SpikeWallsThumbnail;
+            var thumb = new GameObject("ArenaThumbnail"); thumb.transform.SetParent(p, false);
+            thumb.transform.localPosition = new Vector3(-100, -178, 0);
+            arenaThumbnail = thumb.AddComponent<SpriteRenderer>(); arenaThumbnail.sortingOrder = Order + 4;
 
             var arenaBtn = PixelButton.Create(p, "ArenaPick", art, new Rect(-125, -140, 120, 24), "", 1,
                                               Palette.Floor, Palette.Wall, Palette.Text, Order + 2);
@@ -161,7 +167,7 @@ namespace BallBattle.View
             var random = PixelButton.Create(p, "Random", art, new Rect(5, -140, 120, 24), "RANDOM", 1,
                                             Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             random.Clicked += Randomize;
-            var start = PixelButton.Create(p, "Start", art, new Rect(-80, -180, 160, 32), "START", 2,
+            var start = PixelButton.Create(p, "Start", art, new Rect(-70, -180, 140, 32), "START", 2,
                                            Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
             start.Clicked += () => StartRequested?.Invoke(selected[0], selected[1]);
             StartButton = start;
@@ -227,6 +233,8 @@ namespace BallBattle.View
                     tiles[side][i].SetColors(on ? Palette.HpBack : Palette.Floor, on ? (Color32)Palette.Look(ids[i]).Body : Palette.Wall);
                 }
             arenaLabel.Set("ARENA: " + ArenaRegistry.All[arenaIndex].DisplayName, Palette.Text);
+            arenaThumbnail.sprite = ArenaId == ArenaRegistry.SpikeWalls ? spikeWallsThumbnail : null;
+            arenaThumbnail.enabled = arenaThumbnail.sprite != null;
             for (var side = 0; side < 2; side++) profiles[side].Show(selected[side]);
             versus.Set($"{WeaponNames.Of(selected[0])} VS {WeaponNames.Of(selected[1])}", Palette.Text);
         }

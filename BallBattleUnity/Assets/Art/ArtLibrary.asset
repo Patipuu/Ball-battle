@@ -107,6 +107,42 @@ MonoBehaviour:
   - {fileID: 21300000, guid: b0c63eefb0814ab4db25c8e962df52ac, type: 3}
   - {fileID: 21300000, guid: fca7b4463aaf414499ab898287dc4beb, type: 3}
   - {fileID: 21300000, guid: c0542368d65a4474fb151e8d48a3695e, type: 3}
+  MagnetBody: {fileID: 21300000, guid: 9619cf99f0ff5474e80311029b01c49d, type: 3}
+  WardenBody: {fileID: 21300000, guid: 84a56379554bd664cacc91cd4bc1ae99, type: 3}
+  ShellWarn: {fileID: 21300000, guid: 752f431961620804e8437ca5d093d47c, type: 3}
+  ShellOn: {fileID: 21300000, guid: e6f3373479eee11489ff1ac84c4ace70, type: 3}
+  MagnetWarn: {fileID: 21300000, guid: e4843f0649d90444c9f174d3855f5659, type: 3}
+  MagnetPull: {fileID: 21300000, guid: 16cb88e4c129e4840be2d3c6a97151fd, type: 3}
+  MimicFlashes:
+  - {fileID: 21300000, guid: 4abaee0e1eb422a49a9cc511eb7d48a2, type: 3}
+  - {fileID: 21300000, guid: 7597dbceec66f3d47aa3a9c78febb902, type: 3}
+  - {fileID: 21300000, guid: 2fb566b6b5441c34bbdee7150e9cbb5d, type: 3}
+  WardenSpikeLeftOn: {fileID: 21300000, guid: 02039b44057a786458228858aa038c2f, type: 3}
+  WardenSpikeLeftFade: {fileID: 21300000, guid: 8dc48ff6c08ae8d4e8b9e5a9ec078c02, type: 3}
+  WardenSpikeRightOn: {fileID: 21300000, guid: 0b63e0508e203ef4eb89a341d90d2525, type: 3}
+  WardenSpikeRightFade: {fileID: 21300000, guid: 17fa685b1bc1f5944840b1e71bb57dac, type: 3}
+  WardenSpikeTopOn: {fileID: 21300000, guid: 5c443b091f2121546bcfa53d69118434, type: 3}
+  WardenSpikeTopFade: {fileID: 21300000, guid: f797596058ec33d4b9ed7cdf380bc211, type: 3}
+  WardenWallflash: {fileID: 21300000, guid: e5431e2be2ed06b47ad45e9f36844dfc, type: 3}
+  BumperRings: {fileID: 21300000, guid: 6768f32041629f74584d91cd0c6f21f7, type: 3}
+  SpikeWallsThumbnail: {fileID: 21300000, guid: b5c36fb823293bf458308703428405ad, type: 3}
+  Roles:
+  - Role: BRUISER
+    Icon: {fileID: 21300000, guid: 0629e131390c6db428617615b097c672, type: 3}
+  - Role: DUELIST
+    Icon: {fileID: 21300000, guid: fe9a0df9848acd44a9bf8a067a4f2b77, type: 3}
+  - Role: LANCER
+    Icon: {fileID: 21300000, guid: 26ac35b7b56e0744e8f4f8ef2e5b2ba7, type: 3}
+  - Role: RAMMER
+    Icon: {fileID: 21300000, guid: 99e7971478acbde43b6daddc30456cb3, type: 3}
+  - Role: RANGER
+    Icon: {fileID: 21300000, guid: 815df6a7b9743ba4a972d566f632bb87, type: 3}
+  - Role: POISONER
+    Icon: {fileID: 21300000, guid: d701ed954c99c004cbc4b6043ef8e333, type: 3}
+  - Role: GUARDIAN
+    Icon: {fileID: 21300000, guid: 284a11d5e9fa31c438a0ed588070d3f2, type: 3}
+  - Role: BUILDER
+    Icon: {fileID: 21300000, guid: 6a557ca865ceb4b4b9a03ba8de51c1cd, type: 3}
   Arenas:
   - Id: classic
     Floor: {fileID: 21300000, guid: 02406a84fbf7850429f2c6e61c9e3bd7, type: 3}

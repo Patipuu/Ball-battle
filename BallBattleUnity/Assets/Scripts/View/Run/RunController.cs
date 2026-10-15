@@ -183,19 +183,19 @@ namespace BallBattle.View
         }
 
         /// <summary>
-        /// Shell King / Mimic art switch. OFF until the sim has those two bosses (v4): today a boss is an ordinary weapon
-        /// with boss stats, so it is drawn with its own pre-drawn x1.5 ball (ball_<id>_48, dark outline), the same sprite
-        /// on Prepare and in the arena. Flip <see cref="BossArtEnabled"/> (and keep SetMimicLook / glow) when v4 lands.
+        /// ART-2: dedicated 64px bodies on Prepare and in the arena. The old weapon ball remains the disabled-art fallback.
         /// </summary>
-        public static bool BossArtEnabled = false;
+        public static bool BossArtEnabled = true;
 
         public static ArenaView.BossLook BossLookFor(BallBattle.Sim.Run.RunState run)
         {
             if (!BossArtEnabled || run == null || !run.IsBossFight) return ArenaView.BossLook.None;
-            switch (run.CurrentBossId)   // BB-04: only these two bosses have body art (MAGNET / WARDEN: their weapon ball)
+            switch (run.CurrentBossId)
             {
                 case BallBattle.Sim.Boss.BossIds.ShellKing: return ArenaView.BossLook.ShellKing;
                 case BallBattle.Sim.Boss.BossIds.Mimic: return ArenaView.BossLook.Mimic;
+                case BallBattle.Sim.Boss.BossIds.Magnet: return ArenaView.BossLook.Magnet;
+                case BallBattle.Sim.Boss.BossIds.Warden: return ArenaView.BossLook.Warden;
                 default: return ArenaView.BossLook.None;
             }
         }

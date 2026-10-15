@@ -152,7 +152,8 @@ namespace BallBattle.View
             var zones = spikes ? ZoneSegments(config.Layout.SpikeCorners, arena) : NoZones;
             if (FullWallSpikes)
             {
-                var combined = new System.Collections.Generic.List<ZoneSegment>(FullWallSegments(arena, SpikedWallMask));
+                var combined = new System.Collections.Generic.List<ZoneSegment>();
+                if (!WardenArtEnabled) combined.AddRange(FullWallSegments(arena, SpikedWallMask));
                 foreach (var zone in zones)
                     if ((SpikedWallMask & (1 << (int)zone.Wall)) == 0) combined.Add(zone);
                 zones = combined.ToArray();
@@ -228,6 +229,7 @@ namespace BallBattle.View
         /// <summary>Set by ArenaView each frame: the walls carry WARDEN spikes (teeth along every wall, BB-6d placeholder).</summary>
         public byte SpikedWallMask { get; set; }
         public bool FullWallSpikes => SpikedWallMask != 0;
+        public bool WardenArtEnabled { get; set; }
 
         static ZoneSegment[] ToZones(SpikeSegment[] segs, ArenaRect arena)
         {
@@ -327,6 +329,12 @@ namespace BallBattle.View
                 node.transform.SetParent(obstacleRoot, false);
                 obstacleNodes.Add(node);
                 var color = o.Damage > Fix.Zero ? SpikeColor : (o.Boost > Fix.Zero ? BumperColor : PostColor);
+                if (o.Boost > Fix.Zero && o.Shape == ObstacleShape.Circle && art.BumperRings != null)
+                {
+                    var ring = Quad(node.transform, "BumperRings", art.BumperRings, Color.white, ObstacleOrder + 1);
+                    ring.transform.localPosition = new Vector3(Mathf.Round(o.A.X.ToFloat()), Mathf.Round(o.A.Y.ToFloat()), 0);
+                    ring.transform.localScale = Vector3.one;
+                }
                 var steps = o.Shape == ObstacleShape.Circle ? 1 : Mathf.Max(1, Mathf.CeilToInt((o.B - o.A).Length.ToFloat()));
                 for (var s = 0; s < steps; s++)
                 {

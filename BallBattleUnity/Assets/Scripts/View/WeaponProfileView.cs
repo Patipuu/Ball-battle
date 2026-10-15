@@ -7,6 +7,8 @@ namespace BallBattle.View
     public sealed class WeaponProfileView : MonoBehaviour
     {
         PixelText role, skill;
+        ArtLibrary art;
+        SpriteRenderer roleIcon;
         readonly SpriteRenderer[,] cells = new SpriteRenderer[4, 5];
         public string RoleText => role.Text;
         public static WeaponProfileView Create(Transform parent, ArtLibrary art, Vector2 at, int width, bool showSkill = true)
@@ -14,6 +16,9 @@ namespace BallBattle.View
             var go = new GameObject("WeaponProfile"); go.transform.SetParent(parent, false);
             go.transform.localPosition = new Vector3(at.x, at.y, 0);
             var view = go.AddComponent<WeaponProfileView>();
+            view.art = art;
+            var icon = new GameObject("RoleIcon"); icon.transform.SetParent(go.transform, false);
+            view.roleIcon = icon.AddComponent<SpriteRenderer>(); view.roleIcon.sortingOrder = MenuView.Order + 8;
             view.role = PixelText.Create(go.transform, "Role", art.Font, new Vector2(0, 0), PixelText.Align.Center, 1, MenuView.Order + 8);
             var labels = width < 110 ? new[] { "DMG", "RNG", "DEF", "DIFF" } : new[] { "DAMAGE", "RANGE", "DEFENSE", "DIFFICULTY" };
             for (var row = 0; row < 4; row++)
@@ -36,6 +41,9 @@ namespace BallBattle.View
         {
             var data = SkillDefinition.ForWeapon(id);
             role.Set(data.Role, Palette.Look(id).Body);
+            roleIcon.sprite = art.RoleIcon(data.Role); roleIcon.enabled = roleIcon.sprite != null;
+            role.transform.localPosition = new Vector3(roleIcon.enabled ? 8 : 0, 0, 0);
+            roleIcon.transform.localPosition = new Vector3(Mathf.Floor(-PixelFont.MeasureWidth(data.Role) / 2f - 2), 6, 0);
             skill.Set(SkillText.Line(id, 1, SkillBranch.None), Palette.Text);
             var stats = new[] { data.Damage, data.Range, data.Defense, data.Difficulty };
             for (var row = 0; row < 4; row++) for (var col = 0; col < 5; col++)
