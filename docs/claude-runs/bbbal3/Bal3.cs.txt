@@ -1,0 +1,97 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using BallBattle.Sim;
+using BallBattle.Sim.Run;
+
+namespace BallBattle.SimTests
+{
+    static class Bal3
+    {
+        static readonly string[] W = { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig" };
+        sealed class Stat
+        {
+            public int Runs, Wins, FightsWon;
+            public int[] Attempts = new int[8], Losses = new int[8], DiedAt = new int[9];
+            public Dictionary<string, int[]> BossMetBeaten = new Dictionary<string, int[]>();
+            public Dictionary<string, int> Cards = new Dictionary<string, int>();
+            public Dictionary<string, int[]> VsEnemy = new Dictionary<string, int[]>(); // normal fights: [fights, losses]
+            public double DmgScalable, DmgOther; // player -> enemy damage
+            public double DmgPctSum; public int DmgPctN;
+        }
+        static void Main(string[] args)
+        {
+            var n = int.Parse(args[0]); var csv = args[1]; var tag = args.Length > 2 ? args[2] : "run";
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var stats = new ConcurrentDictionary<string, Stat>();
+            Parallel.ForEach(W, w =>
+            {
+                var s = new Stat(); stats[w] = s;
+                double scal = 0, other = 0;
+                RunBot.PickObserved = (run, card, br) => { var k = card.Kind.ToString() + (card.Kind == CardKind.Trait ? ":" + card.Id : ""); s.Cards[k] = s.Cards.TryGetValue(k, out var c) ? c + 1 : 1; };
+                for (uint seed = 1; seed <= n; seed++)
+                {
+                    var res = RunBot.Play(seed, RunBot.Policy.Greedy, (run, m) =>
+                    {
+                        var fi = run.FightIndex; s.Attempts[fi]++;
+                        var won = m.WinnerIndex == 0;
+                        if (!won) s.Losses[fi]++;
+                        var boss = run.CurrentBossId;
+                        if (boss != null)
+                        {
+                            if (!s.BossMetBeaten.TryGetValue(boss, out var bb)) s.BossMetBeaten[boss] = bb = new int[2];
+                            bb[0]++; if (won) bb[1]++;
+                        }
+                        else
+                        {
+                            var ew = run.Enemy.WeaponId;
+                            if (!s.VsEnemy.TryGetValue(ew, out var ve)) s.VsEnemy[ew] = ve = new int[2];
+                            ve[0]++; if (!won) ve[1]++;
+                        }
+                        s.DmgPctSum += run.Build.DamagePct.ToFloat(); s.DmgPctN++;
+                    }, (run, m) =>
+                    {
+                        foreach (var e in m.Events)
+                        {
+                            if ((e.Type == SimEventType.Hit || e.Type == SimEventType.ProjectileHit) && e.A == 0 && e.B == 1) scal += e.Value.ToFloat();
+                            else if (e.Type == SimEventType.Damage && e.A == 0 && e.B == 1) other += e.Value.ToFloat();
+                            else if (e.Type == SimEventType.StatusTick && e.A == 1 && e.B == 0) other += e.Value.ToFloat();
+                        }
+                    }, w);
+                    s.Runs++; if (res.Won) s.Wins++; s.FightsWon += res.FightsWon;
+                }
+                s.DmgScalable = scal; s.DmgOther = other;
+            });
+            var inv = CultureInfo.InvariantCulture;
+            var lines = new List<string> { "section,weapon,key,metric,value" };
+            void L(string sec, string w, string k, string m, double v) => lines.Add(string.Join(",", sec, w, k, m, v.ToString("0.###", inv)));
+            Console.WriteLine($"# BAL3 {tag}: {n} seeds per weapon, Greedy RunBot, forced weapon ({sw.Elapsed.TotalSeconds:0}s)");
+            Console.WriteLine("weapon | win% | fights won | loss% per fight 1..8 (attempts incl. retry) | died at 1..8 | boss beaten% | scalable dmg share | avg DMG card %");
+            foreach (var w in W)
+            {
+                var s = stats[w];
+                L("run", w, "", "win_pct", 100.0 * s.Wins / s.Runs); L("run", w, "", "avg_fights_won", (double)s.FightsWon / s.Runs);
+                for (var i = 0; i < 8; i++) { L("fight", w, (i + 1).ToString(), "attempts", s.Attempts[i]); L("fight", w, (i + 1).ToString(), "loss_pct", s.Attempts[i] == 0 ? 0 : 100.0 * s.Losses[i] / s.Attempts[i]); }
+                foreach (var kv in s.BossMetBeaten) { L("boss", w, kv.Key, "met", kv.Value[0]); L("boss", w, kv.Key, "beaten_pct", 100.0 * kv.Value[1] / kv.Value[0]); }
+                foreach (var kv in s.VsEnemy) { L("vs_enemy", w, kv.Key, "fights", kv.Value[0]); L("vs_enemy", w, kv.Key, "loss_pct", 100.0 * kv.Value[1] / kv.Value[0]); }
+                foreach (var kv in s.Cards) L("cards", w, kv.Key, "per_run", (double)kv.Value / s.Runs);
+                var share = s.DmgScalable + s.DmgOther > 0 ? 100.0 * s.DmgScalable / (s.DmgScalable + s.DmgOther) : 0;
+                L("dmg", w, "", "scalable_share_pct", share); L("dmg", w, "", "avg_damage_pct", 100.0 * s.DmgPctSum / Math.Max(1, s.DmgPctN));
+                var loss = string.Join(" ", Enumerable.Range(0, 8).Select(i => s.Attempts[i] == 0 ? "-" : (100.0 * s.Losses[i] / s.Attempts[i]).ToString("0", inv)));
+                var bosses = string.Join(" ", s.BossMetBeaten.OrderBy(k => k.Key).Select(k => $"{k.Key}:{100.0 * k.Value[1] / k.Value[0]:0}"));
+                Console.WriteLine($"{w} | {100.0 * s.Wins / s.Runs:0.0} | {(double)s.FightsWon / s.Runs:0.00} | {loss} | {bosses} | {share:0} | {100.0 * s.DmgPctSum / Math.Max(1, s.DmgPctN):0.0}");
+            }
+            foreach (var w in new[] { "venom", "aegis", "brawler" })
+            {
+                var s = stats[w];
+                Console.WriteLine($"{w} cards/run: " + string.Join(" ", s.Cards.OrderByDescending(k => k.Value).Take(10).Select(k => $"{k.Key}={(double)k.Value / s.Runs:0.00}")));
+                Console.WriteLine($"{w} normal-fight loss% by enemy: " + string.Join(" ", s.VsEnemy.OrderBy(k => k.Key).Select(k => $"{k.Key}={100.0 * k.Value[1] / k.Value[0]:0}(n{k.Value[0]})")));
+            }
+            File.WriteAllLines(csv, lines);
+        }
+    }
+}

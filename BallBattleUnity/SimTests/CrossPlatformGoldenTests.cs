@@ -25,13 +25,13 @@ namespace BallBattle.SimTests
             0x794573E6B0A58033UL, 0x32089F649AA33643UL, 0x711E97B9F59E2D48UL, 0x7B39BD1379F55673UL, 0x56AE5105EE29D931UL
         };
 
-        /// <summary>Rules 12 (BB-BAL1 values pass).</summary>
+        /// <summary>Rules 13 (BB-BAL3: Run DAMAGE card scales SPORE poison / MIRROR reflects; a Rules-only change for these Versus matches, ExpectedBySeedMasked unchanged).</summary>
         static readonly ulong[] ExpectedBySeed =
         {
-            0xEF52DEA026BF8E54UL, 0xD66ADB60E13DF335UL, 0x44ADC495C8F211A1UL, 0x98C3BDB4E76AC2D7UL, 0x69C19665F766C756UL,
-            0xC53623F1C01196C7UL, 0xA3085EFB4D8B3124UL, 0x2A626D3D0672AF67UL, 0x7323175FFF8A6C1EUL, 0x15AA4CABA3A6DF0CUL,
-            0x16502A9C0A90CE0AUL, 0x1B62BBF63D3DE747UL, 0xAD350D500B37B452UL, 0x41AD448818F5E5E8UL, 0x2725CE1735EF7CC7UL,
-            0xCD8D662F59FDD30BUL, 0x7D9A87A7E5AD1CA3UL, 0x5512E9990F301C28UL, 0xFC33DEB355AC4E53UL, 0x994231179209EE99UL
+            0x07587B313D420384UL, 0x244CB1F9C4409EA9UL, 0x7E4F4F266704C875UL, 0x3F0FC129E10A6537UL, 0x68FBDF8871966702UL,
+            0x0DD505E7CCA82473UL, 0x406ED75FE702DF60UL, 0x24292B80CB91F80BUL, 0x4FEC23821F8204CAUL, 0xA3A71A9C7C0792D8UL,
+            0xD1D8913E8EE76BCAUL, 0x8E8E58413AB777F7UL, 0xDB9FAC3D441FE65AUL, 0x4265F0602269CE60UL, 0x584B42B093C14AA7UL,
+            0x6464B23ABCFEA0ABUL, 0xDEA042267A7AC96FUL, 0x6A3292AF97DC0050UL, 0xB72A7BFDCA62EC4BUL, 0x65A6A1798D9CD195UL
         };
 
         static ulong[] Digests(System.Func<MatchSim, ulong> hash, string label)
@@ -64,14 +64,14 @@ namespace BallBattle.SimTests
         [Test]
         public void MaskedMatchHashesMatchTheSignatureSkillGolden()
         {
-            Assert.That(SimVersion.Rules, Is.EqualTo(12));
+            Assert.That(SimVersion.Rules, Is.EqualTo(13));
             Assert.That(Digests(m => m.ComputeHash(0), "masked"), Is.EqualTo(ExpectedBySeedMasked));
         }
 
         [Test]
         public void FixedMatchHashesMatchAcrossPlatforms()
         {
-            var actual = Digests(m => m.ComputeHash(), "rules12");
+            var actual = Digests(m => m.ComputeHash(), "rules13");
             Assert.That(actual, Is.EqualTo(ExpectedBySeed));
         }
 

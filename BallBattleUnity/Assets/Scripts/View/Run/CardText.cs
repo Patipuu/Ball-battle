@@ -60,7 +60,7 @@ namespace BallBattle.View
             switch (c.Kind)
             {
                 case CardKind.Trait: return TraitLine2(c.Id, c.Level);
-                case CardKind.DamageUp: return "NOT POISON SPIKES OR THORNS";
+                case CardKind.DamageUp: return "ALSO SPORE POISON, MIRROR REFLECT";   // BB-BAL3 (was "NOT POISON SPIKES OR THORNS")
                 case CardKind.SpeedUp: return WeaponNames.Of(BrawlerRule.WeaponId) + ": MORE SPEED IS MORE DMG";
                 case CardKind.SwapWeapon: return "ONLY OFFERED IF ALL TRAITS STILL WORK";
                 case CardKind.SkillUp: return "ONE SKILL. AUTO TRIGGER";

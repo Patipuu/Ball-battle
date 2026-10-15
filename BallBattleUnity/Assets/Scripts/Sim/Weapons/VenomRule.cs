@@ -35,7 +35,8 @@ namespace BallBattle.Sim.Weapons
         {
             if (kind != DamageKind.Weapon && kind != DamageKind.Projectile) return;
             if (target.Status.PoisonStackCount >= MaxStacks) return;
-            Sim.ApplyPoison(target, Self, WeaponTuning.VenomDps, WeaponTuning.VenomSeconds * MatchConfig.TicksPerSecond);
+            // BB-BAL3: the Run DAMAGE card (Bonus.DamagePct) also scales SPORE's own poison. Versus has no cards (DamagePct 0): unchanged.
+            Sim.ApplyPoison(target, Self, WeaponTuning.VenomDps * (Fix.One + Self.Bonus.DamagePct), WeaponTuning.VenomSeconds * MatchConfig.TicksPerSecond);
         }
 
         protected override ulong HashState(ulong h) => SimHash.Mix(SimHash.Mix(h, MaxStacks), CurrentDamage);

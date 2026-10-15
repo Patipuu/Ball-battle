@@ -5,7 +5,8 @@ namespace BallBattle.Sim
     /// <summary>Flat stat bonuses from run cards. 0 = none. Fractions: 0.1 = +10%.</summary>
     public struct StatBonus
     {
-        /// <summary>Multiplies every outgoing weapon/projectile hit: damage * (1 + DamagePct).</summary>
+        /// <summary>Multiplies every outgoing weapon/projectile hit: damage * (1 + DamagePct). BB-BAL3: also SPORE's own poison dps and
+        /// MIRROR's reflects.</summary>
         public Fix DamagePct;
         /// <summary>Multiplies the ball's speed cap: (MaxSpeed + weapon bonus) * (1 + SpeedPct).</summary>
         public Fix SpeedPct;
