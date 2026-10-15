@@ -142,6 +142,13 @@ namespace BallBattle.EditorTools
                 traits.Add(new ArtLibrary.TraitArt { Id = t.Id, Icon = icon });
             }
             lib.Traits = traits.ToArray();
+            var skills = new List<ArtLibrary.TraitArt>();   // UI-UX1 signature-skill icons; a missing file stays null (SKILL UP falls back to card_swap)
+            foreach (var s in BallBattle.Sim.Skills.SkillDefinition.All)
+            {
+                var icon = Real($"icons/skill_{s.WeaponId}.png");
+                if (icon != null) skills.Add(new ArtLibrary.TraitArt { Id = s.WeaponId, Icon = icon });
+            }
+            lib.Skills = skills.ToArray();
             lib.CardFrames = new[] { Real("card/card_frame_common.png"), Real("card/card_frame_uncommon.png"), Real("card/card_frame_rare.png"), Real("card/card_frame_counter.png") };
             lib.CardAntidote = Real("icons/card_antidote.png");
             lib.CardSpeedCap = Real("icons/card_speed-cap.png");

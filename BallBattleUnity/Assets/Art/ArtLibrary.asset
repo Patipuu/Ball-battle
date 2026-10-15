@@ -88,6 +88,23 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: ba0e756249bbead428137e44285b307e, type: 3}
   - Id: poison-tip
     Icon: {fileID: 21300000, guid: 737f6205e2ba1b2458b60564dd67b913, type: 3}
+  Skills:
+  - Id: blade
+    Icon: {fileID: 21300000, guid: babec471dd0749a7afd1e245c47ce68a, type: 3}
+  - Id: fang
+    Icon: {fileID: 21300000, guid: 037e400f65154dbba7f7f66a921d911c, type: 3}
+  - Id: pike
+    Icon: {fileID: 21300000, guid: 873fbf292bc04dcbb99f4c3285afa92f, type: 3}
+  - Id: brawler
+    Icon: {fileID: 21300000, guid: e0f7f94579244fdeb2a53a63075efeb3, type: 3}
+  - Id: volley
+    Icon: {fileID: 21300000, guid: 5413b6429deb4b6c8a6246ad16b647d7, type: 3}
+  - Id: venom
+    Icon: {fileID: 21300000, guid: 13d176560a6a47af8429b0ebd4c11064, type: 3}
+  - Id: aegis
+    Icon: {fileID: 21300000, guid: dbb5e467ebea4f61ae9ba52629d703ee, type: 3}
+  - Id: rig
+    Icon: {fileID: 21300000, guid: ce88dcc140d4447a97cdbd00c20f9ca9, type: 3}
   CardFrames:
   - {fileID: 21300000, guid: 89ad1d97071010141a6905e1c8953cf0, type: 3}
   - {fileID: 21300000, guid: 4c0cf260712aff14b9eda05896f487a1, type: 3}

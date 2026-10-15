@@ -25,6 +25,7 @@ namespace BallBattle.View
         /// <summary>Traits lines in the ENEMY / YOU boxes: from x -74 to 121.</summary>
         public const int TraitsWidth = 195;
         PixelText youSkill, enemySkill;
+        SpriteRenderer youSkillIcon, enemySkillIcon;   // UI-UX1 signature-skill icons left of the skill lines
         readonly SkillBranchButtons[] skillButtons = new SkillBranchButtons[RunTuning.OfferSize];
         public event Action<int, BallBattle.Sim.Skills.SkillBranch> SkillPicked;
         /// <summary>Gap between the REROLL button and the reason line under it.</summary>
@@ -100,6 +101,7 @@ namespace BallBattle.View
             enemyIcon = RunUi.Icon(root, new Vector2(-100, 152), RunUi.Order + 3);
             enemyName = RunUi.Text(root, art, -74, 167, 1, PixelText.Align.Left);
             enemySkill = RunUi.Text(root, art, -74, 154, 1, PixelText.Align.Left);
+            enemySkillIcon = RunUi.Icon(root, new Vector2(-67, 161), RunUi.Order + 4);
             enemyTraits = RunUi.Text(root, art, -74, 141, 1, PixelText.Align.Left);
             enemyTraits2 = RunUi.Text(root, art, -74, 128, 1, PixelText.Align.Left);
             enemyStats = RunUi.Text(root, art, -74, 115, 1, PixelText.Align.Left);
@@ -113,6 +115,7 @@ namespace BallBattle.View
             youIcon = RunUi.Icon(root, new Vector2(-100, 67), RunUi.Order + 3);
             youName = RunUi.Text(root, art, -74, 80, 1, PixelText.Align.Left);
             youSkill = RunUi.Text(root, art, -74, 67, 1, PixelText.Align.Left);
+            youSkillIcon = RunUi.Icon(root, new Vector2(-67, 74), RunUi.Order + 4);
             youTraits = RunUi.Text(root, art, -74, 54, 1, PixelText.Align.Left);
             youTraits2 = RunUi.Text(root, art, -74, 41, 1, PixelText.Align.Left);
             youStats = RunUi.Text(root, art, -74, 28, 1, PixelText.Align.Left);
@@ -198,7 +201,9 @@ namespace BallBattle.View
             var bossId = run.CurrentBossId;
             enemyLabel.Set(boss ? BossText.Name(bossId) : "ENEMY", boss ? Palette.WallWarning : Palette.TextDim);
             SetBall(enemyIcon, enemyName, enemy.WeaponId, (foe != null ? foe.Radius.ToFloat() : (enemy.Radius > Fix.Zero ? enemy.Radius.ToFloat() : IconNativeRadius)) / IconNativeRadius);
-            if (RunController.BossArtEnabled && art.BossBody(bossId) != null)
+            var bossArt = RunController.BossArtEnabled && art.BossBody(bossId) != null;
+            PlaceEnemyColumn(bossArt);
+            if (bossArt)
             {
                 enemyIcon.sprite = art.BossBody(bossId);
                 var scale = Mathf.Max(1, Mathf.RoundToInt((foe != null ? foe.Radius.ToFloat() : 24) / ArtLibrary.BossBodyRadius));
@@ -212,6 +217,8 @@ namespace BallBattle.View
             SetBall(youIcon, youName, run.Build.WeaponId, (you != null ? you.Radius.ToFloat() : IconNativeRadius) / IconNativeRadius);
             SetTraits(youTraits, youTraits2, CardText.TraitLines(run.Build, TraitsWidth));
             youStats.Set(you != null ? CardText.Stats(run.Build, you.Hp.ToFloat(), you.MaxHp.ToFloat()) : CardText.Stats(run.Build), Palette.TextDim);
+            PlaceSkillIcon(youSkillIcon, youSkill, run.Build.WeaponId, EnemyTextX);
+            PlaceSkillIcon(enemySkillIcon, enemySkill, enemy.WeaponId, enemyName.transform.localPosition.x);
             ShowArena(ArenaOverride ?? run.ArenaId);
 
             var cost = run.NextPickCost;
@@ -640,6 +647,41 @@ namespace BallBattle.View
             var sr = PixelRect.Create(arenaRoot, "R", art.Pixel, color, RunUi.Order + orderOffset);
             PixelRect.Set(sr, ArenaPreviewX + left, ArenaPreviewY + bottom, ArenaPreviewX + right, ArenaPreviewY + top);
         }
+
+        /// <summary>UI-UX1: a 64x64 boss portrait is 51x58 px opaque, wider than the 49 px between the box border and the text column and
+        /// taller than the space under the boss name label. For a boss portrait the icon moves down 6 px (clear of the label at 181) and the
+        /// enemy text column 2 px right (clear of the portrait); normal balls keep the BB-04 layout.</summary>
+        public const float EnemyTextX = -74f, BossTextX = -72f;
+        public static readonly Vector2 EnemyIconPos = new Vector2(-100, 152), BossIconPos = new Vector2(-99, 146);
+        void PlaceEnemyColumn(bool bossPortrait)
+        {
+            var x = bossPortrait ? BossTextX : EnemyTextX;
+            foreach (var t in new[] { enemyName, enemySkill, enemyTraits, enemyTraits2, enemyStats })
+            {
+                var p = t.transform.localPosition; t.transform.localPosition = new Vector3(x, p.y, p.z);
+            }
+            var at = bossPortrait ? BossIconPos : EnemyIconPos;
+            enemyIcon.transform.localPosition = new Vector3(at.x, at.y, enemyIcon.transform.localPosition.z);
+        }
+        /// <summary>UI-UX1: the 14 px skill icon sits at the start of the skill row (cell y..y+14) and the text moves 17 px right.
+        /// No icon (missing art, or a boss line without a skill): the text stays at the column.</summary>
+        public const float SkillIconGap = 17f;
+        void PlaceSkillIcon(SpriteRenderer icon, PixelText text, string weaponId, float columnX)
+        {
+            var sprite = art != null ? art.SkillIcon(weaponId) : null;
+            var show = sprite != null && text.Text.Length > 0;
+            icon.sprite = sprite;
+            icon.enabled = show;
+            var p = text.transform.localPosition;
+            icon.transform.localPosition = new Vector3(columnX + 7, p.y + 7, icon.transform.localPosition.z);
+            text.transform.localPosition = new Vector3(show ? columnX + SkillIconGap : columnX, p.y, p.z);
+        }
+        public SpriteRenderer YouSkillIcon => youSkillIcon;
+        public SpriteRenderer EnemySkillIcon => enemySkillIcon;
+        public float YouSkillTextX => youSkill.transform.localPosition.x;
+        public float EnemyIconX => enemyIcon.transform.localPosition.x;
+        public float EnemyIconY => enemyIcon.transform.localPosition.y;
+        public float EnemyNameX => enemyName.transform.localPosition.x;
 
         void SetBall(SpriteRenderer icon, PixelText name, string weaponId, float scale)
         {

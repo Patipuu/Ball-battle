@@ -54,6 +54,8 @@ namespace BallBattle.View
 
         [Header("Art v1: cards and traits")]
         public TraitArt[] Traits = new TraitArt[0];
+        /// <summary>UI-UX1: signature-skill icons (icons/skill_&lt;weapon&gt;.png, 14x14, V3 style), keyed by weapon id (TraitArt.Id).</summary>
+        public TraitArt[] Skills = new TraitArt[0];
         /// <summary>16x16 frames, 9-slice border 4: common, uncommon, rare, counter (dashed).</summary>
         public Sprite[] CardFrames = new Sprite[4];
         public Sprite CardAntidote;
@@ -133,9 +135,17 @@ namespace BallBattle.View
                 case BallBattle.Sim.Run.CardKind.MaxHp: return CardMaxHp;
                 case BallBattle.Sim.Run.CardKind.Heal: return CardHeal;
                 case BallBattle.Sim.Run.CardKind.SwapWeapon: return CardSwap;
-                case BallBattle.Sim.Run.CardKind.SkillUp: return CardSwap; // placeholder upgrade icon, no new asset required
+                case BallBattle.Sim.Run.CardKind.SkillUp: { var s = SkillIcon(card.Id); return s != null ? s : CardSwap; }   // UI-UX1: the ball's skill icon (card Id = weapon id)
                 default: return null;
             }
+        }
+        /// <summary>Signature-skill icon of a weapon, or null.</summary>
+        public Sprite SkillIcon(string weaponId)
+        {
+            if (Skills == null || weaponId == null) return null;
+            foreach (var t in Skills)
+                if (t.Id == weaponId) return t.Icon;
+            return null;
         }
         /// <summary>Trait icon, or null when the art has none (callers fall back to the drawn badge).</summary>
         public Sprite TraitIcon(string traitId)

@@ -1,19 +1,42 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace BallBattle.View
 {
-    /// <summary>Start of a run: tap one of up to 3 offered weapons.</summary>
+    /// <summary>
+    /// Start of a run: up to 3 offered weapons. UI-UX1: a tap selects a ball and shows what it does (how it grows, good at, weak to,
+    /// its skill and both branches) in the panel below; PICK (or a second tap on the same ball) starts the run with it.
+    /// </summary>
     public sealed class PickWeaponView : MonoBehaviour
     {
         const int Tile = 70;
         const int Gap = 8;
+        const float LineX = -117f;
+        /// <summary>Skill row: 14 px icon, then the text 17 px right of the line start.</summary>
+        public const float SkillIconGap = 17f;
+        /// <summary>Tile skill icon centre y (between the stat bars and the skill name).</summary>
+        public const float TileSkillIconY = -37f;
+        /// <summary>Detail panel and PICK button (tests).</summary>
+        public static readonly Rect PanelArea = new Rect(-127, -238, 254, 140);
+        public static readonly Rect PickArea = new Rect(-70, -234, 140, 28);
 
         public event Action<string> WeaponPicked;
 
         ArtLibrary art;
         Transform tilesRoot;
+        readonly List<(string id, PixelButton button)> tiles = new List<(string, PixelButton)>();
+        PixelText hint, header, grows, good, weak, skill, branchA, branchB;
+        SpriteRenderer skillIcon;   // UI-UX1: the selected ball's skill icon at the start of the skill row
+        PixelButton pickButton;
+        string selected;
+
+        /// <summary>Selected weapon id, or null (tests).</summary>
+        public string Selected => selected;
+        public PixelButton PickButton => pickButton;
+        public SpriteRenderer SkillIcon => skillIcon;
+        public string DetailText => string.Join("|", new[] { header, grows, good, weak, skill, branchA, branchB }.Select(t => t.Text));
 
         public static PickWeaponView Create(Transform parent, ArtLibrary art)
         {
@@ -22,6 +45,19 @@ namespace BallBattle.View
             v.art = art;
             RunUi.Text(root, art, 0, 150, 2, initial: "CHOOSE YOUR WEAPON");
             RunUi.Text(root, art, 0, 134, 1, initial: "ONE SIGNATURE SKILL. TWO BRANCHES", color: Palette.TextDim);
+            RunUi.Box(root, art, PanelArea.xMin, PanelArea.yMin, PanelArea.xMax, PanelArea.yMax);
+            v.hint = RunUi.Text(root, art, 0, -175, 1, initial: "TAP A BALL TO SEE HOW IT PLAYS", color: Palette.TextDim);
+            // Rows of the panel, 13 px cells: name+role, grows, good, weak, then the skill and its two branches.
+            v.header = RunUi.Text(root, art, LineX, -114, 1, PixelText.Align.Left);
+            v.grows = RunUi.Text(root, art, LineX, -128, 1, PixelText.Align.Left);
+            v.good = RunUi.Text(root, art, LineX, -141, 1, PixelText.Align.Left);
+            v.weak = RunUi.Text(root, art, LineX, -154, 1, PixelText.Align.Left);
+            v.skill = RunUi.Text(root, art, LineX + SkillIconGap, -168, 1, PixelText.Align.Left);
+            v.skillIcon = RunUi.Icon(root, new Vector2(LineX + 7, -161), RunUi.Order + 4);
+            v.branchA = RunUi.Text(root, art, LineX, -181, 1, PixelText.Align.Left);
+            v.branchB = RunUi.Text(root, art, LineX, -194, 1, PixelText.Align.Left);
+            v.pickButton = RunUi.Button(root, art, PickArea, "PICK", 2, Palette.WallWarning, () => { if (v.selected != null) v.WeaponPicked?.Invoke(v.selected); });
+            v.ShowDetails(null);
             return v;
         }
 
@@ -35,6 +71,7 @@ namespace BallBattle.View
             }
             tilesRoot = new GameObject("Tiles").transform;
             tilesRoot.SetParent(transform, false);
+            tiles.Clear();
 
             var total = choices.Count * Tile + (choices.Count - 1) * Gap;
             for (var i = 0; i < choices.Count; i++)
@@ -46,10 +83,50 @@ namespace BallBattle.View
                 var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.center.x, 42), PixelText.Align.Center, 1, b.IconOrder);
                 name.Set(RunUi.WeaponName(id), Palette.Look(id).Body);
                 WeaponProfileView.Create(b.transform, art, new Vector2(area.center.x, 27), Tile, false).Show(id);
+                var tileIcon = RunUi.Icon(b.transform, new Vector2(area.center.x, TileSkillIconY), b.IconOrder);
+                tileIcon.name = "SkillIcon";
+                tileIcon.sprite = art.SkillIcon(id);
                 PixelText.Create(b.transform, "Signature", art.Font, new Vector2(area.center.x, -58), PixelText.Align.Center, 1, b.IconOrder)
                     .Set(BallBattle.Sim.Skills.SkillDefinition.ForWeapon(id).Name, Palette.Text);
-                b.Clicked += () => WeaponPicked?.Invoke(id);
+                b.Clicked += () => Select(id);
+                tiles.Add((id, b));
             }
+            ShowDetails(null);
+        }
+
+        /// <summary>First tap selects and explains a ball; a second tap on the same ball picks it (like PICK).</summary>
+        public void Select(string id)
+        {
+            if (id != null && id == selected) { WeaponPicked?.Invoke(id); return; }
+            ShowDetails(id);
+        }
+
+        void ShowDetails(string id)
+        {
+            selected = id;
+            foreach (var (tileId, button) in tiles)
+                button.SetColors(Palette.Floor, tileId == id ? (Color32)Palette.WallWarning : Palette.Look(tileId).Body);
+            var guide = WeaponGuide.For(id);
+            var on = id != null;
+            hint.gameObject.SetActive(!on);
+            pickButton.gameObject.SetActive(on);
+            if (!on)
+            {
+                foreach (var t in new[] { header, grows, good, weak, skill, branchA, branchB }) t.Set("", Palette.Text);
+                skillIcon.enabled = false;
+                return;
+            }
+            var data = BallBattle.Sim.Skills.SkillDefinition.ForWeapon(id);
+            header.Set(RunUi.WeaponName(id) + "  " + data.Role, Palette.Look(id).Body);
+            grows.Set(guide != null ? "HOW: " + guide.Grows : "", Palette.Text);
+            good.Set(guide != null ? "GOOD: " + guide.Good : "", WeaponGuide.GoodColor);
+            weak.Set(guide != null ? "WEAK: " + guide.Weak : "", WeaponGuide.WeakColor);
+            skill.Set(data.Name + ": " + data.Summary, Palette.WallWarning);
+            skillIcon.sprite = art.SkillIcon(id);
+            skillIcon.enabled = skillIcon.sprite != null;
+            branchA.Set("LV2 A " + data.SummaryA, Palette.TextDim);
+            branchB.Set("LV2 B " + data.SummaryB, Palette.TextDim);
+            pickButton.SetText("PICK " + RunUi.WeaponName(id), Palette.WallWarning);
         }
 
         public void Hide() => gameObject.SetActive(false);
