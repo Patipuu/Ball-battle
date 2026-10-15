@@ -77,15 +77,33 @@ namespace BallBattle.Tests
             Assert.That(f.Run.History.Select(h => h.Retry), Is.EqualTo(new[] { false, true }));
         }
 
-        [Test]
-        public void NewRunPickWeaponFightAndResume()
+        static uint FirstWinningSeed()
+        {
+            for (uint seed = 1; seed <= 200; seed++)
+            {
+                var progress = new ProgressData();
+                var choices = RunState.StartChoices(seed, UnlockRules.Weapons(progress));
+                var run = RunState.Start(seed, choices[1], progress);
+                run.Pick(0);
+                run.Pick(0);
+                var match = run.CreateMatch();
+                while (match.Outcome == MatchOutcome.Ongoing) match.Step();
+                if (match.WinnerIndex == 0) return seed;
+            }
+            Assert.Fail("No first-fight winning seed found in setup seeds 1..200");
+            return 0;
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void NewRunPickWeaponFightAndResume(bool needsWinningFight)
         {
             var store = new MemorySaveStore();
             var f = Open(store);
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.Title));
             Assert.That(f.HasSavedRun, Is.False);
 
-            f.NewRun(42);
+            f.NewRun(needsWinningFight ? FirstWinningSeed() : 42);
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.PickWeapon));
             Assert.That(f.StartChoices.Count, Is.EqualTo(3));
             f.ChooseWeapon(f.StartChoices[1]);
@@ -96,8 +114,13 @@ namespace BallBattle.Tests
             f.Pick(0);
             var buildAfterPick = f.Run.Build.WeaponId + string.Join(",", f.Run.Build.Traits.Select(t => t.Id + t.Level)) + f.Run.Build.MaxHp;
             PlayFight(f);
-            Assert.That(f.Current, Is.EqualTo(RunFlow.State.Prepare));
-            Assert.That(f.Run.FightIndex, Is.EqualTo(1));
+            var won = f.Run.History[0].Won;
+            if (needsWinningFight) Assert.That(won, Is.True, "setup searched for the first winning seed");
+            var expectedScreen = won ? RunFlow.State.Prepare : RunFlow.State.StartPick;
+            var expectedFight = won ? 1 : 0;
+            Assert.That(f.Current, Is.EqualTo(expectedScreen), "win rewards the next fight; loss opens free retry pick");
+            Assert.That(f.Run.FightIndex, Is.EqualTo(expectedFight));
+            Assert.That(f.Run.IsRetry, Is.EqualTo(!won));
             var hp = f.Run.Build.Hp;
             var coins = f.Run.Coins;
             var offer = Enumerable.Range(0, f.Run.OfferCount).Select(f.Run.OfferCard).ToArray();
@@ -107,8 +130,8 @@ namespace BallBattle.Tests
             var resumed = Open(store);
             Assert.That(resumed.HasSavedRun, Is.True);
             resumed.Continue();
-            Assert.That(resumed.Current, Is.EqualTo(RunFlow.State.Prepare));
-            Assert.That(resumed.Run.FightIndex, Is.EqualTo(1));
+            Assert.That(resumed.Current, Is.EqualTo(expectedScreen));
+            Assert.That(resumed.Run.FightIndex, Is.EqualTo(expectedFight));
             Assert.That(resumed.Run.Build.Hp, Is.EqualTo(hp));
             Assert.That(resumed.Run.Coins, Is.EqualTo(coins));
             Assert.That(Enumerable.Range(0, resumed.Run.OfferCount).Select(resumed.Run.OfferCard), Is.EqualTo(offer));

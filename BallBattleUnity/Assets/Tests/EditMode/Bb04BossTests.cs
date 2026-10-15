@@ -13,7 +13,7 @@ using UnityEngine;
 namespace BallBattle.Tests
 {
     /// <summary>
-    /// BB-04 boss pool v1, View side: boss audio cues (REAL SfxLibrary.asset, which has no boss clips yet), Prepare name + hint,
+    /// BB-04 boss pool v1, View side: boss audio cues (REAL SfxLibrary.asset), Prepare name + hint,
     /// summary line, telegraphs, save v3 + migration, -bbForceBoss.
     /// </summary>
     public class Bb04BossTests
@@ -73,20 +73,23 @@ namespace BallBattle.Tests
         }
 
         [Test]
-        public void MissingBossClipPlaysNothingDoesNotThrowAndIsLogged()
+        public void RealLibraryHasAllFifteenBossAndSkillCuesAndBossEventsPlayTheirClips()
         {
             AudioLog.ForceOn = true;
             var d = Director(lib);
-            foreach (var id in AudioIds.BossCues) Assert.That(lib.Has(id), Is.False, id + " has no clip yet");
+            var cues = AudioIds.BossCues.Concat(AudioIds.SkillCues).ToArray();
+            Assert.That(cues.Length, Is.EqualTo(15));
+            var missing = cues.Where(id => lib.Get(id) == null).ToArray();
+            Assert.That(missing, Is.Empty, "Missing cue ids: " + string.Join(", ", missing));
             var tick = 10;
             foreach (BossEvent k in System.Enum.GetValues(typeof(BossEvent)))
             {
                 var result = AudioDirector.BossCueResult.None;
                 Assert.DoesNotThrow(() => result = d.RequestBossCue(BossEv(k, tick++), Sim()));
-                Assert.That(result, Is.EqualTo(AudioIds.BossCue(k) == null ? AudioDirector.BossCueResult.None : AudioDirector.BossCueResult.Missing));
+                Assert.That(result, Is.EqualTo(AudioIds.BossCue(k) == null ? AudioDirector.BossCueResult.None : AudioDirector.BossCueResult.Played));
             }
-            Assert.That(d.Played, Is.Empty, "nothing played, no fallback clip");
-            Assert.That(d.LogLines.Count(l => l.Contains("result=missing")), Is.EqualTo(7));
+            Assert.That(d.Played.Select(p => p.Id), Is.EquivalentTo(AudioIds.BossCues));
+            Assert.That(d.LogLines.Count(l => l.Contains("result=played")), Is.EqualTo(7));
             Assert.That(d.LogLines.Any(l => l.Contains("ShellOff") || l.Contains("MagnetEnd")), Is.False, "off/end have no cue");
         }
 

@@ -294,12 +294,15 @@ namespace BallBattle.Tests
             Assert.That(changed, Is.EqualTo(new[] { 3, 0 }));
         }
 
-        // ---- boss cues arrived in BB-04: only the seven named ids, and no clip for them exists yet ----
+        // BB-SFX3 linked the seven boss cues and eight signature skills into the real library.
 
         [Test]
-        public void OnlyTheBb04BossCuesAreReferenced()
+        public void AllFifteenBossAndSkillCuesHaveRealClips()
         {
-            foreach (var c in lib.Clips) Assert.That(c.name, Does.Not.StartWith("boss_"), c.name + ": no boss clip is in the library yet");
+            var cues = AudioIds.BossCues.Concat(AudioIds.SkillCues).ToArray();
+            Assert.That(cues.Length, Is.EqualTo(15));
+            var missing = cues.Where(id => lib.Get(id) == null).ToArray();
+            Assert.That(missing, Is.Empty, "Missing cue ids: " + string.Join(", ", missing));
             var ids = typeof(AudioIds).GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Where(f => f.FieldType == typeof(string)).Select(f => (string)f.GetValue(null))
                 .Concat(AudioIds.Cues).Concat(AudioIds.Music);
