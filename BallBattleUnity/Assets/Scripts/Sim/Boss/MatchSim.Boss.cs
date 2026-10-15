@@ -118,7 +118,11 @@ namespace BallBattle.Sim
         internal void RequestPushIn() => pushInRequested = true;
 
         /// <summary>Normal speed cap of a ball: (MaxSpeed + weapon bonus) × (1 + SpeedPct).</summary>
-        internal Fix SpeedCap(BallState b) => (Config.MaxSpeed + b.Weapon.MaxSpeedBonus) * (Fix.One + b.Bonus.SpeedPct);
+        internal Fix SpeedCap(BallState b)
+        {
+            var cap = (Config.MaxSpeed + b.Weapon.MaxSpeedBonus) * (Fix.One + b.Bonus.SpeedPct);
+            return b.Tap != null ? cap * b.Tap.SpeedCapMultiplier : cap;   // TAP-1 WRECKER ram
+        }
 
         /// <summary>
         /// Balls caught outside the new walls are moved just inside (position only: no bounce, no damage, no event). Overlaps that

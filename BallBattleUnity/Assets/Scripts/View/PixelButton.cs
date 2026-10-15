@@ -11,6 +11,8 @@ namespace BallBattle.View
     public sealed class PixelButton : MonoBehaviour
     {
         public event Action Clicked;
+        /// <summary>TAP-4: a press that starts inside the button (fires at once, before any release).</summary>
+        public event Action Pressed;
 
         public Rect Area { get; private set; }
 
@@ -122,7 +124,7 @@ namespace BallBattle.View
             if (e.Down)
             {
                 SetHeld(Contains(e.Native));
-                if (held) LastPressNative = e.Native;
+                if (held) { LastPressNative = e.Native; Pressed?.Invoke(); }
                 return;
             }
             if (!held) return;

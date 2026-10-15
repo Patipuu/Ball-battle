@@ -31,6 +31,11 @@ namespace BallBattle.View
         /// <summary>Frozen: the sim does not step, the current pose is still drawn (menu, countdown).</summary>
         public bool Paused { get; set; }
 
+        /// <summary>TAP-4: freeze the sim for a moment (a PERFECT strike's hit-stop); the pose is still drawn. View only.</summary>
+        public void HitStop(float seconds) => hitStop = Mathf.Max(hitStop, seconds);
+        public bool InHitStop => hitStop > 0f;
+        float hitStop;
+
         /// <summary>Playback speed (Run mode x2). Ticks stay fixed; more of them run per frame.</summary>
         public float TimeScale { get; set; } = 1f;
 
@@ -235,6 +240,7 @@ namespace BallBattle.View
             accumulator = 0f;
             endTimer = 0f;
             endReported = false;
+            hitStop = 0f;
             Draw(0f, 0f);   // new views show their real pose this frame, not the origin
             MatchStarted?.Invoke();
         }
@@ -250,6 +256,12 @@ namespace BallBattle.View
             {
                 accumulator = 0f;
                 Draw(0f, dt);
+                return;
+            }
+            if (hitStop > 0f)
+            {
+                hitStop -= dt;
+                Draw(accumulator / TickSeconds, dt);
                 return;
             }
             accumulator += dt * TimeScale;

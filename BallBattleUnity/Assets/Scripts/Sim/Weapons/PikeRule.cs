@@ -29,7 +29,8 @@ namespace BallBattle.Sim.Weapons
         }
 
         internal void RefreshLength() => BladeLength = FixMath.Min(WeaponTuning.PikeMaxLength,
-            baseLength * (Fix.One + (Self?.Skill != null && Self.Skill.Active ? Self.Skill.LengthBonus : Fix.Zero)));
+            baseLength * (Fix.One + (Self?.Skill != null && Self.Skill.Active ? Self.Skill.LengthBonus : Fix.Zero)
+                + (Self?.Tap != null ? Self.Tap.LengthBonus : Fix.Zero)));   // TAP-1 ANGLER cast (exact + 0 without a tap)
 
         protected override ulong HashState(ulong h) => SimHash.Mix(SimHash.Mix(h, CurrentDamage), baseLength);
     }

@@ -37,6 +37,9 @@ namespace BallBattle.Sim.Weapons
         public int TurretCount => count;
         public FixVec2 GetTurret(int index) => turrets[index];
         internal void BeginOverclock() => timer = 0;
+        int Interval => Self.Skill != null && Self.Skill.Active ? WeaponTuning.RigFireIntervalTicks / 2 : WeaponTuning.RigFireIntervalTicks;
+        /// <summary>TAP-3: a tap needs a turret and a third of a charge.</summary>
+        internal bool Charged => count > 0 && timer * 3 >= Tap.TapTuning.ChargeThirds * Interval;
 
         public override Fix Damage(in HitContext ctx) => damage;
 
@@ -44,6 +47,24 @@ namespace BallBattle.Sim.Weapons
         {
             damage += WeaponTuning.RigDamagePerHit;
             PlaceTurret();
+        }
+
+        /// <summary>TAP-1 HIVE: every turret fires now and the regular volley timer restarts. False when there is no turret.</summary>
+        internal bool FireAllNow()
+        {
+            if (count == 0) return false;
+            var foe = WeaponAim.NearestFoe(Sim, Self);
+            if (foe == null) return false;
+            var interval = Interval;
+            var spec = shot;
+            spec.Damage = spec.Damage * Fix.Ratio(timer < interval ? timer : interval, interval);   // TAP-3: the charge built so far
+            timer = 0;
+            for (var i = 0; i < count; i++)
+            {
+                var dir = (foe.Pos - turrets[i]).NormalizedOr(FixVec2.Right);
+                Sim.FireProjectile(Self, turrets[i] + dir * (WeaponTuning.RigTurretRadius + 1), dir * WeaponTuning.RigShotSpeed, spec);
+            }
+            return true;
         }
 
         internal void PlaceTurret()
@@ -57,7 +78,7 @@ namespace BallBattle.Sim.Weapons
         {
             DropTurretsOutsideArena();
             if (count == 0) { timer = 0; return; }
-            var interval = Self.Skill != null && Self.Skill.Active ? WeaponTuning.RigFireIntervalTicks / 2 : WeaponTuning.RigFireIntervalTicks;
+            var interval = Interval;
             if (++timer < interval) return;
             timer = 0;
             var foe = WeaponAim.NearestFoe(Sim, Self);

@@ -40,7 +40,13 @@ namespace BallBattle.Sim
         /// <summary>BB-04 boss mechanic. Variant=(byte)Boss.BossEvent; A=boss ball, B=target ball (-1 none); Value/Point per BossEvent.</summary>
         Boss,
         SkillFired,
-        SkillEnded
+        SkillEnded,
+        /// <summary>TAP-1: A=ball that struck (tap accepted), Point=its position.</summary>
+        TapStrike,
+        /// <summary>TAP-1: A=ball, B=target, Value=extra damage from PERFECT (SPORE: dps of the extra stack), Point=target.</summary>
+        TapPerfect,
+        /// <summary>TAP-3: A=ball whose strike landed nothing; its cooldown got the miss penalty.</summary>
+        TapMiss
     }
 
     /// <summary>One thing that happened during a tick. View/audio react to these; they never read Sim internals for effects.</summary>

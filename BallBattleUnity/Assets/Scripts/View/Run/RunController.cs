@@ -17,6 +17,7 @@ namespace BallBattle.View
         RunOverlayView overlay;
         RunSummaryView summary;
         RunResultView result;
+        TapView tap;
         RunFlow.State shown = RunFlow.State.Closed;
         bool dirty;
 
@@ -25,6 +26,7 @@ namespace BallBattle.View
         public PrepareView Prepare => prepare;
         public RunResultView Result => result;
         public RunSummaryView Summary => summary;
+        public TapView Tap => tap;
 
         public event Action Closed;
 
@@ -53,6 +55,7 @@ namespace BallBattle.View
             overlay = RunOverlayView.Create(transform, art);
             summary = RunSummaryView.Create(transform, art);
             result = RunResultView.Create(transform, art);
+            tap = TapView.Create(transform, arena);   // TAP-4: tap to strike during Run fights
 
             title.ContinueRequested += () => Flow.Continue();
             title.NewRunRequested += () => Flow.NewRun(NewSeed());
@@ -140,6 +143,7 @@ namespace BallBattle.View
             overlay.Hide();
             summary.Hide();
             result.Hide();
+            tap?.Tick(null, 0f);
             shown = RunFlow.State.Closed;
         }
 
@@ -153,6 +157,7 @@ namespace BallBattle.View
             if (!overlay.TickRetryBanner(dt)) Flow.Tick(dt);
             if (dirty) Refresh();
             overlay.Render(Flow, dt);
+            tap.Tick(Flow, dt);
         }
 
         /// <summary>Show the screen for the current state; redraw it when its data changed.</summary>

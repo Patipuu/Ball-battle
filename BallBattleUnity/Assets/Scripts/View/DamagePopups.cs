@@ -116,6 +116,10 @@ namespace BallBattle.View
         public void ShowText(Vector2 at, string text, Color32 color, ArenaRect arena) =>
             SpawnText(Place(at, text, 1, arena), text, color, 1);
 
+        /// <summary>TAP-4: a word at <paramref name="scale"/> (PERFECT! is 2x), placed like the numbers.</summary>
+        public void ShowText(Vector2 at, string text, Color32 color, ArenaRect arena, int scale) =>
+            SpawnText(Place(at, text, scale, arena), text, color, scale);
+
         /// <summary>
         /// Where a new number of <paramref name="scale"/> starts so that it stays at least StackStep px from every number on
         /// screen it shares columns with, for both their lifetimes, then inside the arena.

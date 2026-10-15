@@ -47,7 +47,19 @@ namespace BallBattle.Sim.Weapons
             FireVolley(Fix.Zero);
         }
 
-        internal void FireVolley(Fix extraDamage)
+        /// <summary>TAP-3 SPARKLER: the tap fires the volley now with the charge built so far (damage x timer/interval) and the regular
+        /// timer restarts, so tapping moves arrows in time but adds none. Needs a third of a charge.</summary>
+        internal bool Charged => timer * 3 >= Tap.TapTuning.ChargeThirds * WeaponTuning.VolleyIntervalTicks;
+        internal void FireNow()
+        {
+            var charge = Fix.Ratio(timer < WeaponTuning.VolleyIntervalTicks ? timer : WeaponTuning.VolleyIntervalTicks, WeaponTuning.VolleyIntervalTicks);
+            timer = 0;
+            FireVolley(Fix.Zero, charge * Tap.TapTuning.VolleyTapDamage);
+        }
+
+        internal void FireVolley(Fix extraDamage) => FireVolley(extraDamage, Fix.One);
+
+        void FireVolley(Fix extraDamage, Fix charge)
         {
             var foe = WeaponAim.NearestFoe(Sim, Self);
             if (foe == null) return;
@@ -61,6 +73,7 @@ namespace BallBattle.Sim.Weapons
                     aim.X * rotation.Y + aim.Y * rotation.X);
                 var spec = arrow;
                 spec.Damage += extraDamage;
+                if (charge != Fix.One) spec.Damage = spec.Damage * charge;
                 Sim.FireProjectile(Self, Self.Pos + dir * (Self.Radius + 3), dir * WeaponTuning.VolleyArrowSpeed, spec);
             }
         }

@@ -27,6 +27,8 @@ namespace BallBattle.Sim.Run
         public const int MaxTraitLevel = 2;
 
         public static Fix WinHealPct = Fix.Ratio(7, 20);
+        /// <summary>TAP-1: the Run player can tap to strike (prototype switch; enemies never tap).</summary>
+        public static bool TapStrike = true;
         public static Fix HealCardPct = Fix.Ratio(1, 2);
         public static Fix MaxHpCardBonus = 15;
         public static Fix DamageCardPct = Fix.Ratio(3, 20);

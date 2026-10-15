@@ -191,6 +191,9 @@ namespace BallBattle.View
             }
         }
 
+        /// <summary>TAP-4: a screen shake from another view (integer pixels, capped like every shake).</summary>
+        public void Kick(float amplitudePx, float seconds) => shake?.Add(amplitudePx, seconds);
+
         /// <summary>Damage numbers (tests).</summary>
         public DamagePopups Popups => popups;
 

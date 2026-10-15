@@ -33,6 +33,8 @@ namespace BallBattle.Sim
         public Boss.BossRule Boss;
         public int SkillLevel = 1;
         public Skills.SkillBranch SkillBranch;
+        /// <summary>TAP-1: this ball accepts MatchSim.Tap (the Run player). False = never (enemies, Versus).</summary>
+        public bool TapEnabled;
 
         public BallLoadout(WeaponRule weapon) => Weapon = weapon;
 

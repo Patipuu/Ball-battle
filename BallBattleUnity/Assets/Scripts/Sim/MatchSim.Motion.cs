@@ -28,8 +28,9 @@ namespace BallBattle.Sim
                 if (b.Radius < minRadius) minRadius = b.Radius;
                 var w = b.Weapon;
                 if (!w.HasBlade) continue;
-                if (w.SpinDegPerTick > maxSpin) maxSpin = w.SpinDegPerTick;
-                var tip = w.SpinDegPerTick * DegToRad * (w.BladeInner + b.BladeShift + w.BladeLength);
+                var spin = b.SpinNow;
+                if (spin > maxSpin) maxSpin = spin;
+                var tip = spin * DegToRad * (w.BladeInner + b.BladeShift + w.BladeLength);
                 if (tip > maxTipSpeed) maxTipSpeed = tip;
                 if (w.BladeThickness < minParryReach) minParryReach = w.BladeThickness;
             }
@@ -55,7 +56,7 @@ namespace BallBattle.Sim
                 b.Vel.Y -= FixMath.SubstepPart(Config.Gravity, index, substeps);
                 b.Pos += FixMath.SubstepPart(b.Vel, index, substeps);
                 if (b.Weapon.HasBlade)
-                    b.WeaponAngleDeg = FixMath.Wrap(b.WeaponAngleDeg + FixMath.SubstepPart(b.Weapon.SpinDegPerTick * b.SpinDir, index, substeps), 360);
+                    b.WeaponAngleDeg = FixMath.Wrap(b.WeaponAngleDeg + FixMath.SubstepPart(b.SpinNow * b.SpinDir, index, substeps), 360);
             }
         }
     }

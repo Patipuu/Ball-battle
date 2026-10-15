@@ -241,6 +241,7 @@ namespace BallBattle.Sim.Run
         {
             if (Over) throw new InvalidOperationException("Run is over");
             var player = Build.ToLoadout();
+            player.TapEnabled = RunTuning.TapStrike;   // TAP-1: only the player taps
             var enemy = Enemy.ToLoadout();
             forceSkill = SkillOverride ?? forceSkill;
             if (forceSkill.HasValue)

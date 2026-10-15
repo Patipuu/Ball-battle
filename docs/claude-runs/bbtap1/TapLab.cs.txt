@@ -1,0 +1,66 @@
+using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading.Tasks;
+using BallBattle.Sim;
+using BallBattle.Sim.Run;
+using BallBattle.Sim.Weapons;
+namespace BallBattle.SimTests
+{
+    /// <summary>TAP-LAB: Greedy RunBot plays Runs while a tap policy taps for the player (ball 0) between steps.</summary>
+    static class TapLab
+    {
+        static bool InReach(MatchSim m, BallState me, BallState foe)
+        {
+            var d = (foe.Pos - me.Pos).Length;
+            var w = me.Weapon;
+            switch (w)
+            {
+                case VenomRule _: return d <= me.Radius + foe.Radius + BallBattle.Sim.Tap.TapState.SporeReach;
+                case BrawlerRule _: return d <= (Fix)150;
+                case VolleyRule _: return d >= (Fix)30;
+                case RigRule _: return true;
+                default:
+                    var reach = w.BladeInner + me.BladeShift + w.BladeLength * (w is PikeRule ? Fix.Ratio(3, 2) : Fix.One) + foe.Radius;
+                    return d <= reach + 4;
+            }
+        }
+        static void Main(string[] args)
+        {
+            var n = int.Parse(args[0]);
+            uint first = args.Length > 1 ? uint.Parse(args[1]) : 1;
+            if (args.Length > 2 && args[2] != "-") BallBattle.Sim.Tap.TapTuning.Set(args[2]);
+            var W = args.Length > 3 ? args[3].Split(',') : new[] { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig" };
+            var P = args.Length > 4 ? args[4].Split(',') : new[] { "none", "random", "spam", "smart" };
+            var cfgs = (from w in W from p in P select (w, p)).ToArray();
+            var res = new ConcurrentDictionary<int, string>();
+            Parallel.For(0, cfgs.Length, i =>
+            {
+                var (w, p) = cfgs[i];
+                int wins = 0, fightsWon = 0, fights = 0; long taps = 0, perfects = 0, misses = 0;
+                var rng = new Random(1234 + i);
+                for (uint seed = first; seed < first + n; seed++)
+                {
+                    var r = RunBot.Play(seed, RunBot.Policy.Greedy, (run, m) =>
+                    {
+                        fights++;
+                        var t = m.Balls[0].Tap; if (t != null) { taps += t.Taps; perfects += t.Perfects; misses += t.Misses; }
+                    }, (run, m) =>
+                    {
+                        if (p == "none" || m.Outcome != MatchOutcome.Ongoing) return;
+                        var me = m.Balls[0]; var t = me.Tap;
+                        if (t == null || !t.Ready || !me.Alive) return;
+                        var foe = m.Balls[1];
+                        if (!foe.Alive) return;
+                        var go = p == "spam" || (p == "random" && rng.Next(60) == 0) || (p == "smart" && InReach(m, me, foe));
+                        if (go) m.Tap(0);
+                    }, w);
+                    if (r.Won) wins++; fightsWon += r.FightsWon;
+                }
+                res[i] = $"{w},{p},{n},{100.0 * wins / n:0.0},{(double)fightsWon / n:0.00},{(double)taps / fights:0.0},{(taps == 0 ? 0 : 100.0 * perfects / taps):0.0},{(taps == 0 ? 0 : 100.0 * misses / taps):0.0}";
+            });
+            Console.WriteLine("weapon,policy,runs,win_pct,fights_won,taps_per_fight,perfect_pct,miss_pct");
+            for (var i = 0; i < cfgs.Length; i++) Console.WriteLine(res[i]);
+        }
+    }
+}

@@ -30,6 +30,7 @@ namespace BallBattle.Sim
                 return Fix.Zero;
             }
             var d = (attacker.Skill?.ModifyHit(baseDamage, kind) ?? baseDamage) * (Fix.One + attacker.Bonus.DamagePct);
+            if (attacker.Tap != null) d = attacker.Tap.ApplyToHit(d, target);   // TAP-1 PERFECT
             foreach (var t in attacker.Traits) d = t.ModifyOutgoingDamage(target, d, kind);
             blocked = d > Fix.Zero && target.Status.TryConsumeShield();
             if (blocked) return Fix.Zero;
@@ -66,6 +67,7 @@ namespace BallBattle.Sim
             if (kind == DamageKind.Weapon || kind == DamageKind.Projectile)
                 throw new ArgumentException("Weapon/Projectile damage goes through hits, not DealDamage", nameof(kind));
             if (!Ongoing || !Active(target) || amount <= Fix.Zero) return Fix.Zero;
+            if (kind == DamageKind.Reflect && source?.Tap != null) amount = source.Tap.ApplyToReflect(amount, target);   // TAP-1 MIRROR guard
 
             var d = amount;
             foreach (var t in target.Traits) d = t.ModifyIncomingDamage(source, d, kind);

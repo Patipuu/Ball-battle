@@ -130,6 +130,7 @@ namespace BallBattle.Sim
             if ((l.Boss == null || l.Boss is Boss.MimicRule) && Skills.SkillDefinition.ForWeapon(l.Weapon.Id) != null)
                 b.Skill = new Skills.SkillState(this, b, l.SkillLevel, l.SkillBranch);
             foreach (var t in traits) t.Bind(this, b);
+            if (l.TapEnabled) b.Tap = new Tap.TapState(this, b);
 
             // Spread evenly across the width, upper half, with a seeded jitter. Slot centre = (index + 1/2) / count of the width.
             var x = Arena.Left + FixMath.MulDiv(Arena.Width, 2 * index + 1, 2 * count) + rng.RangeFixOrMin(-15, 15);
@@ -165,6 +166,7 @@ namespace BallBattle.Sim
             Arena = Config.ArenaAt(ActiveTick);
             if (bossRules.Length > 0) BossPreTick();   // BB-04: boss phases, pull, Warden walls (limits Arena)
             SkillsPreTick();
+            foreach (var ball in balls) if (Active(ball)) ball.Tap?.Tick();   // TAP-1: taps queued since the last step
 
             var substeps = SubstepCount();
             for (var s = 0; s < substeps && Ongoing; s++)
@@ -185,6 +187,21 @@ namespace BallBattle.Sim
             TickCooldowns();
             CheckTimeCap();
         }
+
+        /// <summary>
+        /// TAP-1: queue a tap for <paramref name="ballIndex"/>; it strikes at the start of the next active tick if its cooldown is over.
+        /// Call between Steps (replays call it before the same Step). False when that ball cannot tap or the match is over.
+        /// </summary>
+        public bool Tap(int ballIndex)
+        {
+            if (!Ongoing || ballIndex < 0 || ballIndex >= balls.Length) return false;
+            var b = balls[ballIndex];
+            if (b.Tap == null || !Active(b)) return false;
+            b.Tap.Request();
+            return true;
+        }
+
+        internal void EmitTap(SimEventType type, BallState ball, int target, Fix value, FixVec2 point) => Emit(type, ball.Index, target, value, point);
 
         /// <summary>
         /// Runs traits' OnSpawn now instead of on the first Step, so a preview/countdown already shows the final
