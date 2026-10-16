@@ -15,6 +15,16 @@ namespace BallBattle.Sim.Meta
         public int Level = 1;
         /// <summary>Shards held toward the next level (spent by an upgrade).</summary>
         public int Shards;
+        /// <summary>BB-12g skill tree (MetaTree checks and spends it): VITALITY, POWER, INSTINCT ranks 0..2.</summary>
+        public int Vit, Pow, Growth;
+        /// <summary>OPENER bought (2 points).</summary>
+        public bool Start;
+        /// <summary>Skill levels bought above LV1: 0 (skill LV1), 1 (LV2) or 2 (LV3), 1 point each.</summary>
+        public int SkillUps;
+        /// <summary>Skill branch: 0 none, 1 = A, 2 = B (set by the first skill level bought).</summary>
+        public int Branch;
+        /// <summary>FINALE of the branch bought (3 points).</summary>
+        public bool Finale;
     }
 
     /// <summary>BB-12a: what one opened chest gave (also the data the CHEST screen shows). Already applied when returned.</summary>

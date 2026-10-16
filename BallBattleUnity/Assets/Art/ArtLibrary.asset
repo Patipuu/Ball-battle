@@ -64,6 +64,18 @@ MonoBehaviour:
     Ball38: {fileID: 21300000, guid: fe77091624d06214dad6bfc377297457, type: 3}
     Ball43: {fileID: 21300000, guid: e277dd46d541b1c4a84829b388d21a76, type: 3}
     Ball48: {fileID: 21300000, guid: da7d0fccfd89e604c99c317b4d862c0a, type: 3}
+  - Id: chorus
+    Ball: {fileID: 21300000, guid: fc7e2a29d2f727347b9b744554dcfb65, type: 3}
+    Blade: {fileID: 21300000, guid: 2d6b241d2be50834f99bddc46b2ba453, type: 3}
+    Ball38: {fileID: 21300000, guid: b1fd1278b3a80e54ca611a50aa8ec231, type: 3}
+    Ball43: {fileID: 21300000, guid: fd134c9e8d655db49938dcfd3c67b31c, type: 3}
+    Ball48: {fileID: 21300000, guid: 2449bc0f294b1d94e93426645a1652c1, type: 3}
+  - Id: serpent
+    Ball: {fileID: 21300000, guid: e8da4dab179bd6d42912d91114ca4309, type: 3}
+    Blade: {fileID: 21300000, guid: 16d33f76d47983844b9769d9feb78dd4, type: 3}
+    Ball38: {fileID: 21300000, guid: 4d913ee2911ae1e42bf2555fd8ccc215, type: 3}
+    Ball43: {fileID: 21300000, guid: 813ad6aaa8df51849b0a04debef450a4, type: 3}
+    Ball48: {fileID: 21300000, guid: 01eaf0dbc97020543ab32940ec8d5782, type: 3}
   RetryTokenOn: {fileID: 21300000, guid: 4fdaa4e9339a5a14994bf93e35676fbe, type: 3}
   RetryTokenOff: {fileID: 21300000, guid: 3a3b3d3f7621c6e498ed47f67dcc8e5c, type: 3}
   IconAntidote: {fileID: 21300000, guid: 2fdd769ffc0576a45a7eb9bfa53c5c29, type: 3}
@@ -105,6 +117,10 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: dbb5e467ebea4f61ae9ba52629d703ee, type: 3}
   - Id: rig
     Icon: {fileID: 21300000, guid: ce88dcc140d4447a97cdbd00c20f9ca9, type: 3}
+  - Id: chorus
+    Icon: {fileID: 21300000, guid: a0476c6851f2e7847bdaefa90564a8f5, type: 3}
+  - Id: serpent
+    Icon: {fileID: 21300000, guid: 77f12792d1a0a3440a47418b1558646b, type: 3}
   CardFrames:
   - {fileID: 21300000, guid: 89ad1d97071010141a6905e1c8953cf0, type: 3}
   - {fileID: 21300000, guid: 4c0cf260712aff14b9eda05896f487a1, type: 3}
@@ -160,6 +176,10 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 284a11d5e9fa31c438a0ed588070d3f2, type: 3}
   - Role: BUILDER
     Icon: {fileID: 21300000, guid: 6a557ca865ceb4b4b9a03ba8de51c1cd, type: 3}
+  - Role: HARMONIST
+    Icon: {fileID: 21300000, guid: d1d6ce2e3413186469241b45d8f4a247, type: 3}
+  - Role: HUNTER
+    Icon: {fileID: 21300000, guid: 5588334b3b44ccf41a2e4545a9cf9962, type: 3}
   Arenas:
   - Id: classic
     Floor: {fileID: 21300000, guid: 02406a84fbf7850429f2c6e61c9e3bd7, type: 3}

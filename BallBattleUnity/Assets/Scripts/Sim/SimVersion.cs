@@ -14,6 +14,9 @@ namespace BallBattle.Sim
         // 10: BB-10a: one signature skill per weapon, Run skill branches
         // 11: BB-FIX2: SHELL KING arc judged at the hit to 0.1 degree (60.0 blocks); boss fights: walls bury obstacles
         // 12: BB-BAL1: combined balance pass after skills (values only)
-        public const int Rules = 13;   // BB-BAL3: the Run DAMAGE card also scales SPORE's poison and MIRROR's reflects (Versus unchanged)
+        // 13: BB-BAL3: the Run DAMAGE card also scales SPORE's poison and MIRROR's reflects (Versus unchanged)
+        // 14: BB-12g: Run skill tree (ball level points), SKILL UP card removed, Run-only baselines (Versus unchanged)
+        // 15: BB-14: two tribute balls (chorus, serpent) in Run pools
+        public const int Rules = 16;   // BB-15: WRECKER Run baseline and BGLGXLQ Run-only CHORUS heal
     }
 }

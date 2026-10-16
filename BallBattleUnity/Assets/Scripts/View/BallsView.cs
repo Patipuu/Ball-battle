@@ -19,6 +19,8 @@ namespace BallBattle.View
         public static readonly Rect BackArea = new Rect(-60, -222, 120, 30);
         public static readonly Rect UpgradeArea = new Rect(-80, -110, 160, 36);
         public static readonly Rect DetailBackArea = new Rect(-60, -222, 120, 30);
+        /// <summary>BB-12g: opens the ball's SKILL TREE page.</summary>
+        public static readonly Rect TreeArea = new Rect(-80, -172, 160, 30);
         public static readonly Color32 UpColor = new Color32(120, 230, 120, 255);
         const float DetailBarLeft = -100f, DetailBarRight = 100f;
 
@@ -30,7 +32,10 @@ namespace BallBattle.View
         PixelText gold, detailName, detailLevel, detailShards, detailCost, detailPoints, detailNote, flash;
         SpriteRenderer detailBall, detailBarFill;
         readonly List<SpriteRenderer> pips = new List<SpriteRenderer>();
-        PixelButton upgrade;
+        PixelButton upgrade, treeButton;
+        TreeView tree;
+        public TreeView Tree => tree;
+        public PixelButton TreeButton => treeButton;
         readonly List<Tile> tiles = new List<Tile>();
         float flashLeft;
 
@@ -132,8 +137,13 @@ namespace BallBattle.View
             detailCost = PixelText.Create(detail, "Cost", art.Font, new Vector2(0, -12), PixelText.Align.Center, 1, Order + 6);
             detailNote = PixelText.Create(detail, "Note", art.Font, new Vector2(0, -30), PixelText.Align.Center, 1, Order + 6);
             upgrade = PixelButton.Create(detail, "Upgrade", art, UpgradeArea, "UPGRADE", 2, Palette.WallWarning, Palette.WallWarning, Palette.Background, Order + 2);
+            upgrade.ClickCue = null;   // SFX4: PressUpgrade plays level_up or ui_denied
             upgrade.Clicked += PressUpgrade;
-            detailPoints = PixelText.Create(detail, "Points", art.Font, new Vector2(0, -150), PixelText.Align.Center, 1, Order + 6);
+            detailPoints = PixelText.Create(detail, "Points", art.Font, new Vector2(0, -136), PixelText.Align.Center, 1, Order + 6);
+            treeButton = PixelButton.Create(detail, "TreeButton", art, TreeArea, "SKILL TREE", 2, Palette.Floor, BallsView.UpColor, BallsView.UpColor, Order + 2);
+            treeButton.Clicked += OpenTree;
+            tree = TreeView.Create(root, art);
+            tree.Closed += () => { if (DetailId != null) OpenDetail(DetailId); };
             var back = PixelButton.Create(detail, "DetailBack", art, DetailBackArea, "BACK", 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             back.ClickCue = AudioIds.UiBack;
             back.Clicked += () => ShowGrid();
@@ -158,6 +168,7 @@ namespace BallBattle.View
         public void ShowGrid()
         {
             detail.gameObject.SetActive(false);
+            if (tree != null && tree.IsOpen) tree.gameObject.SetActive(false);
             grid.gameObject.SetActive(true);
             DetailId = null;
             RefreshGrid(Progress());
@@ -203,6 +214,14 @@ namespace BallBattle.View
             return (have, MetaRules.ShardsToNext(MetaRules.LevelOf(p, id)));
         }
 
+        /// <summary>BB-12g: the SKILL TREE page of the ball on the detail page.</summary>
+        public void OpenTree()
+        {
+            if (DetailId == null) return;
+            detail.gameObject.SetActive(false);
+            tree.Show(store, DetailId);
+        }
+
         public void OpenDetail(string id)
         {
             DetailId = id;
@@ -239,7 +258,10 @@ namespace BallBattle.View
             upgrade.gameObject.SetActive(!max);
             upgrade.SetColors(UpgradeReady ? (Color32)Palette.WallWarning : Palette.Floor, UpgradeReady ? (Color32)Palette.WallWarning : Palette.HpBack);
             upgrade.SetText("UPGRADE", UpgradeReady ? Palette.Background : Palette.TextDim);
-            detailPoints.Set($"SKILL POINTS: {MetaRules.TreePoints(level)}   SKILL TREE COMING SOON", Palette.TextDim);
+            var ball = MetaRules.Ball(p, id);
+            var free = MetaTree.Free(ball);
+            detailPoints.Set(free > 0 ? $"SKILL POINTS: {free} FREE OF {MetaRules.TreePoints(level)}" : $"SKILL POINTS: {MetaRules.TreePoints(level)} ALL SPENT",
+                free > 0 ? UpColor : Palette.TextDim);
         }
 
         /// <summary>UPGRADE: spend and save at once; nothing happens when the ball cannot level yet.</summary>
@@ -247,8 +269,9 @@ namespace BallBattle.View
         {
             if (store == null || DetailId == null) return;
             var data = store.Load();
-            if (!MetaRules.Upgrade(data.Progress, DetailId)) return;
+            if (!MetaRules.Upgrade(data.Progress, DetailId)) { UiAudio.Play(AudioIds.UiDenied); return; }
             store.Save(data);
+            UiAudio.Play(AudioIds.LevelUp);
             RefreshDetail(data.Progress);
             flash.Set("LEVEL UP!", UpColor);
             flash.gameObject.SetActive(true);

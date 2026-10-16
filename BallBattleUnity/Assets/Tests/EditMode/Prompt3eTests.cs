@@ -271,8 +271,8 @@ namespace BallBattle.Tests
         public void AHealingEnemyGetsAFoeHealedLineAndTheEndOfFightLog()
         {
             var rig = Rig();
-            LogAssert.Expect(LogType.Log, new Regex(@"^\[BallBattle\] Fight 1 ended: seed 1791713962 \(match \d+\), outcome (Win|Lost|Draw), tick \d+, you brawler HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, enemy aegis HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, DMG DEALT \d+\.\d\d TAKEN \d+\.\d\d$"));
-            PlayFightOne(rig, 1791713962u, BrawlerRule.WeaponId);   // fight 1: MIRROR (aegis), which heals
+            LogAssert.Expect(LogType.Log, new Regex(@"^\[BallBattle\] Fight 1 ended: seed 1791713998 \(match \d+\), outcome (Win|Lost|Draw), tick \d+, you brawler HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, enemy aegis HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, DMG DEALT \d+\.\d\d TAKEN \d+\.\d\d$"));
+            PlayFightOne(rig, 1791713998u, BrawlerRule.WeaponId);   // fight 1: MIRROR (aegis), which heals (BB-14: new seed, the enemy pool grew)
             var healed = rig.events.Where(e => e.Type == SimEventType.Heal && e.A == 1).Sum(e => e.Value.ToFloat());
             Assert.That(healed, Is.GreaterThan(0f));
             var r = rig.rc.Flow.LastReport;

@@ -16,10 +16,10 @@ namespace BallBattle.View
     public sealed class MenuView : MonoBehaviour
     {
         public const int Order = 60;
-        const int Cols = 4;
-        const int TileW = 62;
+        const int Cols = 5;     // BB-14: 10 balls = 2 rows of 5 per side (was 4 x 2 of 62 px)
+        const int TileW = 50;
         const int TileH = 34;
-        const int Gap = 6;
+        const int Gap = 3;
 
         /// <summary>Main button (24,160) 222x48.</summary>
         public static readonly Rect RunArea = new Rect(-111, 32, 222, 48);

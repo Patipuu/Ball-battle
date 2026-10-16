@@ -28,6 +28,8 @@ namespace BallBattle.View
             { "venom", new Entry("HITS POISON. MORE STACKS PER HIT", "LONG FIGHTS. BEATS MIRROR", "WEAK START. BURST BEATS IT") },
             { "aegis", new Entry("REFLECTS PARRIES AND BODY HITS", "PUNISHES WRECKER AND BIG HITS", "POISON (SPORE). TIGHT ARENAS") },
             { "rig", new Entry("EACH HIT BUILDS A TURRET (MAX 6)", "TURRETS FILL THE ARENA LATE", "SLOW START. WALLS EAT TURRETS") },
+            { "chorus", new Entry("HITS LIGHT 5 COLOURS. ALL 5 = UNITY", "HEALS, GUARDS AND BURSTS UP CLOSE", "RANGED BALLS STARVE THE RING") },
+            { "serpent", new Entry("EATS PREY. EACH ONE GROWS THE TAIL", "TAIL WHIPS. BITE GROWS WITH LENGTH", "LONG BLADES CUT THE TAIL") },
         };
 
         /// <summary>The entry for <paramref name="weaponId"/>, or null for an unknown id.</summary>

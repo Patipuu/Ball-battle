@@ -16,8 +16,11 @@ namespace BallBattle.EditorTools
         static float[] Buffer(float seconds) => new float[(int)(seconds * SampleRate)];
         static float Env(float t, float attack, float decay) => t < attack ? t / attack : (float)Math.Exp(-(t - attack) / decay);
 
-        /// <summary>"Clack": very short noise burst + bright decaying click. The signature hit sound.</summary>
-        public static float[] Hit()
+        /// <summary>Generic hit (BB-SFX4: from SfxForge, a warm thud-click instead of the old bright clack).</summary>
+        public static float[] Hit() => SfxForge.Hit();
+
+        /// <summary>Pre-SFX4 generic hit: very short noise burst + bright decaying click (kept for reference).</summary>
+        public static float[] HitClassic()
         {
             var s = Buffer(0.09f);
             var rng = new Random(1);
@@ -31,8 +34,11 @@ namespace BallBattle.EditorTools
             return Normalize(s, 0.9f);
         }
 
-        /// <summary>Metallic ring: inharmonic partials with long decay.</summary>
-        public static float[] Parry()
+        /// <summary>Parry (BB-SFX4: from SfxForge, a clear two-note bell instead of the old metallic hiss).</summary>
+        public static float[] Parry() => SfxForge.Parry();
+
+        /// <summary>Pre-SFX4 parry: inharmonic partials with long decay (kept for reference).</summary>
+        public static float[] ParryClassic()
         {
             var s = Buffer(0.3f);
             var rng = new Random(2);
@@ -59,8 +65,11 @@ namespace BallBattle.EditorTools
             return Normalize(s, 0.7f);
         }
 
-        /// <summary>Knockout: noise burst with falling square tone.</summary>
-        public static float[] Death()
+        /// <summary>Knockout (BB-SFX4: from SfxForge, a deep falling boom with a short falling tune).</summary>
+        public static float[] Death() => SfxForge.Death();
+
+        /// <summary>Pre-SFX4 knockout: noise burst with falling square tone (kept for reference).</summary>
+        public static float[] DeathClassic()
         {
             var s = Buffer(0.6f);
             var rng = new Random(3);

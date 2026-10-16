@@ -112,6 +112,47 @@ namespace BallBattle.View
         public bool RequestCue(string id, int tick, float volume = 0.8f, float pitch = 1f, float maxPitch = float.PositiveInfinity) =>
             simGate.Allow(id, tick) && PlayNow(id, volume, pitch, maxPitch);
 
+        // ---------------- BB-SFX4 mix: thin out the busy match sounds ----------------
+
+        /// <summary>At most this many hit cues (melee + projectile) start within <see cref="HitWindow"/>; the rest are skipped.</summary>
+        public const int HitBudget = 3;
+        /// <summary>Projectile hits (SPARKLER arrows, HIVE shots, reflected shots): at most 2 per window, so a volley is 2 cues, not 7.</summary>
+        public const int ProjectileHitBudget = 2;
+        public const float HitWindow = 0.12f;
+        /// <summary>A wall or ball bounce within this time after a hit cue is skipped (the hit covers it).</summary>
+        public const float BounceAfterHit = 0.07f;
+        /// <summary>Plain wall/ball bounce cues: at most one per 60 ms across all balls.</summary>
+        public const float BounceSpacing = 0.06f;
+        /// <summary>Turret volleys (ProjectileFired): one soft tick per 250 ms.</summary>
+        public const float FiredSpacing = 0.25f;
+        public const float BallBounceVolume = 0.22f, FiredVolume = 0.07f, ProjectileHitVolume = 0.3f;
+        public const float TapStrikeVolume = 0.75f, TapPerfectVolume = 0.7f, TapMissVolume = 0.45f;
+        public const float ChorusNoteVolume = 0.4f, ChorusUnityVolume = 0.7f, PreyEatVolume = 0.35f, TailCutVolume = 0.5f;   // BB-14
+
+        float lastHitAt = float.NegativeInfinity;
+        float lastBounceAt = float.NegativeInfinity, lastFiredAt = float.NegativeInfinity;
+        readonly Queue<float> hitTimes = new Queue<float>(), projectileHitTimes = new Queue<float>();
+
+        /// <summary>True while fewer than <paramref name="max"/> cues started in the last <see cref="HitWindow"/> (old entries are dropped).</summary>
+        bool HasRoom(Queue<float> times, int max)
+        {
+            var now = Clock();
+            while (times.Count > 0 && now - times.Peek() >= HitWindow) times.Dequeue();
+            return times.Count < max;
+        }
+
+        /// <summary>True (and the moment is noted) when a cue of this family may play now.</summary>
+        bool Spaced(ref float last, float gap)
+        {
+            var now = Clock();
+            if (now - last < gap) return false;
+            last = now;
+            return true;
+        }
+
+        /// <summary>A bounce is skipped right after a hit cue and when another bounce just played.</summary>
+        bool BounceAllowed() => Clock() - lastHitAt >= BounceAfterHit && Spaced(ref lastBounceAt, BounceSpacing);
+
         /// <summary>Hit of <paramref name="weaponId"/> on Sim tick <paramref name="tick"/>; <paramref name="heat"/> (0..1) raises the
         /// pitch of the weapon's own clip by up to AudioIds.HeatPitchCapFor (jitter included, never above the cap).</summary>
         public bool RequestHit(string weaponId, int tick, float volume = 0.6f, float heat = 0f) =>
@@ -126,8 +167,13 @@ namespace BallBattle.View
             return Palette.Heat(w.Id, w.StatValue.ToFloat());
         }
 
-        void RequestHitEvent(SimEvent e, MatchSim sim, float volume)
+        void RequestHitEvent(SimEvent e, MatchSim sim, float volume, bool projectile = false)
         {
+            if (!HasRoom(hitTimes, HitBudget) || (projectile && !HasRoom(projectileHitTimes, ProjectileHitBudget))) return;
+            var now = Clock();
+            hitTimes.Enqueue(now);
+            if (projectile) projectileHitTimes.Enqueue(now);
+            lastHitAt = now;
             var weaponId = sim != null && e.A >= 0 && e.A < sim.Balls.Count ? sim.Balls[e.A].Weapon.Id : null;
             RequestCue(HitCueFor(e, sim, Has), e.Tick, volume, AudioIds.HeatPitch(weaponId, HeatOf(e, sim)), 1f + AudioIds.HeatPitchCapFor(weaponId));
         }
@@ -152,6 +198,7 @@ namespace BallBattle.View
             Played.Add(new PlayedCue { Id = id, Time = now, Volume = v, Pitch = pitch });
             lastVoice = cues != null && v > 0f ? cues.Play(library != null ? library.Get(id) : null, v, pitch) : -1;
             if (AudioIds.Ducks(id)) Duck.Trigger(now);
+            NoteJingle(id, now);   // BB-MUSIC1
             return true;
         }
 
@@ -165,9 +212,47 @@ namespace BallBattle.View
         }
 
         /// <summary>BB-VIEW3: every music track request goes through here so -bbAudioLog shows it (start or same track).</summary>
+        // ---------------- BB-MUSIC1: jingles own the moment ----------------
+
+        /// <summary>music_result waits until the win/lose/run jingle has finished, plus this gap, then fades in over ResultFadeIn.</summary>
+        public const float ResultGap = 0.2f, ResultFadeIn = 1.5f;
+        /// <summary>While a jingle plays, the music sits this much lower (and comes back over JingleDuckRelease).</summary>
+        public const float JingleDuckDb = -9f, JingleDuckRelease = 0.4f;
+        /// <summary>Length used for a jingle whose clip is missing (tests, a broken library).</summary>
+        public const float JingleFallbackSeconds = 1f;
+
+        float jingleUntil = float.NegativeInfinity;
+
+        /// <summary>Clock time the last jingle (played or already scheduled) ends.</summary>
+        public float JingleUntil => jingleUntil;
+
+        float ClipSeconds(string id)
+        {
+            var c = library != null ? library.Get(id) : null;
+            return c != null && c.length > 0f ? c.length : JingleFallbackSeconds;
+        }
+
+        void NoteJingle(string id, float startsAt)
+        {
+            if (!AudioIds.IsJingle(id)) return;
+            jingleUntil = Mathf.Max(jingleUntil, startsAt + ClipSeconds(id));
+        }
+
+        /// <summary>Music gain (dB) from jingles: JingleDuckDb while one plays, back to 0 over JingleDuckRelease.</summary>
+        public float JingleDb(float now)
+        {
+            if (now <= jingleUntil) return JingleDuckDb;
+            var r = (now - jingleUntil) / JingleDuckRelease;
+            return r >= 1f ? 0f : JingleDuckDb * (1f - r);
+        }
+
         void RequestTrack(string track, string reason)
         {
-            var started = Music.Request(track);
+            var now = Clock();
+            var wait = track == AudioIds.MusicResult ? Mathf.Max(0f, jingleUntil - now) + (jingleUntil > now ? ResultGap : 0f) : 0f;
+            var started = track == AudioIds.MusicResult && track != Music.Current
+                ? Music.Request(track, wait, ResultFadeIn)
+                : Music.Request(track);
             if (AudioLog.Enabled) AudioLog.Write(AudioLog.MusicLine("track", $"track={track ?? "none"} {reason} result={(started ? "start" : "same")}", Clock()), this);
         }
 
@@ -193,7 +278,32 @@ namespace BallBattle.View
                     break;
                 case SimEventType.ProjectileHit:
                     // A shot stopped by a boss shell (Variant 1, 0 damage) keeps its normal hit cue (BB-04).
-                    if (e.Value.ToFloat() > 0f || e.Variant == 1) RequestHitEvent(e, sim, 0.35f);
+                    if (e.Value.ToFloat() > 0f || e.Variant == 1) RequestHitEvent(e, sim, ProjectileHitVolume, true);
+                    break;
+                case SimEventType.TapStrike:
+                    RequestCue(AudioIds.TapStrike, e.Tick, TapStrikeVolume);
+                    lastHitAt = Clock();   // the strike covers a normal hit cue in the same moment
+                    break;
+                case SimEventType.TapPerfect:
+                    RequestCue(AudioIds.TapPerfect, e.Tick, TapPerfectVolume);
+                    break;
+                case SimEventType.TapMiss:
+                    RequestCue(AudioIds.TapMiss, e.Tick, TapMissVolume);
+                    break;
+                // ---- BB-14 tribute balls ----
+                case SimEventType.ChorusLit:
+                    var color = (int)(e.Value.Raw >> Fix.FractionBits);
+                    if (color >= 1 && color <= AudioIds.ChorusNotePitch.Length)
+                        RequestCue(AudioIds.ChorusNote, e.Tick, ChorusNoteVolume, AudioIds.ChorusNotePitch[color - 1]);
+                    break;
+                case SimEventType.ChorusUnity:
+                    RequestCue(AudioIds.ChorusUnity, e.Tick, ChorusUnityVolume);
+                    break;
+                case SimEventType.PreyEaten:
+                    RequestCue(AudioIds.PreyEat, e.Tick, PreyEatVolume);
+                    break;
+                case SimEventType.TailCut:
+                    RequestCue(AudioIds.TailCut, e.Tick, TailCutVolume);
                     break;
                 case SimEventType.Boss:
                     RequestBossCue(e, sim);
@@ -213,13 +323,14 @@ namespace BallBattle.View
                     RequestCue(AudioIds.Parry, e.Tick, 0.5f, 0.8f);
                     break;
                 case SimEventType.ProjectileFired:
-                    RequestCue(AudioIds.Wall, e.Tick, 0.12f, 1.7f);   // six turrets fire together: one sound
+                    // Six turrets fire together: one soft tick, and at most one per FiredSpacing (BB-SFX4).
+                    if (Spaced(ref lastFiredAt, FiredSpacing)) RequestCue(AudioIds.Wall, e.Tick, FiredVolume, 1.7f);
                     break;
                 case SimEventType.WallBounce:
                     RequestHazard(e, sim, WallBounceVolume, 1f);
                     break;
                 case SimEventType.BallBounce:
-                    RequestCue(AudioIds.Wall, e.Tick, 0.35f, 0.8f);
+                    if (BounceAllowed()) RequestCue(AudioIds.Wall, e.Tick, BallBounceVolume, 0.8f);
                     break;
                 case SimEventType.ObstacleHit:
                     // Damaging obstacle: spike_hit (or wall) at pitch 1.0 + the normal jitter (BB-SFX2: no 0.7 pitch-down).
@@ -291,6 +402,8 @@ namespace BallBattle.View
             var replaced = false;
             if (id == AudioIds.Wall && spikeTickByBall.TryGetValue(e.A, out var spikeTick) && spikeTick == e.Tick)
                 allowed = false;   // this ball already played spike_hit this tick: one contact = one cue
+            else if (id == AudioIds.Wall && e.Type == SimEventType.WallBounce && e.Value.ToFloat() <= 0f && !BounceAllowed())
+                allowed = false;   // BB-SFX4: a plain bounce right after a hit or another bounce is not heard
             else
             {
                 allowed = RequestCue(id, e.Tick, volume, pitch);
@@ -343,6 +456,9 @@ namespace BallBattle.View
         public void OnMatchStarted()
         {
             simGate.Reset();
+            lastHitAt = lastBounceAt = lastFiredAt = float.NegativeInfinity;
+            hitTimes.Clear();
+            projectileHitTimes.Clear();
             spikeTickByBall.Clear();
             wallByBall.Clear();
             seenHp = new float[0];
@@ -366,6 +482,8 @@ namespace BallBattle.View
             }
             pendingResult = (playerBall >= 0 ? winner == playerBall : winner >= 0) ? AudioIds.FightWin : AudioIds.FightLose;
             pendingResultAt = Clock() + ResultCueDelay;
+            NoteJingle(pendingResult, pendingResultAt);   // BB-MUSIC1: music_result waits for it
+            if (Music.Current == AudioIds.MusicResult) Music.HoldIncoming(jingleUntil - Clock() + ResultGap, ResultFadeIn);   // screen came first
         }
 
         /// <summary>Summary appears: run_win / run_over now, then one unlock per milestone row shown, 0.25 s apart.</summary>
@@ -418,7 +536,12 @@ namespace BallBattle.View
             src.clip = library != null ? library.Get(track) : null;
             src.volume = 0f;
             src.pitch = 1f;
-            if (src.clip != null && Application.isPlaying) src.Play();
+            if (src.clip != null && Application.isPlaying)
+            {
+                // BB-MUSIC1: a delayed track (music_result after a jingle) starts from its beginning when it becomes audible.
+                if (Music.StartDelay > 0f) src.PlayDelayed(Music.StartDelay);
+                else src.Play();
+            }
         }
 
         void OnSlotStopped(int slot)
@@ -433,7 +556,7 @@ namespace BallBattle.View
 
         void ApplyMusic(float now)
         {
-            var db = Duck.Db(now) + (Paused ? PauseDuckDb : 0f);
+            var db = Duck.Db(now) + JingleDb(now) + (Paused ? PauseDuckDb : 0f);
             var level = VolumeCurve.Linear(MusicVolume) * VolumeCurve.DbToLinear(db);
             for (var i = 0; i < music.Length; i++)
             {

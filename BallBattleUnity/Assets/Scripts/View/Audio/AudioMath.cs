@@ -140,6 +140,11 @@ namespace BallBattle.View
 
         int active = -1, from = -1;
         float fromStart, t, duration;
+        // BB-MUSIC1: the incoming track may wait (silent) and fade in on its own time; the outgoing one uses `duration`.
+        float inDelay, inDuration;
+
+        /// <summary>Seconds the track started by the last Request stays silent before it fades in (0 = at once).</summary>
+        public float StartDelay => inDelay;
 
         /// <summary>Track playing (or fading in); null when silent or fading out.</summary>
         public string Current => active >= 0 ? Track[active] : null;
@@ -147,7 +152,14 @@ namespace BallBattle.View
         public int Starts { get; private set; }
 
         /// <summary>Crossfade to <paramref name="track"/>. False when it is already the current track (no restart).</summary>
-        public bool Request(string track)
+        public bool Request(string track) => Request(track, 0f, CrossfadeSeconds);
+
+        /// <summary>
+        /// BB-MUSIC1: like Request, but the new track stays silent for <paramref name="delay"/> seconds (the old one still fades
+        /// out over CrossfadeSeconds at once) and then fades in over <paramref name="fadeIn"/>. Used for music_result, which must
+        /// not sound under the win/lose jingle. Current is the new track at once.
+        /// </summary>
+        public bool Request(string track, float delay, float fadeIn)
         {
             if (track == Current) return false;
             if (track == null) { FadeOut(CrossfadeSeconds); return true; }
@@ -160,8 +172,23 @@ namespace BallBattle.View
             Gain[slot] = 0f;
             t = 0f;
             duration = CrossfadeSeconds;
+            inDelay = Mathf.Max(0f, delay);
+            inDuration = Mathf.Max(0.01f, fadeIn);
             Starts++;
             SlotStarted?.Invoke(slot, track);
+            return true;
+        }
+
+        /// <summary>
+        /// BB-MUSIC1: keeps the incoming track silent for <paramref name="delay"/> more seconds (from now) and then fades it in over
+        /// <paramref name="fadeIn"/> - only while it has not become audible yet. Returns whether it was held.
+        /// </summary>
+        public bool HoldIncoming(float delay, float fadeIn)
+        {
+            if (active < 0 || Gain[active] > 0.05f) return false;   // already heard: leave it
+            inDelay = t + Mathf.Max(0f, delay);
+            inDuration = Mathf.Max(0.01f, fadeIn);
+            Gain[active] = 0f;
             return true;
         }
 
@@ -174,13 +201,15 @@ namespace BallBattle.View
             active = -1;
             t = 0f;
             duration = seconds;
+            inDelay = 0f;
         }
 
         public void Tick(float dt)
         {
-            t = Mathf.Min(t + Mathf.Max(0f, dt), duration);
-            var p = duration > 0f ? t / duration : 1f;
-            if (active >= 0) Gain[active] = Mathf.Sin(p * Mathf.PI * 0.5f);
+            t = Mathf.Min(t + Mathf.Max(0f, dt), Mathf.Max(duration, active >= 0 ? inDelay + inDuration : 0f));
+            var p = duration > 0f ? Mathf.Min(1f, t / duration) : 1f;
+            var pin = active >= 0 ? Mathf.Clamp01((t - inDelay) / inDuration) : 0f;
+            if (active >= 0) Gain[active] = Mathf.Sin(pin * Mathf.PI * 0.5f);
             if (from >= 0)
             {
                 Gain[from] = fromStart * Mathf.Cos(p * Mathf.PI * 0.5f);

@@ -34,6 +34,12 @@ namespace BallBattle.Sim.Run
         public string BossId;
         public int SkillLevel = 1;
         public Skills.SkillBranch SkillBranch;
+        /// <summary>BB-12g: the run's skill tree snapshot (player only). TreeOn = this build plays with a tree (a Run player since BB-12g,
+        /// even with no point spent); the in-match nodes: INSTINCT rank, OPENER, FINALE (0 none, 1 A, 2 B).</summary>
+        public bool TreeOn;
+        public int TreeGrowth;
+        public bool TreeStart;
+        public int TreeFinale;
 
         /// <summary>HP is kept in whole points (what the screen shows), never below 1 while alive.</summary>
         public void SetHp(Fix hp) => Hp = FixMath.Max(Fix.One, FixMath.Min(MaxHp, FixMath.RoundToEven(hp)));
@@ -61,6 +67,7 @@ namespace BallBattle.Sim.Run
             };
             foreach (var t in Traits) l.Traits.Add(TraitRegistry.Create(t.Id, t.Level));
             if (!string.IsNullOrEmpty(BossId)) l.Boss = Boss.BossRegistry.Create(BossId);
+            if (TreeOn) l.Tree = new TreeLoadout { Growth = TreeGrowth, Start = TreeStart, Finale = TreeFinale == 1 ? 'A' : TreeFinale == 2 ? 'B' : '-' };
             return l;
         }
 

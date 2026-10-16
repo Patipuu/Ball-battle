@@ -39,7 +39,9 @@ namespace BallBattle.Sim.Skills
             new SkillDefinition("volley", "BARRAGE", "RANGER", 2,5,1,2, "RAPID", "HEAVY", "FIRE AN EXTRA VOLLEY", "RAPID: LOWER COOLDOWN", "HEAVY: STRONGER ARROWS"),
             new SkillDefinition("venom", "DRAIN", "POISONER", 3,2,2,3, "SIP", "ROT", "3 POISON: DRAIN HALF DMG", "SIP: MORE POISON HEAL", "ROT: LONGER POISON"),
             new SkillDefinition("aegis", "BULWARK", "GUARDIAN", 1,2,5,4, "WALL", "SPITE", "TEMPORARY EXTRA REFLECT", "WALL: LONGER BULWARK", "SPITE: MORE PARRY REFLECT"),
-            new SkillDefinition("rig", "OVERCLOCK", "BUILDER", 2,4,2,4, "BURST", "DEPLOY", "2 TURRET VOLLEYS FASTER", "BURST: MORE FAST VOLLEYS", "DEPLOY: ADD TURRETS")
+            new SkillDefinition("rig", "OVERCLOCK", "BUILDER", 2,4,2,4, "BURST", "DEPLOY", "2 TURRET VOLLEYS FASTER", "BURST: MORE FAST VOLLEYS", "DEPLOY: ADD TURRETS"),
+            new SkillDefinition("chorus", "HYMN", "HARMONIST", 3,3,3,3, "CHORUS", "RADIANCE", "LIGHT THE NEXT 2 COLOURS", "CHORUS: UNITY HEALS", "RADIANCE: BIGGER UNITY"),
+            new SkillDefinition("serpent", "STRIKE", "HUNTER", 3,2,2,4, "CONSTRICT", "SWALLOW", "LUNGE AT THE FOE. BITE +50%", "CONSTRICT: TAIL SLOWS", "SWALLOW: EAT ON THE WAY")
         };
         public static SkillDefinition ForWeapon(string id)
         {

@@ -48,6 +48,8 @@ namespace BallBattle.View
             new WeaponLook { Id = "venom", Body = new Color32(176, 96, 224, 255), ColdAt = 1f, HotAt = 8f },
             new WeaponLook { Id = "aegis", Body = new Color32(80, 128, 232, 255), ColdAt = 7f, HotAt = 12f },
             new WeaponLook { Id = "rig", Body = new Color32(232, 144, 64, 255), ColdAt = 0f, HotAt = 6f },
+            new WeaponLook { Id = "chorus", Body = new Color32(255, 128, 196, 255), ColdAt = 0f, HotAt = 6f },     // BB-14 BGLGXLQ (rings)
+            new WeaponLook { Id = "serpent", Body = new Color32(52, 196, 150, 255), ColdAt = 0f, HotAt = 8f },     // BB-14 the snake (length)
         };
 
         public static WeaponLook Look(string weaponId)

@@ -35,6 +35,8 @@ namespace BallBattle.Sim
         public Skills.SkillBranch SkillBranch;
         /// <summary>TAP-1: this ball accepts MatchSim.Tap (the Run player). False = never (enemies, Versus).</summary>
         public bool TapEnabled;
+        /// <summary>BB-12g: the Run player's skill tree (in-match nodes); null = none (Versus, enemies): exactly the old rules.</summary>
+        public TreeLoadout Tree;
 
         public BallLoadout(WeaponRule weapon) => Weapon = weapon;
 

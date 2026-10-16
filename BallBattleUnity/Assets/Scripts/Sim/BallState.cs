@@ -8,6 +8,8 @@ namespace BallBattle.Sim
         public Skills.SkillState Skill { get; internal set; }
         /// <summary>TAP-1: tap-to-strike input state (Run player only); null = no taps possible.</summary>
         public Tap.TapState Tap { get; internal set; }
+        /// <summary>BB-12g: the Run player's tree; null for everyone else (the rules read it, the hash only mixes it when set).</summary>
+        public TreeLoadout Tree { get; internal set; }
         /// <summary>Spin this tick: the weapon's, times the tap whirl while it lasts (identical when there is no tap).</summary>
         internal Fix SpinNow => Tap != null ? Weapon.SpinDegPerTick * Tap.SpinMultiplier : Weapon.SpinDegPerTick;
         /// <summary>Passive traits, hooks called in array order. Empty for a plain Versus ball.</summary>
@@ -76,6 +78,7 @@ namespace BallBattle.Sim
             h = SimHash.Mix(h, Skill != null);
             if (Skill != null) h = Skill.HashInto(h);
             if (Tap != null && Tap.Touched) h = Tap.HashInto(h);   // untouched = same hash as before TAP-1 (goldens)
+            if (Tree != null) h = Tree.HashInto(h);   // BB-12g: no tree = same hash as before
             return Weapon.HashInto(h);
         }
     }

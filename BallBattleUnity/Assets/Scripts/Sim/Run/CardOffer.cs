@@ -44,7 +44,8 @@ namespace BallBattle.Sim.Run
             Add(new Card(CardKind.SpeedUp), StatWeight);
 
             var skillLevel = skillLevelOverride ?? build.SkillLevel;
-            if (skillLevel < 3) Add(new Card(CardKind.SkillUp, build.WeaponId, skillLevel + 1), SwapWeightTotal);
+            // BB-12g: skill levels come from the ball's skill tree, so SKILL UP is no longer offered (RunTuning.SkillUpCards, tests only).
+            if (RunTuning.SkillUpCards && skillLevel < 3) Add(new Card(CardKind.SkillUp, build.WeaponId, skillLevel + 1), SwapWeightTotal);
 
             if (build.Hurt) Add(new Card(CardKind.Heal), build.Hp < FixMath.MulDiv(build.MaxHp, 6, 10) ? 3 : 1);
             Add(new Card(CardKind.MaxHp), MaxHpWeight);

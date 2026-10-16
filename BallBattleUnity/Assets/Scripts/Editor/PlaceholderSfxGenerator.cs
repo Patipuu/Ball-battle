@@ -44,6 +44,29 @@ namespace BallBattle.EditorTools
             Debug.Log("[BallBattle] Placeholder sfx generated");
         }
 
+        /// <summary>
+        /// BB-SFX4: writes every SfxForge cue (weapon hits, spike, tap, chest, level up, tree) to Assets/Audio/&lt;id&gt;.wav,
+        /// then regenerates the generic sounds and relinks the library. Idempotent (the synth is deterministic).
+        /// </summary>
+        [MenuItem("BallBattle/Forge Sfx and Music")]
+        public static void Forge()
+        {
+            foreach (var (id, make) in SfxForge.All)
+                File.WriteAllBytes($"{AudioLibraryLinker.Folder}/{id}.wav", PlaceholderSfxSynth.ToWav(make()));
+            foreach (var (id, make) in MusicForge.All)   // BB-MUSIC1: music loops and jingles, one key family
+                File.WriteAllBytes($"{AudioLibraryLinker.Folder}/{id}.wav", PlaceholderSfxSynth.ToWav(make()));
+            AssetDatabase.Refresh();
+            Run();
+            Debug.Log($"[BallBattle] SFX4 forged {SfxForge.All.Length} cues, {MusicForge.All.Length} music clips");
+        }
+
+        /// <summary>Batch entry: -executeMethod BallBattle.EditorTools.PlaceholderSfxGenerator.ForgeAndExit</summary>
+        public static void ForgeAndExit()
+        {
+            Forge();
+            EditorApplication.Exit(0);
+        }
+
         static void Write(string name, float[] samples) => File.WriteAllBytes($"{Folder}/{name}.wav", PlaceholderSfxSynth.ToWav(samples));
 
         static AudioClip Load(string name) => AssetDatabase.LoadAssetAtPath<AudioClip>($"{Folder}/{name}.wav");

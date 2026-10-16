@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="6" result="Skipped:Ignored" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-16 04:18:15Z" end-time="2026-10-16 04:18:21Z" duration="6.3604207">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="550" result="Skipped" label="Ignored" start-time="2026-10-16 04:18:15Z" end-time="2026-10-16 04:18:21Z" duration="6.360421" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <reason>
+      <message><![CDATA[One or more child tests were ignored]]></message>
+    </reason>
+    <test-suite type="Assembly" id="1636" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="550" result="Skipped" label="Ignored" start-time="2026-10-16 04:18:15Z" end-time="2026-10-16 04:18:21Z" duration="6.307349" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+      <properties>
+        <property name="_PID" value="50404" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <reason>
+        <message><![CDATA[One or more child tests were ignored]]></message>
+      </reason>
+      <test-suite type="TestSuite" id="1637" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="550" result="Skipped" label="Ignored" start-time="2026-10-16 04:18:15Z" end-time="2026-10-16 04:18:21Z" duration="6.302613" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+        <properties />
+        <reason>
+          <message><![CDATA[One or more child tests were ignored]]></message>
+        </reason>
+        <test-suite type="SetUpFixture" id="1619" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="550" result="Skipped" label="Ignored" start-time="2026-10-16 04:18:15Z" end-time="2026-10-16 04:18:21Z" duration="6.282418" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+          <properties />
+          <reason>
+            <message><![CDATA[One or more child tests were ignored]]></message>
+          </reason>
+          <test-suite type="TestFixture" id="1285" name="BbTree2Tests" fullname="BallBattle.Tests.BbTree2Tests" classname="BallBattle.Tests.BbTree2Tests" runstate="Runnable" testcasecount="6" result="Skipped" label="Ignored" start-time="2026-10-16 04:18:15Z" end-time="2026-10-16 04:18:21Z" duration="6.232515" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+            <properties />
+            <reason>
+              <message><![CDATA[One or more child tests were ignored]]></message>
+            </reason>
+            <test-case id="1288" name="ALockedNodeCardSaysWhyAndUpgradeDoesNothing" fullname="BallBattle.Tests.BbTree2Tests.ALockedNodeCardSaysWhyAndUpgradeDoesNothing" methodname="ALockedNodeCardSaysWhyAndUpgradeDoesNothing" classname="BallBattle.Tests.BbTree2Tests" runstate="Runnable" seed="782027661" result="Passed" start-time="2026-10-16 04:18:15Z" end-time="2026-10-16 04:18:19Z" duration="4.338018" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1291" name="CaptureIconTree" fullname="BallBattle.Tests.BbTree2Tests.CaptureIconTree" methodname="CaptureIconTree" classname="BallBattle.Tests.BbTree2Tests" runstate="Runnable" seed="786136261" result="Skipped" label="Ignored" start-time="2026-10-16 04:18:19Z" end-time="2026-10-16 04:18:19Z" duration="0.022634" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <reason>
+                <message><![CDATA[BB_TREE2_OUT not set]]></message>
+              </reason>
+            </test-case>
+            <test-case id="1286" name="EveryBallHasItsOwnIcons" fullname="BallBattle.Tests.BbTree2Tests.EveryBallHasItsOwnIcons" methodname="EveryBallHasItsOwnIcons" classname="BallBattle.Tests.BbTree2Tests" runstate="Runnable" seed="1321494461" result="Passed" start-time="2026-10-16 04:18:19Z" end-time="2026-10-16 04:18:20Z" duration="0.841952" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1287" name="HoldingOpensTheCardAndItsUpgradeBuysTheNode" fullname="BallBattle.Tests.BbTree2Tests.HoldingOpensTheCardAndItsUpgradeBuysTheNode" methodname="HoldingOpensTheCardAndItsUpgradeBuysTheNode" classname="BallBattle.Tests.BbTree2Tests" runstate="Runnable" seed="895973001" result="Passed" start-time="2026-10-16 04:18:20Z" end-time="2026-10-16 04:18:20Z" duration="0.089167" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1289" name="HoldNeedsTheFingerDownLongEnough" fullname="BallBattle.Tests.BbTree2Tests.HoldNeedsTheFingerDownLongEnough" methodname="HoldNeedsTheFingerDownLongEnough" classname="BallBattle.Tests.BbTree2Tests" runstate="Runnable" seed="20334654" result="Passed" start-time="2026-10-16 04:18:20Z" end-time="2026-10-16 04:18:20Z" duration="0.053295" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1290" name="TheCardFitsOnScreenForEveryNodeOfEveryBall" fullname="BallBattle.Tests.BbTree2Tests.TheCardFitsOnScreenForEveryNodeOfEveryBall" methodname="TheCardFitsOnScreenForEveryNodeOfEveryBall" classname="BallBattle.Tests.BbTree2Tests" runstate="Runnable" seed="866864548" result="Passed" start-time="2026-10-16 04:18:20Z" end-time="2026-10-16 04:18:21Z" duration="0.767836" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

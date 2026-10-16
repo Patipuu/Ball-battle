@@ -19,6 +19,8 @@ namespace BallBattle.View
             { VenomRule.WeaponId, "SPORE" },
             { AegisRule.WeaponId, "MIRROR" },
             { RigRule.WeaponId, "HIVE" },
+            { ChorusRule.WeaponId, "BGLGXLQ" },   // BB-14 tribute: Phu's church group
+            { SerpentRule.WeaponId, "HUNTER" },   // BB-14 tribute: placeholder until Phu gives the friend's name
         };
 
         public static string Of(string weaponId) =>

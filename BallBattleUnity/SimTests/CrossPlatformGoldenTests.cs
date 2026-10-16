@@ -25,13 +25,17 @@ namespace BallBattle.SimTests
             0x794573E6B0A58033UL, 0x32089F649AA33643UL, 0x711E97B9F59E2D48UL, 0x7B39BD1379F55673UL, 0x56AE5105EE29D931UL
         };
 
-        /// <summary>Rules 13 (BB-BAL3: Run DAMAGE card scales SPORE poison / MIRROR reflects; a Rules-only change for these Versus matches, ExpectedBySeedMasked unchanged).</summary>
+        /// <summary>Rules 16 (BB-15 Run tuning; a Rules-only change for these Versus matches, ExpectedBySeedMasked unchanged).
+        /// Rules 14 values, in order: 0x9E50742DA7669D6C 0xD725BD29BC476DBD 0xEFD6C99CE31C9F65 0x8BC55B5CA8771DEF 0x851E8A5A802FFEE6
+        /// 0xC132495C9401A96F 0x597D57587E058EE8 0x235501535BA4786B 0x9A4213EAFF608E5A 0x0FEF36E7B896AF68 0xED64044064E76E02
+        /// 0xE93742412830316B 0xA87E52B80DDBEF42 0x8DD8798F9E516E54 0x07BE331E824F7203 0x58FFBD549A51AD1F 0x38B4D00F420BAFFF
+        /// 0x43F45697702DE948 0x6FF67070AAC1A293 0x45935FB5C9792F35.</summary>
         static readonly ulong[] ExpectedBySeed =
         {
-            0x07587B313D420384UL, 0x244CB1F9C4409EA9UL, 0x7E4F4F266704C875UL, 0x3F0FC129E10A6537UL, 0x68FBDF8871966702UL,
-            0x0DD505E7CCA82473UL, 0x406ED75FE702DF60UL, 0x24292B80CB91F80BUL, 0x4FEC23821F8204CAUL, 0xA3A71A9C7C0792D8UL,
-            0xD1D8913E8EE76BCAUL, 0x8E8E58413AB777F7UL, 0xDB9FAC3D441FE65AUL, 0x4265F0602269CE60UL, 0x584B42B093C14AA7UL,
-            0x6464B23ABCFEA0ABUL, 0xDEA042267A7AC96FUL, 0x6A3292AF97DC0050UL, 0xB72A7BFDCA62EC4BUL, 0x65A6A1798D9CD195UL
+            0xCBE0F8688DC1243CUL, 0xB8934AB1F8FC1A25UL, 0x8D611E07AE30E9B1UL, 0xC66406475747B5A7UL, 0xF25BCCC79F57CFD6UL,
+            0xC91B6611B1C0373FUL, 0x59F94B4D33606534UL, 0x5E6681491838EF5FUL, 0x3E931D5BD1DA3D26UL, 0x17B596CAF3A2F73CUL,
+            0x34536EB596A34F12UL, 0x91AF300E3A0B443FUL, 0x9FAE34FB748AC5F2UL, 0xB72B46FAC1EBDD70UL, 0x66DAA3AD6D5480D7UL,
+            0x986EF27758CA4A73UL, 0xC4B31A5C6E560463UL, 0x2E73365FA468B0C8UL, 0xF8853AB98F496B93UL, 0x0EE5A784DE906BB1UL
         };
 
         static ulong[] Digests(System.Func<MatchSim, ulong> hash, string label)
@@ -64,14 +68,14 @@ namespace BallBattle.SimTests
         [Test]
         public void MaskedMatchHashesMatchTheSignatureSkillGolden()
         {
-            Assert.That(SimVersion.Rules, Is.EqualTo(13));
+            Assert.That(SimVersion.Rules, Is.EqualTo(16));
             Assert.That(Digests(m => m.ComputeHash(0), "masked"), Is.EqualTo(ExpectedBySeedMasked));
         }
 
         [Test]
         public void FixedMatchHashesMatchAcrossPlatforms()
         {
-            var actual = Digests(m => m.ComputeHash(), "rules13");
+            var actual = Digests(m => m.ComputeHash(), "rules16");
             Assert.That(actual, Is.EqualTo(ExpectedBySeed));
         }
 

@@ -17,10 +17,34 @@ namespace BallBattle.Sim.Weapons
         public override string StatLabel => "DMG";
         public override Fix StatValue => CurrentDamage;
 
-        public override Fix Damage(in HitContext ctx) => CurrentDamage;
+        char Fin => Self?.Tree != null ? Self.Tree.Finale : '-';   // BB-12g FINALE ('-' = none / no tree)
+        int Growth => Self?.Tree != null ? Self.Tree.Growth : 0;
+        bool reburnReady;
+        int reburnAt;
 
-        public override void OnHit(in HitContext ctx) => CurrentDamage += WeaponTuning.BladeDamagePerHit;
+        // BB-12g FINALE B : the first two hits +0.25.
+        public override Fix Damage(in HitContext ctx) => CurrentDamage + (Fin == 'B' && Self.HitCount < 2 ? Fix.Ratio(1, 4) : Fix.Zero);
 
-        protected override ulong HashState(ulong h) => SimHash.Mix(h, CurrentDamage);
+        /// <summary>BB-12g OPENER : +0.2 damage at the start.</summary>
+        internal void ApplyTreeStart() => CurrentDamage += Fix.Ratio(1, 5);
+
+        /// <summary>BB-12g FINALE A : after a parry, the next hit grows +0.5 more; at most once per 6 s.</summary>
+        public override void OnParry(BallState other)
+        {
+            if (Fin != 'A' || Sim.ActiveTick < reburnAt) return;
+            reburnReady = true;
+            reburnAt = Sim.ActiveTick + 6 * MatchConfig.TicksPerSecond;
+        }
+
+        public override void OnHit(in HitContext ctx)
+        {
+            var growth = WeaponTuning.BladeDamagePerHit * (Self?.Tree != null ? Fix.Ratio(100 + 2 * Growth, 100) : Fix.One);   // INSTINCT +2%/rank
+            if (Fin == 'B' && Self.HitCount >= 3) growth *= Fix.Ratio(19, 20);
+            CurrentDamage += growth;
+            if (reburnReady) { CurrentDamage += Fix.Half; reburnReady = false; }
+        }
+
+        protected override ulong HashState(ulong h) => Self?.Tree == null ? SimHash.Mix(h, CurrentDamage)
+            : SimHash.Mix(SimHash.Mix(SimHash.Mix(h, CurrentDamage), reburnReady), reburnAt);
     }
 }

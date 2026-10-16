@@ -19,6 +19,8 @@ namespace BallBattle.Sim.Skills
                 case "venom": return a ? Fix.Ratio(2, 3) : Fix.Half * Fix.Ratio(WeaponTuning.VenomSeconds * 60 + 60, WeaponTuning.VenomSeconds * 60);
                 case "aegis": return a ? Fix.Ratio(160, 120) : Fix.Ratio(2, 3) / Fix.Ratio(3, 5);
                 case "rig": return a ? Fix.Ratio(3, 2) : (Fix)2;
+                case "chorus": return a ? Fix.One : Fix.Ratio(6, 5);    // BB-14: UNITY heal vs UNITY damage
+                case "serpent": return a ? Fix.One : Fix.Ratio(6, 5);   // BB-14: slow vs extra prey
                 default: return Fix.Zero;
             }
         }

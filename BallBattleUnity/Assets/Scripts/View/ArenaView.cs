@@ -116,6 +116,8 @@ namespace BallBattle.View
         HudView hud;
         ProjectileView projectileView;
         StatusView statusView;
+        TributeView tributeView;   // BB-14: BGLGXLQ orbs and UNITY ring, snake tail and prey
+        Vector2[] drawnPos = new Vector2[0];
         TraitBadgeView badges;
         BossTelegraphView telegraph;
         BossArtView bossArt;
@@ -153,6 +155,7 @@ namespace BallBattle.View
             hud = HudView.Create(transform, Art);
             projectileView = ProjectileView.Create(transform, Art.Pixel);
             statusView = StatusView.Create(transform, Art.Pixel);
+            tributeView = TributeView.Create(transform, Art.BallFlash);
             badges = TraitBadgeView.Create(transform, Art);
             telegraph = BossTelegraphView.Create(transform, Art.Pixel);
             bossArt = BossArtView.Create(transform, Art);
@@ -291,6 +294,7 @@ namespace BallBattle.View
                     for (var i = 0; i < events.Count; i++)
                     {
                         bossArt.OnEvent(events[i], Sim);
+                        tributeView.OnEvent(events[i], Sim);
                         TraceReflect(events[i], Sim, DebugOptions.Trace);
                         if (events[i].Type == SimEventType.SkillFired || events[i].Type == SimEventType.SkillEnded)
                         {
@@ -346,10 +350,12 @@ namespace BallBattle.View
             frame.Render(Sim.Arena, Sim.ActiveTick, Sim.Config, ArenaId);
             frame.ShowObstacles(Sim);   // BB-04: Warden steps switch obstacles off
             var bossPos = Vector2.zero;
+            if (drawnPos.Length != Sim.Balls.Count) drawnPos = new Vector2[Sim.Balls.Count];
             for (var i = 0; i < Sim.Balls.Count; i++)
             {
                 var b = Sim.Balls[i];
                 var pos = Vector2.Lerp(prevPos[i], new Vector2(b.Pos.X.ToFloat(), b.Pos.Y.ToFloat()), alpha);
+                drawnPos[i] = pos;
                 if (i == Sim.BossBallIndex) bossPos = pos;
                 var angle = Mathf.LerpAngle(prevAngle[i], b.WeaponAngleDeg.ToFloat(), alpha);
                 ballViews[i].FitRadius(b.Radius.ToFloat());   // x1.2/x1.35/x1.5: pre-drawn sprite at scale 1; other sizes scale the base sprite
@@ -357,6 +363,7 @@ namespace BallBattle.View
                 statusView.Render(i, b, pos, Sim.ActiveTick);
             }
             projectileView.Render(Sim);
+            tributeView.Render(Sim, drawnPos, dt);
             telegraph.Render(Sim, bossPos);
             bossArt.Render(Sim, bossPos);
             hud.Render(Sim, dt);

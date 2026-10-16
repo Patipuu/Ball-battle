@@ -29,6 +29,9 @@ namespace BallBattle.Sim.Run
         public static Fix WinHealPct = Fix.Ratio(7, 20);
         /// <summary>TAP-1: the Run player can tap to strike (prototype switch; enemies never tap).</summary>
         public static bool TapStrike = true;
+        /// <summary>BB-12g: runs take the ball's skill tree (SkillTree) and SKILL UP is no longer a card (SkillUpCards; old tests turn it on).</summary>
+        public static bool SkillTree = true;
+        public static bool SkillUpCards = false;
         public static Fix HealCardPct = Fix.Ratio(1, 2);
         public static Fix MaxHpCardBonus = 15;
         public static Fix DamageCardPct = Fix.Ratio(3, 20);

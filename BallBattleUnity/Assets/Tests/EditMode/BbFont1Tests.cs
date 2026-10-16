@@ -205,8 +205,8 @@ namespace BallBattle.Tests
         {
             var expected = new Dictionary<string, string[]>
             {
-                { UnlockRules.Boss1, new[] { "GLASS CANNON" } },
-                { UnlockRules.Win1, new[] { "SPARKLER", "POISON TIP", "MIRROR", "SPORE", "BUBBLE", "PARRY MASTER" } },
+                { UnlockRules.Boss1, new[] { "BGLGXLQ", "GLASS CANNON" } },   // BB-14
+                { UnlockRules.Win1, new[] { "SPARKLER", "POISON TIP", "MIRROR", "SPORE", "HUNTER", "BUBBLE", "PARRY MASTER" } },   // BB-14: + the snake
                 { UnlockRules.Win3, new[] { "HIVE", "TWIN BLADE" } },
             };
             var ids = new HashSet<string> { UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Boss3, UnlockRules.Win1, UnlockRules.Win3 };

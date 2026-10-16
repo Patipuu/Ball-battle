@@ -78,7 +78,7 @@ namespace BallBattle.Tests
             AudioLog.ForceOn = true;
             var d = Director(lib);
             var cues = AudioIds.BossCues.Concat(AudioIds.SkillCues).ToArray();
-            Assert.That(cues.Length, Is.EqualTo(15));
+            Assert.That(cues.Length, Is.EqualTo(17));   // BB-14: + HYMN and STRIKE (7 boss + 10 skill cues)
             var missing = cues.Where(id => lib.Get(id) == null).ToArray();
             Assert.That(missing, Is.Empty, "Missing cue ids: " + string.Join(", ", missing));
             var tick = 10;

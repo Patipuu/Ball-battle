@@ -153,10 +153,10 @@ namespace BallBattle.SimTests
         public static ulong ArenaDigest(string arenaId)
         {
             var h = 14695981039346656037UL;
-            foreach (var w in WeaponRegistry.All)
+            foreach (var id in PinnedWeapons)
                 for (uint seed = 1; seed <= 2; seed++)
                 {
-                    var m = new MatchSim(ArenaRegistry.Create(arenaId), seed, new[] { w.Create(), WeaponRegistry.Create("blade") });
+                    var m = new MatchSim(ArenaRegistry.Create(arenaId), seed, new[] { WeaponRegistry.Create(id), WeaponRegistry.Create("blade") });
                     while (m.Outcome == MatchOutcome.Ongoing) m.Step();
                     h = Mix(h, (ulong)(m.WinnerIndex + 2));
                     h = Mix(h, (ulong)m.Tick);
@@ -167,6 +167,9 @@ namespace BallBattle.SimTests
         }
 
         static ulong Mix(ulong h, ulong v) => (h ^ v) * 1099511628211UL;
+
+        /// <summary>The 8 weapons these digests were pinned with (BB-14: the tribute balls have their own goldens in TributeBallTests).</summary>
+        static readonly string[] PinnedWeapons = { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig" };
 
         [Test]
         public void EveryArenaMatchesItsDigest()

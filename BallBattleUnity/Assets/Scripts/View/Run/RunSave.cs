@@ -104,6 +104,11 @@ namespace BallBattle.View
         public double Radius;
         public int SkillLevel = 1;
         public BallBattle.Sim.Skills.SkillBranch SkillBranch;
+        /// <summary>BB-12g skill tree snapshot (absent in older saves: that run keeps playing without a tree).</summary>
+        public bool TreeOn;
+        public int TreeGrowth;
+        public bool TreeStart;
+        public int TreeFinale;
 
         public static RunBuildSave From(RunBuild b)
         {
@@ -112,7 +117,8 @@ namespace BallBattle.View
                 WeaponId = b.WeaponId,
                 DamagePct = SaveFix.ToDouble(b.DamagePct), SpeedPct = SaveFix.ToDouble(b.SpeedPct),
                 MaxHp = SaveFix.ToDouble(b.MaxHp), Hp = SaveFix.ToDouble(b.Hp), Radius = SaveFix.ToDouble(b.Radius),
-                SkillLevel = b.SkillLevel, SkillBranch = b.SkillBranch
+                SkillLevel = b.SkillLevel, SkillBranch = b.SkillBranch,
+                TreeOn = b.TreeOn, TreeGrowth = b.TreeGrowth, TreeStart = b.TreeStart, TreeFinale = b.TreeFinale
             };
             foreach (var t in b.Traits) s.Traits.Add(new TraitSlot(t.Id, t.Level));
             return s;
@@ -125,7 +131,8 @@ namespace BallBattle.View
                 WeaponId = WeaponId,
                 DamagePct = SaveFix.ToFix(DamagePct), SpeedPct = SaveFix.ToFix(SpeedPct),
                 MaxHp = SaveFix.ToFix(MaxHp), Hp = SaveFix.ToFix(Hp), Radius = SaveFix.ToFix(Radius),
-                SkillLevel = SkillLevel, SkillBranch = SkillBranch
+                SkillLevel = SkillLevel, SkillBranch = SkillBranch,
+                TreeOn = TreeOn, TreeGrowth = TreeGrowth, TreeStart = TreeStart, TreeFinale = TreeFinale
             };
             if (Traits != null)
                 foreach (var t in Traits) b.Traits.Add(new TraitSlot(t.Id, t.Level));

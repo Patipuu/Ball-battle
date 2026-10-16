@@ -33,6 +33,8 @@ namespace BallBattle.Sim.Weapons
             new Entry(VenomRule.WeaponId, "VENOM", () => new VenomRule()),
             new Entry(AegisRule.WeaponId, "AEGIS", () => new AegisRule()),
             new Entry(RigRule.WeaponId, "RIG", () => new RigRule()),
+            new Entry(ChorusRule.WeaponId, "CHORUS", () => new ChorusRule()),     // BB-14 tribute: BGLGXLQ
+            new Entry(SerpentRule.WeaponId, "SERPENT", () => new SerpentRule()),  // BB-14 tribute: the snake
         };
 
         public static IReadOnlyList<Entry> All => entries;

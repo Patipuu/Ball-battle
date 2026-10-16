@@ -79,7 +79,7 @@ namespace BallBattle.Tests
             var f = new RunFlow(new MemorySaveStore(), 2f, 2f);
             f.MatchPrepared += m => lastMatch = m;
             f.Open();
-            f.NewRun(21);
+            f.NewRun(23);   // BB-14: seed 21 now meets the snake and loses fight 1; 23 wins it, so the next fight is fight 2
             f.ChooseWeapon(f.StartChoices[0]);
             f.PickStart(0);
             f.Pick(0);

@@ -105,6 +105,9 @@ namespace BallBattle.Sim
                     }
                 }
                 var spike = boss > zone ? boss : zone;
+                // BB-12g WRECKER FINALE A takes x0.85 spike damage, B x1.15 (Run tree only).
+                if (b.Tree != null && b.Weapon is Weapons.BrawlerRule && b.Tree.Finale != '-')
+                    spike *= b.Tree.Finale == 'A' ? Fix.Ratio(17, 20) : Fix.Ratio(23, 20);
                 if (spike > Fix.Zero && !SpikeImmune(b.Index))
                 {
                     spikeActiveTick[b.Index] = ActiveTick;

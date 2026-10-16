@@ -50,7 +50,7 @@ namespace BallBattle.Tests
         {
             var g = UnlockRules.NextGoal(new ProgressData());
             AssertGoal(g, UnlockRules.Boss1, 0, 4);
-            Assert.That(g.RewardIds, Is.EqualTo(new[] { "glass-cannon" }));
+            Assert.That(g.RewardIds, Is.EqualTo(new[] { "chorus", "glass-cannon" }));   // BB-14: BGLGXLQ with the first boss
         }
 
         [Test]
@@ -62,7 +62,7 @@ namespace BallBattle.Tests
         {
             var g = UnlockRules.NextGoal(P(5, 0, UnlockRules.Boss1));
             AssertGoal(g, UnlockRules.Win1, 4, 8);
-            Assert.That(g.RewardIds, Is.EquivalentTo(new[] { "volley", "poison-tip", "aegis", "venom", "bubble", "parry-master" }), "boss2 + win1 rewards merged");
+            Assert.That(g.RewardIds, Is.EquivalentTo(new[] { "volley", "poison-tip", "aegis", "venom", "serpent", "bubble", "parry-master" }), "boss2 + win1 rewards merged (BB-14: + the snake)");
         }
 
         [Test]
@@ -135,7 +135,7 @@ namespace BallBattle.Tests
             var after = P(8, 1, UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Win1);
             var reached = RunSummaryView.Reached(RunSummaryView.ProgressBefore(after, run), after);
             Assert.That(reached.Select(m => m.GoalId), Is.EqualTo(new[] { UnlockRules.Win1 }));
-            Assert.That(reached[0].RewardIds, Has.Count.EqualTo(6));
+            Assert.That(reached[0].RewardIds, Has.Count.EqualTo(7));   // BB-14: + the snake
         }
 
         [Test]

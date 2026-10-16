@@ -46,7 +46,17 @@ namespace BallBattle.Sim
         /// <summary>TAP-1: A=ball, B=target, Value=extra damage from PERFECT (SPORE: dps of the extra stack), Point=target.</summary>
         TapPerfect,
         /// <summary>TAP-3: A=ball whose strike landed nothing; its cooldown got the miss penalty.</summary>
-        TapMiss
+        TapMiss,
+        /// <summary>BB-14 BGLGXLQ: A=ball, Value=colours lit now (1 PINK .. 5 RED).</summary>
+        ChorusLit,
+        /// <summary>BB-14 BGLGXLQ UNITY burst: A=ball, B=balls reached, Value=damage each, Variant=rings before it, Point=centre.</summary>
+        ChorusUnity,
+        /// <summary>BB-14 snake: A=owner, B=prey slot, Point=prey.</summary>
+        PreySpawned,
+        /// <summary>BB-14 snake: A=owner, B=tail length after eating, Point=where the prey was.</summary>
+        PreyEaten,
+        /// <summary>BB-14 snake: A=owner, B=ball that cut, Value=segments lost, Point=cut segment.</summary>
+        TailCut
     }
 
     /// <summary>One thing that happened during a tick. View/audio react to these; they never read Sim internals for effects.</summary>

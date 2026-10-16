@@ -87,10 +87,10 @@ namespace BallBattle.Sim.Run
         /// <summary>achievement → (weapons, traits) it unlocks.</summary>
         static readonly (string achievement, string[] weapons, string[] traits)[] Table =
         {
-            (Boss1, new string[0], new[] { "glass-cannon" }),
+            (Boss1, new[] { "chorus" }, new[] { "glass-cannon" }),   // BB-14: BGLGXLQ with the first boss
             (Boss2, new[] { "volley" }, new[] { "poison-tip" }),
             (Boss3, new[] { "venom" }, new[] { "parry-master" }),
-            (Win1, new[] { "aegis", "venom" }, new[] { "bubble", "parry-master" }),
+            (Win1, new[] { "aegis", "venom", "serpent" }, new[] { "bubble", "parry-master" }),   // BB-14: the snake with the first run win
             (Win3, new[] { "rig" }, new[] { "twin-blade" }),
         };
 

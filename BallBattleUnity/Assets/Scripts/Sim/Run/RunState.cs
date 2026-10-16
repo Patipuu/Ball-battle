@@ -125,10 +125,18 @@ namespace BallBattle.Sim.Run
             foreach (var w in WeaponRegistry.All) run.EnemyWeapons.Add(w.Id);
             foreach (var t in TraitRegistry.All) run.EnemyTraits.Add(t.Id);
             run.Build.WeaponId = weaponId;
+            // BB-12g: the ball's skill tree (points from its level) gives the run its root bonuses, skill level/branch and in-match nodes.
+            if (RunTuning.SkillTree) Meta.MetaTree.ApplyToRun(run.Build, FindBall(progress, weaponId));
             run.SkillOverride = forceSkill;
             run.StartPickPending = true;
             run.DealOffer();
             return run;
+        }
+
+        static Meta.BallProgress FindBall(ProgressData p, string id)
+        {
+            if (p?.Balls != null) foreach (var b in p.Balls) if (b.Id == id) return b;
+            return null;
         }
 
         /// <summary>

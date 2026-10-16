@@ -34,10 +34,17 @@ namespace BallBattle.Sim.Weapons
 
         public override Fix Damage(in HitContext ctx) => WeaponTuning.VolleyMeleeDamage;
 
+        char Fin => Self?.Tree != null ? Self.Tree.Finale : '-';   // BB-12g FINALE ('-' = none / no tree)
+        int Growth => Self?.Tree != null ? Self.Tree.Growth : 0;
+        bool firstVolleyExtra;
+
+        /// <summary>BB-12g OPENER: the first volley has one extra arrow at 50% damage.</summary>
+        internal void ApplyTreeStart() => firstVolleyExtra = true;
+
         public override void OnHit(in HitContext ctx)
         {
             Arrows = Arrows + 1 < WeaponTuning.VolleyMaxArrows ? Arrows + 1 : WeaponTuning.VolleyMaxArrows;
-            arrow.Damage += WeaponTuning.VolleyArrowDamagePerHit;
+            arrow.Damage += Self?.Tree != null ? WeaponTuning.VolleyArrowDamagePerHit + Fix.Ratio(Growth, 100) : WeaponTuning.VolleyArrowDamagePerHit;   // INSTINCT +0.01/rank
         }
 
         public override void OnTick()
@@ -64,20 +71,32 @@ namespace BallBattle.Sim.Weapons
             var foe = WeaponAim.NearestFoe(Sim, Self);
             if (foe == null) return;
             var aim = (foe.Pos - Self.Pos).NormalizedOr(FixVec2.Right);
-            for (var k = 0; k < Arrows; k++)
+            // BB-12g FINALE A: one arrow fewer (min 1) / B: one more (max 9); the old total damage is shared by the new count
+            // (B x1.05 and a narrower fan). OPENER: the first volley has one more arrow at 50%. No tree: exactly as before.
+            var fin = Fin;
+            var count = fin == 'A' ? (Arrows > 1 ? Arrows - 1 : 1) : fin == 'B' ? (Arrows < 9 ? Arrows + 1 : 9) : Arrows;
+            var bonus = firstVolleyExtra;
+            firstVolleyExtra = false;
+            var total = count + (bonus ? 1 : 0);
+            for (var k = 0; k < total; k++)
             {
-                var offset = WeaponTuning.VolleySpreadDeg * (2 * k - (Arrows - 1)) / 2;   // (k - (n-1)/2) × spread, exact for whole/half steps
+                var offset = WeaponTuning.VolleySpreadDeg * (2 * k - (total - 1)) / 2;   // (k - (n-1)/2) × spread, exact for whole/half steps
+                if (fin == 'B' && count > 1 && !bonus) offset = offset * (Arrows - 1) * 4 / ((count - 1) * 5);
                 var rotation = FixVec2.FromAngleDeg(offset);
                 var dir = new FixVec2(
                     aim.X * rotation.X - aim.Y * rotation.Y,
                     aim.X * rotation.Y + aim.Y * rotation.X);
                 var spec = arrow;
                 spec.Damage += extraDamage;
+                if (bonus && k == count) spec.Damage = spec.Damage * Fix.Half;
+                else if (fin == 'B') spec.Damage = spec.Damage * Fix.Ratio(Arrows, count) * Fix.Ratio(21, 20);
+                else if (fin == 'A') spec.Damage = spec.Damage * Fix.Ratio(Arrows, count);
                 if (charge != Fix.One) spec.Damage = spec.Damage * charge;
                 Sim.FireProjectile(Self, Self.Pos + dir * (Self.Radius + 3), dir * WeaponTuning.VolleyArrowSpeed, spec);
             }
         }
 
-        protected override ulong HashState(ulong h) => SimHash.Mix(SimHash.Mix(SimHash.Mix(h, Arrows), timer), arrow.Damage);
+        protected override ulong HashState(ulong h) => Self?.Tree == null ? SimHash.Mix(SimHash.Mix(SimHash.Mix(h, Arrows), timer), arrow.Damage)
+            : SimHash.Mix(SimHash.Mix(SimHash.Mix(SimHash.Mix(h, Arrows), timer), arrow.Damage), firstVolleyExtra);
     }
 }

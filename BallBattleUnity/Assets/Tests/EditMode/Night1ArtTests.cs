@@ -38,7 +38,7 @@ namespace BallBattle.Tests
         [Test]
         public void EveryArt2RoleMapsByRoleFilenameAndEveryLinkedSpriteExists()
         {
-            Assert.That(art.Roles.Length,Is.EqualTo(8));
+            Assert.That(art.Roles.Length,Is.EqualTo(10));   // BB-14: + HARMONIST, HUNTER
             foreach(var definition in SkillDefinition.All)
             {
                 var icon=art.RoleIcon(definition.Role);Assert.That(icon,Is.Not.Null,definition.Role);
@@ -52,8 +52,8 @@ namespace BallBattle.Tests
                 art.WardenSpikeLeftOn,art.WardenSpikeLeftFade,art.WardenSpikeRightOn,art.WardenSpikeRightFade,
                 art.WardenSpikeTopOn,art.WardenSpikeTopFade,art.WardenWallflash,art.BumperRings,art.SpikeWallsThumbnail}
                 .Concat(art.MimicFlashes).Concat(art.Roles.Select(r=>r.Icon)).ToArray();
-            Assert.That(linked.Length,Is.EqualTo(26));Assert.That(linked.All(s=>s!=null),Is.True);
-            Assert.That(linked.Select(AssetDatabase.GetAssetPath).Distinct().Count(),Is.EqualTo(26));
+            Assert.That(linked.Length,Is.EqualTo(28));Assert.That(linked.All(s=>s!=null),Is.True);
+            Assert.That(linked.Select(AssetDatabase.GetAssetPath).Distinct().Count(),Is.EqualTo(28));
         }
         ArenaView BossFight(string boss,string arenaId=ArenaRegistry.Classic)
         {

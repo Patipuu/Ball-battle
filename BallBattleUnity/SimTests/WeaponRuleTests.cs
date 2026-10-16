@@ -67,7 +67,7 @@ namespace BallBattle.SimTests
         [Test]
         public void RegistryCreatesFreshInstancesWithHudStats()
         {
-            Assert.That(WeaponRegistry.All.Select(e => e.Id), Is.EquivalentTo(new[] { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig" }));
+            Assert.That(WeaponRegistry.All.Select(e => e.Id), Is.EquivalentTo(new[] { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig", "chorus", "serpent" }));   // BB-14
             foreach (var e in WeaponRegistry.All)
             {
                 var a = e.Create();
@@ -156,9 +156,11 @@ namespace BallBattle.SimTests
                 var a = e.Create();
                 var b = e.Create();
                 new MatchSim(new MatchConfig(), 1, new[] { a, new HarmlessRule() });
-                new MatchSim(new MatchConfig(), 1, new[] { b, new HarmlessRule() });
+                var mb = new MatchSim(new MatchConfig(), 1, new[] { b, new HarmlessRule() });
                 Assert.That(a.HashInto(SimHash.Seed), Is.EqualTo(b.HashInto(SimHash.Seed)), e.Id);
+                if (b is SerpentRule) continue;   // BB-14: the snake grows by eating prey, not by hits (hashed: TributeBallTests)
                 b.OnHit(Ctx);
+                if (b is ChorusRule) b.OnHitDealt(mb.Balls[1], Fix.One, DamageKind.Weapon);   // BB-14: a hit lights the next colour
                 Assert.That(a.HashInto(SimHash.Seed), Is.Not.EqualTo(b.HashInto(SimHash.Seed)), $"{e.Id}: scaling state must be hashed");
             }
         }

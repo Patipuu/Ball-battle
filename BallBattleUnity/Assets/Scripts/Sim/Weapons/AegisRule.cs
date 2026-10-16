@@ -31,6 +31,16 @@ namespace BallBattle.Sim.Weapons
         public override string StatLabel => "WIDTH";
         public override Fix StatValue => BladeThickness;
 
+        char Fin => Self?.Tree != null ? Self.Tree.Finale : '-';   // BB-12g FINALE ('-' = none / no tree)
+        int Growth => Self?.Tree != null ? Self.Tree.Growth : 0;
+
+        /// <summary>BB-12g OPENER: the shield starts 0.25 wider.</summary>
+        internal void ApplyTreeStart() => BladeThickness += Fix.Ratio(1, 4);
+        /// <summary>BB-12g Run-only baseline (every Run, any tree): +0.25 width at the start.</summary>
+        internal void ApplyRunBaseline() => BladeThickness += Fix.Ratio(1, 4);
+        /// <summary>BB-12g FINALE A: reflects x0.95 (shots absorbed +5 points) / B: reflects x1.10 (absorb -5 points). No tree: unchanged.</summary>
+        Fix Reflected(Fix x) => Self.Tree == null ? x : x * (Fin == 'A' ? Fix.Ratio(19, 20) : Fin == 'B' ? Fix.Ratio(11, 10) : Fix.One);
+
         public override Fix Damage(in HitContext ctx)
         {
             var d = WeaponTuning.AegisChipDamage + (BladeThickness - WeaponTuning.AegisThickness) * WeaponTuning.AegisDamagePerWidth;
@@ -47,7 +57,9 @@ namespace BallBattle.Sim.Weapons
             if (mend) Sim.Heal(Self, WeaponTuning.AegisMendPerGuard * points);
         }
 
-        public override void OnHit(in HitContext ctx) => BladeThickness = FixMath.Min(WeaponTuning.AegisMaxThickness, BladeThickness + WeaponTuning.AegisWidthPerHit);
+        // INSTINCT: the width gained per hit +5% per rank (Run).
+        public override void OnHit(in HitContext ctx) => BladeThickness = FixMath.Min(WeaponTuning.AegisMaxThickness, BladeThickness +
+            (Self?.Tree != null ? WeaponTuning.AegisWidthPerHit * Fix.Ratio(100 + 5 * Growth, 100) : WeaponTuning.AegisWidthPerHit));
 
         /// <summary>A body blow (bladeless attacker, e.g. Brawler) cannot be parried, so part of it is sent back.</summary>
         public override void OnHitTaken(BallState attacker, Fix damage, DamageKind kind)
@@ -56,10 +68,16 @@ namespace BallBattle.Sim.Weapons
             if (kind == DamageKind.Projectile) Guard(WeaponTuning.AegisGuardShot);
             else if (kind == DamageKind.Weapon)
                 Guard(attacker.Weapon.HasBlade ? WeaponTuning.AegisGuardMelee : WeaponTuning.AegisGuardBody, !(attacker.Weapon is AegisRule));   // no mend in a mirror
-            if (kind == DamageKind.Projectile) { Sim.Heal(Self, damage * WeaponTuning.AegisShotAbsorbPct); return; }
+            if (kind == DamageKind.Projectile)
+            {
+                var absorb = Self.Tree == null ? WeaponTuning.AegisShotAbsorbPct
+                    : WeaponTuning.AegisShotAbsorbPct + (Fin == 'A' ? Fix.Ratio(1, 20) : Fin == 'B' ? -Fix.Ratio(1, 20) : Fix.Zero);
+                Sim.Heal(Self, damage * absorb);
+                return;
+            }
             if (kind != DamageKind.Weapon || attacker.Weapon.HasBlade) return;
             // BB-BAL3: the Run DAMAGE card (Bonus.DamagePct) also scales MIRROR's reflects. Versus has no cards (DamagePct 0): unchanged.
-            Sim.DealDamage(Self, attacker, damage * (Self.Skill != null && Self.Skill.Active ? Fix.Ratio(3, 4) : WeaponTuning.AegisBodyReflectPct) * (Fix.One + Self.Bonus.DamagePct), DamageKind.Reflect);
+            Sim.DealDamage(Self, attacker, Reflected(damage * (Self.Skill != null && Self.Skill.Active ? Fix.Ratio(3, 4) : WeaponTuning.AegisBodyReflectPct) * (Fix.One + Self.Bonus.DamagePct)), DamageKind.Reflect);
         }
 
         public override void OnParry(BallState other)
@@ -68,9 +86,15 @@ namespace BallBattle.Sim.Weapons
             // Between two Aegis the parry counts AegisGuardMirror points: their rage must end the mirror (only mirror matches use it).
             var mirror = other.Weapon is AegisRule;
             Guard(mirror ? WeaponTuning.AegisGuardMirror : WeaponTuning.AegisGuardMelee, !mirror);   // a mirror only rages: mending each other would never end it
-            if (other.Weapon is AegisRule) return; // two Aegis would only trade reflects until both fall
+            if (other.Weapon is AegisRule)   // two Aegis would only trade reflects until both fall
+            {
+                // BB-12g: in a Run mirror the INSTINCT ranks still pay: one small chip per parry (enemies have no tree).
+                if (Self.Tree != null && Growth > 0)
+                    Sim.DealDamage(Self, other, Reflected(Fix.Ratio(Growth, 2) * (Fix.One + Self.Bonus.DamagePct)), DamageKind.Reflect);
+                return;
+            }
             var blow = other.Weapon.Damage(new HitContext(other.Vel.Length, Fix.Zero));
-            Sim.DealDamage(Self, other, blow * (Self.Skill != null && Self.Skill.Active ? Self.Skill.ParryReflect : WeaponTuning.AegisReflectPct) * (Fix.One + Self.Bonus.DamagePct), DamageKind.Reflect);
+            Sim.DealDamage(Self, other, Reflected(blow * (Self.Skill != null && Self.Skill.Active ? Self.Skill.ParryReflect : WeaponTuning.AegisReflectPct) * (Fix.One + Self.Bonus.DamagePct)), DamageKind.Reflect);
         }
 
         // The width (BladeThickness) is hashed by the base class; the guard counter is hashed here.

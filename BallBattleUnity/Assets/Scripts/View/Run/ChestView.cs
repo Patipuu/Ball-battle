@@ -295,11 +295,13 @@ namespace BallBattle.View
             {
                 var shake = Mathf.Repeat(t * 30f, 2f) < 1f ? 1f : -1f;
                 chestRoot.localPosition = new Vector3(t < ShakeSeconds ? shake : 0f, 0f, 0f);
-                if (t >= ShakeSeconds) { chestRoot.localPosition = Vector3.zero; SetLid(true); }
+                if (t >= ShakeSeconds) { chestRoot.localPosition = Vector3.zero; SetLid(true); UiAudio.Play(AudioIds.ChestOpen); }
             }
             else
             {
+                var before = shown;
                 shown = Mathf.Min(rows.Count + 1, Mathf.FloorToInt((t - ShakeSeconds) / RowSeconds) + 1);
+                if (shown > before && before > 0) UiAudio.Play(AudioIds.ChestItem);   // SFX4: one ting per reward row
                 if (shown >= rows.Count + 1) Revealed = true;
             }
             ApplyReveal();
@@ -327,6 +329,7 @@ namespace BallBattle.View
         {
             if (!IsOpen || Revealed) return;
             chestRoot.localPosition = Vector3.zero;
+            if (!LidOpen) UiAudio.Play(AudioIds.ChestOpen);
             SetLid(true);
             shown = rows.Count + 1;
             Revealed = true;

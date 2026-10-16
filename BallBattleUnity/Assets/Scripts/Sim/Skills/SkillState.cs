@@ -24,10 +24,12 @@ namespace BallBattle.Sim.Skills
         public int DurationTicks => Definition.WeaponId == "fang" ? (A ? 180 + Rank * 103 : 180) :
             Definition.WeaponId == "pike" ? (B ? 120 + Rank * 69 : 120) :
             Definition.WeaponId == "brawler" ? (B ? 90 + Rank * 69 : 90) :
-            Definition.WeaponId == "venom" ? 240 : Definition.WeaponId == "aegis" ? (A ? 120 + Rank * 46 : 120) : 0;
+            Definition.WeaponId == "venom" ? 240 : Definition.WeaponId == "aegis" ? (A ? 120 + Rank * 46 : 120) :
+            Definition.WeaponId == "serpent" ? 90 : 0;   // BB-14 STRIKE 1.5 s; HYMN is instant
         public int HitCharges => A && Definition.WeaponId == "blade" ? 3 + Rank * 2 : 3;
         // BB-BAL1 (Run-only, levels 2-3, +15%): blade B Level/2 -> Level*23/40; fang B 1.5/2 -> 1.725/2.3; pike A (Level+1)/6 -> (Level+1)*23/120.
-        public Fix HitBonus => B && Definition.WeaponId == "blade" ? Fix.Ratio(Level * 23, 40) : Fix.Half;
+        public Fix HitBonus => B && Definition.WeaponId == "blade" ? Fix.Ratio(Level * 23, 40) :
+            A && Definition.WeaponId == "blade" && self.Tree != null ? (Level == 3 ? Fix.Ratio(3, 4) : Fix.Ratio(5, 8)) : Fix.Half;   // BB-12g: Run EMBER A
         public Fix SpinGainMultiplier => B ? (Level == 2 ? Fix.Ratio(69, 40) : Fix.Ratio(23, 10)) : Fix.One;
         public Fix LengthBonus => A ? Fix.Ratio((Level + 1) * 23, 120) : Fix.Ratio(1, 3);
         public Fix BodyMultiplier => A ? (Level == 2 ? Fix.Ratio(161, 80) : Fix.Ratio(23, 10)) : Fix.Ratio(27, 20);   // BB-BAL1: base/B 1.5 -> 1.35 (-10%); A L2/L3 1.75/2 -> 2.0125/2.3 (+15%, Run only)
@@ -36,7 +38,7 @@ namespace BallBattle.Sim.Skills
         public Fix DrainFraction => A ? (Level == 2 ? Fix.Ratio(23, 30) : Fix.Ratio(69, 80)) : Fix.Half;
         public int PoisonExtraTicks => B ? Rank * 69 : 0;
         public Fix ParryReflect => B ? (Level == 2 ? Fix.Ratio(23, 30) : Fix.Ratio(69, 80)) : Fix.Ratio(3, 5);
-        public int VolleyCharges => A ? 2 + Rank : 2;
+        public int VolleyCharges => A ? 2 + Rank * (self.Tree != null ? 2 : 1) : 2;   // BB-12g: Run A rank counts twice
         public int DeployCount => B ? Rank : 0;
         public Fix ReadyFraction => sim.ActiveTick >= ReadyAt ? Fix.One : Fix.Ratio(CooldownTicks - (ReadyAt - sim.ActiveTick), CooldownTicks);
 
@@ -67,9 +69,10 @@ namespace BallBattle.Sim.Skills
                 if (Active) End();
                 Active = true; FireCount++; ReadyAt = sim.ActiveTick + CooldownTicks;
                 EndAt = DurationTicks > 0 ? sim.ActiveTick + DurationTicks : 0;
-                Charges = self.Weapon is BladeRule ? HitCharges : self.Weapon is RigRule ? VolleyCharges : self.Weapon is BrawlerRule ? 1 : 0;
+                Charges = self.Weapon is BladeRule ? HitCharges : self.Weapon is RigRule ? VolleyCharges : self.Weapon is BrawlerRule || self.Weapon is SerpentRule ? 1 : 0;
                 sim.EmitSkill(SimEventType.SkillFired, self, this);
                 if (self.Weapon is VolleyRule volley) { volley.FireVolley(ArrowBonus); End(); }
+                if (self.Weapon is ChorusRule chorus) { chorus.Hymn(); End(); }   // BB-14 HYMN
                 if (self.Weapon is RigRule rig)
                 {
                     rig.BeginOverclock();
@@ -83,13 +86,14 @@ namespace BallBattle.Sim.Skills
         {
             if (!Active || Charges <= 0 || kind != DamageKind.Weapon) return damage;
             if (self.Weapon is BladeRule) return damage + HitBonus;
+            if (self.Weapon is SerpentRule) return damage * TributeTuning.SerpentStrikeBite;   // BB-14 STRIKE bite
             return self.Weapon is BrawlerRule ? damage * BodyMultiplier : damage;
         }
         internal void LandedHit(DamageKind kind)
         {
             if (!Active || Charges <= 0 || kind != DamageKind.Weapon) return;
             if (self.Weapon is BladeRule) { if (--Charges == 0) End(); }
-            else if (self.Weapon is BrawlerRule) Charges = 0; // CHARGE speed persists until its duration ends
+            else if (self.Weapon is BrawlerRule || self.Weapon is SerpentRule) Charges = 0; // CHARGE speed / STRIKE hunt persist until the duration ends
         }
         internal void TurretVolley()
         {

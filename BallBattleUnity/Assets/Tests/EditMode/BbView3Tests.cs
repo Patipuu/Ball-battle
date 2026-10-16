@@ -332,6 +332,7 @@ namespace BallBattle.Tests
             Assert.That(d.LogLines.Last(), Does.EndWith("cue=spike_hit allowed=yes replaced=wall"));
             d.OnSimEvent(Hazard(SimEventType.WallBounce, 20, 1, 0f), AnySim);   // another ball's wall in that tick: the per-tick gate (unchanged)
             d.Played.Clear();
+            now += AudioDirector.BounceSpacing;   // BB-SFX4: plain bounces are spaced in time; step past it so the wall plays
             d.OnSimEvent(Hazard(SimEventType.WallBounce, 21, 0, 0f), AnySim);   // next tick: plain wall again
             d.OnSimEvent(Hazard(SimEventType.WallBounce, 22, 0, 3f), AnySim);   // a later tick's spike never touches it
             Assert.That(d.Played.Select(p => p.Id), Is.EqualTo(new[] { AudioIds.Wall, AudioIds.SpikeHit }));

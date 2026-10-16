@@ -18,6 +18,11 @@ namespace BallBattle.View
         public const string FightStart = "fight_start", FightWin = "fight_win", FightLose = "fight_lose";
         public const string RetryBanner = "retry_banner", Unlock = "unlock", RunWin = "run_win", RunOver = "run_over", SecondWind = "second_wind";
 
+        // ---- BB-SFX4 feedback cues (Assets/Audio/<id>.wav, made by SfxForge) ----
+        public const string TapStrike = "tap_strike", TapPerfect = "tap_perfect", TapMiss = "tap_miss";
+        public const string ChestOpen = "chest_open", ChestItem = "chest_item", LevelUp = "level_up", TreeAdd = "tree_add", TreeReset = "tree_reset";
+        public static readonly string[] FeedbackCues = { TapStrike, TapPerfect, TapMiss, ChestOpen, ChestItem, LevelUp, TreeAdd, TreeReset };
+
         /// <summary>Generic match sounds (Assets/Audio/Generated, SfxLibrary fields).</summary>
         public const string Hit = "hit", Parry = "parry", Wall = "wall", Death = "death";
         public const string HitPrefix = "hit_";
@@ -55,7 +60,12 @@ namespace BallBattle.View
         }
 
         /// <summary>Weapon ids with their own hit clip.</summary>
-        public static readonly string[] HitWeapons = { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig" };
+        public static readonly string[] HitWeapons = { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig", "chorus", "serpent" };
+
+        // ---- BB-14 tribute balls (Assets/Audio/<id>.wav, made by SfxForge) ----
+        public const string ChorusNote = "chorus_note", ChorusUnity = "chorus_unity", PreyEat = "prey_eat", TailCut = "tail_cut";
+        /// <summary>Pitch of chorus_note (a C6 bell) for colour 1..5: C D E G A, so a full ring plays a pentatonic phrase.</summary>
+        public static readonly float[] ChorusNotePitch = { 1f, 9f / 8f, 5f / 4f, 3f / 2f, 5f / 3f };
 
         public static readonly string[] Music = { MusicMenu, MusicBattle, MusicBoss, MusicResult };
 
@@ -67,13 +77,16 @@ namespace BallBattle.View
             "hit_blade", "hit_fang", "hit_pike", "hit_brawler", "hit_volley", "hit_venom", "hit_aegis", "hit_rig",
             // BB-04 boss cues: linked when their files exist (none yet; the linker skips a missing file with a warning).
             BossShellKingWarn, BossShellKingHit, BossMagnetWarn, BossMagnetHit, BossMimicHit, BossWardenWarn, BossWardenHit,
-            SkillBlade, SkillFang, SkillPike, SkillBrawler, SkillVolley, SkillVenom, SkillAegis, SkillRig,
+            SkillBlade, SkillFang, SkillPike, SkillBrawler, SkillVolley, SkillVenom, SkillAegis, SkillRig, SkillChorus, SkillSerpent,
+            TapStrike, TapPerfect, TapMiss, ChestOpen, ChestItem, LevelUp, TreeAdd, TreeReset,   // BB-SFX4
+            "hit_chorus", "hit_serpent", ChorusNote, ChorusUnity, PreyEat, TailCut,              // BB-14
         };
 
         public const string SkillBlade = "skill_blade_whetstone", SkillFang = "skill_fang_frenzy", SkillPike = "skill_pike_lunge",
             SkillBrawler = "skill_brawler_charge", SkillVolley = "skill_volley_barrage", SkillVenom = "skill_venom_drain",
             SkillAegis = "skill_aegis_bulwark", SkillRig = "skill_rig_overclock";
-        public static readonly string[] SkillCues = { SkillBlade, SkillFang, SkillPike, SkillBrawler, SkillVolley, SkillVenom, SkillAegis, SkillRig };
+        public const string SkillChorus = "skill_chorus_hymn", SkillSerpent = "skill_serpent_strike";   // BB-14 (no clip yet: plays nothing)
+        public static readonly string[] SkillCues = { SkillBlade, SkillFang, SkillPike, SkillBrawler, SkillVolley, SkillVenom, SkillAegis, SkillRig, SkillChorus, SkillSerpent };
 
         /// <summary>"hit_&lt;weaponId&gt;" when that clip exists, else the generic "hit".</summary>
         public static string HitCue(string weaponId, Func<string, bool> hasClip)
@@ -98,12 +111,17 @@ namespace BallBattle.View
 
         /// <summary>Cues that duck the music by Ducker.DepthDb.</summary>
         public static bool Ducks(string id) =>
-            IsHit(id) || id == Parry || id == Death || id == FightStart || id == FightWin || id == RetryBanner || id == RunWin || id == SecondWind;
+            IsHit(id) || id == Parry || id == Death || id == FightStart || id == FightWin || id == RetryBanner || id == RunWin || id == SecondWind ||
+            id == TapStrike || id == TapPerfect || id == ChestOpen || id == LevelUp || id == ChorusUnity;
 
         /// <summary>Cues that get the small random pitch (never music or UI).</summary>
         public static bool Jittered(string id) => IsHit(id) || id == Parry || id == Wall || id == SpikeHit;
 
         /// <summary>Result cues that stop the fight music (fade) instead of ducking it.</summary>
+        /// <summary>BB-MUSIC1: musical jingles. While one plays the music dips, and music_result waits until it has finished.</summary>
+        public static bool IsJingle(string id) =>
+            id == FightStart || id == FightWin || id == FightLose || id == RunWin || id == RunOver || id == Unlock || id == RetryBanner;
+
         public static bool EndsFightMusic(string id) => id == FightWin || id == FightLose || id == RunWin || id == RunOver;
 
         public static string TrackFor(MusicScreen s)

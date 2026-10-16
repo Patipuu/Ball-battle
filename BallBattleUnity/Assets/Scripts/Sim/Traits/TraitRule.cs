@@ -14,7 +14,9 @@ namespace BallBattle.Sim
         /// <summary>Damage dealt by a trait (thorns, spikes). Incoming traits only; never triggers hit hooks (no loops).</summary>
         Reflect,
         /// <summary>Arena hazard (spikes). Incoming traits only.</summary>
-        Hazard
+        Hazard,
+        /// <summary>BB-14: a weapon ability that is not a hit (UNITY burst, snake tail). Incoming traits only; no hit hooks.</summary>
+        Ability
     }
 
     /// <summary>

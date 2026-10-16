@@ -69,6 +69,7 @@ namespace BallBattle.Tests
         public void BlockedCardsAndRerollSayWhy()
         {
             var run = NewRun();
+            run.Build.Traits.Clear();   // BB-12g: the start pick may already hold a trait (thorns at seed 77); start from none
             run.Build.Traits.Add(new TraitSlot("heavy", 1));
             run.Build.Traits.Add(new TraitSlot("vampire", 1));
             run.Build.Traits.Add(new TraitSlot("spiky", 1));

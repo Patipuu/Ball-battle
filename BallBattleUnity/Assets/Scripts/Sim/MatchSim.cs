@@ -66,6 +66,7 @@ namespace BallBattle.Sim
             for (var i = 0; i < spikeActiveTick.Length; i++) spikeActiveTick[i] = -1;
             Arena = config.ArenaAt(0);
             tuningFingerprint = unchecked(Weapons.WeaponTuning.Fingerprint() * 1099511628211UL ^ Traits.TraitTuning.Fingerprint());
+            if (HasTribute(loadouts)) tuningFingerprint = unchecked(tuningFingerprint * 1099511628211UL ^ Weapons.TributeTuning.Fingerprint());   // BB-14
 
             for (var i = 0; i < loadouts.Count; i++)
             {
@@ -124,7 +125,8 @@ namespace BallBattle.Sim
                 BladeShift = radius - Config.BallRadius,
                 MaxHp = maxHp,
                 Hp = l.Hp >= Fix.Zero ? FixMath.Min(l.Hp, maxHp) : maxHp,
-                Bonus = l.Bonus
+                Bonus = l.Bonus,
+                Tree = l.Tree
             };
             l.Weapon.Attach(this, b);
             if ((l.Boss == null || l.Boss is Boss.MimicRule) && Skills.SkillDefinition.ForWeapon(l.Weapon.Id) != null)
@@ -141,6 +143,7 @@ namespace BallBattle.Sim
             b.Vel = dir * rng.RangeFixOrMin(Config.StartSpeedMin, Config.StartSpeedMax);
             b.WeaponAngleDeg = rng.RangeFixOrMin(0, 360);
             b.SpinDir = rng.NextBool() ? 1 : -1;
+            TreeTuning.ApplyAtSpawn(b);   // BB-12g: Run baselines, OPENER, FINALE (no tree: nothing)
             return b;
         }
 

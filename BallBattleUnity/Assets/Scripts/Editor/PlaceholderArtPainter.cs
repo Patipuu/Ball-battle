@@ -106,6 +106,8 @@ namespace BallBattle.EditorTools
                 case "venom": return Sword(22, out border);
                 case "aegis": return Sword(22, out border);
                 case "rig": return Sword(18, out border);
+                case "chorus": return Sword(18, out border);    // BB-14 halo blade
+                case "serpent": return Sword(14, out border);   // BB-14 fang
                 default: border = Vector4.zero; return null;
             }
         }

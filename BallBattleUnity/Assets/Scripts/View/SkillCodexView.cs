@@ -32,8 +32,8 @@ namespace BallBattle.View
             view.how = RunUi.Text(root, art, 0, -58, 1);
             view.good = RunUi.Text(root, art, 0, -71, 1);
             view.weak = RunUi.Text(root, art, 0, -84, 1);
-            RunUi.Button(root, art, new Rect(-120, -124, 90, 24), "PREV", 1, Palette.TextDim, () => { view.index = (view.index + 7) % 8; view.Refresh(); });
-            RunUi.Button(root, art, new Rect(30, -124, 90, 24), "NEXT", 1, Palette.TextDim, () => { view.index = (view.index + 1) % 8; view.Refresh(); });
+            RunUi.Button(root, art, new Rect(-120, -124, 90, 24), "PREV", 1, Palette.TextDim, () => { view.index = (view.index + SkillDefinition.All.Length - 1) % SkillDefinition.All.Length; view.Refresh(); });
+            RunUi.Button(root, art, new Rect(30, -124, 90, 24), "NEXT", 1, Palette.TextDim, () => { view.index = (view.index + 1) % SkillDefinition.All.Length; view.Refresh(); });
             RunUi.Button(root, art, new Rect(-60, -210, 120, 30), "BACK", 2, Palette.TextDim, () => view.Closed?.Invoke());
             view.Hide(); return view;
         }
