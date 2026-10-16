@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Failed(Child)" total="2" passed="1" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-16 11:03:32Z" end-time="2026-10-16 11:03:33Z" duration="1.1096889">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="556" result="Failed" site="Child" start-time="2026-10-16 11:03:32Z" end-time="2026-10-16 11:03:33Z" duration="1.109689" total="2" passed="1" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1644" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="556" result="Failed" site="Child" start-time="2026-10-16 11:03:32Z" end-time="2026-10-16 11:03:33Z" duration="1.093431" total="2" passed="1" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="35908" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1645" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="556" result="Failed" site="Child" start-time="2026-10-16 11:03:32Z" end-time="2026-10-16 11:03:33Z" duration="1.092568" total="2" passed="1" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="SetUpFixture" id="1627" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="556" result="Failed" site="Child" start-time="2026-10-16 11:03:32Z" end-time="2026-10-16 11:03:33Z" duration="1.091330" total="2" passed="1" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1001" name="ArtV1CardsBossArenaTests" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" testcasecount="15" result="Failed" site="Child" start-time="2026-10-16 11:03:32Z" end-time="2026-10-16 11:03:33Z" duration="1.032417" total="2" passed="1" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="ParameterizedMethod" id="1011" name="LongestCardTextsStayInsideTheCard" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.LongestCardTextsStayInsideTheCard" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" testcasecount="2" result="Failed" site="Child" start-time="2026-10-16 11:03:32Z" end-time="2026-10-16 11:03:33Z" duration="1.029602" total="2" passed="1" failed="1" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1009" name="LongestCardTextsStayInsideTheCard(En)" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.LongestCardTextsStayInsideTheCard(En)" methodname="LongestCardTextsStayInsideTheCard" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="682926747" result="Passed" start-time="2026-10-16 11:03:32Z" end-time="2026-10-16 11:03:33Z" duration="0.813736" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1010" name="LongestCardTextsStayInsideTheCard(Vi)" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.LongestCardTextsStayInsideTheCard(Vi)" methodname="LongestCardTextsStayInsideTheCard" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="1612256248" result="Failed" start-time="2026-10-16 11:03:33Z" end-time="2026-10-16 11:03:33Z" duration="0.190433" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  'ĐÁNH MẠNH GẤP 1.55 LẦN. MÁU TỐI ĐA -25' inside card 0
+  Expected: True
+  But was:  False
+]]></message>
+                  <stack-trace><![CDATA[at BallBattle.Tests.ArtV1CardsBossArenaTests.AssertCardsInsideFrame (BallBattle.View.PrepareView v) [0x000a4] in E:\ball-battle\BallBattleUnity\Assets\Tests\EditMode\ArtV1CardsBossArenaTests.cs:215
+at BallBattle.Tests.ArtV1CardsBossArenaTests.LongestCardTextsStayInsideTheCard (BallBattle.View.Lang language) [0x00097] in E:\ball-battle\BallBattleUnity\Assets\Tests\EditMode\ArtV1CardsBossArenaTests.cs:198
+]]></stack-trace>
+                </failure>
+                <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

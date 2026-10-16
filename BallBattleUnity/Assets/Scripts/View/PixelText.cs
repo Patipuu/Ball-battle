@@ -74,6 +74,7 @@ namespace BallBattle.View
         }
         public void Set(string text, Color32 color)
         {
+            text = UiVietnamese.Translate(text);
             text = PixelFont.Normalize(text);
             if (text == current && color.Equals(currentColor) && !highlighted) return;
             highlighted = false;

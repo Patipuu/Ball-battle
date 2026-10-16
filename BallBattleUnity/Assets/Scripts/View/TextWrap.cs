@@ -19,7 +19,7 @@ namespace BallBattle.View
         public static int MaxWidthOnScreen(int scale) => (ScreenWidth - 2 * ScreenMargin) / scale;
 
         /// <summary>True when <paramref name="text"/> at <paramref name="scale"/> fits <see cref="MaxWidthOnScreen"/>.</summary>
-        public static bool FitsScreen(string text, int scale) => PixelFont.MeasureWidth(text) <= MaxWidthOnScreen(scale);
+        public static bool FitsScreen(string text, int scale) => PixelFont.MeasureWidth(UiVietnamese.Translate(text)) <= MaxWidthOnScreen(scale);
 
         /// <summary>
         /// Join <paramref name="items"/> after <paramref name="prefix"/>, separated by <paramref name="separator"/>,
@@ -31,12 +31,14 @@ namespace BallBattle.View
         {
             var lines = new List<string>();
             if (items == null || items.Count == 0) return lines;
+            prefix = UiVietnamese.Translate(prefix);
             var pad = indent ? IndentFor(prefix) : string.Empty;
             var line = prefix;
             var lineHasItem = false;
             foreach (var item in items)
             {
-                var candidate = lineHasItem ? line + separator + item : line + item;
+                var translated = UiVietnamese.Translate(item);
+                var candidate = lineHasItem ? line + separator + translated : line + translated;
                 if (PixelFont.MeasureWidth(candidate) <= maxWidth || !lineHasItem)
                 {
                     line = Cut(candidate, maxWidth);
@@ -44,7 +46,7 @@ namespace BallBattle.View
                     continue;
                 }
                 lines.Add(line.TrimEnd());
-                line = Cut(pad + item, maxWidth);
+                line = Cut(pad + translated, maxWidth);
             }
             lines.Add(line.TrimEnd());
             return lines;
@@ -58,6 +60,7 @@ namespace BallBattle.View
         public static List<string> SplitToFit(string text, int maxWidth)
         {
             var lines = new List<string>();
+            text = UiVietnamese.Translate(text);
             if (string.IsNullOrEmpty(text)) return lines;
             if (PixelFont.MeasureWidth(text) <= maxWidth) { lines.Add(text); return lines; }
             var sep = text.Contains("  ") ? "  " : " ";
@@ -96,6 +99,7 @@ namespace BallBattle.View
         /// <summary>Longest start of <paramref name="text"/> that is at most <paramref name="maxWidth"/> px (scale 1).</summary>
         public static string Cut(string text, int maxWidth)
         {
+            text = UiVietnamese.Translate(text);
             if (PixelFont.MeasureWidth(text) <= maxWidth) return text;
             var n = text.Length;
             while (n > 0 && PixelFont.MeasureWidth(text.Substring(0, n)) > maxWidth) n--;

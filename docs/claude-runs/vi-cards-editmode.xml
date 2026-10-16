@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.3607253">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="554" result="Passed" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.360725" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1642" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="554" result="Passed" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.349452" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="72812" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1643" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="554" result="Passed" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.348586" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="SetUpFixture" id="1625" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="554" result="Passed" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.347465" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="ArtV1CardsBossArenaTests" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" testcasecount="15" result="Passed" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.330083" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="ParameterizedMethod" id="1011" name="LongestCardTextsStayInsideTheCard" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.LongestCardTextsStayInsideTheCard" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.328029" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1009" name="LongestCardTextsStayInsideTheCard(En)" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.LongestCardTextsStayInsideTheCard(En)" methodname="LongestCardTextsStayInsideTheCard" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="105927741" result="Passed" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.248724" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1010" name="LongestCardTextsStayInsideTheCard(Vi)" fullname="BallBattle.Tests.ArtV1CardsBossArenaTests.LongestCardTextsStayInsideTheCard(Vi)" methodname="LongestCardTextsStayInsideTheCard" classname="BallBattle.Tests.ArtV1CardsBossArenaTests" runstate="Runnable" seed="893596953" result="Passed" start-time="2026-10-16 09:40:59Z" end-time="2026-10-16 09:40:59Z" duration="0.064477" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

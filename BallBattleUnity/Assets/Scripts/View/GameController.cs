@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace BallBattle.View
 {
@@ -23,13 +24,19 @@ namespace BallBattle.View
         void Awake()
         {
             if (HeadlessRoundRobin.Active) { enabled = false; return; }   // -roundrobin: no game, no save, the player quits after the run
-            StringTable.Current = DebugOptions.LangVi ? Lang.Vi : Lang.En;   // hidden -bbLangVi switch; EN by default (before any screen is built)
+            StringTable.Current = DebugOptions.LangVi || PlayerPrefs.GetInt("language_vi", 1) == 1 ? Lang.Vi : Lang.En;
             if (Arena == null) Arena = FindAnyObjectByType<ArenaView>();
             Arena.AutoRestart = false;
             Arena.Paused = true;
 
             Flow = new MatchFlow { ForceDraw = DebugOptions.ForceDraw };   // -bbForceDraw: Versus only, off by default
             Menu = MenuView.Create(transform, Arena.Art);
+            Menu.LanguageChanged += language =>
+            {
+                PlayerPrefs.SetInt("language_vi", language == Lang.Vi ? 1 : 0);
+                PlayerPrefs.Save();
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            };
             Overlay = OverlayView.Create(transform, Arena.Art);
             store = FileSaveStore.Default();
             Run = RunController.Create(transform, Arena, store);

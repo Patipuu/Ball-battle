@@ -8,8 +8,8 @@ namespace BallBattle.View
         {
             var definition = SkillDefinition.ForWeapon(weapon);
             if (definition == null) return "";
-            var label = definition.Name + " " + level;
-            return branch == SkillBranch.None ? label : label + " " + definition.BranchName(branch);
+            var label = UiVietnamese.Translate(definition.Name) + " " + level;
+            return branch == SkillBranch.None ? label : label + " " + UiVietnamese.Translate(definition.BranchName(branch));
         }
     }
 }

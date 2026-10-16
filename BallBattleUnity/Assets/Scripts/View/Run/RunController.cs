@@ -76,6 +76,7 @@ namespace BallBattle.View
             prepare.SkillPicked += (i, branch) => Flow.Pick(i, branch);
             prepare.RerollRequested += () => Flow.Reroll();
             prepare.FightRequested += () => Flow.Fight();
+            prepare.MenuRequested += () => Flow.Close();
             overlay.SpeedToggled += () =>
             {
                 arena.TimeScale = arena.TimeScale > 1f ? 1f : 2f;

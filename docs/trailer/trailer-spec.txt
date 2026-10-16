@@ -1,0 +1,11 @@
+# name|kind|a|b|seed|arena|anchor|occurrence|leadTicks|frames|ticksPerFrame   (no HUNTER / serpent)
+# v2: each shot covers the last ~10 s of its fight at x1.25; the editor picks the busiest seconds from events.csv.
+01_ember_mantis|vs|blade|fang|7|classic|end|1|560|480|1.25
+02_mantis_wrecker|vs|fang|brawler|11|pillar|end|1|560|480|1.25
+03_sparkler_mirror|vs|volley|aegis|5|classic|end|1|560|480|1.25
+04_spore_hive|vs|venom|rig|9|bumpers|end|1|560|480|1.25
+05_bgl_unity|vs|chorus|blade|2|classic|ChorusUnity|2|200|300|1
+06_boss_shellking|boss|blade|shellking|21|-|end|1|560|480|1.25
+07_boss_warden|boss|fang|warden|31|-|end|1|560|480|1.25
+08_boss_mimic|boss|chorus|mimic|41|-|end|1|560|480|1.25
+09_ko_slowmo|vs|pike|brawler|13|spike-walls|end|1|100|260|0.5

@@ -44,9 +44,8 @@ namespace BallBattle.View
             var v = root.gameObject.AddComponent<PickWeaponView>();
             v.art = art;
             RunUi.Text(root, art, 0, 150, 2, initial: "CHOOSE YOUR WEAPON");
-            RunUi.Text(root, art, 0, 134, 1, initial: "ONE SIGNATURE SKILL. TWO BRANCHES", color: Palette.TextDim);
             RunUi.Box(root, art, PanelArea.xMin, PanelArea.yMin, PanelArea.xMax, PanelArea.yMax);
-            v.hint = RunUi.Text(root, art, 0, -175, 1, initial: "TAP A BALL TO SEE HOW IT PLAYS", color: Palette.TextDim);
+            v.hint = RunUi.Text(root, art, 0, -175, 1, initial: "", color: Palette.TextDim);
             // Rows of the panel, 13 px cells: name+role, grows, good, weak, then the skill and its two branches.
             v.header = RunUi.Text(root, art, LineX, -114, 1, PixelText.Align.Left);
             v.grows = RunUi.Text(root, art, LineX, -128, 1, PixelText.Align.Left);
@@ -91,7 +90,7 @@ namespace BallBattle.View
                 b.Clicked += () => Select(id);
                 tiles.Add((id, b));
             }
-            ShowDetails(null);
+            ShowDetails(choices.Count > 0 ? choices[0] : null);   // UI-CLEAN1: the first ball is explained at once (no empty panel, no hint line)
         }
 
         /// <summary>First tap selects and explains a ball; a second tap on the same ball picks it (like PICK).</summary>

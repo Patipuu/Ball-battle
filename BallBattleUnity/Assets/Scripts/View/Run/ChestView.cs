@@ -85,7 +85,6 @@ namespace BallBattle.View
             l.Add(unlocked > 0 ? $"OTHERS: 1 IN {unlocked} PER UNLOCKED BALL" : "OTHERS: A RANDOM UNLOCKED BALL");
             l.Add("LOCKED BALLS GET NONE");
             l.Add($"LV{MetaTuning.MaxLevel} BALL: 1 SHARD BECOMES {MetaTuning.MaxedShardGold} GOLD");
-            l.Add("CHESTS ARE NEVER SOLD");
             return l;
         }
 

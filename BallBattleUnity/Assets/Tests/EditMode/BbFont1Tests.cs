@@ -194,7 +194,7 @@ namespace BallBattle.Tests
             StringTable.Current = Lang.Vi;   // the test hook
             var t = PixelText.Create(root.transform, "T", art.Font, Vector2.zero, PixelText.Align.Left, 1, 0);
             t.Set(RunStrings.BossAt, Palette.Text);
-            Assert.That(t.Text, Is.EqualTo("BOSS Ở TRẬN 4 VÀ 8"));
+            Assert.That(t.Text, Is.EqualTo("TRÙM Ở TRẬN 4 VÀ 8"));
             Assert.That(t.GetComponentsInChildren<SpriteRenderer>().Where(r => r.enabled).All(r => r.sprite != null && !r.sprite.name.EndsWith(" ")), Is.True);
         }
 

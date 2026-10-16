@@ -129,7 +129,7 @@ namespace BallBattle.View
                 nextName.Set(r.NextWeaponName, Palette.Look(r.NextWeaponId).Body);
                 var lines = r.NextTraitNames != null && r.NextTraitNames.Count > 0
                     ? TextWrap.Items(r.NextTraitNames, "", " ", NextTraitsWidth)
-                    : TextWrap.SplitToFit(r.NextTraits ?? "", NextTraitsWidth);
+                    : TextWrap.SplitToFit(TraitNames.List(r.NextTraits ?? ""), NextTraitsWidth);
                 nextTraits.Set(lines.Count > 0 ? lines[0] : "", Palette.Text);
                 nextTraits2.Set(lines.Count > 1 ? string.Join(" ", lines.GetRange(1, lines.Count - 1)) : "", Palette.Text);
                 nextStats.Set(r.NextStats, Palette.Text);

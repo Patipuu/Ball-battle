@@ -180,18 +180,25 @@ namespace BallBattle.Tests
             AssertCardsInsideFrame(v);
         }
 
-        [Test]
-        public void LongestCardTextsStayInsideTheCard()
+        [TestCase(Lang.En)]
+        [TestCase(Lang.Vi)]
+        public void LongestCardTextsStayInsideTheCard(Lang language)
         {
-            var v = PrepareView.Create(root.transform, art);
-            foreach (var t in TraitRegistry.All)
+            var previous = StringTable.Current;
+            StringTable.Current = language;
+            try
             {
-                var run = RunWith(new Card(CardKind.Trait, t.Id, 1), new Card(CardKind.Trait, t.Id, 2), new Card(CardKind.SwapWeapon, VolleyRule.WeaponId));
-                run.Coins = 0;   // longest reasons: NOT ENOUGH COINS, ALREADY ...
-                run.PicksTaken = 1;
-                v.Show(run);
-                AssertCardsInsideFrame(v);
+                var v = PrepareView.Create(root.transform, art);
+                foreach (var t in TraitRegistry.All)
+                {
+                    var run = RunWith(new Card(CardKind.Trait, t.Id, 1), new Card(CardKind.Trait, t.Id, 2), new Card(CardKind.SwapWeapon, VolleyRule.WeaponId));
+                    run.Coins = 0;   // longest reasons: NOT ENOUGH COINS, ALREADY ...
+                    run.PicksTaken = 1;
+                    v.Show(run);
+                    AssertCardsInsideFrame(v);
+                }
             }
+            finally { StringTable.Current = previous; }
         }
 
         static void AssertCardsInsideFrame(PrepareView v)

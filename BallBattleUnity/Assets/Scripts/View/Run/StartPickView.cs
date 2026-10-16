@@ -79,9 +79,8 @@ namespace BallBattle.View
                 view.rarity[i] = PixelText.Create(card, "Rarity", art.Font, new Vector2(TextX, area.yMin + 2), PixelText.Align.Left, 1, order);
                 PixelText.Create(card, "TapToPick", art.Font, new Vector2(117, area.yMin + 2), PixelText.Align.Right, 1, order).Set("TAP TO PICK", Palette.TextDim);
             }
-            PixelRect.Set(PixelRect.Create(root, "FooterBand", art.Pixel, RunUi.Panel, RunUi.Order + 2), -127, -97, 127, -64);
-            view.noReroll = RunUi.Text(root, art, -119, -79, 1, PixelText.Align.Left, RunStrings.StartPickNoReroll, Palette.TextDim);        // cell -79..-66
-            view.nextFight = RunUi.Text(root, art, -119, -93, 1, PixelText.Align.Left, "YOUR FIRST FIGHT STARTS AFTER THIS", Palette.TextDim);   // cell -93..-80
+            view.noReroll = RunUi.Text(root, art, -119, -79, 1, PixelText.Align.Left, "", Palette.TextDim);
+            view.nextFight = RunUi.Text(root, art, -119, -93, 1, PixelText.Align.Left, "", Palette.TextDim);
             for (var i = 0; i < view.bossHint.Length; i++) view.bossHint[i] = RunUi.Text(root, art, 0, BossHintY[i], 1);
             view.Hide();
             return view;
@@ -93,7 +92,6 @@ namespace BallBattle.View
             gameObject.SetActive(true);
             title1.Set("CHOOSE", Palette.WallWarning);
             title2.Set(run.IsRetry ? "YOUR RETRY" : "YOUR START", Palette.WallWarning);
-            nextFight.Set(run.IsRetry ? "YOUR RETRY FIGHT STARTS AFTER THIS" : "YOUR FIRST FIGHT STARTS AFTER THIS", Palette.TextDim);
             weapon.Set(RunUi.WeaponName(run.Build.WeaponId), Palette.Look(run.Build.WeaponId).Body);
             weaponIcon.sprite = art.Get(run.Build.WeaponId).Ball;
             for (var i = 0; i < cards.Length; i++)

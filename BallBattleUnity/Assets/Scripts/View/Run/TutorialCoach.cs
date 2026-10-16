@@ -30,7 +30,7 @@ namespace BallBattle.View
         public static readonly Tip[] Tips =
         {
             new Tip { Id = "pick", State = RunFlow.State.PickWeapon, Target = new Rect(-114, -91, 228, 192),
-                      Line1 = "EACH BALL FIGHTS ON ITS OWN", Line2 = "TAP ONE TO READ IT, AGAIN TO PICK" },
+                      Line1 = "PICK YOUR BALL", Line2 = "TAP ONE TO READ IT, AGAIN TO PICK" },
             new Tip { Id = "startpick", State = RunFlow.State.StartPick, Target = Union(StartPickView.CardArea(0), StartPickView.CardArea(2)),
                       Line1 = "PICK 1 CARD TO START", Line2 = "CARDS STAY FOR THE WHOLE RUN" },
             new Tip { Id = "enemy", State = RunFlow.State.Prepare, Target = new Rect(-125, 113, 250, 83),

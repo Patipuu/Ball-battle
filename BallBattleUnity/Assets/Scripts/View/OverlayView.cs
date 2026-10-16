@@ -63,7 +63,6 @@ namespace BallBattle.View
             Button(art, p, "Rematch", RematchArea, "REMATCH", Palette.WallWarning, () => RematchRequested?.Invoke());
             Button(art, p, "NewMatch", NewMatchArea, "NEW MATCH", Palette.Text, () => NewMatchRequested?.Invoke());
             Button(art, p, "MenuBtn", MenuArea, "MENU", Palette.TextDim, () => MenuRequested?.Invoke());
-            Text(p, art, "REMATCH REPLAYS THE SAME FIGHT", -120, Palette.TextDim);   // font has no = or ,
 
             HideAll();
         }
@@ -110,7 +109,7 @@ namespace BallBattle.View
                     PixelInput.BlockFor(ResultInputBlockSeconds);
                     PixelButton.NoteShownAll(resultPanel.transform);
                 }
-                seed.Set("SEED " + s.MatchSeed, Palette.TextDim);
+                seed.Set("", default);
                 lastState = state;
             }
 
@@ -168,13 +167,13 @@ namespace BallBattle.View
             {
                 resultTitle.Set(RunStrings.VersusDraw, Palette.Text);
                 resultScore.Set($"{s.WinsA} - {s.WinsB}", Palette.Text);
-                resultSeed.Set("SEED " + s.MatchSeed, Palette.TextDim);
+                resultSeed.Set("", default);
                 return;
             }
             var w = s.Winner;
             resultTitle.Set(WeaponNames.Of(WeaponOf(s, w)) + " WINS", Palette.Look(WeaponOf(s, w)).Body);
             resultScore.Set($"{s.WinsA} - {s.WinsB}", Palette.Text);
-            resultSeed.Set("SEED " + s.MatchSeed, Palette.TextDim);
+            resultSeed.Set("", default);
         }
     }
 }

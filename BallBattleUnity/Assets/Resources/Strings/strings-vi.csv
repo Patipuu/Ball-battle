@@ -1,7 +1,18 @@
 key,text
-startpick.no_reroll,KHÔNG ĐỔI THẺ Ở LƯỢT ĐẦU
-run.boss_at.one,BOSS Ở TRẬN {0}
-run.boss_at.two,BOSS Ở TRẬN {0} VÀ {1}
-run.boss_at.many,BOSS Ở TRẬN {0}
-run.lose_once,THUA LẦN 1: CHỌN THẺ MIỄN PHÍ  ĐẤU LẠI VỚI {0}% HP
+startpick.no_reroll,LƯỢT CHỌN ĐẦU KHÔNG ĐƯỢC ĐỔI THẺ
+run.boss_at.one,TRÙM XUẤT HIỆN Ở TRẬN {0}
+run.boss_at.two,TRÙM Ở TRẬN {0} VÀ {1}
+run.boss_at.many,TRÙM Ở CÁC TRẬN {0}
+run.lose_once,THUA 1 LẦN: ĐƯỢC ĐẤU LẠI VỚI {0}% MÁU
 versus.draw,HÒA
+boss.shellking.name,VUA VỎ CỨNG
+boss.shellking.hint,VỎ CHẮN MỘT PHÍA. HÃY ĐÁNH SAU LƯNG.
+boss.magnet.name,NAM CHÂM
+boss.magnet.hint,CỨ 5 GIÂY LẠI HÚT BẠN VÀO.
+boss.mimic.name,BÓNG BẮT CHƯỚC
+boss.mimic.hint,SAO CHÉP VŨ KHÍ VÀ NỘI TẠI CỦA BẠN.
+boss.warden.name,CAI NGỤC
+boss.warden.hint,TƯỜNG DI ĐỘNG CÓ GAI.
+boss.mimic.copies_you,BẮT CHƯỚC BẠN
+boss.summary.beaten,ĐÃ HẠ {0}
+boss.summary.met,ĐÃ GẶP {0}

@@ -30,17 +30,22 @@ namespace BallBattle.Tests
         static string[] HubTexts(MenuView m) =>
             m.transform.Find("Hub").GetComponentsInChildren<PixelText>(false).Select(t => t.Text).Where(s => s.Length > 0).ToArray();
 
+        /// <summary>UI-CLEAN1 (16/10): no tagline, "NEW? START HERE", rules line or captions under the buttons; the buttons speak for themselves.</summary>
+        static readonly string[] Removed =
+        {
+            "WEAPON BALL AUTO BATTLER", "NEW? START HERE", "LEVEL UP WITH CHEST SHARDS", "WATCH ANY TWO BALLS FIGHT", "WHAT EVERY BALL DOES",
+            "8 FIGHTS  2 BOSSES  1 RETRY"
+        };
+
         [Test]
-        public void NewPlayerSeesStartHereAndEveryButtonIsExplained()
+        public void NewPlayerSeesACleanMenuWithEveryButton()
         {
             var m = MenuView.Create(root.transform, art);
             m.SetRunInfo(new ProgressData(), null);
-            Assert.That(m.StartHereShown, Is.True);
             var texts = HubTexts(m);
-            Assert.That(texts, Does.Contain(MenuView.StartHere));
-            Assert.That(texts, Does.Contain(MenuView.VersusLine));
-            Assert.That(texts, Does.Contain(MenuView.CodexLine));
-            Assert.That(m.GetComponentsInChildren<PixelButton>(true).Any(b => b.LabelText == "HOW TO PLAY"), Is.True);
+            foreach (var s in Removed) Assert.That(texts, Does.Not.Contain(s));
+            foreach (var label in new[] { "BALLS", "CODEX", "HOW TO PLAY" })
+                Assert.That(m.GetComponentsInChildren<PixelButton>(true).Any(b => b.LabelText == label), Is.True, label);
             for (var t = 0f; t < 4f; t += 0.37f)
             {
                 m.Animate(t);
@@ -49,15 +54,15 @@ namespace BallBattle.Tests
         }
 
         [Test]
-        public void StartHereHidesOnceThePlayerHasPlayedOrHasASavedRun()
+        public void ReturningPlayerMenuHasNoCaptionsEither()
         {
             var m = MenuView.Create(root.transform, art);
-            m.SetRunInfo(new ProgressData { RunsPlayed = 1 }, null);
-            Assert.That(m.StartHereShown, Is.False);
-            var p = new ProgressData();
+            var p = new ProgressData { RunsPlayed = 1 };
             var run = RunState.Start(21, RunState.StartChoices(21, UnlockRules.Weapons(p))[0], p);
             m.SetRunInfo(p, run);
-            Assert.That(m.StartHereShown, Is.False, "CONTINUE RUN is shown instead");
+            var texts = HubTexts(m);
+            foreach (var s in Removed) Assert.That(texts, Does.Not.Contain(s));
+            Bb0102Tests.AssertTextFitsAndNoOverlap(m.transform.Find("Hub"));
         }
 
         [Test]

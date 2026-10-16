@@ -50,8 +50,8 @@ namespace BallBattle.Tests
             string picked = null;
             view.WeaponPicked += id => picked = id;
             view.Show(new[] { "blade", "venom", "aegis" });
-            Assert.That(view.Selected, Is.Null);
-            Assert.That(view.PickButton.gameObject.activeSelf, Is.False, "nothing to pick yet");
+            Assert.That(view.Selected, Is.EqualTo("blade"), "UI-CLEAN1: the first ball is explained from the start");
+            Assert.That(picked, Is.Null, "showing it never picks it");
             view.GetComponentsInChildren<PixelButton>().Single(b => b.name == "Pick_venom").SimulateClick();
             Assert.That(picked, Is.Null, "first tap only explains");
             Assert.That(view.Selected, Is.EqualTo("venom"));
@@ -179,7 +179,7 @@ namespace BallBattle.Tests
                 var icon = tile.GetComponentsInChildren<SpriteRenderer>().Single(r => r.name == "SkillIcon");
                 Assert.That(icon.sprite, Is.SameAs(art.SkillIcon(id)), id);
             }
-            Assert.That(view.SkillIcon.enabled, Is.False, "no ball selected yet");
+            Assert.That(view.SkillIcon.enabled, Is.True, "UI-CLEAN1: the first ball is explained at once, with its skill icon");
             foreach (var id in ids)
             {
                 view.Select(id);

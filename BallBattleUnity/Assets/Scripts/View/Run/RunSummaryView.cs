@@ -91,7 +91,9 @@ namespace BallBattle.View
             foreach (var f in run.History)
             {
                 if (f.Won) won++;
-                line += f.Won ? "W" : f.Draw ? "D" : "L";
+                line += StringTable.Current == Lang.Vi
+                    ? (f.Won ? "T" : f.Draw ? "H" : "B")
+                    : (f.Won ? "W" : f.Draw ? "D" : "L");
             }
             fights.Set(RunStrings.FightsWon(won, run.History.Count), Palette.Text);
             record.Set(line, Palette.Text);
@@ -190,7 +192,6 @@ namespace BallBattle.View
                 foreach (var l in TextWrap.Items(names, RunStrings.Unlocked, "  ", max, true)) lines.Add((l, Palette.WallWarning));
                 any |= names.Count > 0;
             }
-            if (any) lines.Add((RunStrings.AppearLater, Palette.TextDim));
             if (lines.Count > BoxLines) lines.RemoveRange(BoxLines, lines.Count - BoxLines);
             return lines;
         }

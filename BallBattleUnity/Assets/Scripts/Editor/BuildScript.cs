@@ -33,9 +33,13 @@ namespace BallBattle.EditorTools
             if (Application.isBatchMode) EditorApplication.Exit(ok ? 0 : 1);
         }
 
-        /// <summary>&lt;repo&gt;/Builds/&lt;folder&gt;; the repo root is the parent of the Unity project.</summary>
+        /// <summary>&lt;repo&gt;/Builds/&lt;folder&gt;; the repo root is the parent of the Unity project.
+        /// Batch override: -bbBuildOut &lt;dir&gt; builds into that folder instead (e.g. a fresh folder, so an older build is kept).</summary>
         public static string OutputDir(BuildTarget target)
         {
+            var args = Environment.GetCommandLineArgs();
+            var i = Array.IndexOf(args, "-bbBuildOut");
+            if (i >= 0 && i + 1 < args.Length) return Path.GetFullPath(args[i + 1]);
             var folder = target == BuildTarget.WebGL ? "WebGL" : "Linux";
             return Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "Builds", folder));
         }

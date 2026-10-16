@@ -149,12 +149,10 @@ namespace BallBattle.View
             for (var i = 0; i < 4; i++) v.selectFrame[i] = PixelRect.Create(root, "Select", art.Pixel, BallsView.UpColor, Order + 5);
             v.caption = PixelText.Create(root, "Caption", art.Font, new Vector2(0, -62), PixelText.Align.Center, 1, Order + 6);
             v.holdHint = PixelText.Create(root, "HoldHint", art.Font, new Vector2(0, -80), PixelText.Align.Center, 1, Order + 6);
-            v.holdHint.Set("HOLD A NODE TO SEE AND UPGRADE IT", Palette.TextDim);
+            v.holdHint.Set("", Palette.TextDim);
             v.reset = PixelButton.Create(root, "Reset", art, ResetArea, "RESET", 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             v.reset.ClickCue = null;   // SFX4: tree_reset from PressReset
             v.reset.Clicked += v.PressReset;
-            PixelText.Create(root, "Hint", art.Font, new Vector2(0, -160), PixelText.Align.Center, 1, Order + 6).Set("EVERY RUN WITH THIS BALL USES IT", Palette.TextDim);
-            PixelText.Create(root, "Hint2", art.Font, new Vector2(0, -175), PixelText.Align.Center, 1, Order + 6).Set("RESET IS FREE OUTSIDE A RUN", Palette.TextDim);
             var back = PixelButton.Create(root, "TreeBack", art, BackArea, "BACK", 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             back.ClickCue = AudioIds.UiBack;
             back.Clicked += () => { v.CloseCard(); v.gameObject.SetActive(false); v.Closed?.Invoke(); };

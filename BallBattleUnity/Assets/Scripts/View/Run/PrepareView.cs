@@ -20,6 +20,9 @@ namespace BallBattle.View
         public static Rect CardArea(int i) => new Rect(-125, CardBottoms[i], 250, CardHeight);
         public static readonly Rect RerollArea = new Rect(-125, -205, 110, 30);
         public static readonly Rect FightArea = new Rect(-5, -205, 130, 30);
+        /// <summary>MENU under FIGHT, bottom right (it replaced the "ESC: MENU" keyboard hint; 24 px tap target). The reroll reason
+        /// line sits under REROLL on the left, and the title row is too wide in VI for a corner button.</summary>
+        public static readonly Rect MenuArea = new Rect(60, -238, 65, 24);
         /// <summary>Card text (title, details) stays left of this x (2 px inside the card's right edge).</summary>
         public const float CardTextRight = 123f;
         /// <summary>Traits lines in the ENEMY / YOU boxes: from x -74 to 121.</summary>
@@ -42,7 +45,7 @@ namespace BallBattle.View
         static readonly Color32 Blocked = Palette.Hot;
 
         public event Action<int> CardPicked;
-        public event Action RerollRequested, FightRequested;
+        public event Action RerollRequested, FightRequested, MenuRequested;
 
         ArtLibrary art;
         PixelText header, purse, pickHint, enemyLabel, enemyName, enemyTraits, enemyTraits2, enemyStats, youName, youTraits, youTraits2, youStats;
@@ -156,7 +159,7 @@ namespace BallBattle.View
             // One small line 2 px under the button (it used to sit inside it, over the label).
             rerollReason = PixelText.Create(reroll.transform, "Reason", art.Font, new Vector2(RerollArea.center.x, RerollReasonY), PixelText.Align.Center, 1, reroll.IconOrder + 1);
             RunUi.Button(root, art, FightArea, "FIGHT!", 2, Palette.WallWarning, () => { if (!TapSwallowed) OnFightClicked(); });   // x3 (39 px) no longer fits 30 px
-            RunUi.Text(root, art, 0, -235, 1, initial: "ESC: MENU   THE RUN IS SAVED", color: Palette.TextDim);   // cell -235..-222, under the reason line
+            RunUi.Button(root, art, MenuArea, "MENU", 1, Palette.TextDim, () => { if (!TapSwallowed) MenuRequested?.Invoke(); });   // back to the menu; the run is saved
 
             BuildConfirm(root);
         }

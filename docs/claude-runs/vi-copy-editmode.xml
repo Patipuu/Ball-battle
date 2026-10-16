@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="5" result="Failed(Child)" total="5" passed="4" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-16 10:50:39Z" end-time="2026-10-16 10:50:44Z" duration="5.2845511">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="556" result="Failed" site="Child" start-time="2026-10-16 10:50:39Z" end-time="2026-10-16 10:50:44Z" duration="5.284551" total="5" passed="4" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1644" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="556" result="Failed" site="Child" start-time="2026-10-16 10:50:39Z" end-time="2026-10-16 10:50:44Z" duration="5.256387" total="5" passed="4" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="68016" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1645" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="556" result="Failed" site="Child" start-time="2026-10-16 10:50:39Z" end-time="2026-10-16 10:50:44Z" duration="5.251855" total="5" passed="4" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="SetUpFixture" id="1627" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="556" result="Failed" site="Child" start-time="2026-10-16 10:50:39Z" end-time="2026-10-16 10:50:44Z" duration="5.243343" total="5" passed="4" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1336" name="BbViTests" fullname="BallBattle.Tests.BbViTests" classname="BallBattle.Tests.BbViTests" runstate="Runnable" testcasecount="5" result="Failed" site="Child" start-time="2026-10-16 10:50:39Z" end-time="2026-10-16 10:50:44Z" duration="5.182339" total="5" passed="4" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1340" name="EverySkillTreeCardFitsInVietnamese" fullname="BallBattle.Tests.BbViTests.EverySkillTreeCardFitsInVietnamese" methodname="EverySkillTreeCardFitsInVietnamese" classname="BallBattle.Tests.BbViTests" runstate="Runnable" seed="1382964422" result="Passed" start-time="2026-10-16 10:50:39Z" end-time="2026-10-16 10:50:44Z" duration="5.046413" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[PixelFont: no glyph for ';' (U+003B), drawn as the fallback
+]]></output>
+            </test-case>
+            <test-case id="1339" name="EveryVietnameseTranslationHasAVisibleGlyph" fullname="BallBattle.Tests.BbViTests.EveryVietnameseTranslationHasAVisibleGlyph" methodname="EveryVietnameseTranslationHasAVisibleGlyph" classname="BallBattle.Tests.BbViTests" runstate="Runnable" seed="1577211857" result="Failed" start-time="2026-10-16 10:50:44Z" end-time="2026-10-16 10:50:44Z" duration="0.040356" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  Missing glyph ; in: TÍCH XOÁY NHANH HƠN 50%; 12 GIÂY MỘT LẦN
+  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at BallBattle.Tests.BbViTests.EveryVietnameseTranslationHasAVisibleGlyph () [0x000d3] in E:\ball-battle\BallBattleUnity\Assets\Tests\EditMode\BbViTests.cs:67
+]]></stack-trace>
+              </failure>
+            </test-case>
+            <test-case id="1341" name="SettingsLanguageButtonsRequestARealSwitch" fullname="BallBattle.Tests.BbViTests.SettingsLanguageButtonsRequestARealSwitch" methodname="SettingsLanguageButtonsRequestARealSwitch" classname="BallBattle.Tests.BbViTests" runstate="Runnable" seed="1468009235" result="Passed" start-time="2026-10-16 10:50:44Z" end-time="2026-10-16 10:50:44Z" duration="0.033233" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1338" name="TemplatesUseVietnameseWordOrderAndTranslateTheirParts" fullname="BallBattle.Tests.BbViTests.TemplatesUseVietnameseWordOrderAndTranslateTheirParts" methodname="TemplatesUseVietnameseWordOrderAndTranslateTheirParts" classname="BallBattle.Tests.BbViTests" runstate="Runnable" seed="2017644916" result="Passed" start-time="2026-10-16 10:50:44Z" end-time="2026-10-16 10:50:44Z" duration="0.028166" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1337" name="TreeNamesFollowTheApprovedVietnameseGlossary" fullname="BallBattle.Tests.BbViTests.TreeNamesFollowTheApprovedVietnameseGlossary" methodname="TreeNamesFollowTheApprovedVietnameseGlossary" classname="BallBattle.Tests.BbViTests" runstate="Runnable" seed="824567072" result="Passed" start-time="2026-10-16 10:50:44Z" end-time="2026-10-16 10:50:44Z" duration="0.000532" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -1,5 +1,6 @@
 ﻿using BallBattle.View;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace BallBattle.Tests
 {
@@ -10,10 +11,28 @@ namespace BallBattle.Tests
     [SetUpFixture]
     public class TipsOffForTests
     {
+        Lang previousLanguage;
+        bool hadSavedLanguage;
+        int savedLanguage;
+
         [OneTimeSetUp]
-        public void Off() => TutorialCoach.Enabled = false;
+        public void Off()
+        {
+            TutorialCoach.Enabled = false;
+            previousLanguage = StringTable.Current;
+            hadSavedLanguage = PlayerPrefs.HasKey("language_vi");
+            savedLanguage = PlayerPrefs.GetInt("language_vi", 1);
+            StringTable.Current = Lang.En; // legacy UI assertions use the English option
+            PlayerPrefs.SetInt("language_vi", 0);
+        }
 
         [OneTimeTearDown]
-        public void Restore() => TutorialCoach.Enabled = !DebugOptions.NoTips;
+        public void Restore()
+        {
+            TutorialCoach.Enabled = !DebugOptions.NoTips;
+            StringTable.Current = previousLanguage;
+            if (hadSavedLanguage) PlayerPrefs.SetInt("language_vi", savedLanguage);
+            else PlayerPrefs.DeleteKey("language_vi");
+        }
     }
 }

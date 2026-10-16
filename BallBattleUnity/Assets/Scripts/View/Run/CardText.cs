@@ -25,7 +25,7 @@ namespace BallBattle.View
         {
             switch (c.Kind)
             {
-                case CardKind.Trait: return TraitRegistry.Get(c.Id).DisplayName + (c.Level > 1 ? " LV2" : "");
+                case CardKind.Trait: return BallBattle.View.TraitNames.Of(c.Id) + (c.Level > 1 ? (StringTable.Current == Lang.Vi ? " 2" : " LV2") : "");
                 case CardKind.DamageUp: return $"DAMAGE +{Pct(RunTuning.DamageCardPct.ToFloat())}%";
                 case CardKind.SpeedUp: return $"SPEED CAP +{Pct(RunTuning.SpeedCardPct.ToFloat())}%";
                 case CardKind.SwapWeapon: return "SWAP TO " + WeaponNames.Of(c.Id);
@@ -128,7 +128,7 @@ namespace BallBattle.View
             foreach (var t in b.Traits)
             {
                 if (s.Length > 0) s += " ";
-                s += TraitRegistry.Get(t.Id).DisplayName + (t.Level > 1 ? " " + t.Level : "");   // "SECOND WIND 2"
+                s += BallBattle.View.TraitNames.Of(t.Id) + (t.Level > 1 ? " " + t.Level : "");
             }
             return s;
         }
@@ -147,7 +147,7 @@ namespace BallBattle.View
         public static List<string> TraitNames(RunBuild b)
         {
             var names = new List<string>();
-            foreach (var t in b.Traits) names.Add(TraitRegistry.Get(t.Id).DisplayName + (t.Level > 1 ? " " + t.Level : ""));
+            foreach (var t in b.Traits) names.Add(BallBattle.View.TraitNames.Of(t.Id) + (t.Level > 1 ? " " + t.Level : ""));
             return names;
         }
 

@@ -98,9 +98,9 @@ namespace BallBattle.Tests
             var run = RunState.Start(53, BladeRule.WeaponId, new ProgressData());
             var v = StartPickView.Create(root.transform, art);
             v.Show(run);
-            Assert.That(v.NoRerollText.Text, Is.EqualTo("NO REROLL ON START PICK"));
+            Assert.That(v.NoRerollText.Text, Is.Empty, "UI-CLEAN1: the start pick has no footer notes");
             Assert.That(StringTable.Get(StringKeys.StartPickNoReroll, Lang.En), Is.EqualTo("NO REROLL ON START PICK"));
-            Assert.That(StringTable.Get(StringKeys.StartPickNoReroll, Lang.Vi), Is.EqualTo("KHÔNG ĐỔI THẺ Ở LƯỢT ĐẦU"));
+            Assert.That(StringTable.Get(StringKeys.StartPickNoReroll, Lang.Vi), Is.EqualTo("LƯỢT CHỌN ĐẦU KHÔNG ĐƯỢC ĐỔI THẺ"));
         }
 
         [Test]
@@ -136,9 +136,9 @@ namespace BallBattle.Tests
         [Test]
         public void BossLineVietnameseForOneTwoAndThreeBosses()
         {
-            Assert.That(RunStrings.BossAtFor(new[] { 3 }, Lang.Vi), Is.EqualTo("BOSS Ở TRẬN 4"));
-            Assert.That(RunStrings.BossAtFor(new[] { 3, 7 }, Lang.Vi), Is.EqualTo("BOSS Ở TRẬN 4 VÀ 8"));
-            Assert.That(RunStrings.BossAtFor(new[] { 3, 5, 7 }, Lang.Vi), Is.EqualTo("BOSS Ở TRẬN 4  6  8"));
+            Assert.That(RunStrings.BossAtFor(new[] { 3 }, Lang.Vi), Is.EqualTo("TRÙM XUẤT HIỆN Ở TRẬN 4"));
+            Assert.That(RunStrings.BossAtFor(new[] { 3, 7 }, Lang.Vi), Is.EqualTo("TRÙM Ở TRẬN 4 VÀ 8"));
+            Assert.That(RunStrings.BossAtFor(new[] { 3, 5, 7 }, Lang.Vi), Is.EqualTo("TRÙM Ở CÁC TRẬN 4  6  8"));
         }
 
         [Test]
@@ -159,7 +159,7 @@ namespace BallBattle.Tests
         [Test]
         public void VietnameseRetryLineIsExact()
         {
-            Assert.That(RunStrings.LoseOnceIn(Lang.Vi), Is.EqualTo("THUA LẦN 1: CHỌN THẺ MIỄN PHÍ  ĐẤU LẠI VỚI 60% HP"));
+            Assert.That(RunStrings.LoseOnceIn(Lang.Vi), Is.EqualTo("THUA 1 LẦN: ĐƯỢC ĐẤU LẠI VỚI 60% MÁU"));
             Assert.That(RunStrings.LoseOnceIn(Lang.En), Is.EqualTo("LOSE ONCE: FREE PICK  RETRY AT 60% HP"));
         }
 

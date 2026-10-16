@@ -24,6 +24,7 @@ namespace BallBattle.View
         /// <summary>Live value changes while tapping/dragging (volume changes at once; nothing is saved here).</summary>
         public event Action<int> MusicChanged, SfxChanged;
         public event Action BackRequested;
+        public event Action<Lang> LanguageChanged;
         /// <summary>The pointer was released after pressing a slider: the moment to save (SettingsAudio).</summary>
         public event Action Released;
 
@@ -56,8 +57,8 @@ namespace BallBattle.View
             sfxSlider = new Slider(this, art, SfxArea, order, x => SfxChanged?.Invoke(x), () => Released?.Invoke());
 
             Label(art, RunStrings.Language, EnArea.xMin, 250, 2, PixelText.Align.Left, Palette.Text, order);
-            LanguageBox(art, EnArea, RunStrings.En, true, order);
-            LanguageBox(art, ViArea, RunStrings.Vi, false, order);
+            LanguageBox(art, EnArea, RunStrings.En, StringTable.Current == Lang.En, Lang.En, order);
+            LanguageBox(art, ViArea, RunStrings.Vi, StringTable.Current == Lang.Vi, Lang.Vi, order);
 
             // Primary button: #F4C542 fill, dark text, the shared BACK text size.
             var back = PixelButton.Create(transform, "Back", art, BackArea, RunStrings.Back, RunUi.BackTextScale, Palette.PrimaryFill, Palette.PrimaryFill, Palette.PrimaryText, order + 2);
@@ -73,13 +74,12 @@ namespace BallBattle.View
             return t;
         }
 
-        /// <summary>Drawn only: the language switch arrives with the i18n task.</summary>
-        void LanguageBox(ArtLibrary art, Rect r, string text, bool selected, int order)
+        void LanguageBox(ArtLibrary art, Rect r, string text, bool selected, Lang language, int order)
         {
-            PixelRect.Set(PixelRect.Create(transform, "LangBorder", art.Pixel, selected ? Palette.WallWarning : Palette.Wall, order + 1), r);
-            PixelRect.Set(PixelRect.Create(transform, "LangFill", art.Pixel, selected ? Palette.HpBack : Palette.Floor, order + 2), r.xMin + 1, r.yMin + 1, r.xMax - 1, r.yMax - 1);
-            var t = PixelText.Create(transform, text, art.Font, new Vector2(r.center.x, Mathf.Floor(r.center.y - PixelFont.CellHeight)), PixelText.Align.Center, 2, order + 4);   // 26 px cell in the 28 px box
-            t.Set(text, selected ? Palette.WallWarning : Palette.TextDim);
+            var button = PixelButton.Create(transform, "Language" + text, art, r, text, 2,
+                selected ? Palette.HpBack : Palette.Floor, selected ? Palette.WallWarning : Palette.Wall,
+                selected ? Palette.WallWarning : Palette.TextDim, order + 2);
+            button.Clicked += () => { if (StringTable.Current != language) LanguageChanged?.Invoke(language); };
         }
 
         public void SetValues(int music, int sfx)

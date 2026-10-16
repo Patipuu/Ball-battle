@@ -132,7 +132,8 @@ namespace BallBattle.View
             var you = tag == PlayerTag;
             s.Arrow.enabled = you;
             s.Name.transform.localPosition = you ? s.NameHome + new Vector3(ArrowWidth + ArrowGap, 0f, 0f) : s.NameHome;
-            s.Name.Set(string.IsNullOrEmpty(tag) ? name : tag + " " + name, s.Color);
+            var shownTag = StringTable.Current == Lang.Vi && tag == "FOE" ? "ĐỊCH" : UiVietnamese.Translate(tag);
+            s.Name.Set(string.IsNullOrEmpty(tag) ? name : shownTag + " " + name, s.Color);
         }
 
         public void Render(MatchSim sim, float deltaTime)
@@ -168,7 +169,7 @@ namespace BallBattle.View
                 if (!w.StatValue.Equals(s.ShownStat))
                 {
                     s.ShownStat = w.StatValue.ToFloat();
-                    s.Stat.Set(w.StatLabel + " " + w.StatText, Palette.TextDim);
+                    s.Stat.Set(UiVietnamese.Translate(w.StatLabel) + " " + w.StatText, Palette.TextDim);
                 }
             }
         }

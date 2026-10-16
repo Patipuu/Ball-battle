@@ -17,7 +17,7 @@ namespace BallBattle.View
         /// <summary>-bbSeed &lt;number&gt;: every NEW run starts with this seed (a saved run keeps its own on CONTINUE).</summary>
         public const string ForceSeedArg = "-bbSeed";
         public const string TraceArg = "-bbTrace";
-        /// <summary>-bbLangVi: hidden switch that draws the string table in Vietnamese (BB-FONT1). Off by default; EN stays the default.</summary>
+        /// <summary>-bbLangVi: override a saved English preference and start in Vietnamese.</summary>
         public const string LangViArg = "-bbLangVi";
 
         static bool parsed;

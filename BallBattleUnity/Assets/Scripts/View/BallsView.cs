@@ -93,7 +93,6 @@ namespace BallBattle.View
             grid = new GameObject("Grid").transform;
             grid.SetParent(root, false);
             PixelText.Create(grid, "Title", art.Font, new Vector2(-126, 204), PixelText.Align.Left, 2, Order + 6).Set("BALLS", Palette.WallWarning);
-            PixelText.Create(grid, "Hint", art.Font, new Vector2(0, 186), PixelText.Align.Center, 1, Order + 6).Set("SHARDS AND GOLD LEVEL A BALL UP", Palette.TextDim);
             var i = 0;
             foreach (var e in WeaponRegistry.All)
             {

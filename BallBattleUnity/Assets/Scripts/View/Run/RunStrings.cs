@@ -116,7 +116,7 @@ namespace BallBattle.View
         {
             foreach (var w in WeaponRegistry.All)
                 if (w.Id == id) return WeaponNames.Of(id);
-            return TraitRegistry.Exists(id) ? TraitRegistry.Get(id).DisplayName : (id ?? "").ToUpperInvariant();
+            return TraitRegistry.Exists(id) ? TraitNames.Of(id) : (id ?? "").ToUpperInvariant();
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace BallBattle.View
                 string name = null;
                 foreach (var w in WeaponRegistry.All)
                     if (w.Id == id) name = WeaponNames.Of(id);
-                if (name == null && TraitRegistry.Exists(id)) name = TraitRegistry.Get(id).DisplayName;
+                if (name == null && TraitRegistry.Exists(id)) name = TraitNames.Of(id);
                 if (name != null && !names.Contains(name)) names.Add(name);
             }
             return names;

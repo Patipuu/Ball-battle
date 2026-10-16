@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BallBattle.View
 {
-    /// <summary>Languages of the string table. EN is the only one drawn for now (see <see cref="StringTable"/>).</summary>
+    /// <summary>Languages available to the player.</summary>
     public enum Lang { En, Vi }
 
     /// <summary>Keys of <see cref="StringTable"/> (BB-FIX1b). Every new player-facing string gets a key here and a row in both CSV files.</summary>
@@ -20,7 +20,7 @@ namespace BallBattle.View
 
         public static readonly string[] All = { StartPickNoReroll, BossAtOne, BossAtTwo, BossAtMany, LoseOnce, VersusDraw };
 
-        // ---- BB-04 bosses: EN only (Vietnamese is out of scope; VI falls back to EN), so they are not in All. ----
+        // Boss names, hints and summary labels are localized in both CSV files.
         public const string BossShellKingName = "boss.shellking.name", BossShellKingHint = "boss.shellking.hint";
         public const string BossMagnetName = "boss.magnet.name", BossMagnetHint = "boss.magnet.hint";
         public const string BossMimicName = "boss.mimic.name", BossMimicHint = "boss.mimic.hint";
@@ -39,16 +39,15 @@ namespace BallBattle.View
     /// EN/VI string table: Resources/Strings/strings-en.csv and strings-vi.csv, UTF-8, one "key,text" row per line
     /// (split at the first comma, so the text may hold anything but a line break; header "key,text", blank lines and
     /// lines starting with # are skipped). Text may use string.Format holes {0}, {1}.
-    /// The game draws EN: the 3x5 pixel font has no Vietnamese letters yet, so VI is stored and tested but not shown
-    /// until the language switch and the glyphs land. A key missing in VI falls back to EN; a key missing everywhere
+    /// The 5x7 pixel font supports Vietnamese. A key missing in VI falls back to EN; a key missing everywhere
     /// returns the key itself (visible on screen, never a crash).
     /// </summary>
     public static class StringTable
     {
         public const string ResourceFolder = "Strings/";
 
-        /// <summary>Language used by <see cref="Get(string)"/>. Stays EN until the language switch exists.</summary>
-        public static Lang Current = Lang.En;
+        /// <summary>Language used by <see cref="Get(string)"/>. Vietnamese is the default.</summary>
+        public static Lang Current = Lang.Vi;
 
         static readonly Dictionary<Lang, Dictionary<string, string>> Tables = new Dictionary<Lang, Dictionary<string, string>>();
 
@@ -57,7 +56,7 @@ namespace BallBattle.View
         static void ResetCache()
         {
             Tables.Clear();
-            Current = Lang.En;
+            Current = Lang.Vi;
         }
 
         public static string FileName(Lang lang) => lang == Lang.Vi ? "strings-vi" : "strings-en";
