@@ -32,7 +32,7 @@ namespace BallBattle.Sim.Weapons
         /// <summary>BB-12g Run-only baseline (every Run, any tree): DamageFactor x0.85 at the start.</summary>
         internal void ApplyRunBaseline() => DamageFactor *= Fix.Ratio(17, 20);
         /// <summary>BB-12g FINALE A: wall boost x0.85 / B: x1.15 (their spike damage change is in MatchSim.Obstacles).</summary>
-        internal void ApplyTreeKeystone() => WallSpeedBoost *= Self.Tree.Finale == 'A' ? Fix.Ratio(17, 20) : Fix.Ratio(23, 20);
+        internal void ApplyTreeKeystone() { }   // BB-19c: the finale (STEADY / OVERCHARGE) lives in the RAM skill now
 
         public override void OnHit(in HitContext ctx)
         {

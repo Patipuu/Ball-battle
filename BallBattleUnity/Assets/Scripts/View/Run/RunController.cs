@@ -18,6 +18,7 @@ namespace BallBattle.View
         RunSummaryView summary;
         RunResultView result;
         TutorialCoach coach;
+        HintPointer hints;
         TapView tap;
         ChestView chest;
         RunFlow.State shown = RunFlow.State.Closed;
@@ -29,6 +30,7 @@ namespace BallBattle.View
         public RunResultView Result => result;
         public RunSummaryView Summary => summary;
         public TutorialCoach Coach => coach;
+        public HintPointer Hints => hints;
         public TapView Tap => tap;
         public ChestView Chest => chest;
         public PickWeaponView Pick => pick;
@@ -61,30 +63,41 @@ namespace BallBattle.View
             overlay = RunOverlayView.Create(transform, art);
             summary = RunSummaryView.Create(transform, art);
             result = RunResultView.Create(transform, art);
-            coach = TutorialCoach.Create(transform, art);   // UI-TUT1: first-run tips over the screens
+            hints = HintPointer.Create(transform, art);
             tap = TapView.Create(transform, arena);   // TAP-4: tap to strike during Run fights
             chest = ChestView.Create(transform, art);   // BB-12b: the run's chest, over the summary / start pick
             chest.Collected += () => { Flow.MarkChestShown(); dirty = true; };
 
             title.ContinueRequested += () => Flow.Continue();
-            title.NewRunRequested += () => Flow.NewRun(NewSeed());
+            title.NewRunRequested += () => Flow.NewRun(NewSeed(), Flow.Progress.RunsPlayed == 0);
             title.BackRequested += () => Flow.Close();
-            pick.WeaponPicked += id => Flow.ChooseWeapon(id);
-            startPick.CardPicked += i => Flow.PickStart(i);
-            prepare.CardPicked += i => Flow.Pick(i);
-            startPick.SkillPicked += (i, branch) => Flow.PickStart(i, branch);
-            prepare.SkillPicked += (i, branch) => Flow.Pick(i, branch);
-            prepare.RerollRequested += () => Flow.Reroll();
-            prepare.FightRequested += () => Flow.Fight();
+            pick.WeaponPicked += id => { Flow.MarkHintSeen("pick"); Flow.ChooseWeapon(id); };
+            startPick.CardPicked += i => { Flow.MarkHintSeen("startpick"); Flow.PickStart(i); };
+            prepare.CardPicked += i => { if (Flow.Run?.FightIndex == 1) Flow.MarkHintSeen("shop"); Flow.Pick(i); };
+            startPick.SkillPicked += (i, branch) => { Flow.MarkHintSeen("startpick"); Flow.PickStart(i, branch); };
+            prepare.SkillPicked += (i, branch) => { if (Flow.Run?.FightIndex == 1) Flow.MarkHintSeen("shop"); Flow.Pick(i, branch); };
+            prepare.RerollRequested += () => { if (Flow.Run?.FightIndex == 1 && Flow.Run.CanReroll) Flow.MarkHintSeen("shop"); Flow.Reroll(); };
+            prepare.FightRequested += () => { if (Flow.Run?.FightIndex == 3) Flow.MarkHintSeen("boss"); Flow.Fight(); };
             prepare.MenuRequested += () => Flow.Close();
             overlay.SpeedToggled += () =>
             {
                 arena.TimeScale = arena.TimeScale > 1f ? 1f : 2f;
                 overlay.SetSpeed(arena.TimeScale);
             };
-            result.ContinueRequested += () => Flow.NextAfterResult();
+            overlay.PauseRequested += () =>
+            {
+                arena.Paused = true;
+                overlay.ShowPause();
+            };
+            overlay.ResumeRequested += () =>
+            {
+                overlay.ClosePause();
+                arena.Paused = Flow.Current != RunFlow.State.Playing;
+            };
+            overlay.SaveExitRequested += () => Flow.Close();
+            result.ContinueRequested += () => { Flow.MarkHintSeen("carry"); Flow.NextAfterResult(); };
             summary.NewRunRequested += () => Flow.NewRun(NewSeed());
-            summary.MenuRequested += () => Flow.Close();
+            summary.MenuRequested += () => { Flow.MarkHintSeen("next"); Flow.Close(); };
 
             Flow.Changed += () => dirty = true;
             Flow.MatchPrepared += sim =>
@@ -103,6 +116,7 @@ namespace BallBattle.View
             Flow.FightBegan += () =>
             {
                 arena.Paused = false;
+                arena.TimeScale = 1f;
                 Debug.Log(FightLog(arena.Sim == Flow.CurrentMatch ? "began" : "began ON ANOTHER MATCH", arena.Sim));
             };
             Flow.Closed += () =>
@@ -126,7 +140,16 @@ namespace BallBattle.View
         /// <summary>Damage totals for the result screen: the sim's own event values, only while a Run fight plays.</summary>
         void OnArenaEvent(BallBattle.Sim.SimEvent e)
         {
-            if (Flow.Current == RunFlow.State.Playing) Flow.Stats.Add(e);
+            if (Flow.Current == RunFlow.State.Playing)
+            {
+                Flow.Stats.Add(e);
+                if (Flow.Run?.TutorialRun == true && Flow.Run.FightIndex == 0 && e.A == 0 &&
+                    (e.Type == BallBattle.Sim.SimEventType.TapStrike || e.Type == BallBattle.Sim.SimEventType.TapPerfect))
+                {
+                    Flow.MarkStrikeLearned();
+                    arena.TimeScale = 1f;
+                }
+            }
         }
 
         void OnDestroy()
@@ -153,7 +176,7 @@ namespace BallBattle.View
             overlay.Hide();
             summary.Hide();
             result.Hide();
-            coach.Hide();
+            hints.Hide();
             tap?.Tick(null, 0f);
             chest?.Hide();
             shown = RunFlow.State.Closed;
@@ -165,10 +188,13 @@ namespace BallBattle.View
         public void Tick(float dt)
         {
             if (!IsOpen) return;
+            if (overlay.PauseOpen) return;
             CheckArenaShowsTheFight();
             if (!overlay.TickRetryBanner(dt)) Flow.Tick(dt);
             if (dirty) Refresh();
             overlay.Render(Flow, dt);
+            result.Tick(dt);
+            TickLesson();
             tap.Tick(Flow, dt);
         }
 
@@ -193,26 +219,47 @@ namespace BallBattle.View
                 case RunFlow.State.Title: title.Show(Flow); break;
                 case RunFlow.State.PickWeapon: pick.Show(Flow.StartChoices); break;
                 case RunFlow.State.StartPick: startPick.Show(Flow.Run); break;
-                case RunFlow.State.Prepare: prepare.ArenaOverride = Flow.ForceArenaId; prepare.Show(Flow.Run); break;
-                case RunFlow.State.FightResult: result.Show(Flow.LastReport); break;
+                case RunFlow.State.Prepare:
+                    prepare.ArenaOverride = Flow.ForceArenaId;
+                    prepare.TutorialHintActive = Flow.Run?.TutorialRun == true && !DebugOptions.NoTips && Flow.Progress.Onboarding.HintsOff == false &&
+                        (Flow.Run.FightIndex == 1 && !Flow.HintSeen("shop") || Flow.Run.FightIndex == 3 && !Flow.HintSeen("boss"));
+                    prepare.Show(Flow.Run);
+                    break;
+                case RunFlow.State.FightResult: result.Show(Flow.LastReport, Flow.Run?.TutorialRun == true); break;
                 case RunFlow.State.Summary: summary.Show(Flow.Run, Flow.Progress); break;
-            }
-            // UI-TUT1: the next first-run tip for this screen, if any (closes a tip left from another screen).
-            Transform screenRoot = null;
-            switch (s)
-            {
-                case RunFlow.State.PickWeapon: screenRoot = pick.transform; break;
-                case RunFlow.State.StartPick: screenRoot = startPick.transform; break;
-                case RunFlow.State.Prepare: screenRoot = prepare.transform; break;
-                case RunFlow.State.FightResult: screenRoot = result.transform; break;
             }
             // BB-12b: a chest earned by the run that just ended (summary) or by the saved run a new run replaced (start pick)
             // comes first; tips wait until it is collected.
             if (Flow.ChestToShow != null && (s == RunFlow.State.Summary || s == RunFlow.State.StartPick) && !chest.IsOpen)
                 chest.Show(Flow.ChestToShow, Flow.Progress, Flow.ChestCaption, summary.transform, startPick.transform);
-            if (chest.IsOpen) { if (coach.Showing) coach.Hide(); }
-            else if (screenRoot != null) coach.Offer(Flow, s, screenRoot);
-            else if (coach.Showing) coach.Hide();
+            OfferHint(chest.IsOpen ? RunFlow.State.Closed : s);
+        }
+
+        void OfferHint(RunFlow.State state)
+        {
+            hints.Hide();
+            if (DebugOptions.NoTips || !(Flow.Run?.TutorialRun == true || state == RunFlow.State.PickWeapon && Flow.PendingTutorial) ||
+                Flow.Progress?.Onboarding == null || Flow.Progress.Onboarding.HintsOff) return;
+            foreach (var hint in HintPointer.Hints)
+            {
+                if (hint.Screen != state || Flow.HintSeen(hint.Id)) continue;
+                if (hint.Id == "carry" && Flow.LastReport?.FightNumber != 1) continue;
+                if (hint.Id == "shop" && (Flow.Run.FightIndex != 1 || Flow.Run.Coins <= 0)) continue;
+                if (hint.Id == "boss" && Flow.Run.FightIndex != 3) continue;
+                hints.Show(hint);
+                return;
+            }
+        }
+
+        void TickLesson()
+        {
+            var lesson = Flow.Current == RunFlow.State.Playing && Flow.Run?.TutorialRun == true &&
+                         Flow.Run.FightIndex == 0 && Flow.Progress?.Onboarding?.StrikeLearned == false &&
+                         Flow.Progress.Onboarding.HintsOff == false && !DebugOptions.NoTips;
+            tap.TutorialLesson = lesson;
+            var state = lesson && arena.Sim?.Balls.Count > 0 ? arena.Sim.Balls[0].Tap : null;
+            if (state != null && state.Ready && state.Taps == 0) arena.TimeScale = 0.35f;
+            else if (arena.TimeScale < 1f) arena.TimeScale = 1f;
         }
 
         /// <summary>

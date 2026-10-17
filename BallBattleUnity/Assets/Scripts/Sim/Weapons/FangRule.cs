@@ -23,13 +23,15 @@ namespace BallBattle.Sim.Weapons
         public override string StatLabel => "SPIN";
         public override Fix StatValue => SpinDegPerTick;
 
-        char Fin => Self?.Tree != null ? Self.Tree.Finale : '-';   // BB-12g FINALE ('-' = none / no tree)
+        char Fin => '-';   // BB-19c: the FINALE lives in the active skill now (Skills/ActiveSkill.cs)
         int Growth => Self?.Tree != null ? Self.Tree.Growth : 0;
         bool firstHitBonus;
         bool wasFrenzied;
         int momentumUntil;
         int momentumReadyAt;
         int furyReadyAt;
+        /// <summary>BB-19c FINALE A (AFTERSPIN): the next hits spin up 50% faster; set by the PHANTOM blink.</summary>
+        internal int AfterspinHits;
 
         // BB-12g FINALE B (Máu chiến): the first hit in FRENZY +10%, again after 3 s.
         public override Fix Damage(in HitContext ctx) => CurrentDamage *
@@ -56,7 +58,7 @@ namespace BallBattle.Sim.Weapons
             CurrentDamage += WeaponTuning.FangDamagePerHit;
             var active = Self?.Skill != null && Self.Skill.Active;
             var gain = SpinGain * (active ? Self.Skill.SpinGainMultiplier : Fix.One);
-            if (Fin == 'A' && Sim.ActiveTick < momentumUntil) gain *= Fix.Ratio(3, 2);
+            if (AfterspinHits > 0) { gain *= Fix.Ratio(3, 2); AfterspinHits--; }
             SpinDegPerTick += gain;
             if (firstHitBonus) { SpinDegPerTick += 2; firstHitBonus = false; }
             if (SpinDegPerTick > WeaponTuning.FangMaxSpin) SpinDegPerTick = WeaponTuning.FangMaxSpin;
@@ -71,6 +73,7 @@ namespace BallBattle.Sim.Weapons
             if (Self?.Tree == null) return h;
             h = SimHash.Mix(h, firstHitBonus); h = SimHash.Mix(h, wasFrenzied);
             h = SimHash.Mix(h, momentumUntil); h = SimHash.Mix(h, momentumReadyAt);
+            if (AfterspinHits != 0) h = SimHash.Mix(h, AfterspinHits);
             return SimHash.Mix(h, furyReadyAt);
         }
     }

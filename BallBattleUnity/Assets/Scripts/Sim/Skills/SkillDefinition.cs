@@ -28,20 +28,38 @@ namespace BallBattle.Sim.Skills
         {
             WeaponId = weapon; Name = name; Role = role; Damage = damage; Range = range; Defense = defense; Difficulty = difficulty;
             BranchA = branchA; BranchB = branchB; Summary = summary; SummaryA = summaryA; SummaryB = summaryB;
-            Id = weapon + "_" + name.ToLowerInvariant(); AudioId = "skill_" + Id;
+            Id = weapon + "_" + IdKey(weapon, name); AudioId = "skill_" + Id;
+        }
+        /// <summary>BB-19b: the display names changed with the tapped skills; ids (and audio ids) keep the original key.</summary>
+        static string IdKey(string weapon, string name)
+        {
+            switch (weapon)
+            {
+                case "blade": return "whetstone";
+                case "fang": return "frenzy";
+                case "pike": return "lunge";
+                case "brawler": return "charge";
+                case "volley": return "barrage";
+                case "venom": return "drain";
+                case "aegis": return "bulwark";
+                case "rig": return "overclock";
+                case "chorus": return "hymn";
+                case "serpent": return "strike";
+            }
+            return name.ToLowerInvariant();
         }
         public string BranchName(SkillBranch branch) => branch == SkillBranch.A ? BranchA : branch == SkillBranch.B ? BranchB : "";
         public static readonly SkillDefinition[] All = {
-            new SkillDefinition("blade", "WHETSTONE", "BRUISER", 4,2,2,1, "EDGE", "HONE", "NEXT 3 HITS +0.5 DMG", "EDGE: MORE HITS", "HONE: MORE DAMAGE"),
-            new SkillDefinition("fang", "FRENZY", "DUELIST", 3,1,2,3, "ENDURE", "FURY", "HIGH SPIN: NO DECAY", "ENDURE: LONGER FRENZY", "FURY: MORE SPIN GAIN"),
-            new SkillDefinition("pike", "LUNGE", "LANCER", 3,5,2,2, "REACH", "HOLD", "TEMPORARY EXTRA REACH", "REACH: LONGER LUNGE", "HOLD: LONGER DURATION"),
-            new SkillDefinition("brawler", "CHARGE", "RAMMER", 4,1,3,3, "SLAM", "RUSH", "MAX SPEED. FIRST HIT X1.5", "SLAM: STRONGER FIRST HIT", "RUSH: LONGER CHARGE"),
-            new SkillDefinition("volley", "BARRAGE", "RANGER", 2,5,1,2, "RAPID", "HEAVY", "FIRE AN EXTRA VOLLEY", "RAPID: LOWER COOLDOWN", "HEAVY: STRONGER ARROWS"),
-            new SkillDefinition("venom", "DRAIN", "POISONER", 3,2,2,3, "SIP", "ROT", "3 POISON: DRAIN HALF DMG", "SIP: MORE POISON HEAL", "ROT: LONGER POISON"),
-            new SkillDefinition("aegis", "BULWARK", "GUARDIAN", 1,2,5,4, "WALL", "SPITE", "TEMPORARY EXTRA REFLECT", "WALL: LONGER BULWARK", "SPITE: MORE PARRY REFLECT"),
-            new SkillDefinition("rig", "OVERCLOCK", "BUILDER", 2,4,2,4, "BURST", "DEPLOY", "2 TURRET VOLLEYS FASTER", "BURST: MORE FAST VOLLEYS", "DEPLOY: ADD TURRETS"),
-            new SkillDefinition("chorus", "HYMN", "HARMONIST", 3,3,3,3, "CHORUS", "RADIANCE", "LIGHT THE NEXT 2 COLOURS", "CHORUS: UNITY HEALS", "RADIANCE: BIGGER UNITY"),
-            new SkillDefinition("serpent", "STRIKE", "HUNTER", 3,2,2,4, "CONSTRICT", "SWALLOW", "LUNGE AT THE FOE. BITE +50%", "CONSTRICT: TAIL SLOWS", "SWALLOW: EAT ON THE WAY")
+            new SkillDefinition("blade", "FIRE TRAIL", "BRUISER", 4,2,2,1, "LONG TRAIL", "WILDFIRE", "DASH, LEAVING A TRAIL OF FIRE", "LONG TRAIL: BURNS LONGER", "WILDFIRE: HOTTER, SHORTER"),
+            new SkillDefinition("fang", "PHANTOM", "DUELIST", 3,1,2,3, "AFTERIMAGE", "EXECUTE", "BLINK BEHIND THE FOE, SLASH, DODGE", "AFTERIMAGE: THE DECOY HITS TOO", "EXECUTE: DOUBLE UNDER 30% HP"),
+            new SkillDefinition("pike", "HOOK", "LANCER", 3,5,2,2, "LONG LINE", "BARB", "HOOK THE FOE, REEL IT IN, STUN", "LONG LINE: FASTER, BIGGER HOOK", "BARB: LONGER STUN, HARDER PULL"),
+            new SkillDefinition("brawler", "RAM", "RAMMER", 4,1,3,3, "PATIENCE", "HAIR TRIGGER", "TAP TO WIND UP, TAP TO RAM", "PATIENCE: LONGER WIND UP", "HAIR TRIGGER: FAST, WEAKER"),
+            new SkillDefinition("volley", "RICOCHET", "RANGER", 2,5,1,2, "MORE BOUNCES", "HEAVY SHOT", "A BOLT THAT BOUNCES OFF WALLS", "MORE BOUNCES: 2 EXTRA", "HEAVY SHOT: BIGGER, 2 BOUNCES"),
+            new SkillDefinition("venom", "SPORE CLOUD", "POISONER", 3,2,2,3, "GROWTH", "BLIGHT", "CLOUD SLOWS THE FOE, HEALS YOU", "GROWTH: BIGGER, LASTS LONGER", "BLIGHT: STRONGER POISON, SMALLER"),
+            new SkillDefinition("aegis", "PARRY", "GUARDIAN", 1,2,5,4, "WIDE GLASS", "SHARD", "TIMED PARRY THROWS THE BLOW BACK", "WIDE GLASS: LONGER WINDOW", "SHARD: SHORT WINDOW, HARDER HIT"),
+            new SkillDefinition("rig", "SWARM", "BUILDER", 2,4,2,4, "SWARM", "STINGERS", "DRONES HUNT AND STING THE FOE", "SWARM: MORE DRONES", "STINGERS: FEWER, HARDER STINGS"),
+            new SkillDefinition("chorus", "UNITY", "HARMONIST", 3,3,3,3, "CHORUS", "RADIANCE", "TAP TO BURST THE LIT ORBS", "CHORUS: UNITY HEALS", "RADIANCE: BIGGER UNITY"),
+            new SkillDefinition("serpent", "COIL", "HUNTER", 3,2,2,4, "CONSTRICT", "SWALLOW", "LUNGE AND COIL THE FOE, 3 BITES", "CONSTRICT: HOLDS LONGER, SLOWS", "SWALLOW: MORE BITES, HEALS")
         };
         public static SkillDefinition ForWeapon(string id)
         {

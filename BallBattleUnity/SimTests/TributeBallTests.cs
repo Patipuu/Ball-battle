@@ -40,34 +40,69 @@ namespace BallBattle.SimTests
         }
 
         [Test]
-        public void ChorusLightsTheColoursInOrderAndUnityStartsANewRing()
+        public void ChorusOrbsLightEachColourOnceInAnyOrderAndUnityStartsANewRing()
         {
-            var unities = 0;
+            int unities = 0, outOfOrder = 0, touches = 0;
             for (uint seed = 1; seed <= 20; seed++)
             {
                 var m = Match("chorus", "blade", seed);
                 var chorus = (ChorusRule)m.Balls[0].Weapon;
-                var expect = 1;
+                var lit = new System.Collections.Generic.HashSet<int>();
                 var ringsBefore = 0;
-                foreach (var e in Play(m).Where(e => e.A == 0))
+                var last = 0;
+                while (m.Outcome == MatchOutcome.Ongoing && m.Tick < 20000)
                 {
-                    if (e.Type == SimEventType.ChorusLit)
+                    m.Step();
+                    foreach (var e in m.Events.Where(e => e.A == 0))
                     {
-                        Assert.That(e.Value, Is.EqualTo((Fix)expect), $"seed {seed}: colours light in order");
-                        expect = expect == ChorusRule.Red ? 1 : expect + 1;
+                        if (e.Type == SimEventType.ChorusLit)
+                        {
+                            var c = (int)(e.Value.Raw >> Fix.FractionBits);
+                            Assert.That(c, Is.InRange(ChorusRule.Pink, ChorusRule.Red));
+                            Assert.That(lit.Add(c), Is.True, $"seed {seed}: colour {c} lit twice in one ring");
+                            Assert.That(e.Variant, Is.EqualTo((byte)lit.Count), "Variant = colours lit so far");
+                            Assert.That(e.B, Is.EqualTo(1).Or.EqualTo(-1), "an orb touching the enemy, or HYMN (-1)");
+                            var enemy = m.Balls[1];
+                            if (e.B == 1) touches++;
+                            if (e.B == 1) Assert.That((enemy.Pos - e.Point).LengthSq, Is.LessThanOrEqualTo(FixMath.Sq(TributeTuning.ChorusOrbRadius + enemy.Radius + 2)), "the orb touched the enemy");
+                            if (c != last + 1) outOfOrder++;
+                            last = c;
+                        }
+                        if (e.Type == SimEventType.ChorusUnity)
+                        {
+                            Assert.That(lit.Count, Is.EqualTo(ChorusRule.Colors), "UNITY only when all five are lit");
+                            unities++;
+                            Assert.That(e.Variant, Is.EqualTo((byte)ringsBefore), "Variant = rings completed before");
+                            Assert.That(e.Value, Is.EqualTo((TributeTuning.ChorusUnityBase + TributeTuning.ChorusUnityPerRing * ringsBefore) *
+                                (m.IsPlainVersus ? TributeTuning.ChorusVersusAbilityScale : Fix.One)), "UNITY damage");
+                            ringsBefore++;
+                            lit.Clear();
+                            last = 0;
+                        }
                     }
-                    if (e.Type == SimEventType.ChorusUnity)
-                    {
-                        unities++;
-                        Assert.That(e.Variant, Is.EqualTo((byte)ringsBefore), "Variant = rings completed before");
-                        Assert.That(e.Value, Is.EqualTo(TributeTuning.ChorusUnityBase + TributeTuning.ChorusUnityPerRing * ringsBefore), "UNITY damage");
-                        ringsBefore++;
-                    }
+                    Assert.That(chorus.Lit, Is.EqualTo(lit.Count));
                 }
                 Assert.That(chorus.Rings, Is.EqualTo(ringsBefore));
-                Assert.That(chorus.Lit, Is.LessThan(ChorusRule.Red), "the ring is reset after RED");
             }
             Assert.That(unities, Is.GreaterThan(20), "UNITY really happens in fights");
+            Assert.That(outOfOrder, Is.GreaterThan(20), "colours light in any order");
+            Assert.That(touches, Is.GreaterThan(100), "most colours are lit by orb touches");
+        }
+
+        [Test]
+        public void ChorusOrbsCircleTheBall()
+        {
+            var m = Match("chorus", "blade", 5);
+            var chorus = (ChorusRule)m.Balls[0].Weapon;
+            m.Step();
+            var a0 = chorus.OrbAngleDeg;
+            for (var c = ChorusRule.Pink; c <= ChorusRule.Red; c++)
+            {
+                var d2 = (chorus.Orb(c) - m.Balls[0].Pos).LengthSq;
+                Assert.That(d2, Is.InRange(FixMath.Sq(chorus.OrbDistance - Fix.Ratio(1, 4)), FixMath.Sq(chorus.OrbDistance + Fix.Ratio(1, 4))));
+            }
+            for (var i = 0; i < 10; i++) m.Step();
+            Assert.That(chorus.OrbAngleDeg, Is.Not.EqualTo(a0), "the orbs turn");
         }
 
         [Test]

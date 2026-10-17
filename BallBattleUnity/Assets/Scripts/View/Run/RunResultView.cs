@@ -28,6 +28,11 @@ namespace BallBattle.View
         PixelText fight, title, how;
         PixelText[] labels, values;
         PixelText consequence, carry, runLine;
+        PixelText tutorialProgress;
+        SpriteRenderer tutorialBarBack;
+        SpriteRenderer tutorialBar;
+        float tutorialReveal;
+        bool tutorialVisible;
         PixelText traitTriggered;
         /// <summary>BB-FIX4: after a lost boss fight, the boss name and its Prepare hint (BossText.NameAndHint), under the NEXT box.</summary>
         readonly PixelText[] bossHint = new PixelText[3];
@@ -88,9 +93,13 @@ namespace BallBattle.View
             for (var i = 0; i < bossHint.Length; i++) bossHint[i] = RunUi.Text(root, art, 0, BossHintY[i], 1);
 
             continueButton = RunUi.Button(root, art, ContinueArea, "NEXT FIGHT", 2, Palette.WallWarning, () => ContinueRequested?.Invoke());
+            tutorialProgress = RunUi.Text(root, art, 0, -177, 1);
+            tutorialBarBack = PixelRect.Create(root, "TutorialProgressBack", art.Pixel, Palette.HpBack, RunUi.Order + 2);
+            PixelRect.Set(tutorialBarBack, -96, -191, 96, -187);
+            tutorialBar = PixelRect.Create(root, "TutorialProgress", art.Pixel, Palette.WallWarning, RunUi.Order + 3);
         }
 
-        public void Show(FightReport r)
+        public void Show(FightReport r, bool tutorial = false)
         {
             if (r == null) return;
             var entering = !onScreen || !gameObject.activeSelf;
@@ -138,6 +147,24 @@ namespace BallBattle.View
             for (var i = 0; i < bossHint.Length; i++)
                 bossHint[i].Set(i < hint.Count ? hint[i] : "", i == 0 ? Palette.WallWarning : Palette.Text);   // Prepare: name gold, hint white
             continueButton.SetText(r.RunOver ? "SUMMARY" : "NEXT FIGHT", Palette.WallWarning);
+            tutorialVisible = tutorial && r.FightNumber == 1;
+            if (entering) tutorialReveal = 0f;
+            tutorialProgress.Set(tutorialVisible ? "WIN 8 FIGHTS  -  1 RETRY" : "", Palette.TextDim);
+            tutorialBarBack.enabled = tutorialVisible;
+            tutorialBar.enabled = tutorialVisible;
+            DrawTutorialBar();
+        }
+
+        public void Tick(float dt)
+        {
+            if (!tutorialVisible || !gameObject.activeSelf) return;
+            tutorialReveal = Mathf.Min(1f, tutorialReveal + Mathf.Max(0f, dt) / 0.4f);
+            DrawTutorialBar();
+        }
+
+        void DrawTutorialBar()
+        {
+            if (tutorialVisible) PixelRect.Set(tutorialBar, -96, -191, -96 + 192f / Sim.Run.RunTuning.Fights * tutorialReveal, -187);
         }
 
         public void Hide()

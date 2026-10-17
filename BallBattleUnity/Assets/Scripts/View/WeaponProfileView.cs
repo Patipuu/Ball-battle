@@ -40,10 +40,10 @@ namespace BallBattle.View
         public void Show(string id)
         {
             var data = SkillDefinition.ForWeapon(id);
-            role.Set(data.Role, Palette.Look(id).Body);
+            role.Set(UiVietnamese.TranslateRole(data.Role), Palette.Look(id).Body);
             roleIcon.sprite = art.RoleIcon(data.Role); roleIcon.enabled = roleIcon.sprite != null;
             role.transform.localPosition = new Vector3(roleIcon.enabled ? 8 : 0, 0, 0);
-            roleIcon.transform.localPosition = new Vector3(Mathf.Floor(-PixelFont.MeasureWidth(data.Role) / 2f - 2), 6, 0);
+            roleIcon.transform.localPosition = new Vector3(Mathf.Floor(-PixelFont.MeasureWidth(role.Text) / 2f - 2), 6, 0);
             skill.Set(SkillText.Line(id, 1, SkillBranch.None), Palette.Text);
             var stats = new[] { data.Damage, data.Range, data.Defense, data.Difficulty };
             for (var row = 0; row < 4; row++) for (var col = 0; col < 5; col++)

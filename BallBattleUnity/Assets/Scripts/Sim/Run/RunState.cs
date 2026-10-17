@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BallBattle.Sim.Boss;
 using BallBattle.Sim.Traits;
 using BallBattle.Sim.Weapons;
@@ -50,6 +51,9 @@ namespace BallBattle.Sim.Run
         public bool FightLocked;
         public bool Over;
         public bool Won;
+        /// <summary>TUT-2: first run has a stable starter offer and a gentle first fight; saved so Continue replays it exactly.</summary>
+        public bool TutorialRun;
+        public const uint TutorialSeed = 0x7A171A1u;
 
         public uint Seed => unchecked((uint)SeedBits);
         /// <summary>A boss fight now: a boss slot, or the extra fight of a forced (debug) boss.</summary>
@@ -96,31 +100,22 @@ namespace BallBattle.Sim.Run
             }
         }
 
-        /// <summary>Up to 3 distinct unlocked weapons to start a run with.</summary>
-        public static List<string> StartChoices(uint seed, IReadOnlyList<string> unlockedWeapons)
+        /// <summary>Every unlocked ball is selectable. The seed changes fights and offers, never this list.</summary>
+        public static List<string> StartChoices(uint seed, IReadOnlyList<string> unlockedWeapons, bool tutorial = false)
         {
-            var pool = new List<string>(unlockedWeapons);
-            var rng = new SimRandom(RunTuning.Derive(seed, 0, 0));
-            var choices = new List<string>();
-            while (choices.Count < RunTuning.StartWeaponChoices && pool.Count > 0)
-            {
-                var i = (int)(rng.NextUInt() % (uint)pool.Count);
-                choices.Add(pool[i]);
-                pool.RemoveAt(i);
-            }
-            return choices;
+            return unlockedWeapons == null ? new List<string>() : unlockedWeapons.Distinct().ToList();
         }
 
         [NonSerialized] public Skills.SkillSpec? SkillOverride;
         public int EffectiveSkillLevel => SkillOverride?.Level ?? Build.SkillLevel;
         public Skills.SkillBranch EffectiveSkillBranch => SkillOverride?.Branch ?? Build.SkillBranch;
 
-        public static RunState Start(uint seed, string weaponId, ProgressData progress, Skills.SkillSpec? forceSkill = null)
+        public static RunState Start(uint seed, string weaponId, ProgressData progress, Skills.SkillSpec? forceSkill = null, bool tutorial = false)
         {
             var weapons = UnlockRules.Weapons(progress);
-            if (!StartChoices(seed, weapons).Contains(weaponId))
+            if (!StartChoices(seed, weapons, tutorial).Contains(weaponId))
                 throw new ArgumentException($"'{weaponId}' is not one of this run's start choices", nameof(weaponId));
-            var run = new RunState { SeedBits = unchecked((int)seed), Weapons = weapons, Traits = UnlockRules.Traits(progress) };
+            var run = new RunState { SeedBits = unchecked((int)seed), Weapons = weapons, Traits = UnlockRules.Traits(progress), TutorialRun = tutorial };
             run.BossIds = BossSelection.Choose(seed, progress ?? new ProgressData());
             foreach (var w in WeaponRegistry.All) run.EnemyWeapons.Add(w.Id);
             foreach (var t in TraitRegistry.All) run.EnemyTraits.Add(t.Id);
@@ -148,6 +143,13 @@ namespace BallBattle.Sim.Run
             get
             {
                 var e = EnemyGenerator.Generate(Seed, FightIndex, EnemyWeapons, EnemyTraits, CurrentBossId);
+                if (TutorialRun && FightIndex == 0 && CurrentBossId == null)
+                {
+                    e.WeaponId = "pike";
+                    e.MaxHp = e.Hp = 60;
+                    e.DamagePct = -Fix.Ratio(1, 4);
+                    e.Traits.Clear();
+                }
                 if (e.BossId == Boss.BossIds.Mimic)
                 {
                     e.WeaponId = Build.WeaponId;
@@ -239,7 +241,7 @@ namespace BallBattle.Sim.Run
         public uint FightSeed => RunTuning.Derive(Seed, 3000 + FightIndex, IsRetry ? 1 : 0);
 
         /// <summary>Arena of the current fight, picked by its seed.</summary>
-        public string ArenaId => ArenaRegistry.ForSeed(ArenaSeed);
+        public string ArenaId => TutorialRun && FightIndex == 0 ? ArenaRegistry.Classic : ArenaRegistry.ForSeed(ArenaSeed);
 
         /// <summary>
         /// Fresh match for the current fight (ball 0 = player, ball 1 = enemy) with spawn hooks applied, so the
@@ -257,7 +259,7 @@ namespace BallBattle.Sim.Run
                 player.SkillLevel = forceSkill.Value.Level; player.SkillBranch = forceSkill.Value.Branch;
                 if (enemy.Boss is Boss.MimicRule) { enemy.SkillLevel = player.SkillLevel; enemy.SkillBranch = player.SkillBranch; }
             }
-            var m = new MatchSim(config ?? ArenaRegistry.Create(ArenaId), FightSeed, new[] { player, enemy });
+            var m = new MatchSim(config ?? ArenaRegistry.Create(ArenaId), FightSeed, new[] { player, enemy }, true);
             m.ApplySpawnHooks();
             return m;
         }

@@ -38,6 +38,7 @@ namespace BallBattle.View
         Transform fxRoot;
         SpriteRenderer ring;
         PixelText prompt;
+        Transform lessonArrow;
         PixelParticles particles;
         DamagePopups popups;
         float clock;
@@ -56,6 +57,7 @@ namespace BallBattle.View
         public int PerfectsShown { get; private set; }
         public int MissesShown { get; private set; }
         public int TapsSent { get; private set; }
+        public bool TutorialLesson { get; set; }
 
         public static TapView Create(Transform parent, ArenaView arena)
         {
@@ -70,6 +72,10 @@ namespace BallBattle.View
             v.button.Pressed += v.OnPressed;
             v.prompt = PixelText.Create(go.transform, "TapPrompt", art.Font, new Vector2(0, PromptY), PixelText.Align.Center, 1, RunUi.Order - 5);
             v.prompt.Set(PromptText, ReadyColor);
+            v.lessonArrow = HintPointer.CreateArrow(go.transform, art, RunUi.Order - 4);
+            v.lessonArrow.localPosition = new Vector3(0, PromptY + 22, 0);
+            v.lessonArrow.localScale = new Vector3(1, -1, 1);
+            v.lessonArrow.gameObject.SetActive(false);
 
             // Ring, sparks and words live in the arena's space (sim coordinates), like FxView's.
             v.fxRoot = new GameObject("TapFx").transform;
@@ -126,9 +132,13 @@ namespace BallBattle.View
             ring.enabled = me != null && me.Alive && view != null && sim.Outcome == MatchOutcome.Ongoing;
             if (ring.enabled) RenderRing(tap, view);
 
-            var showPrompt = active && tap.Taps == 0 && sim.ActiveTick < PromptTicks;
+            var lessonPrompt = TutorialLesson && active && tap.Taps == 0 && tap.Ready;
+            var showPrompt = lessonPrompt || active && tap.Taps == 0 && sim.ActiveTick < PromptTicks;
             if (prompt.gameObject.activeSelf != showPrompt) prompt.gameObject.SetActive(showPrompt);
-            if (showPrompt) prompt.Set(PromptText, Mathf.Repeat(clock, 0.8f) < 0.55f ? ReadyColor : Palette.TextDim);
+            if (showPrompt) prompt.Set(lessonPrompt ? "TAP NOW TO STRIKE!" : PromptText,
+                Mathf.Repeat(clock, 0.8f) < 0.55f ? ReadyColor : Palette.TextDim);
+            lessonArrow.gameObject.SetActive(lessonPrompt);
+            if (lessonPrompt) lessonArrow.localPosition = new Vector3(0, PromptY + 22 + Mathf.Round(Mathf.Sin(clock * 8f) * 2f), 0);
 
             popups.SetBounds(sim != null ? sim.Arena : (ArenaRect?)null);
             particles.Tick(dt);
@@ -138,8 +148,9 @@ namespace BallBattle.View
         void RenderRing(BallBattle.Sim.Tap.TapState tap, BallView view)
         {
             var radius = view.VisibleRadius + RingGap;
-            var ready = tap.Ready;
-            var fraction = ready ? 1f : Mathf.Clamp01(tap.ReadyFraction.ToFloat());
+            var wind = PlayerWindUp(tap);
+            var ready = tap.Ready && wind == null;
+            var fraction = wind != null ? Mathf.Clamp01(wind.Charge.ToFloat()) : ready ? 1f : Mathf.Clamp01(tap.ReadyFraction.ToFloat());
             var k = ready ? RingSegments : Mathf.Min(RingSegments - 1, Mathf.FloorToInt(fraction * RingSegments));
             ring.sprite = Arc(radius, k);
             ring.transform.localPosition = view.transform.localPosition;
@@ -149,7 +160,21 @@ namespace BallBattle.View
                 c.a = (byte)(Mathf.Lerp(150f, 255f, 0.5f + 0.5f * Mathf.Sin(clock * 10f)));
                 ring.color = c;
             }
+            else if (wind != null)
+            {
+                var c = Color32.Lerp(new Color32(255, 214, 70, 255), new Color32(240, 60, 40, 255), fraction);
+                c.a = (byte)Mathf.Lerp(170f, 255f, 0.5f + 0.5f * Mathf.Sin(clock * 16f));
+                ring.color = c;
+            }
             else ring.color = tap.LastMissed ? ChargingAfterMiss : Charging;
+        }
+
+        /// <summary>BB-19b WRECKER wind-up: the ring shows the charge instead of the cooldown.</summary>
+        BallBattle.Sim.Skills.WreckerCharge PlayerWindUp(BallBattle.Sim.Tap.TapState tap)
+        {
+            var sim = arena != null ? arena.Sim : null;
+            var act = sim != null && sim.Balls.Count > 0 && sim.Balls[0].Skill != null ? sim.Balls[0].Skill.Act as BallBattle.Sim.Skills.WreckerCharge : null;
+            return act != null && act.Charging ? act : null;
         }
 
         /// <summary>Press on the arena: ask for the strike (the Sim ignores it while the cooldown runs).</summary>

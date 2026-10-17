@@ -17,7 +17,7 @@ namespace BallBattle.Sim.Weapons
         public override string StatLabel => "DMG";
         public override Fix StatValue => CurrentDamage;
 
-        char Fin => Self?.Tree != null ? Self.Tree.Finale : '-';   // BB-12g FINALE ('-' = none / no tree)
+        char Fin => '-';   // BB-19c: the FINALE lives in the active skill now (Skills/ActiveSkill.cs)
         int Growth => Self?.Tree != null ? Self.Tree.Growth : 0;
         bool reburnReady;
         int reburnAt;

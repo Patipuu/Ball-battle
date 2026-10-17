@@ -18,6 +18,11 @@ namespace BallBattle.Sim
         public StatBonus Bonus;
         /// <summary>0..1: fraction of hit knockback ignored (Heavy). 0 = normal.</summary>
         public Fix KnockbackResist;
+        /// <summary>BB-19b: ticks the ball is held in place (hook, coil, wind-up, parry stun).</summary>
+        public int StunTicks;
+        /// <summary>BB-19b: ticks the ball moves at SlowFactor of its speed (spore cloud, coil).</summary>
+        public int SlowTicks;
+        public Fix SlowFactor = Fix.One;
 
         public FixVec2 Pos;
         public FixVec2 Vel;
@@ -78,6 +83,7 @@ namespace BallBattle.Sim
             h = SimHash.Mix(h, Skill != null);
             if (Skill != null) h = Skill.HashInto(h);
             if (Tap != null && Tap.Touched) h = Tap.HashInto(h);   // untouched = same hash as before TAP-1 (goldens)
+            if (StunTicks > 0 || SlowTicks > 0) h = SimHash.Mix(SimHash.Mix(SimHash.Mix(h, StunTicks), SlowTicks), SlowFactor);   // BB-19b: untouched = same hash as before
             if (Tree != null) h = Tree.HashInto(h);   // BB-12g: no tree = same hash as before
             return Weapon.HashInto(h);
         }

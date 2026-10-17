@@ -23,6 +23,8 @@ namespace BallBattle.View
         MatchSim match;
         float timer;
         uint pendingSeed;
+        bool pendingTutorial;
+        public bool PendingTutorial => pendingTutorial;
 
         public State Current { get; private set; } = State.Closed;
         public RunState Run { get; private set; }
@@ -104,17 +106,37 @@ namespace BallBattle.View
         public void Close()
         {
             if (Current == State.Closed) return;
+            // The locked fight is intentionally replayed from its saved start on Continue.
+            if (save != null) store.Save(save);
             Current = State.Closed;
             match = null;
             Closed?.Invoke();
         }
 
+        /// <summary>End the saved run immediately from the hub and keep all earned meta progress.</summary>
+        public void AbandonSavedRun()
+        {
+            save = store.Load() ?? new SaveData();
+            if (!save.HasRun) return;
+            UnlockRules.RecordAbandoned(save.Progress);
+            LastChest = AwardAbandoned(save.Progress, save.Run);
+            LastChestAbandoned = true;
+            chestToShow = LastChest != null;
+            save.HasRun = false;
+            save.Run = new RunSave();
+            Run = null;
+            store.Save(save);
+            Changed?.Invoke();
+        }
+
         /// <summary>Starts choosing a new run. A saved run is abandoned (counted as played) once a weapon is chosen.</summary>
-        public void NewRun(uint seed)
+        public void NewRun(uint seed, bool tutorial = false)
         {
             if (Current != State.Title && Current != State.Summary) return;
             Run = null;
-            StartChoices = RunState.StartChoices(seed, UnlockRules.Weapons(save.Progress));
+            pendingTutorial = tutorial && save.Progress.RunsPlayed == 0 && !save.HasRun;
+            if (pendingTutorial) seed = RunState.TutorialSeed;
+            StartChoices = RunState.StartChoices(seed, UnlockRules.Weapons(save.Progress), pendingTutorial);
             pendingSeed = seed;
             Go(State.PickWeapon);
         }
@@ -129,7 +151,8 @@ namespace BallBattle.View
                 LastChestAbandoned = true;
                 chestToShow = LastChest != null;
             }
-            Run = RunState.Start(pendingSeed, weaponId, save.Progress, ForceSkill);
+            Run = RunState.Start(pendingSeed, weaponId, save.Progress, ForceSkill, pendingTutorial);
+            if (pendingTutorial) save.Progress.Onboarding.AdvanceTo(1);
             BossSelection.Remember(save.Progress, Run);   // BB-04: before any forced boss, so -bbForceBoss never enters the history
             if (ForceBossId != null) Run.ApplyForcedBoss(ForceBossId);
             UnityEngine.Debug.Log(RunStartLog(pendingSeed, weaponId, ForceTraitId) + $", bosses {string.Join("/", Run.BossIds)}" + (ForceBossId != null ? $", -bbForceBoss {ForceBossId}" : ""));
@@ -263,6 +286,7 @@ namespace BallBattle.View
             var before = FightReport.Snapshot.Of(Run);
             Run.ApplyResult(finished);
             UnlockRules.Record(save.Progress, Run);
+            if (Run.Over) save.Progress.Onboarding.AdvanceTo(2);
             if (Run.Over)
             {
                 LastChest = BallBattle.Sim.Meta.MetaRules.AwardRun(save.Progress, Run);   // BB-12a: saved by Persist below
@@ -307,6 +331,21 @@ namespace BallBattle.View
 
         /// <summary>UI-TUT1: has the first-run tip <paramref name="id"/> been shown (and closed) already.</summary>
         public bool TipSeen(string id) => save?.Progress?.SeenTips != null && save.Progress.SeenTips.Contains(id);
+
+        public bool HintSeen(string id) => save?.Progress?.Onboarding?.HasSeen(id) == true;
+        public void MarkHintSeen(string id)
+        {
+            if (save?.Progress?.Onboarding == null || save.Progress.Onboarding.HasSeen(id)) return;
+            save.Progress.Onboarding.MarkSeen(id);
+            store.Save(save);
+        }
+        public void MarkStrikeLearned()
+        {
+            if (save?.Progress?.Onboarding == null || save.Progress.Onboarding.StrikeLearned) return;
+            save.Progress.Onboarding.StrikeLearned = true;
+            save.Progress.Onboarding.MarkSeen("strike");
+            store.Save(save);
+        }
 
         /// <summary>UI-TUT1: remember tips as shown, saved at once (the run part of the save is left as last persisted).</summary>
         public void MarkTipsSeen(params string[] ids)

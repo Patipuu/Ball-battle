@@ -30,6 +30,7 @@ namespace BallBattle.View
         /// <summary>UI-UX2: CODEX matches VERSUS (same size and label scale).</summary>
         public static readonly Rect CodexArea = new Rect(-71, -178, 142, 26);
         public static readonly Rect HowToArea = new Rect(-71, -222, 142, 26);
+        public static readonly Rect NewRunHubArea = new Rect(-80, 0, 160, 26);
         /// <summary>Title letters take the ball colours in turn (space skipped).</summary>
         public static readonly string[] TitleColors = { "blade", "volley", "fang", "pike", "venom", "aegis", "rig", "blade", "volley", "fang" };
         public static readonly Rect VersusBackArea = new Rect(-60, -214, 120, 32);
@@ -39,6 +40,7 @@ namespace BallBattle.View
         public event Action RunRequested;
         /// <summary>CONTINUE RUN: open Run mode and resume the saved run.</summary>
         public event Action ContinueRequested;
+        public event Action NewRunRequested;
         /// <summary>BB-12b: the OPEN CHEST button (welcome chests waiting in ProgressData.PendingChests).</summary>
         public event Action ChestRequested;
         /// <summary>BB-12b: top-left of the hub, shown only while chests wait.</summary>
@@ -48,12 +50,17 @@ namespace BallBattle.View
         public PixelButton BallsButton { get; private set; }
         public BallsView Balls => balls;
         public bool BallsBadgeShown => ballsBadge != null && ballsBadge.Text.Length > 0;
+        /// <summary>UI-FIX2: the upgrade badge is a small pill at the right end of the BALLS button (inside it: the NEXT GOAL box
+        /// ends 4 px above), clear of its label
+        /// (the old in-button "UP!" became "LÊN CẤP!" in Vietnamese and covered "CÁC BÓNG").</summary>
+        public static readonly Rect BallsBadgeArea = new Rect(BallsArea.xMax - 18, BallsArea.yMin + 6, 14, 14);
         /// <summary>Set by GameController: BALLS reads and saves progress through it.</summary>
         public ISaveStore Store { get; set; }
         /// <summary>BALLS closed (GameController refreshes the hub: gold, badge).</summary>
         public event Action BallsClosed;
         BallsView balls;
         PixelText ballsBadge;
+        SpriteRenderer ballsBadgePill;
 
         readonly string[] selected = new string[2];
         PixelButton[][] tiles;
@@ -64,6 +71,14 @@ namespace BallBattle.View
         int arenaIndex;
         Transform hub, versusPage;
         PixelButton runButton;
+        PixelButton newRunButton;
+        ConfirmDialog newRunDialog;
+        PixelButton codexButton;
+        PixelText versusNew, codexNew;
+        Transform runHand;
+        int menuStage;
+        bool hintsOff;
+        float hubShownAt;
         PixelText runLabel, continueLabel, continueLine;
         NextGoalBox goal;
         RunState savedRun;
@@ -111,10 +126,19 @@ namespace BallBattle.View
             hub = Page("Hub");
             versusPage = Page("VersusPage");
             BuildHub(art);
+            newRunDialog = ConfirmDialog.Create(hub, art, Order + 20, "ConfirmNewRunFromHub");
+            newRunDialog.Closed += () => { SetHubControlsOutsideDialog(true); PixelButton.NoteShownAll(hub); };
             BuildVersus(art);
             settings = SettingsView.Create(transform, art, Order);
             settings.BackRequested += ShowHub;
             settings.LanguageChanged += language => LanguageChanged?.Invoke(language);
+            settings.HintsChanged += off =>
+            {
+                var data = Store?.Load();
+                if (data?.Progress?.Onboarding == null) return;
+                data.Progress.Onboarding.HintsOff = off;
+                Store.Save(data);
+            };
             BuildNotice(art);
             codex = SkillCodexView.Create(transform, art);
             codex.Closed += ShowHub;
@@ -144,8 +168,14 @@ namespace BallBattle.View
 
             runButton = PixelButton.Create(hub, "Run", art, RunArea, null, 1, Palette.WallWarning, Palette.WallWarning, Palette.Background, Order + 2);
             runButton.Clicked += PressRun;
+            newRunButton = PixelButton.Create(hub, "NewRun", art, NewRunHubArea, "NEW RUN", 1,
+                Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
+            newRunButton.Clicked += PressNewRun;
             runShine = PixelRect.Create(runButton.transform, "Shine", art.Pixel, new Color32(255, 244, 200, 150), runButton.IconOrder);
             runShine.enabled = false;
+            runHand = HintPointer.CreateArrow(hub, art, Order + 4);
+            runHand.localPosition = new Vector3(0, 19, 0);
+            runHand.gameObject.SetActive(false);
             var o = runButton.IconOrder + 1;
             runLabel = PixelText.Create(runButton.transform, "RunLabel", art.Font, new Vector2(0, 36), PixelText.Align.Center, 3, o);           // cell 36..75
             continueLabel = PixelText.Create(runButton.transform, "ContinueLabel", art.Font, new Vector2(0, 52), PixelText.Align.Center, 2, o); // cell 52..78
@@ -155,13 +185,18 @@ namespace BallBattle.View
 
             BallsButton = PixelButton.Create(hub, "BallsButton", art, BallsArea, "BALLS", 2, Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
             BallsButton.Clicked += ShowBalls;
-            ballsBadge = PixelText.Create(BallsButton.transform, "Badge", art.Font, new Vector2(BallsArea.xMax - 6, BallsArea.yMin + 7), PixelText.Align.Right, 1, BallsButton.IconOrder + 1);
+            ballsBadgePill = PixelRect.Create(BallsButton.transform, "BadgePill", art.Pixel, BallsView.UpColor, BallsButton.IconOrder + 1);
+            PixelRect.Set(ballsBadgePill, BallsBadgeArea.xMin, BallsBadgeArea.yMin, BallsBadgeArea.xMax, BallsBadgeArea.yMax);
+            ballsBadgePill.enabled = false;
+            ballsBadge = PixelText.Create(BallsButton.transform, "Badge", art.Font, new Vector2(BallsBadgeArea.center.x, BallsBadgeArea.yMin + 1), PixelText.Align.Center, 1, BallsButton.IconOrder + 2);
             var vs = PixelButton.Create(hub, "Versus", art, VersusArea, RunStrings.Versus, 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             vs.Clicked += ShowVersus;
             VersusButton = vs;
-            var codexButton = PixelButton.Create(hub, "CodexButton", art, CodexArea, "CODEX", 2,
+            codexButton = PixelButton.Create(hub, "CodexButton", art, CodexArea, "CODEX", 2,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
-            codexButton.Clicked += () => { hub.gameObject.SetActive(false); codex.Show(); };
+            codexButton.Clicked += () => { MarkMenuHint("codex"); hub.gameObject.SetActive(false); codex.Show(); };
+            versusNew = PixelText.Create(hub, "VersusNew", art.Font, new Vector2(94, VersusArea.yMin + 6), PixelText.Align.Center, 1, Order + 4);
+            codexNew = PixelText.Create(hub, "CodexNew", art.Font, new Vector2(94, CodexArea.yMin + 6), PixelText.Align.Center, 1, Order + 4);
             var howButton = PixelButton.Create(hub, "HowToButton", art, HowToArea, "HOW TO PLAY", 2,
                 Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 2);
             howButton.Clicked += () => { hub.gameObject.SetActive(false); howTo.Show(); };
@@ -201,6 +236,14 @@ namespace BallBattle.View
                 var x = Mathf.Round(Mathf.Lerp(RunArea.xMin + 1, RunArea.xMax - 4, phase / ShineSweep));
                 PixelRect.Set(runShine, x, RunArea.yMin + 1, x + 2, RunArea.yMax - 1);
             }
+            if (menuStage == 0)
+            {
+                runHand.gameObject.SetActive(!hintsOff && t - hubShownAt > 3f);
+                runHand.localPosition = new Vector3(0, 19 + Mathf.Round(Mathf.Sin(t * 5f) * 2f), 0);
+                runHand.localScale = Vector3.one;
+                runButton.transform.localScale = Vector3.one * (1f + 0.018f * (0.5f + 0.5f * Mathf.Sin(t * 3f)));
+            }
+            else { runHand.gameObject.SetActive(false); runButton.transform.localScale = Vector3.one; }
         }
         public const float ShinePeriod = 3.2f, ShineSweep = 0.7f;
 
@@ -328,7 +371,19 @@ namespace BallBattle.View
         /// </summary>
         public void SetRunInfo(ProgressData progress, RunState resumable)
         {
+            if (progress == null) progress = new ProgressData();
+            menuStage = progress.RunsPlayed > 0 ? 2 : progress.Onboarding?.MenuStage ?? (resumable != null ? 1 : 0);
+            hintsOff = progress.Onboarding?.HintsOff == true;
+            settings.SetHintsOff(progress.Onboarding?.HintsOff == true);
+            if (resumable != null && menuStage < 1) menuStage = 1;
+            goal.gameObject.SetActive(menuStage >= 1);
+            BallsButton.gameObject.SetActive(menuStage >= 1);
+            VersusButton.gameObject.SetActive(menuStage >= 2);
+            codexButton.gameObject.SetActive(menuStage >= 2);
+            versusNew.Set(menuStage >= 2 && progress.Onboarding?.HasSeen("versus") != true ? "NEW" : "", Palette.WallWarning);
+            codexNew.Set(menuStage >= 2 && progress.Onboarding?.HasSeen("codex") != true ? "NEW" : "", Palette.WallWarning);
             savedRun = resumable;
+            newRunButton.gameObject.SetActive(savedRun != null);
             if (savedRun != null)
             {
                 runLabel.Set("", Palette.Background);
@@ -343,9 +398,11 @@ namespace BallBattle.View
             }
             goal.Show(progress, savedRun);   // BB-VIEW3: the saved run's bosses name the boss goals
             var waiting = progress?.PendingChests?.Count ?? 0;   // BB-12b: welcome chests
-            ChestButton.gameObject.SetActive(waiting > 0);
+            ChestButton.gameObject.SetActive(waiting > 0 && menuStage >= 1);
             if (waiting > 0) ChestButton.SetText(ChestLabel(waiting), Palette.WallWarning);
-            ballsBadge.Set(AnyUpgrade(progress) ? "UP!" : "", BallsView.UpColor);   // BB-12c
+            var up = AnyUpgrade(progress);   // BB-12c, UI-FIX2: a pill with "!" (no words to translate or overflow)
+            ballsBadge.Set(up ? "!" : "", Palette.Background);
+            ballsBadgePill.enabled = up;
         }
 
         /// <summary>BB-12c: some unlocked ball can level up now.</summary>
@@ -360,6 +417,7 @@ namespace BallBattle.View
         /// <summary>BB-12c: open the BALLS page over the hub.</summary>
         public void ShowBalls()
         {
+            if (menuStage < 1) return;
             hub.gameObject.SetActive(false);
             balls.Show(Store);
         }
@@ -369,6 +427,7 @@ namespace BallBattle.View
         /// <summary>Showing the menu always starts on the hub page.</summary>
         public void Show(bool visible)
         {
+            if (!visible) newRunDialog?.Close();
             var appearing = visible && !gameObject.activeSelf;
             gameObject.SetActive(visible);
             if (appearing) ShowHub();
@@ -377,6 +436,7 @@ namespace BallBattle.View
 
         public void ShowHub()
         {
+            newRunDialog?.Close();
             codex?.Hide();
             howTo?.Hide();
             if (balls != null && balls.IsOpen) balls.gameObject.SetActive(false);
@@ -385,11 +445,15 @@ namespace BallBattle.View
             SetHubInput(true);
             versusPage.gameObject.SetActive(false);
             hub.gameObject.SetActive(true);
+            hubShownAt = Time.unscaledTime;
+            var info = Store?.Load();
+            if (info != null) SetRunInfo(info.Progress, savedRun);
             PixelButton.NoteShownAll(hub);
         }
 
         public void ShowVersus()
         {
+            MarkMenuHint("versus");
             howTo?.Hide();
             CloseSettings();
             noticePage.gameObject.SetActive(false);
@@ -458,6 +522,12 @@ namespace BallBattle.View
             foreach (var b in hub.GetComponentsInChildren<PixelButton>(true)) b.enabled = on;
         }
 
+        void SetHubControlsOutsideDialog(bool on)
+        {
+            foreach (var b in hub.GetComponentsInChildren<PixelButton>(true))
+                if (!b.transform.IsChildOf(newRunDialog.Root)) b.enabled = on;
+        }
+
         /// <summary>True when the hub page is drawn (tests).</summary>
         public bool HubVisible => hub.gameObject.activeInHierarchy;
         /// <summary>The notice page (tests).</summary>
@@ -488,8 +558,21 @@ namespace BallBattle.View
         public PixelButton StartButton { get; private set; }
         public PixelButton VersusBackButton { get; private set; }
         public PixelButton RunButton => runButton;
+        public PixelButton NewRunButton => newRunButton;
+        public ConfirmDialog NewRunDialog => newRunDialog;
         public PixelButton VersusButton { get; private set; }
         public NextGoalBox Goal => goal;
+        public int MenuStage => menuStage;
+        public PixelButton CodexButton => codexButton;
+
+        void MarkMenuHint(string id)
+        {
+            var data = Store?.Load();
+            if (data?.Progress?.Onboarding == null || data.Progress.Onboarding.HasSeen(id)) return;
+            data.Progress.Onboarding.MarkSeen(id);
+            Store.Save(data);
+            SetRunInfo(data.Progress, savedRun);
+        }
 
         /// <summary>Text on the main button: "RUN", or "CONTINUE RUN|FIGHT 3/8  RETRY 1" (tests).</summary>
         public string RunButtonText => savedRun != null ? continueLabel.Text + "|" + continueLine.Text : runLabel.Text;
@@ -512,8 +595,16 @@ namespace BallBattle.View
         /// <summary>The main button: CONTINUE RUN when a run is saved, else RUN.</summary>
         public void PressRun()
         {
+            if (newRunDialog.IsOpen) return;
             if (savedRun != null) ContinueRequested?.Invoke();
             else RunRequested?.Invoke();
+        }
+        public void PressNewRun()
+        {
+            if (newRunDialog.IsOpen || savedRun == null) return;
+            newRunDialog.Open("END THIS RUN?", "PROGRESS SO FAR IS KEPT", NewRunHubArea,
+                () => NewRunRequested?.Invoke());
+            SetHubControlsOutsideDialog(false);
         }
     }
 }

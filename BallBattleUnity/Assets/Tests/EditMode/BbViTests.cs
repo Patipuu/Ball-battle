@@ -107,6 +107,31 @@ namespace BallBattle.Tests
         }
 
         [Test]
+        public void EveryPickPanelShowsVietnameseRolesAndBranchesWithinThePanel()
+        {
+            var art = AssetDatabase.LoadAssetAtPath<ArtLibrary>(PlaceholderArtGenerator.LibraryPath);
+            var root = new GameObject("ViPickAudit");
+            try
+            {
+                var pick = PickWeaponView.Create(root.transform, art);
+                foreach (var data in BallBattle.Sim.Skills.SkillDefinition.All)
+                {
+                    pick.Show(new[] { data.WeaponId });
+                    var lines = pick.DetailText.Split('|');
+                    Assert.That(lines[0], Does.Contain(UiVietnamese.TranslateRole(data.Role)), data.WeaponId);
+                    Assert.That(lines[5], Does.StartWith("CẤP 2A " + UiVietnamese.Translate(data.SummaryA)), data.WeaponId);
+                    Assert.That(lines[6], Does.StartWith("CẤP 2B " + UiVietnamese.Translate(data.SummaryB)), data.WeaponId);
+                    for (var i = 0; i < lines.Length; i++)
+                        Assert.That(PixelFont.MeasureWidth(lines[i]), Is.LessThanOrEqualTo(i == 4 ? 225 : 242),
+                            $"{data.WeaponId} pick row {i}: {lines[i]}");
+                }
+                Assert.That(UiVietnamese.Translate("HUNTER"), Is.EqualTo("HUNTER"));
+                Assert.That(UiVietnamese.TranslateRole("HUNTER"), Is.EqualTo("THỢ SĂN"));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+
+        [Test]
         public void SettingsLanguageButtonsRequestARealSwitch()
         {
             var art = AssetDatabase.LoadAssetAtPath<ArtLibrary>(PlaceholderArtGenerator.LibraryPath);

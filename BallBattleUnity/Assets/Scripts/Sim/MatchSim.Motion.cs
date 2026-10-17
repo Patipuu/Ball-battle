@@ -53,8 +53,10 @@ namespace BallBattle.Sim
             foreach (var b in balls)
             {
                 if (!b.Alive) continue;
+                if (b.StunTicks > 0) continue;   // BB-19b: held
                 b.Vel.Y -= FixMath.SubstepPart(Config.Gravity, index, substeps);
-                b.Pos += FixMath.SubstepPart(b.Vel, index, substeps);
+                var step = FixMath.SubstepPart(b.Vel, index, substeps);
+                b.Pos += b.SlowTicks > 0 ? step * b.SlowFactor : step;
                 if (b.Weapon.HasBlade)
                     b.WeaponAngleDeg = FixMath.Wrap(b.WeaponAngleDeg + FixMath.SubstepPart(b.SpinNow * b.SpinDir, index, substeps), 360);
             }

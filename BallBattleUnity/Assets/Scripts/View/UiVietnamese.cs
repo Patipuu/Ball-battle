@@ -18,6 +18,9 @@ namespace BallBattle.View
         static Dictionary<string, string> exact;
         static List<(Regex pattern, string translation, int specificity)> templates;
 
+        public static string TranslateRole(string source) =>
+            StringTable.Current == Lang.Vi && source == "HUNTER" ? "THỢ SĂN" : Translate(source);
+
         public static string Translate(string source)
         {
             if (StringTable.Current != Lang.Vi || string.IsNullOrEmpty(source)) return source;

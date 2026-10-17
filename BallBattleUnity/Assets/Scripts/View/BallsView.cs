@@ -30,6 +30,7 @@ namespace BallBattle.View
         ISaveStore store;
         Transform root, grid, detail;
         PixelText gold, detailName, detailLevel, detailShards, detailCost, detailPoints, detailNote, flash;
+        PixelText shardHint;
         SpriteRenderer detailBall, detailBarFill;
         readonly List<SpriteRenderer> pips = new List<SpriteRenderer>();
         PixelButton upgrade, treeButton;
@@ -81,6 +82,7 @@ namespace BallBattle.View
             v.root = go.transform;
             PixelRect.Set(PixelRect.Create(v.root, "Back", art.Pixel, Palette.Background, Order), -200, -300, 200, 300);
             v.gold = PixelText.Create(v.root, "Gold", art.Font, new Vector2(126, 210), PixelText.Align.Right, 1, Order + 6);
+            v.shardHint = PixelText.Create(v.root, "ShardHint", art.Font, new Vector2(0, 184), PixelText.Align.Center, 1, Order + 7);
             v.BuildGrid();
             v.BuildDetail();
             v.flash = PixelText.Create(v.root, "Flash", art.Font, new Vector2(0, 184), PixelText.Align.Center, 2, Order + 30);
@@ -108,7 +110,8 @@ namespace BallBattle.View
                 t.Level = PixelText.Create(t.Button.transform, "Level", art.Font, new Vector2(a.xMin + 40, a.yMax - 33), PixelText.Align.Left, 1, o + 1);
                 PixelRect.Set(PixelRect.Create(t.Button.transform, "BarBack", art.Pixel, Palette.HpBack, o), a.xMin + 6, a.yMin + 8, a.xMax - 6, a.yMin + 13);
                 t.BarFill = PixelRect.Create(t.Button.transform, "BarFill", art.Pixel, Palette.Look(e.Id).Body, o + 1);
-                t.Tail = PixelText.Create(t.Button.transform, "Tail", art.Font, new Vector2(a.xMax - 6, a.yMax - 33), PixelText.Align.Right, 1, o + 1);
+                // UI-FIX2: the state (UP! / MAX / 3/5) gets its own line under the level; on the level line "LÊN CẤP!" ran into "CẤP 10"
+                t.Tail = PixelText.Create(t.Button.transform, "Tail", art.Font, new Vector2(a.xMin + 40, a.yMax - 46), PixelText.Align.Left, 1, o + 1);
                 tiles.Add(t);
             }
             var back = PixelButton.Create(grid, "BallsBack", art, BackArea, "BACK", 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
@@ -160,6 +163,7 @@ namespace BallBattle.View
 
         public void Close()
         {
+            MarkShardHintSeen();
             gameObject.SetActive(false);
             Closed?.Invoke();
         }
@@ -169,7 +173,10 @@ namespace BallBattle.View
             detail.gameObject.SetActive(false);
             if (tree != null && tree.IsOpen) tree.gameObject.SetActive(false);
             grid.gameObject.SetActive(true);
+            flashLeft = 0f; flash.gameObject.SetActive(false);   // UI-FIX2: LEVEL UP! belongs to the detail page, not over the grid title
             DetailId = null;
+            var onboarding = Progress().Onboarding;
+            shardHint.Set(onboarding != null && !onboarding.HintsOff && !onboarding.HasSeen("shards") ? "COLLECT SHARDS TO LEVEL UP BALLS" : "", Palette.WallWarning);
             RefreshGrid(Progress());
             PixelButton.NoteShownAll(grid);
         }
@@ -223,11 +230,21 @@ namespace BallBattle.View
 
         public void OpenDetail(string id)
         {
+            MarkShardHintSeen();
+            shardHint.Set("", Palette.WallWarning);
             DetailId = id;
             grid.gameObject.SetActive(false);
             detail.gameObject.SetActive(true);
             RefreshDetail(Progress());
             PixelButton.NoteShownAll(detail);
+        }
+
+        void MarkShardHintSeen()
+        {
+            var data = store?.Load();
+            if (data?.Progress?.Onboarding == null || data.Progress.Onboarding.HasSeen("shards")) return;
+            data.Progress.Onboarding.MarkSeen("shards");
+            store.Save(data);
         }
 
         void RefreshDetail(ProgressData p)

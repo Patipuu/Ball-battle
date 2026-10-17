@@ -31,6 +31,13 @@ namespace BallBattle.SimTests
         /// from its seed (both bosses of each slot appear across seeds). A fresh save would always meet SHELL KING + MIMIC (first-run
         /// rule). Unlocks depend only on achievements, so the bot's weapons and traits are the same as before.
         /// </summary>
+        /// <summary>BB-19: the bot plays like a player who taps the skill the moment it is ready.</summary>
+        public static void TapIfReady(MatchSim m)
+        {
+            var tap = m.Balls.Count > 0 ? m.Balls[0].Tap : null;
+            if (tap != null && tap.Ready) m.Tap(0);
+        }
+
         public static ProgressData BotProgress() => new ProgressData { RunsPlayed = 1 };
 
         public static Result Play(uint seed, Policy policy) => Play(seed, policy, null);
@@ -60,7 +67,7 @@ namespace BallBattle.SimTests
                 else PickGreedy(run);
 
                 var m = run.CreateMatch();
-                while (m.Outcome == MatchOutcome.Ongoing) { m.Step(); onStep?.Invoke(run, m); }
+                while (m.Outcome == MatchOutcome.Ongoing) { TapIfReady(m); m.Step(); onStep?.Invoke(run, m); }
                 onFight?.Invoke(run, m);
                 run.ApplyResult(m);
             }
@@ -131,7 +138,7 @@ namespace BallBattle.SimTests
                 var m = new MatchSim(ArenaRegistry.Create(run.ArenaId), seed, new[] { build.ToLoadout(), run.Enemy.ToLoadout() });
                 m.ApplySpawnHooks();
                 var start = m.Balls[0].Hp;
-                while (m.Outcome == MatchOutcome.Ongoing) m.Step();
+                while (m.Outcome == MatchOutcome.Ongoing) { TapIfReady(m); m.Step(); }
                 if (m.WinnerIndex == 0) wins++;
                 var end = m.Balls[0].Hp > Fix.Zero ? m.Balls[0].Hp : Fix.Zero;
                 taken += (start - end).Raw;

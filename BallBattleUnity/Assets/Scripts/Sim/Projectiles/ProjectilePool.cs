@@ -21,6 +21,8 @@ namespace BallBattle.Sim
         public Fix GravityScale;
         /// <summary>Bit i set = already hit ball i (piercing shots hit each ball once).</summary>
         public int HitMask;
+        /// <summary>BB-19c finale mark on a SPARKLER bolt: 1 splits into sparks on its last bounce, 2 re-arms after each bounce and gains one per hit.</summary>
+        public byte Tag;
 
         public ulong HashInto(ulong h)
         {
@@ -36,7 +38,8 @@ namespace BallBattle.Sim
             h = SimHash.Mix(h, HitsLeft);
             h = SimHash.Mix(h, TicksLeft);
             h = SimHash.Mix(h, GravityScale);
-            return SimHash.Mix(h, HitMask);
+            h = SimHash.Mix(h, HitMask);
+            return Tag != 0 ? SimHash.Mix(h, (int)Tag) : h;
         }
     }
 
@@ -51,6 +54,7 @@ namespace BallBattle.Sim
         /// <summary>&lt;= 0 = ProjectilePool.DefaultLifetimeTicks.</summary>
         public int LifetimeTicks;
         public Fix GravityScale;
+        public byte Tag;
     }
 
     /// <summary>
@@ -89,7 +93,8 @@ namespace BallBattle.Sim
                     BouncesLeft = spec.Bounces,
                     HitsLeft = spec.Hits > 0 ? spec.Hits : 1,
                     TicksLeft = spec.LifetimeTicks > 0 ? spec.LifetimeTicks : DefaultLifetimeTicks,
-                    GravityScale = spec.GravityScale
+                    GravityScale = spec.GravityScale,
+                    Tag = spec.Tag
                 };
                 ActiveCount++;
                 return i;

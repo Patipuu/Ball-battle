@@ -123,11 +123,15 @@ namespace BallBattle.Tests
         public void MenuHasBallsWithAnUpBadgeAndNothingOverlaps()
         {
             var m = MenuView.Create(root.transform, art);
-            m.Store = StoreWith(p => { MetaRules.Ball(p, "blade").Shards = 5; p.Gold = 10; });
+            m.Store = StoreWith(p => { p.RunsPlayed = 1; MetaRules.Ball(p, "blade").Shards = 5; p.Gold = 10; });
             m.SetRunInfo(new ProgressData(), null);
             Assert.That(m.BallsBadgeShown, Is.False);
             m.SetRunInfo(m.Store.Load().Progress, null);
             Assert.That(m.BallsBadgeShown, Is.True);
+            // UI-FIX2: the badge pill sits on the corner, clear of the centred label in both languages
+            var label = 2 * Mathf.Max(PixelFontData.MeasureWidth("BALLS"), PixelFontData.MeasureWidth("KHO BÓNG"));
+            Assert.That(MenuView.BallsBadgeArea.xMin, Is.GreaterThan(MenuView.BallsArea.center.x + label / 2f + 2f));
+            Assert.That(MenuView.BallsBadgeArea.xMax <= MenuView.BallsArea.xMax && MenuView.BallsBadgeArea.yMax <= MenuView.BallsArea.yMax, Is.True);
             var areas = new[] { MenuView.RunArea, MenuView.BallsArea, MenuView.VersusArea, MenuView.CodexArea, MenuView.HowToArea, MenuView.ChestArea };
             for (var i = 0; i < areas.Length; i++)
             {
@@ -153,6 +157,8 @@ namespace BallBattle.Tests
             var dir = Environment.GetEnvironmentVariable("BB_BALLS1_OUT");
             if (string.IsNullOrEmpty(dir)) Assert.Ignore("BB_BALLS1_OUT not set");
             Directory.CreateDirectory(dir);
+            var previousLanguage = StringTable.Current;
+            StringTable.Current = Lang.Vi;
             var camGo = new GameObject("Cam");
             try
             {
@@ -194,7 +200,7 @@ namespace BallBattle.Tests
                 m.Balls.OpenDetail("fang");
                 Shoot("5-detail-need-shards");
             }
-            finally { Object.DestroyImmediate(camGo); }
+            finally { Object.DestroyImmediate(camGo); StringTable.Current = previousLanguage; }
         }
     }
 }

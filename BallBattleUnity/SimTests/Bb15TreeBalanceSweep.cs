@@ -60,7 +60,7 @@ namespace BallBattle.SimTests
                 if (run.StartPickPending) RunBot.PickGreedyStart(run);
                 else RunBot.PickGreedy(run);
                 var match = run.CreateMatch();
-                while (match.Outcome == MatchOutcome.Ongoing) match.Step();
+                while (match.Outcome == MatchOutcome.Ongoing) { RunBot.TapIfReady(match); match.Step(); }
                 run.ApplyResult(match);
             }
             return run.Won;

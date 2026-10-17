@@ -17,6 +17,10 @@ namespace BallBattle.Sim
         // 13: BB-BAL3: the Run DAMAGE card also scales SPORE's poison and MIRROR's reflects (Versus unchanged)
         // 14: BB-12g: Run skill tree (ball level points), SKILL UP card removed, Run-only baselines (Versus unchanged)
         // 15: BB-14: two tribute balls (chorus, serpent) in Run pools
-        public const int Rules = 16;   // BB-15: WRECKER Run baseline and BGLGXLQ Run-only CHORUS heal
+        // 16: BB-15: WRECKER Run baseline and BGLGXLQ Run-only CHORUS heal
+        // 17: BB-18: BGLGXLQ orbs light on touch, any order
+        // 18: BB-18 Versus-only BGLGXLQ damage and orb guard profile
+        // 19: BB-19: the Run player's tap presses the skill
+        public const int Rules = 20;   // BB-19b: ten active skills (fire trail, phantom, hook, charge, ricochet, cloud, parry, swarm, hand UNITY, coil)
     }
 }

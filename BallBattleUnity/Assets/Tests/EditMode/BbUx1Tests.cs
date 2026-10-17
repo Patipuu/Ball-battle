@@ -70,6 +70,9 @@ namespace BallBattle.Tests
         public void DetailsFitForEveryBall()
         {
             var view = PickWeaponView.Create(root.transform, art);
+            view.Show(SkillDefinition.All.Select(s => s.WeaponId).ToArray());
+            Assert.That(view.GetComponentsInChildren<PixelButton>().Count(b => b.name.StartsWith("Pick_")), Is.EqualTo(SkillDefinition.All.Length));
+            Bb0102Tests.AssertTextFitsAndNoOverlap(view.transform);
             for (var i = 0; i < All.Length; i += 3)
             {
                 var choices = All.Skip(i).Take(3).ToArray();
@@ -97,7 +100,8 @@ namespace BallBattle.Tests
             for (var i = 0; i < 8; i++)
             {
                 var texts = codex.GetComponentsInChildren<PixelText>().Select(t => t.Text).ToList();
-                Assert.That(texts.Any(t => t.StartsWith("HOW: ")) && texts.Any(t => t.StartsWith("GOOD: ")) && texts.Any(t => t.StartsWith("WEAK: ")), Is.True, $"page {i}");
+                Assert.That(texts.Any(t => t.StartsWith("PLAY: ")), Is.True, $"page {i}");
+                Assert.That(texts.Any(t => t.StartsWith("GOOD: ") || t.StartsWith("WEAK: ")), Is.False, $"page {i}");
                 Bb0102Tests.AssertTextFitsAndNoOverlap(codex.transform);
                 next.SimulateClick();
             }

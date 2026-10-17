@@ -21,8 +21,8 @@ namespace BallBattle.View
             new Color32(240, 70, 60, 255),     // RED
         };
         public static readonly Color32 PreyColor = new Color32(255, 230, 120, 255);
-        const int MaxBalls = 4, OrbSize = 6, RingDots = 40;
-        const float OrbGap = 9f, RingSeconds = 0.4f;
+        const int MaxBalls = 4, RingDots = 40;
+        const float RingSeconds = 0.4f;
 
         Sprite disc;
         SpriteRenderer[,] orbs, tail, beads, prey;
@@ -121,12 +121,14 @@ namespace BallBattle.View
                 for (var c = 0; c < ChorusRule.Colors; c++)
                 {
                     if (chorus == null) { orbs[b, c].enabled = false; continue; }
-                    var a = (sim.ActiveTick * 2f + c * 72f) * Mathf.Deg2Rad;
-                    var r = ball.Radius.ToFloat() + OrbGap;
-                    var p = pos[b] + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
+                    // BB-18: the orbs are Sim hitboxes now; draw them where the Sim has them, around the drawn ball
+                    var o = chorus.Orb(c + 1) - ball.Pos;
+                    var p = pos[b] + new Vector2(o.X.ToFloat(), o.Y.ToFloat());
                     Color32 col = RingColors[c];
-                    if (!chorus.IsLit(c + 1)) col = new Color32((byte)(col.r * 0.35f), (byte)(col.g * 0.35f), (byte)(col.b * 0.35f), 200);
-                    Place(orbs[b, c], p, chorus.IsLit(c + 1) ? OrbSize : OrbSize - 2, col);
+                    var lit = chorus.IsLit(c + 1);
+                    if (!lit) col = new Color32((byte)(col.r * 0.6f), (byte)(col.g * 0.6f), (byte)(col.b * 0.6f), 210);
+                    var d = TributeTuning.ChorusOrbRadius.ToFloat() * 2f;
+                    Place(orbs[b, c], p, lit ? d + 2f : d - 1f, col);
                 }
                 for (var k = 0; k < TributeTuning.SerpentMaxSegments; k++)
                 {

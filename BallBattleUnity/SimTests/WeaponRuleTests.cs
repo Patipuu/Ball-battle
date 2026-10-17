@@ -160,7 +160,7 @@ namespace BallBattle.SimTests
                 Assert.That(a.HashInto(SimHash.Seed), Is.EqualTo(b.HashInto(SimHash.Seed)), e.Id);
                 if (b is SerpentRule) continue;   // BB-14: the snake grows by eating prey, not by hits (hashed: TributeBallTests)
                 b.OnHit(Ctx);
-                if (b is ChorusRule) b.OnHitDealt(mb.Balls[1], Fix.One, DamageKind.Weapon);   // BB-14: a hit lights the next colour
+                if (b is ChorusRule) b.OnTick();   // BB-18: the orbs turn every tick (colours light on orb touches)
                 Assert.That(a.HashInto(SimHash.Seed), Is.Not.EqualTo(b.HashInto(SimHash.Seed)), $"{e.Id}: scaling state must be hashed");
             }
         }

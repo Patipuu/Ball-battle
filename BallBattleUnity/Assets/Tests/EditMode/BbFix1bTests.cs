@@ -305,6 +305,8 @@ namespace BallBattle.Tests
                 Json = "{\"Version\":1,\"Progress\":{\"Achievements\":[\"boss1\"],\"RunsPlayed\":3,\"RunsWon\":0,\"BestFight\":4},\"HasRun\":true,\"Run\":{\"FightIndex\":4,\"Coins\":7}}",
             };
             var menu = MenuView.Create(root.transform, art);
+            menu.Store = store;
+            menu.SetRunInfo(store.Load().Progress, null);
             menu.Show(true);
             Assert.That(OldRunNotice.Pending(store), Is.True);
             menu.ShowOldRunNotice(() => OldRunNotice.Dismiss(store));

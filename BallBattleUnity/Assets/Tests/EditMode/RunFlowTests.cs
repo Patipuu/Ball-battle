@@ -105,7 +105,7 @@ namespace BallBattle.Tests
 
             f.NewRun(needsWinningFight ? FirstWinningSeed() : 42);
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.PickWeapon));
-            Assert.That(f.StartChoices.Count, Is.EqualTo(3));
+            Assert.That(f.StartChoices, Is.EqualTo(UnlockRules.Weapons(f.Progress)));
             f.ChooseWeapon(f.StartChoices[1]);
             Assert.That(f.Current, Is.EqualTo(RunFlow.State.StartPick));
             f.PickStart(0);

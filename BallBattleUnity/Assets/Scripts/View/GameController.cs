@@ -73,6 +73,13 @@ namespace BallBattle.View
             };
             Menu.RunRequested += () => OpenRun(false);
             Menu.ContinueRequested += () => OpenRun(true);
+            Menu.NewRunRequested += () =>
+            {
+                if (Flow.Current != MatchFlow.State.Menu) return;
+                Run.Flow.AbandonSavedRun();
+                OpenRun(false);
+                Run.Flow.NewRun(RunController.NewSeed(DebugOptions.ForceSeed));
+            };
             Run.Closed += () => Flow.ToMenu();
             Overlay.RematchRequested += () => Flow.Rematch();
             Overlay.NewMatchRequested += () => Flow.NewMatch(NewVersusSeed(DebugOptions.ForceSeed));

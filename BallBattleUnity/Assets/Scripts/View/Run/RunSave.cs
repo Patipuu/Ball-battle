@@ -36,6 +36,7 @@ namespace BallBattle.View
         public bool FightLocked;
         public bool Over;
         public bool Won;
+        public bool TutorialRun;
         /// <summary>BB-04 (save v3).</summary>
         public List<string> BossIds = new List<string>();
         public string ForcedBossId = "";
@@ -52,7 +53,7 @@ namespace BallBattle.View
                 Weapons = new List<string>(r.Weapons), Traits = new List<string>(r.Traits),
                 EnemyWeapons = new List<string>(r.EnemyWeapons), EnemyTraits = new List<string>(r.EnemyTraits),
                 Achievements = new List<string>(r.Achievements),
-                FightLocked = r.FightLocked, Over = r.Over, Won = r.Won,
+                FightLocked = r.FightLocked, Over = r.Over, Won = r.Won, TutorialRun = r.TutorialRun,
                 BossIds = new List<string>(r.BossIds), ForcedBossId = r.ForcedBossId ?? "", ForcedBossFight = r.ForcedBossFight
             };
             foreach (var o in r.OfferCards)
@@ -79,7 +80,7 @@ namespace BallBattle.View
                 RerollCount = RerollCount, PicksTaken = PicksTaken, PickedMask = PickedMask,
                 Weapons = Copy(Weapons), Traits = Copy(Traits), EnemyWeapons = Copy(EnemyWeapons), EnemyTraits = Copy(EnemyTraits),
                 Achievements = Copy(Achievements),
-                FightLocked = FightLocked, Over = Over, Won = Won,
+                FightLocked = FightLocked, Over = Over, Won = Won, TutorialRun = TutorialRun,
                 BossIds = Copy(BossIds), ForcedBossId = ForcedBossId ?? "", ForcedBossFight = ForcedBossFight
             };
             if (OfferCards != null)

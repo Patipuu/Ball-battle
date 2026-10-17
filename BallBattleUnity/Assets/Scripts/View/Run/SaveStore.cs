@@ -9,8 +9,8 @@ namespace BallBattle.View
     [Serializable]
     public sealed class SaveData
     {
-        /// <summary>4 = BB-10a signature skill level and branch; 5 = BB-12a ball levels, gold, chests. Older saves: SaveMigration.</summary>
-        public const int CurrentVersion = 5;
+        /// <summary>6 = TUT-2 onboarding state; older saves migrate without losing progress or a v3+ run.</summary>
+        public const int CurrentVersion = 6;
         public int Version = CurrentVersion;
         public ProgressData Progress = new ProgressData();
         public bool HasRun;
@@ -35,11 +35,25 @@ namespace BallBattle.View
     {
         public static SaveData Upgrade(SaveData data)
         {
-            if (data == null || data.Version >= SaveData.CurrentVersion) return data;
+            if (data == null) return null;
+            if (data.Version >= SaveData.CurrentVersion)
+            {
+                if (data.Progress == null) data.Progress = new ProgressData();
+                if (data.Progress.Onboarding == null)
+                    data.Progress.Onboarding = OnboardingState.FromLegacy(data.Progress.RunsPlayed, data.HasRun, data.Progress.SeenTips);
+                return data;
+            }
             if (data.Progress == null) data.Progress = new ProgressData();
+            if (data.Version < 6)
+                data.Progress.Onboarding = OnboardingState.FromLegacy(data.Progress.RunsPlayed, data.HasRun, data.Progress.SeenTips);
             // BB-12a (v4 -> v5): every older save keeps its progress, starts all balls at LV1 with 0 shards and 0 gold, and gets
             // one SILVER welcome chest per run already won (at most 5), waiting in PendingChests. The run in progress is untouched.
             if (data.Version < 5) BallBattle.Sim.Meta.MetaRules.GrantWelcomeChests(data.Progress);
+            if (data.Version == 5)
+            {
+                data.Version = SaveData.CurrentVersion;
+                return data;
+            }
             if (data.Version == 4)
             {
                 data.Version = SaveData.CurrentVersion;

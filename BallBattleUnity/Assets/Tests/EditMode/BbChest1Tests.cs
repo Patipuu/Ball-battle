@@ -159,7 +159,7 @@ namespace BallBattle.Tests
             var m = MenuView.Create(root.transform, art);
             m.SetRunInfo(new ProgressData(), null);
             Assert.That(m.ChestButton.gameObject.activeSelf, Is.False);
-            var p = new ProgressData { RunsWon = 2 };
+            var p = new ProgressData { RunsPlayed = 2, RunsWon = 2 };
             MetaRules.GrantWelcomeChests(p);
             m.SetRunInfo(p, null);
             Assert.That(m.ChestButton.gameObject.activeSelf, Is.True);

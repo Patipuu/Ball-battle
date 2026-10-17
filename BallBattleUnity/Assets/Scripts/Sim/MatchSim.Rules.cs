@@ -42,6 +42,8 @@ namespace BallBattle.Sim
             var n = balls.Length;
             for (var i = 0; i < n; i++)
             {
+                if (balls[i].StunTicks > 0) balls[i].StunTicks--;
+                if (balls[i].SlowTicks > 0) balls[i].SlowTicks--;
                 var cd = balls[i].HitCooldown;
                 for (var j = 0; j < n; j++)
                 {
@@ -161,13 +163,18 @@ namespace BallBattle.Sim
             h = SimHash.Mix(h, WinnerIndex);
             h = SimHash.Mix(h, spawnHooksDone);
             h = layout.HashInto(h);
-            foreach (var b in balls) h = b.HashInto(h);
+            foreach (var b in balls)
+            {
+                if (b.Weapon is Weapons.ChorusRule) h = SimHash.Mix(h, IsPlainVersus);
+                h = b.HashInto(h);
+            }
             var n = balls.Length;
             for (var i = 0; i < n; i++)
                 for (var j = 0; j < n; j++)
                     h = SimHash.Mix(h, parryCooldown[i, j]);
             for (var i = 0; i < n; i++) h = SimHash.Mix(h, spikeActiveTick[i]);
             h = HashBosses(h);   // no-op without a boss rule
+            if (fx.Used) h = fx.HashInto(h);   // BB-19b: no skill effects ever = same hash as before
             return projectiles.HashInto(h);
         }
     }

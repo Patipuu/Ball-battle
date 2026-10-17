@@ -12,6 +12,7 @@ using Object = UnityEngine.Object;
 namespace BallBattle.Tests
 {
     /// <summary>UI-TUT1: first-run tips, one at a time, in order, saved, skippable, never after the first run.</summary>
+    [Ignore("TUT-2 replaced the blocking TutorialCoach; coverage is in BbTut2Tests.")]
     public class BbTut1Tests
     {
         const float Frame = 1f / 60f;

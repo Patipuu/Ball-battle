@@ -299,9 +299,9 @@ namespace BallBattle.Tests
         [Test]
         public void OldV2SaveKeepsProgressAndDropsTheRun()
         {
-            Assert.That(SaveData.CurrentVersion, Is.EqualTo(5));
+            Assert.That(SaveData.CurrentVersion, Is.EqualTo(6));
             var d = new MemorySaveStore { Json = V2WithRun }.Load();
-            Assert.That(d.Version, Is.EqualTo(5));
+            Assert.That(d.Version, Is.EqualTo(6));
             Assert.That(d.HasRun, Is.False, "in-progress run dropped (existing rule)");
             Assert.That(d.oldRunNotice, Is.True);
             Assert.That(d.Progress.Achievements, Is.EqualTo(new[] { UnlockRules.Boss1 }));
@@ -324,7 +324,7 @@ namespace BallBattle.Tests
             run.History.Add(new FightRecord { FightIndex = 3, Won = true, BossId = BossIds.ShellKing });
             var store = new MemorySaveStore();
             store.Save(new SaveData { Progress = p, HasRun = true, Run = RunSave.From(run) });
-            StringAssert.Contains("\"Version\":5", store.Json);
+            StringAssert.Contains("\"Version\":6", store.Json);
             var back = store.Load();
             Assert.That(back.Progress.LastBoss, Is.EqualTo(new[] { BossIds.Magnet, BossIds.Mimic }));
             Assert.That(back.Progress.BossDefeated(BossIds.Magnet), Is.True);

@@ -87,16 +87,20 @@ namespace BallBattle.View
 
             title.Set(run.Won ? RunStrings.RunWon : RunStrings.RunOver, run.Won ? Palette.WallWarning : Palette.HpLost);
             var won = 0;
-            var line = "";
+            var streak = 0;
+            var bestStreak = 0;
             foreach (var f in run.History)
             {
-                if (f.Won) won++;
-                line += StringTable.Current == Lang.Vi
-                    ? (f.Won ? "T" : f.Draw ? "H" : "B")
-                    : (f.Won ? "W" : f.Draw ? "D" : "L");
+                if (f.Won)
+                {
+                    won++;
+                    streak++;
+                    bestStreak = Mathf.Max(bestStreak, streak);
+                }
+                else streak = 0;
             }
             fights.Set(RunStrings.FightsWon(won, run.History.Count), Palette.Text);
-            record.Set(line, Palette.Text);
+            record.Set(StringTable.Current == Lang.Vi ? $"CHUỖI THẮNG DÀI NHẤT {bestStreak}" : $"BEST WIN STREAK {bestStreak}", Palette.Text);
             bosses.Set(RunStrings.Bosses(run.BossesDefeated), Palette.Text);
             bossNames.Set(TextWrap.Cut(BossText.SummaryLine(run), TextWrap.MaxWidthOnScreen(1)), Palette.WallWarning);
             best.Set(RunStrings.BestFight(after.BestFight), Palette.TextDim);

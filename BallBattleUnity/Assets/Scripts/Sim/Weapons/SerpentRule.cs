@@ -64,7 +64,13 @@ namespace BallBattle.Sim.Weapons
 
         public override void OnHitDealt(BallState target, Fix damage, DamageKind kind)
         {
-            if (kind == DamageKind.Weapon && Fin == 'A' && Segments > 0) Sim.Heal(Self, Fix.Ratio(1, 5) * Segments);   // HYDRA
+            if (kind == DamageKind.Weapon) HydraHeal();
+        }
+
+        /// <summary>FINALE A (HYDRA): a bite heals 0.2 per tail segment. COIL bites call this too (BB-19c).</summary>
+        internal void HydraHeal()
+        {
+            if (Fin == 'A' && Segments > 0) Sim.Heal(Self, Fix.Ratio(1, 5) * Segments);
         }
 
         public override void OnTick()
@@ -214,7 +220,7 @@ namespace BallBattle.Sim.Weapons
         void Cut(int k, BallState cutter, FixVec2 at)
         {
             var lost = Segments - k + 1;
-            var keep = Fin == 'B' ? lost / TributeTuning.SerpentShedDivisor : 0;   // SHED SKIN: keep part of the lost segments
+            var keep = 0;   // BB-19c: SHED SKIN is now the post-coil cover in HunterCoil
             var drop = lost - keep;
             for (var i = 0; i < drop; i++) AddPrey(Segment(Segments - i));
             Segments -= drop;

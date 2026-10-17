@@ -56,7 +56,9 @@ namespace BallBattle.Sim
         /// <summary>BB-14 snake: A=owner, B=tail length after eating, Point=where the prey was.</summary>
         PreyEaten,
         /// <summary>BB-14 snake: A=owner, B=ball that cut, Value=segments lost, Point=cut segment.</summary>
-        TailCut
+        TailCut,
+        /// <summary>BB-19b: a tapped skill did something. Variant=(byte)SkillFxEvent, A=owner, B=target or -1, Value and Point per event.</summary>
+        SkillFx
     }
 
     /// <summary>One thing that happened during a tick. View/audio react to these; they never read Sim internals for effects.</summary>

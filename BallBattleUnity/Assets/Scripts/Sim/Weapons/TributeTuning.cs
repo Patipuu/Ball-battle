@@ -16,7 +16,16 @@ namespace BallBattle.Sim.Weapons
         public static Fix ChorusSpin = 5;
         public static Fix ChorusStartDamage = Fix.Ratio(3, 2);   // calibration: 1.2 -> 1.5
         /// <summary>Permanent melee damage per completed ring.</summary>
-        public static Fix ChorusDamagePerRing = Fix.Ratio(5, 4);   // calibration: 0.15 -> 1.25 (a ring = 5 hits; EMBER grows +1 per hit)
+        public static Fix ChorusDamagePerRing = Fix.One;   // calibration: 0.15 -> 1.25 (a ring = 5 hits; EMBER grows +1 per hit); BB-18 orbs: -> 1
+        /// <summary>BB-18 orbs: gap between the ball edge and an orb centre, orb radius, turn per tick (degrees).</summary>
+        public static Fix ChorusOrbGap = 9;
+        public static Fix ChorusOrbRadius = 4;
+        public static Fix ChorusOrbSpin = 3;
+        /// <summary>BB-18: damage of an unlit orb touching an enemy (it lights that colour).</summary>
+        public static Fix ChorusOrbDamage = Fix.Ratio(1, 4);
+        /// <summary>BB-18: ticks between two lights (one colour per touch), and the dark pause after UNITY.</summary>
+        public static int ChorusLightGapTicks = 60;
+        public static int ChorusDarkTicks = 90;
         /// <summary>PINK: heal per hit while lit.</summary>
         public static Fix ChorusPinkHeal = Fix.Ratio(3, 5);
         /// <summary>GREEN: top speed bonus while lit.</summary>
@@ -25,14 +34,14 @@ namespace BallBattle.Sim.Weapons
         public static int ChorusBlueShield = 1;
         /// <summary>YELLOW: melee damage bonus while lit.</summary>
         public static Fix ChorusYellowDamage = Fix.Ratio(2, 5);
-        /// <summary>RED: burn on the hit that lights it (damage per second, ticks).</summary>
+        /// <summary>RED: burn on the enemy whose touch lights it (damage per second, ticks).</summary>
         public static Fix ChorusRedDps = Fix.Ratio(3, 5);
         public static int ChorusRedTicks = 120;
         /// <summary>UNITY: damage = base + per ring completed before this one; reaches balls within the radius.</summary>
         public static Fix ChorusUnityBase = 4;   // calibration: 3 -> 4
-        public static Fix ChorusUnityPerRing = 2;   // calibration: 1.5 -> 2
+        public static Fix ChorusUnityPerRing = 1;   // calibration: 1.5 -> 2; BB-18 orbs (about 5 rings a minute): -> 1
         public static Fix ChorusUnityRadius = 110;
-        /// <summary>Skill HYMN: colours lit at once.</summary>
+        /// <summary>Skill HYMN: unlit colours lit at once.</summary>
         public static int ChorusHymnColors = 2;
         /// <summary>Branch A CHORUS: UNITY heals this share of max HP (skill LV2 / LV3).</summary>
         public static Fix ChorusHealL2 = Fix.Ratio(3, 200), ChorusHealL3 = Fix.Ratio(9, 400);   // Versus: BB-14 values
@@ -47,6 +56,12 @@ namespace BallBattle.Sim.Weapons
         public static Fix ChorusDoubleRainbow = Fix.Ratio(3, 4);   // Run tuning 2: 60% -> 75%
         /// <summary>Run baseline (any ball with a tree): extra melee damage.</summary>
         public static Fix ChorusRunDamage = Fix.Ratio(3, 10);
+        // BB-18 Versus profile: lower outgoing damage; orbiting orbs cushion body, projectile and ability impacts.
+        public static Fix ChorusVersusMeleeScale = Fix.Ratio(7, 10);
+        public static Fix ChorusVersusAbilityScale = Fix.Ratio(1, 2);
+        public static Fix ChorusVersusBodyDamageScale = Fix.Ratio(19, 50);
+        public static Fix ChorusVersusProjectileDamageScale = Fix.Ratio(13, 20);
+        public static Fix ChorusVersusAbilityDamageScale = Fix.Ratio(1, 2);
 
         // ---- serpent: prey, hunt, tail ----
         public static Fix SerpentLength = 14;

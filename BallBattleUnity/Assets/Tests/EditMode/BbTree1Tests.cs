@@ -47,6 +47,23 @@ namespace BallBattle.Tests
         }
 
         [Test]
+        public void RealTapOnUpgradeSpendsPointThroughCardScrim()
+        {
+            var store = Store(1);
+            var view = TreeView.Create(root.transform, art);
+            view.Show(store, "blade");
+            view.OpenCard(TreeView.Box.Power);
+            PixelInput.SetTestClock(10f);
+            try
+            {
+                PixelInput.InjectTap(TreeView.UpgradeArea.center);
+                PixelInput.Dispatch(() => view.GetComponentsInChildren<PixelButton>(false));
+                Assert.That(Saved(store).Pow, Is.EqualTo(1));
+            }
+            finally { PixelInput.SetTestClock(null); }
+        }
+
+        [Test]
         public void LevelOneSpendsItsOnePointAndItIsSaved()
         {
             var store = Store(1);

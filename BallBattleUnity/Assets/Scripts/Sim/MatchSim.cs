@@ -17,6 +17,8 @@ namespace BallBattle.Sim
     {
         public readonly MatchConfig Config;
         public readonly uint Seed;
+        /// <summary>Plain So tài; RunState marks Vượt ải explicitly, including older tree-free saves.</summary>
+        public bool IsPlainVersus { get; }
 
         readonly SimRandom rng;
         readonly BallState[] balls;
@@ -52,12 +54,20 @@ namespace BallBattle.Sim
             : this(config, seed, Wrap(weapons)) { }
 
         public MatchSim(MatchConfig config, uint seed, IReadOnlyList<BallLoadout> loadouts)
+            : this(config, seed, loadouts, false) { }
+
+        /// <summary>RunState passes isRun=true so its balance is independent of the player's tree or save version.</summary>
+        public MatchSim(MatchConfig config, uint seed, IReadOnlyList<BallLoadout> loadouts, bool isRun)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
             Validate(loadouts);
 
             Config = config;
             Seed = seed;
+            var plainVersus = !isRun;
+            for (var i = 0; i < loadouts.Count; i++)
+                if (loadouts[i].Tree != null || loadouts[i].Boss != null || loadouts[i].TapEnabled) plainVersus = false;
+            IsPlainVersus = plainVersus;
             rng = new SimRandom(seed);
             layout = config.Layout ?? ArenaLayout.Empty;
             balls = new BallState[loadouts.Count];
@@ -132,7 +142,7 @@ namespace BallBattle.Sim
             if ((l.Boss == null || l.Boss is Boss.MimicRule) && Skills.SkillDefinition.ForWeapon(l.Weapon.Id) != null)
                 b.Skill = new Skills.SkillState(this, b, l.SkillLevel, l.SkillBranch);
             foreach (var t in traits) t.Bind(this, b);
-            if (l.TapEnabled) b.Tap = new Tap.TapState(this, b);
+            if (l.TapEnabled) { b.Tap = new Tap.TapState(this, b); b.Skill?.AttachTap(); }   // BB-19: the player's skill is pressed by a tap
 
             // Spread evenly across the width, upper half, with a seeded jitter. Slot centre = (index + 1/2) / count of the width.
             var x = Arena.Left + FixMath.MulDiv(Arena.Width, 2 * index + 1, 2 * count) + rng.RangeFixOrMin(-15, 15);
@@ -169,6 +179,7 @@ namespace BallBattle.Sim
             Arena = Config.ArenaAt(ActiveTick);
             if (bossRules.Length > 0) BossPreTick();   // BB-04: boss phases, pull, Warden walls (limits Arena)
             SkillsPreTick();
+            UpdateFx();   // BB-19b: skill effects (before the taps, so a new effect first acts next tick)
             foreach (var ball in balls) if (Active(ball)) ball.Tap?.Tick();   // TAP-1: taps queued since the last step
 
             var substeps = SubstepCount();

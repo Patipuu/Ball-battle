@@ -8,7 +8,7 @@ namespace BallBattle.View
     /// <summary>
     /// SKILL TREE page of one ball (opened from its BALLS detail). BB-12g rules; BB-12h look: ten ICON nodes in four rows
     /// (root VITALITY / POWER / INSTINCT; skill LV2 A, OPENER, skill LV2 B; skill LV3 A / B; FINALE A / B), each with its rank or
-    /// cost under the icon. TAP a node to select it (its name and cost show under the tree); HOLD a node to open its card:
+    /// cost under the icon. Tap a node once to open its card:
     /// big icon, name, what it does, its state and an UPGRADE button. RESET takes every point back (free, outside a run).
     /// Each change is saved at once; the next run with this ball uses it.
     /// </summary>
@@ -20,8 +20,6 @@ namespace BallBattle.View
         public const float BoxW = 48f, BoxH = 46f;
         public static readonly float[] ColX = { -84f, 0f, 84f };
         public static readonly float[] RowBottom = { -40f, 12f, 64f, 116f };
-        /// <summary>Seconds a node must be held to open its card.</summary>
-        public const float HoldSeconds = 0.35f;
         public static readonly Rect ResetArea = new Rect(-60, -124, 120, 30);
         public static readonly Rect BackArea = new Rect(-60, -222, 120, 30);
         // The card (popup) and its buttons.
@@ -39,7 +37,7 @@ namespace BallBattle.View
         ArtLibrary art;
         ISaveStore store;
         string ballId;
-        PixelText title, points, caption, holdHint;
+        PixelText title, points, caption, tapHint;
         PixelButton reset;
         readonly Dictionary<Box, PixelButton> boxes = new Dictionary<Box, PixelButton>();
         readonly Dictionary<Box, SpriteRenderer> icons = new Dictionary<Box, SpriteRenderer>();
@@ -52,13 +50,6 @@ namespace BallBattle.View
         SpriteRenderer cardIcon;
         PixelText cardName, cardLine1, cardLine2, cardState, cardRank;
         PixelButton upgrade, close;
-
-        float pressedAt = -1f;
-        Box pressedBox;
-        bool holdFired;
-
-        /// <summary>Clock for the hold timer (tests replace it).</summary>
-        public Func<float> Clock = () => Time.unscaledTime;
 
         public Box Selected { get; private set; } = Box.Vitality;
         public bool IsOpen => gameObject.activeSelf;
@@ -132,8 +123,7 @@ namespace BallBattle.View
                 var btn = PixelButton.Create(root, "Box_" + b, art, a, null, 1, Palette.Floor, Palette.Wall, Palette.Text, Order + 2);
                 btn.ClickCue = AudioIds.UiClick;
                 var box = b;
-                btn.Clicked += () => v.Select(box);
-                btn.Pressed += () => v.NotePress(box);
+                btn.Clicked += () => v.OpenCard(box);
                 v.boxes[b] = btn;
                 var icon = new GameObject("Icon").AddComponent<SpriteRenderer>();
                 icon.transform.SetParent(btn.transform, false);
@@ -148,8 +138,8 @@ namespace BallBattle.View
             }
             for (var i = 0; i < 4; i++) v.selectFrame[i] = PixelRect.Create(root, "Select", art.Pixel, BallsView.UpColor, Order + 5);
             v.caption = PixelText.Create(root, "Caption", art.Font, new Vector2(0, -62), PixelText.Align.Center, 1, Order + 6);
-            v.holdHint = PixelText.Create(root, "HoldHint", art.Font, new Vector2(0, -80), PixelText.Align.Center, 1, Order + 6);
-            v.holdHint.Set("", Palette.TextDim);
+            v.tapHint = PixelText.Create(root, "TapHint", art.Font, new Vector2(0, -80), PixelText.Align.Center, 1, Order + 6);
+            v.tapHint.Set("TAP A NODE TO UPGRADE", Palette.TextDim);
             v.reset = PixelButton.Create(root, "Reset", art, ResetArea, "RESET", 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
             v.reset.ClickCue = null;   // SFX4: tree_reset from PressReset
             v.reset.Clicked += v.PressReset;
@@ -170,7 +160,9 @@ namespace BallBattle.View
             var clear = new Color32(0, 0, 0, 0);
             var scrim = PixelButton.Create(card, "Scrim", art, new Rect(-200, -300, 400, 600), null, 1, clear, clear, Palette.Text, PopupOrder + 1);
             scrim.ClickCue = AudioIds.UiBack;
-            scrim.Clicked += CloseCard;
+            // Every active PixelButton receives the same pointer event. The full-screen scrim
+            // also covers UPGRADE, so it must ignore taps inside the card.
+            scrim.Clicked += () => { if (!CardArea.Contains(scrim.LastReleaseNative)) CloseCard(); };
             var a = CardArea;
             PixelRect.Set(PixelRect.Create(card, "CardBorder", art.Pixel, Palette.WallWarning, PopupOrder + 3), a);
             PixelRect.Set(PixelRect.Create(card, "CardFill", art.Pixel, RunUi.Panel, PopupOrder + 4), a.xMin + 2, a.yMin + 2, a.xMax - 2, a.yMax - 2);
@@ -202,7 +194,6 @@ namespace BallBattle.View
             gameObject.SetActive(true);
             card.gameObject.SetActive(false);
             Selected = Box.Vitality;
-            pressedAt = -1f;
             Refresh();
             PixelButton.NoteShownAll(transform);
         }
@@ -215,34 +206,11 @@ namespace BallBattle.View
             Refresh();
         }
 
-        // ---------------- hold to open the card ----------------
-
-        void NotePress(Box b)
-        {
-            if (CardOpen) return;
-            pressedBox = b;
-            pressedAt = Clock();
-            holdFired = false;
-        }
-
-        void Update() => TickHold();
-
-        /// <summary>Opens the card once a node has been held for HoldSeconds (called every frame).</summary>
-        public void TickHold()
-        {
-            if (pressedAt < 0f || holdFired || CardOpen) return;
-            if (!boxes[pressedBox].IsHeld) { pressedAt = -1f; return; }
-            if (Clock() - pressedAt < HoldSeconds) return;
-            holdFired = true;
-            OpenCard(pressedBox);
-        }
-
-        /// <summary>Selects <paramref name="b"/> and opens its card (what a hold does).</summary>
+        /// <summary>Selects <paramref name="b"/> and opens its card on a tap.</summary>
         public void OpenCard(Box b)
         {
             Selected = b;
             card.gameObject.SetActive(true);
-            UiAudio.Play(AudioIds.UiClick);
             Refresh();
             PixelButton.NoteShownAll(card);   // the finger that opened it does not press UPGRADE
         }
@@ -251,7 +219,6 @@ namespace BallBattle.View
         {
             if (card == null || !card.gameObject.activeSelf) return;
             card.gameObject.SetActive(false);
-            pressedAt = -1f;
             PixelButton.NoteShownAll(transform);
         }
 
@@ -333,7 +300,7 @@ namespace BallBattle.View
                 s == State.Open ? BallsView.UpColor : s == State.Bought ? Palette.WallWarning : Palette.TextDim);
 
             // Card
-            var fx = TreeText.Effect(ballId, NodeOf(Selected), Selected == Box.FinB ? 'B' : 'A');
+            var fx = TreeText.Effect(ballId, NodeOf(Selected), Selected == Box.FinB ? 'B' : 'A', Selected == Box.A3 || Selected == Box.B3 ? 3 : 2);
             cardIcon.sprite = icons[Selected].sprite;
             cardIcon.color = icons[Selected].color;
             cardName.Set(selName, Palette.WallWarning);

@@ -101,7 +101,7 @@ namespace BallBattle.Tests
         public void RolesBarsCodexAndPickTextFit()
         {
             var pick=PickWeaponView.Create(root.transform,art); pick.Show(new[]{"blade","aegis","volley"});
-            Assert.That(pick.GetComponentsInChildren<WeaponProfileView>().Select(v=>v.RoleText),Is.EqualTo(new[]{"BRUISER","GUARDIAN","RANGER"}));
+            Assert.That(pick.GetComponentsInChildren<PixelButton>().Count(b => b.name.StartsWith("Pick_")), Is.EqualTo(3));
             Bb0102Tests.AssertTextFitsAndNoOverlap(pick.transform);
             pick.Hide(); var menu=MenuView.Create(root.transform,art); menu.ShowVersus();
             Assert.That(menu.GetComponentsInChildren<WeaponProfileView>().Length,Is.EqualTo(2));

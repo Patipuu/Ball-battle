@@ -125,6 +125,7 @@ namespace BallBattle.Sim
                 }
 
                 p.HitMask |= 1 << b.Index;
+                if (p.Tag == 2) p.BouncesLeft++;   // BB-19c CHAIN: a hit buys one more bounce
                 if (--p.HitsLeft <= 0)
                 {
                     projectiles.Remove(slot);
@@ -164,8 +165,28 @@ namespace BallBattle.Sim
             }
 
             if (!bounced) return;
+            if (p.Tag == 2) p.HitMask = 0;   // CHAIN: a bounce re-arms the hit
             if (p.BouncesLeft > 0) p.BouncesLeft--;
-            else projectiles.Remove(slot);
+            else
+            {
+                if (p.Tag == 1) SplitSpark(p);
+                projectiles.Remove(slot);
+            }
+        }
+
+        /// <summary>BB-19c SPLIT: a bolt out of bounces breaks into two small sparks that fly off at about 35 degrees either side.</summary>
+        void SplitSpark(in Projectile p)
+        {
+            var spec = new ProjectileSpec
+            {
+                Radius = Fix.Ratio(5, 2), Damage = p.Damage * Fix.Ratio(2, 5), Bounces = 0, Hits = 1,
+                LifetimeTicks = 90, GravityScale = Fix.Zero
+            };
+            var dir = p.Vel.NormalizedOr(FallbackNormal);
+            var perp = new FixVec2(-dir.Y, dir.X);
+            var speed = p.Vel.Length;
+            for (var s = -1; s <= 1; s += 2)
+                projectiles.Spawn(p.Owner, p.Pos, (dir + perp * (Fix.Ratio(7, 10) * s)).NormalizedOr(dir) * speed, spec);
         }
 
         void TickProjectileLifetimes()

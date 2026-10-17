@@ -12,6 +12,8 @@ namespace BallBattle.Sim.Tap
     public static class TapTuning
     {
         public static int CooldownTicks = 120;
+        /// <summary>BB-19: a tapped skill recharges in this share of the skill's automatic cooldown (10-12 s at 100).</summary>
+        public static int ManualCooldownPercent = 200;
         /// <summary>A strike that lands nothing (no PERFECT) adds this much to the cooldown: spam is punished.</summary>
         public static int MissPenaltyTicks = 60;
         public static Fix PerfectMultiplier = Fix.Ratio(5, 4);
@@ -81,9 +83,11 @@ namespace BallBattle.Sim.Tap
         internal bool Touched => pending || Taps > 0;
         bool CanStrike => self.Weapon is RigRule rig ? rig.Charged : self.Weapon is VolleyRule v ? v.Charged : true;
         /// <summary>Cooldown over and the weapon has something to do (HIVE needs a turret).</summary>
-        public bool Ready => sim.ActiveTick >= ReadyAt && CanStrike;
+        public bool Ready => SkillMode ? self.Skill.CanTap : sim.ActiveTick >= ReadyAt && CanStrike;
+        /// <summary>BB-19: the Run player's tap presses the ball's skill (the old strike is gone for balls that have one).</summary>
+        bool SkillMode => self.Skill != null && self.Skill.Manual;
         /// <summary>0..1 progress of the current cooldown (a missed strike's penalty stretches it), for the ring around the ball.</summary>
-        public Fix ReadyFraction => sim.ActiveTick >= ReadyAt ? Fix.One : Fix.Ratio(sim.ActiveTick - StruckAt, ReadyAt - StruckAt);
+        public Fix ReadyFraction => SkillMode ? self.Skill.ReadyFraction : sim.ActiveTick >= ReadyAt ? Fix.One : Fix.Ratio(sim.ActiveTick - StruckAt, ReadyAt - StruckAt);
         public int StruckAt { get; private set; }
         /// <summary>The last strike missed (no PERFECT): the View can show the longer cooldown.</summary>
         public bool LastMissed { get; private set; }
@@ -105,6 +109,13 @@ namespace BallBattle.Sim.Tap
             }
             if (!pending) return;
             pending = false;
+            if (SkillMode)
+            {
+                if (!self.Skill.TryFire()) return;
+                Taps++; StruckAt = sim.ActiveTick; LastMissed = false;
+                sim.EmitTap(SimEventType.TapStrike, self, -1, Fix.Zero, self.Pos);
+                return;
+            }
             if (Ready) Strike();
         }
 

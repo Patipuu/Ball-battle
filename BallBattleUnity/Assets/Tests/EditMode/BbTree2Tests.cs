@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace BallBattle.Tests
 {
-    /// <summary>BB-12h/12i: per-ball icon nodes, hold-to-open node card with UPGRADE and CLOSE, and the card fitting on screen.</summary>
+    /// <summary>BB-12h/12i: per-ball icon nodes, tap-to-open node card with UPGRADE and CLOSE, and the card fitting on screen.</summary>
     public class BbTree2Tests
     {
         GameObject root;
@@ -65,14 +65,20 @@ namespace BallBattle.Tests
         }
 
         [Test]
-        public void HoldingOpensTheCardAndItsUpgradeBuysTheNode()
+        public void TappingOpensTheCardAndItsUpgradeBuysTheNode()
         {
             var store = Store(2);
             var v = TreeView.Create(root.transform, art);
             v.Show(store, "blade");
             Assert.That(v.CardOpen, Is.False);
-            Assert.That(v.CaptionText, Does.Contain("VITALITY"), "a tap selects and names the node under the tree");
-            v.OpenCard(TreeView.Box.Power);   // what a 0.35 s hold does
+            Assert.That(v.CaptionText, Does.Contain("VITALITY"));
+            PixelInput.SetTestClock(0f);
+            try
+            {
+                PixelInput.InjectTap(TreeView.BoxArea(TreeView.Box.Power).center);
+                PixelInput.Dispatch(() => v.GetComponentsInChildren<PixelButton>(false));
+            }
+            finally { PixelInput.SetTestClock(null); }
             Assert.That(v.CardOpen, Is.True);
             Assert.That(v.CardName, Is.EqualTo("POWER"));
             Assert.That(v.InfoState, Does.StartWith("READY"));
@@ -97,18 +103,6 @@ namespace BallBattle.Tests
             Assert.That(v.InfoState, Does.Contain("LV3"));
             v.UpgradeButton.SimulateClick();
             Assert.That(MetaTree.Spent(MetaRules.Ball(store.Load().Progress, "blade")), Is.Zero);
-        }
-
-        [Test]
-        public void HoldNeedsTheFingerDownLongEnough()
-        {
-            var now = 0f;
-            var v = TreeView.Create(root.transform, art);
-            v.Clock = () => now;
-            v.Show(Store(3), "blade");
-            v.TickHold();
-            Assert.That(v.CardOpen, Is.False, "no press, no card");
-            Assert.That(TreeView.HoldSeconds, Is.InRange(0.25f, 0.6f));
         }
 
         [Test]

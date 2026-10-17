@@ -11,10 +11,15 @@ namespace BallBattle.View
         const float GoSeconds = 0.5f;
 
         public event Action SpeedToggled;
+        public event Action PauseRequested, ResumeRequested, SaveExitRequested;
+        public static readonly Rect GearArea = new Rect(-126, 211, 26, 26);
+        public bool PauseOpen => pausePanel != null && pausePanel.activeSelf;
 
-        PixelText label, countdown, banner, retryCaption, sixtyPercent;
+        PixelText label, countdown, banner, sixtyPercent;
         SpriteRenderer band;
         PixelButton speed;
+        PixelButton gear;
+        GameObject pausePanel;
         SpriteRenderer retryToken;
         SpriteRenderer[] retryBorder;
         GameObject retryBannerRoot;
@@ -37,8 +42,31 @@ namespace BallBattle.View
             v.banner = PixelText.Create(root, "Banner", art.Font, new Vector2(0, -13), PixelText.Align.Center, 2, Order + 1);   // 26 px cell in the 28 px band
             v.speed = PixelButton.Create(root, "Speed", art, new Rect(-22, -238, 44, 24), "X1", 1, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);   // 24 px tap target (was 18)
             v.speed.Clicked += () => v.SpeedToggled?.Invoke();
+            v.gear = PixelButton.Create(root, "FightGear", art, GearArea, null, 1,
+                Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
+            v.gear.Clicked += () => v.PauseRequested?.Invoke();
+            var gearOrder = v.gear.IconOrder;
+            void GearPixel(string name, float x0, float y0, float x1, float y1, Color32 color, int order) =>
+                PixelRect.Set(PixelRect.Create(v.gear.transform, name, art.Pixel, color, order),
+                    GearArea.xMin + x0, GearArea.yMin + y0, GearArea.xMin + x1, GearArea.yMin + y1);
+            GearPixel("Ring", 9, 9, 17, 17, Palette.TextDim, gearOrder);
+            GearPixel("Hole", 12, 12, 14, 14, Palette.Floor, gearOrder + 1);
+            GearPixel("North", 12, 7, 14, 9, Palette.TextDim, gearOrder);
+            GearPixel("South", 12, 17, 14, 19, Palette.TextDim, gearOrder);
+            GearPixel("West", 7, 12, 9, 14, Palette.TextDim, gearOrder);
+            GearPixel("East", 17, 12, 19, 14, Palette.TextDim, gearOrder);
+            v.pausePanel = new GameObject("PausePanel");
+            v.pausePanel.transform.SetParent(root, false);
+            var panel = v.pausePanel.transform;
+            PixelRect.Set(PixelRect.Create(panel, "Shade", art.Pixel, new Color32(8, 8, 14, 225), Order + 10), -135, -240, 135, 240);
+            PixelText.Create(panel, "Title", art.Font, new Vector2(0, 72), PixelText.Align.Center, 3, Order + 12).Set("PAUSED", Palette.WallWarning);
+            PixelText.Create(panel, "Info", art.Font, new Vector2(0, 35), PixelText.Align.Center, 1, Order + 12).Set("THIS FIGHT RESTARTS ON CONTINUE", Palette.Text);
+            PixelButton.Create(panel, "Resume", art, new Rect(-80, -20, 160, 34), "RESUME", 2,
+                Palette.Floor, Palette.WallWarning, Palette.WallWarning, Order + 11).Clicked += () => v.ResumeRequested?.Invoke();
+            PixelButton.Create(panel, "SaveExit", art, new Rect(-90, -75, 180, 34), "SAVE & MENU", 2,
+                Palette.Floor, Palette.TextDim, Palette.Text, Order + 11).Clicked += () => v.SaveExitRequested?.Invoke();
+            v.pausePanel.SetActive(false);
             v.retryToken = RunUi.Icon(root, new Vector2(115, 229), Order + 2);   // above the x2 HP number's ink (5x7 font: 197..211)
-            v.retryCaption = PixelText.Create(root, "RetryCaption", art.Font, new Vector2(87, 158), PixelText.Align.Right, 1, Order + 2);
             v.sixtyPercent = PixelText.Create(root, "SixtyPercent", art.Font, new Vector2(23, 185), PixelText.Align.Center, 1, Order + 2);
             v.retryBorder = new[]
             {
@@ -73,10 +101,28 @@ namespace BallBattle.View
 
         public void Hide()
         {
+            if (PauseOpen) ClosePause();
             gameObject.SetActive(false);
+            if (pausePanel != null) pausePanel.SetActive(false);
             lastState = RunFlow.State.Closed;
             retryBannerLeft = 0f;
             retryBannerRoot.SetActive(false);
+        }
+
+        public void ShowPause()
+        {
+            pausePanel.SetActive(true);
+            speed.enabled = false;
+            gear.enabled = false;
+            PixelButton.NoteShownAll(pausePanel.transform);
+        }
+
+        public void ClosePause()
+        {
+            pausePanel.SetActive(false);
+            speed.enabled = true;
+            gear.enabled = true;
+            PixelButton.NoteShownAll(transform);
         }
 
         public bool RetryBannerActive => retryBannerLeft > 0f;
@@ -111,7 +157,6 @@ namespace BallBattle.View
             if (!gameObject.activeSelf) gameObject.SetActive(true);
             retryToken.sprite = flow.Run.RetryCount == 0 ? art.RetryTokenOn : art.RetryTokenOff;
             retryToken.enabled = retryToken.sprite != null;
-            retryCaption.Set(flow.Run.RetryCount == 0 ? "RETRY 1" : "", Palette.WallWarning);
             var retry = flow.Run.IsRetry;
             foreach (var edge in retryBorder) edge.enabled = retry;
             if (!retry) sixtyPercent.Set("", Palette.WallWarning);

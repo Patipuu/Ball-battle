@@ -6,13 +6,15 @@ using UnityEngine;
 namespace BallBattle.View
 {
     /// <summary>
-    /// Start of a run: up to 3 offered weapons. UI-UX1: a tap selects a ball and shows what it does (how it grows, good at, weak to,
+    /// Start of a run: every unlocked ball. UI-UX1: a tap selects a ball and shows what it does (how it grows, good at, weak to,
     /// its skill and both branches) in the panel below; PICK (or a second tap on the same ball) starts the run with it.
     /// </summary>
     public sealed class PickWeaponView : MonoBehaviour
     {
-        const int Tile = 70;
-        const int Gap = 8;
+        const int Tile = 48;
+        const int Gap = 3;
+        const int TileHeight = 84;
+        const int Columns = 5;
         const float LineX = -117f;
         /// <summary>Skill row: 14 px icon, then the text 17 px right of the line start.</summary>
         public const float SkillIconGap = 17f;
@@ -65,6 +67,7 @@ namespace BallBattle.View
             gameObject.SetActive(true);
             if (tilesRoot != null)
             {
+                tilesRoot.gameObject.SetActive(false);
                 if (Application.isPlaying) Destroy(tilesRoot.gameObject);
                 else DestroyImmediate(tilesRoot.gameObject);   // EditMode tests and captures show it more than once
             }
@@ -72,21 +75,19 @@ namespace BallBattle.View
             tilesRoot.SetParent(transform, false);
             tiles.Clear();
 
-            var total = choices.Count * Tile + (choices.Count - 1) * Gap;
             for (var i = 0; i < choices.Count; i++)
             {
                 var id = choices[i];
-                var area = new Rect(-total / 2 + i * (Tile + Gap), -90, Tile, 190);
+                var col = i % Columns;
+                var row = i / Columns;
+                var area = new Rect(-126 + col * (Tile + Gap), 8 - row * 91, Tile, TileHeight);
                 var b = PixelButton.Create(tilesRoot, "Pick_" + id, art, area, null, 1, Palette.Floor, Palette.Look(id).Body, Palette.Text, RunUi.Order + 2);
-                RunUi.Icon(b.transform, new Vector2(area.center.x, 73), b.IconOrder).sprite = art.Get(id).Ball;
-                var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.center.x, 42), PixelText.Align.Center, 1, b.IconOrder);
+                RunUi.Icon(b.transform, new Vector2(area.center.x, area.yMax - 24), b.IconOrder).sprite = art.Get(id).Ball;
+                var name = PixelText.Create(b.transform, "Name", art.Font, new Vector2(area.center.x, area.yMin + 21), PixelText.Align.Center, 1, b.IconOrder);
                 name.Set(RunUi.WeaponName(id), Palette.Look(id).Body);
-                WeaponProfileView.Create(b.transform, art, new Vector2(area.center.x, 27), Tile, false).Show(id);
-                var tileIcon = RunUi.Icon(b.transform, new Vector2(area.center.x, TileSkillIconY), b.IconOrder);
+                var tileIcon = RunUi.Icon(b.transform, new Vector2(area.center.x, area.yMin + 12), b.IconOrder);
                 tileIcon.name = "SkillIcon";
                 tileIcon.sprite = art.SkillIcon(id);
-                PixelText.Create(b.transform, "Signature", art.Font, new Vector2(area.center.x, -58), PixelText.Align.Center, 1, b.IconOrder)
-                    .Set(BallBattle.Sim.Skills.SkillDefinition.ForWeapon(id).Name, Palette.Text);
                 b.Clicked += () => Select(id);
                 tiles.Add((id, b));
             }
@@ -116,15 +117,15 @@ namespace BallBattle.View
                 return;
             }
             var data = BallBattle.Sim.Skills.SkillDefinition.ForWeapon(id);
-            header.Set(RunUi.WeaponName(id) + "  " + data.Role, Palette.Look(id).Body);
+            header.Set(RunUi.WeaponName(id) + "  " + UiVietnamese.TranslateRole(data.Role), Palette.Look(id).Body);
             grows.Set(guide != null ? "HOW: " + guide.Grows : "", Palette.Text);
             good.Set(guide != null ? "GOOD: " + guide.Good : "", WeaponGuide.GoodColor);
             weak.Set(guide != null ? "WEAK: " + guide.Weak : "", WeaponGuide.WeakColor);
             skill.Set(data.Name + ": " + data.Summary, Palette.WallWarning);
             skillIcon.sprite = art.SkillIcon(id);
             skillIcon.enabled = skillIcon.sprite != null;
-            branchA.Set("LV2 A " + data.SummaryA, Palette.TextDim);
-            branchB.Set("LV2 B " + data.SummaryB, Palette.TextDim);
+            branchA.Set((StringTable.Current == Lang.Vi ? "CẤP 2A " : "LV2 A ") + UiVietnamese.Translate(data.SummaryA), Palette.TextDim);
+            branchB.Set((StringTable.Current == Lang.Vi ? "CẤP 2B " : "LV2 B ") + UiVietnamese.Translate(data.SummaryB), Palette.TextDim);
             pickButton.SetText("PICK " + RunUi.WeaponName(id), Palette.WallWarning);
         }
 

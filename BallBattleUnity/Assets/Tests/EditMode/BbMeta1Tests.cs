@@ -18,7 +18,7 @@ namespace BallBattle.Tests
         public void V4SaveMigratesWithWelcomeChestsAndKeepsTheRun()
         {
             var d = new MemorySaveStore { Json = V4WithRun }.Load();
-            Assert.That(d.Version, Is.EqualTo(SaveData.CurrentVersion).And.EqualTo(5));
+            Assert.That(d.Version, Is.EqualTo(SaveData.CurrentVersion).And.EqualTo(6));
             Assert.That(d.HasRun, Is.True, "the run in progress survives v4 -> v5");
             Assert.That(d.Run.History.Count, Is.EqualTo(2));
             Assert.That(d.Progress.PendingChests, Is.EqualTo(new[] { ChestTier.Silver, ChestTier.Silver }), "one per run won");

@@ -32,9 +32,19 @@ namespace BallBattle.Sim
             var d = (attacker.Skill?.ModifyHit(baseDamage, kind) ?? baseDamage) * (Fix.One + attacker.Bonus.DamagePct);
             if (attacker.Tap != null) d = attacker.Tap.ApplyToHit(d, target);   // TAP-1 PERFECT
             foreach (var t in attacker.Traits) d = t.ModifyOutgoingDamage(target, d, kind);
+            if (d > Fix.Zero && target.Skill?.Act != null && target.Skill.Act.Guard(attacker, d, kind))   // BB-19b: parry / dodge swallow the blow
+            {
+                blocked = true;
+                return Fix.Zero;
+            }
             blocked = d > Fix.Zero && target.Status.TryConsumeShield();
             if (blocked) return Fix.Zero;
             foreach (var t in target.Traits) d = t.ModifyIncomingDamage(attacker, d, kind);
+            if (IsPlainVersus && target.Weapon is Weapons.ChorusRule)
+            {
+                if (attacker.Weapon.BodyAttacks) d *= Weapons.TributeTuning.ChorusVersusBodyDamageScale;
+                else if (kind == DamageKind.Projectile) d *= Weapons.TributeTuning.ChorusVersusProjectileDamageScale;
+            }
             return d > Fix.Zero ? d : Fix.Zero;
         }
 
@@ -71,6 +81,8 @@ namespace BallBattle.Sim
 
             var d = amount;
             foreach (var t in target.Traits) d = t.ModifyIncomingDamage(source, d, kind);
+            if (IsPlainVersus && source != null && target.Weapon is Weapons.ChorusRule && kind == DamageKind.Ability)
+                d *= Weapons.TributeTuning.ChorusVersusAbilityDamageScale;
             if (d <= Fix.Zero) return Fix.Zero;
 
             target.Hp -= d;

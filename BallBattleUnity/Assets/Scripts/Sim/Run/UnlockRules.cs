@@ -7,6 +7,36 @@ namespace BallBattle.Sim.Run
 {
     /// <summary>Long-term progress (saved). Unlocks are derived from achievements, so the table can change later.</summary>
     [Serializable]
+    public sealed class OnboardingState
+    {
+        /// <summary>0: first launch; 1: a run has started; 2: the first run has ended.</summary>
+        public int MenuStage;
+        public bool StrikeLearned;
+        public bool HintsOff;
+        public List<string> SeenHints = new List<string>();
+
+        public bool HasSeen(string id) => SeenHints != null && SeenHints.Contains(id);
+        public void MarkSeen(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return;
+            if (SeenHints == null) SeenHints = new List<string>();
+            if (!SeenHints.Contains(id)) SeenHints.Add(id);
+        }
+        public void AdvanceTo(int stage)
+        {
+            if (stage > 2) stage = 2;
+            if (stage > MenuStage) MenuStage = stage;
+        }
+
+        public static OnboardingState FromLegacy(int runsPlayed, bool hasRun, List<string> seenTips)
+        {
+            var state = new OnboardingState { MenuStage = runsPlayed > 0 ? 2 : hasRun ? 1 : 0 };
+            if (seenTips != null) foreach (var id in seenTips) state.MarkSeen(id);
+            return state;
+        }
+    }
+
+    [Serializable]
     public sealed class ProgressData
     {
         public List<string> Achievements = new List<string>();
@@ -20,6 +50,8 @@ namespace BallBattle.Sim.Run
         public List<BossCodexEntry> BossCodex = new List<BossCodexEntry>();
         /// <summary>UI-TUT1: first-run tips already shown (TutorialCoach ids). Old saves load it empty.</summary>
         public List<string> SeenTips = new List<string>();
+        /// <summary>TUT-2: first-launch menu stages, strike lesson and non-blocking hints.</summary>
+        public OnboardingState Onboarding = new OnboardingState();
         /// <summary>BB-12a (save v5): per-ball level and shards; old saves load it empty (every ball LV1).</summary>
         public List<Meta.BallProgress> Balls = new List<Meta.BallProgress>();
         /// <summary>BB-12a: gold for ball upgrades.</summary>

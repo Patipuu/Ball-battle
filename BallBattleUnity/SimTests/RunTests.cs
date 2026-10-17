@@ -12,15 +12,14 @@ namespace BallBattle.SimTests
     public class RunTests
     {
         [Test]
-        public void StartOffersThreeDistinctUnlockedWeapons()
+        public void StartOffersEveryUnlockedWeaponRegardlessOfSeed()
         {
             var weapons = UnlockRules.Weapons(Fresh);
             var choices = RunState.StartChoices(5, weapons);
-            Assert.That(choices.Count, Is.EqualTo(3));
-            Assert.That(choices.Distinct().Count(), Is.EqualTo(3));
-            Assert.That(choices.All(weapons.Contains));
-            var other = weapons.First(w => !choices.Contains(w));
-            Assert.Throws<ArgumentException>(() => RunState.Start(5, other, Fresh));
+            Assert.That(choices, Is.EqualTo(weapons));
+            Assert.That(RunState.StartChoices(99, weapons), Is.EqualTo(choices));
+            Assert.That(RunState.Start(5, weapons.Last(), Fresh).Build.WeaponId, Is.EqualTo(weapons.Last()));
+            Assert.Throws<ArgumentException>(() => RunState.Start(5, "unknown", Fresh));
         }
 
         [Test]

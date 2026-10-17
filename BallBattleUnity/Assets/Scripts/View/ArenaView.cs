@@ -116,6 +116,7 @@ namespace BallBattle.View
         HudView hud;
         ProjectileView projectileView;
         StatusView statusView;
+        SkillFxView skillFxView;   // BB-19b: tapped skill effects
         TributeView tributeView;   // BB-14: BGLGXLQ orbs and UNITY ring, snake tail and prey
         Vector2[] drawnPos = new Vector2[0];
         TraitBadgeView badges;
@@ -156,6 +157,7 @@ namespace BallBattle.View
             projectileView = ProjectileView.Create(transform, Art.Pixel);
             statusView = StatusView.Create(transform, Art.Pixel);
             tributeView = TributeView.Create(transform, Art.BallFlash);
+            skillFxView = SkillFxView.Create(transform, this, Art.BallFlash, Art.Pixel);
             badges = TraitBadgeView.Create(transform, Art);
             telegraph = BossTelegraphView.Create(transform, Art.Pixel);
             bossArt = BossArtView.Create(transform, Art);
@@ -295,6 +297,7 @@ namespace BallBattle.View
                     {
                         bossArt.OnEvent(events[i], Sim);
                         tributeView.OnEvent(events[i], Sim);
+                        skillFxView.OnEvent(events[i], Sim);
                         TraceReflect(events[i], Sim, DebugOptions.Trace);
                         if (events[i].Type == SimEventType.SkillFired || events[i].Type == SimEventType.SkillEnded)
                         {
@@ -364,6 +367,7 @@ namespace BallBattle.View
             }
             projectileView.Render(Sim);
             tributeView.Render(Sim, drawnPos, dt);
+            skillFxView.Render(Sim, drawnPos, dt);
             telegraph.Render(Sim, bossPos);
             bossArt.Render(Sim, bossPos);
             hud.Render(Sim, dt);

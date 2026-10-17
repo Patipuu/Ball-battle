@@ -45,6 +45,7 @@ namespace BallBattle.View
         static readonly Color32 Blocked = Palette.Hot;
 
         public event Action<int> CardPicked;
+        public bool TutorialHintActive { get; set; }
         public event Action RerollRequested, FightRequested, MenuRequested;
 
         ArtLibrary art;
@@ -225,7 +226,8 @@ namespace BallBattle.View
             ShowArena(ArenaOverride ?? run.ArenaId);
 
             var cost = run.NextPickCost;
-            pickHint.Set(cost < 0 ? "NO MORE PICKS - FIGHT!" : cost == 0 ? "PICK ONE CARD - FREE" : $"BUY ONE MORE: {cost} COINS",
+            pickHint.Set(TutorialHintActive ? "" :
+                cost < 0 ? "NO MORE PICKS - FIGHT!" : cost == 0 ? "PICK ONE CARD - FREE" : $"BUY ONE MORE: {cost} COINS",
                          cost > 0 && run.Coins < cost ? Palette.TextDim : Palette.WallWarning);
 
             for (var i = 0; i < cards.Length; i++)
@@ -278,6 +280,9 @@ namespace BallBattle.View
         /// </summary>
         public static System.Collections.Generic.List<string> BossLines(RunBuild enemy, string bossId, int width)
         {
+            // The arena preview starts at x=71; boss copy starts at x=-72.
+            // Keep the two hint/trait rows in their own column, clear of the preview.
+            width = Math.Min(width, 140);
             var lines = new System.Collections.Generic.List<string>();
             if (bossId != BallBattle.Sim.Boss.BossIds.Mimic && enemy != null && enemy.Traits.Count > 0)
                 lines.Add(TextWrap.Cut(string.Join(" ", CardText.TraitNames(enemy)), width));

@@ -6,11 +6,11 @@ run.boss_at.many,TRÙM Ở CÁC TRẬN {0}
 run.lose_once,THUA 1 LẦN: ĐƯỢC ĐẤU LẠI VỚI {0}% MÁU
 versus.draw,HÒA
 boss.shellking.name,VUA VỎ CỨNG
-boss.shellking.hint,VỎ CHẮN MỘT PHÍA. HÃY ĐÁNH SAU LƯNG.
+boss.shellking.hint,CHẮN TRƯỚC. ĐÁNH SAU.
 boss.magnet.name,NAM CHÂM
-boss.magnet.hint,CỨ 5 GIÂY LẠI HÚT BẠN VÀO.
+boss.magnet.hint,HÚT BẠN MỖI 5 GIÂY.
 boss.mimic.name,BÓNG BẮT CHƯỚC
-boss.mimic.hint,SAO CHÉP VŨ KHÍ VÀ NỘI TẠI CỦA BẠN.
+boss.mimic.hint,SAO CHÉP VŨ KHÍ, NỘI TẠI.
 boss.warden.name,CAI NGỤC
 boss.warden.hint,TƯỜNG DI ĐỘNG CÓ GAI.
 boss.mimic.copies_you,BẮT CHƯỚC BẠN

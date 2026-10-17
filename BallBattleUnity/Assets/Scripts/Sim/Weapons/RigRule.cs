@@ -34,7 +34,7 @@ namespace BallBattle.Sim.Weapons
         public override string StatLabel => "RIGS";
         public override Fix StatValue => count;
 
-        char Fin => Self?.Tree != null ? Self.Tree.Finale : '-';   // BB-12g FINALE ('-' = none / no tree)
+        char Fin => '-';   // BB-19c: the FINALE lives in the active skill now (Skills/ActiveSkill.cs)
         int Growth => Self?.Tree != null ? Self.Tree.Growth : 0;
         bool reserveActive;
         FixVec2 reservePos;
