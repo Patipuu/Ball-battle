@@ -86,14 +86,18 @@ namespace BallBattle.View
                 lines[i] = PixelText.Create(transform, "Line" + i, art.Font, Vector2.zero, PixelText.Align.Left, 1, Order + 6);
             counter = PixelText.Create(transform, "Counter", art.Font, Vector2.zero, PixelText.Align.Left, 1, Order + 6);
             tapHint = PixelText.Create(transform, "TapHint", art.Font, Vector2.zero, PixelText.Align.Right, 1, Order + 6);
-            // SKIP sits just outside the box: above it when the box is at the bottom, below it when the box is at the top.
-            skipAbove = PixelButton.Create(transform, "GuideSkip", art, new Rect(BottomPanel.xMax - 70, BottomPanel.yMax + 3, 70, 18), "SKIP GUIDE", 1,
+            // SKIP sits inside the box, on its bottom row between the counter and TAP TO CONTINUE, so it never covers the
+            // screen BI is talking about (outside the box it hid buttons such as NEXT FIGHT).
+            skipAbove = PixelButton.Create(transform, "GuideSkip", art, SkipRect(BottomPanel), "SKIP GUIDE", 1,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 7);
-            skipBelow = PixelButton.Create(transform, "GuideSkipBelow", art, new Rect(TopPanel.xMax - 70, TopPanel.yMin - 21, 70, 18), "SKIP GUIDE", 1,
+            skipBelow = PixelButton.Create(transform, "GuideSkipBelow", art, SkipRect(TopPanel), "SKIP GUIDE", 1,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 7);
             skipAbove.Clicked += Skip;
             skipBelow.Clicked += Skip;
         }
+
+        /// <summary>SKIP inside <paramref name="p"/>: bottom row, centred between the counter (left) and the tap hint (right).</summary>
+        public static Rect SkipRect(Rect p) => new Rect(-30, p.yMin + 3, 60, 16);
 
         // ---- Seen scenes ----
 

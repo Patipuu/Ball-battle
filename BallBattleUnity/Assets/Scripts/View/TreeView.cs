@@ -298,7 +298,8 @@ namespace BallBattle.View
             var s = StateOf(t, Selected, out var why);
             CanAddSelected = s == State.Open;
             var selName = Selected == Box.FinA || Selected == Box.FinB ? "FINALE: " + NameOf(Selected) : NameOf(Selected);
-            caption.Set(selName + (s == State.Open ? "  " + RankOf(t, Selected, s) : s == State.Bought ? "  OWNED" : ""),
+            // Name and rank are translated one by one: the joined line would match no Vietnamese entry and stay English.
+            caption.Set(UiVietnamese.Translate(selName) + (s == State.Open ? "  " + UiVietnamese.Translate(RankOf(t, Selected, s)) : s == State.Bought ? "  " + UiVietnamese.Translate("OWNED") : ""),
                 s == State.Open ? BallsView.UpColor : s == State.Bought ? Palette.WallWarning : Palette.TextDim);
 
             // Card

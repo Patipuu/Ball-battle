@@ -28,7 +28,7 @@ namespace BallBattle.View
     public static class GuideScripts
     {
         // PvP screen layout (PvpView.Build).
-        static readonly Rect PvpCards = new Rect(-112, -3, 224, 120);
+        static readonly Rect PvpCards = new Rect(-112, -2, 224, 128);   // PvpView.CardRect 0..2
         static readonly Rect PvpBans = new Rect(-112, -90, 224, 58);
         static readonly Rect PvpBall = new Rect(-112, -58, 224, 26);
         static readonly Rect PvpAction = new Rect(12, -124, 100, 27);

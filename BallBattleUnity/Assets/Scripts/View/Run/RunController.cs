@@ -223,7 +223,13 @@ namespace BallBattle.View
         {
             if (!IsOpen) return;
             if (overlay.PauseOpen) return;
-            if (GuideView.Blocking) return;   // BI is talking: countdowns and fights wait
+            if (GuideView.Blocking)
+            {
+                // BI is talking: countdowns and fights wait, but the screen BI talks about is drawn first.
+                if (dirty) Refresh();
+                overlay.Render(Flow, 0f);   // the gear and X1/X2 BI points at
+                return;
+            }
             var wasPlaying = Flow.Current == RunFlow.State.Playing;
             CheckArenaShowsTheFight();
             if (!overlay.TickRetryBanner(dt)) Flow.Tick(dt);

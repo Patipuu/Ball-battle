@@ -124,6 +124,13 @@ namespace BallBattle.View
             values[1].Set(HpText.Floor(r.DamageDealt).ToString(), Palette.Text);   // whole numbers, rounded down like HP
             values[2].Set(HpText.Floor(r.DamageTaken).ToString(), Palette.Text);
             foeHealed.Set(FoeHealedText(r), HealColor);
+            // No FOE HEALED line: TAKEN and COINS close the gap it keeps (an empty row there looked like something was missing).
+            var healGap = foeHealed.Text.Length > 0 ? 0f : RowY[1] - FoeHealedY;
+            for (var i = 2; i < 4; i++)
+            {
+                labels[i].transform.localPosition = new Vector3(RowLeft, RowY[i] + healGap, 0f);
+                values[i].transform.localPosition = new Vector3(RowRight, RowY[i] + healGap, 0f);
+            }
             values[3].Set($"+{r.CoinsGained}  TOTAL {r.CoinsTotal}", Palette.WallWarning);
 
             // On a win the title, HP and coin rows already tell this story. Keep the retry warning on losses.
