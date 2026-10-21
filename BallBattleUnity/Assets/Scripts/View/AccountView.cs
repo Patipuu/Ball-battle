@@ -192,6 +192,7 @@ namespace BallBattle.View
         void Edit(int field)
         {
             if (busy) return;
+            TextEntry.CommitPending();   // the field being typed into keeps its text (no Enter needed)
             editingField = field;
             editing = true;
             var secret = field > 0;
@@ -283,6 +284,7 @@ namespace BallBattle.View
         void Submit(bool register)
         {
             if (busy) return;
+            TextEntry.CommitPending();   // typed but Enter not pressed yet: use it
             if (!NameValid(nameText)) { SetStatus(nameText.StartsWith("BOT") ? "THAT NAME IS KEPT FOR BOTS." : "NAME: 3-12 LETTERS A-Z OR DIGITS", Palette.HpLost); return; }
             if (password.Length < 6) { SetStatus("PASSWORD: AT LEAST 6 CHARACTERS", Palette.HpLost); return; }
             if (register && !PasswordsMatch) { SetStatus("PASSWORDS DO NOT MATCH", Palette.HpLost); return; }

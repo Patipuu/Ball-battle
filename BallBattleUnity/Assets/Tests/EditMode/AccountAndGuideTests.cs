@@ -250,6 +250,27 @@ namespace BallBattle.Tests
             Assert.That(AccountView.ConfirmArea.Overlaps(AccountView.PasswordArea) || AccountView.ConfirmArea.Overlaps(AccountView.RegisterArea), Is.False);
         }
 
+        [Test]
+        public void TypingOnThePcKeyboardKeepsEachFieldWithoutEnter()
+        {
+            // In the Editor (Device Simulator too) and on desktop, fields take PC keys; moving on keeps what was typed.
+            var view = AccountView.Create(root.transform, art, new MemorySaveStore());
+            view.Open(AccountView.Mode.Required, null);
+            view.PressNameField();
+            Assert.That(TextEntry.Open, Is.True);
+            TextEntry.SimulateTyping("phu123");
+            Assert.That(TextEntry.Typing, Is.EqualTo("phu123"));
+            view.PressPasswordField();   // no Enter: the name stays
+            TextEntry.SimulateTyping("secret!1");
+            view.PressConfirmField();
+            TextEntry.SimulateTyping("secret!1");
+            TextEntry.CommitPending();
+            Assert.That(TextEntry.Open, Is.False);
+            Assert.That(view.PasswordsMatch, Is.True);
+            PvpHttp.Fake = (m, r, b) => { StringAssert.Contains("PHU123", b); return new PvpHttp.Reply { Code = 500, Error = "X" }; };
+            view.PressLogin();
+        }
+
         static string Quote(string s) => "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
     }
 }

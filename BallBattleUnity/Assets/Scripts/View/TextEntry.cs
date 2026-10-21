@@ -38,7 +38,7 @@ namespace BallBattle.View
             {
                 if (instance != null) return instance;
                 var go = new GameObject(ObjectName);
-                DontDestroyOnLoad(go);
+                if (Application.isPlaying) DontDestroyOnLoad(go);
                 return instance = go.AddComponent<TextEntry>();
             }
         }
@@ -47,7 +47,7 @@ namespace BallBattle.View
         {
             if (TestAnswer != null) { onDone?.Invoke(TestAnswer(title)); return; }
             var e = Instance;
-            e.Finish(null);   // a request left open is cancelled
+            CommitPending();   // a field still being typed into keeps its text when the player moves to another field
             e.done = onDone;
             e.maxLength = maxLength;
             e.typed = current ?? "";
@@ -55,6 +55,8 @@ namespace BallBattle.View
 #if UNITY_WEBGL && !UNITY_EDITOR
             WebGLInput.captureAllKeyboardInput = false;   // let the HTML box get the keys
             BB_OpenTextInput(ObjectName, UiVietnamese.Translate(title), current ?? "", password ? 1 : 0, maxLength);
+#elif UNITY_EDITOR
+            e.desktop = true;   // the Editor (Device Simulator included) has no phone keyboard: type on the PC keyboard
 #else
             if (TouchScreenKeyboard.isSupported && Application.isMobilePlatform)
                 e.keyboard = TouchScreenKeyboard.Open(current ?? "", TouchScreenKeyboardType.Default, false, false, password, false, UiVietnamese.Translate(title), maxLength);
@@ -62,7 +64,22 @@ namespace BallBattle.View
 #endif
         }
 
+        /// <summary>Tests: keys typed on the desktop path (as if read from Input.inputString).</summary>
+        public static void SimulateTyping(string text) { if (instance != null && instance.desktop) instance.typed += text; }
+
         public static void Cancel() { if (instance != null) instance.Finish(null); }
+
+        /// <summary>
+        /// Close an open entry keeping what was typed so far (desktop keys or phone keyboard). Called before another field opens
+        /// and before REGISTER / LOG IN, so the player does not have to press Enter first. The WebGL box confirms with its own OK.
+        /// </summary>
+        public static void CommitPending()
+        {
+            if (instance == null || instance.done == null) return;
+            if (instance.desktop) instance.Finish(instance.typed);
+            else if (instance.keyboard != null) instance.Finish(instance.keyboard.text ?? "");
+            else instance.Finish(null);
+        }
 
         // Called from the WebGL plugin (SendMessage).
         void OnTextEntry(string value) => Finish(value ?? "");
