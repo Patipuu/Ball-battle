@@ -80,12 +80,6 @@ namespace BallBattle.Tests
             StringTable.Current = Lang.Vi;
             try
             {
-            for (var c = 0; c < Chapters.Count; c++)
-            {
-                Assert.That(RunStrings.ChapterLore(c), Is.Not.Empty);
-                Assert.That(TextWrap.FitsScreen(RunStrings.ChapterLore(c), 1), Is.True, RunStrings.ChapterLore(c));
-                Assert.That(UiVietnamese.Translate(RunStrings.ChapterLore(c)), Is.Not.EqualTo(RunStrings.ChapterLore(c)), "translated");
-            }
             Assert.That(UiVietnamese.Translate(RunStrings.HeatRule(1)), Is.EqualTo("ĐỊCH +1 TRAIT, +10% MÁU"));
             Assert.That(UiVietnamese.Translate(RunStrings.HeatUnlocked(0, 1)), Is.EqualTo("CHƯƠNG 1: MỞ HEAT 2!"));
             }

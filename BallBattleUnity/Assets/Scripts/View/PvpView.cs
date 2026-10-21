@@ -323,7 +323,7 @@ namespace BallBattle.View
             legal = reply.legalBalls;
             pickIndex = BestLegal();
             phase = Phase.Pick;
-            status.Set("BANS REVEALED - PICK A BALL", Palette.Text);
+            status.Set("PICK A BALL", Palette.Text);
             details.Set(string.Format("THEIR BANS: {0} / {1}", BallName(reply.defenderBanBall), ArenaName(reply.defenderBanArena)), Palette.Text);
         }
 
@@ -551,7 +551,7 @@ namespace BallBattle.View
         public const int WakeTimeoutSeconds = 90;
         /// <summary>After this long without a reply the status line explains the wait.</summary>
         public const float WakeNoticeSeconds = 4f;
-        public const string ServerWaking = "SERVER WAKING UP, WAIT 1 MIN";
+        public const string ServerWaking = "CONNECTING...";
 
         void Refresh()
         {
@@ -566,7 +566,7 @@ namespace BallBattle.View
             else if (phase == Phase.History)
                 details.Set(history != null && history.Length > 3 ? (historyPage + 1) + "/" + ((history.Length + 2) / 3) : "", Palette.TextDim);
             else if (phase == Phase.Ban && !string.IsNullOrEmpty(opponentName)) details.Set("VS " + opponentName, Palette.Text);
-            else if (phase == Phase.Setup) details.Set("PRESET BANS: USED WHEN YOU ARE ATTACKED", Palette.TextDim);   // async: no one needs to be online
+            else if (phase == Phase.Setup) details.Set("", Palette.TextDim);
             else if (phase != Phase.Pick && phase != Phase.Result) details.Set("", Palette.Text);
             for (var i = 0; i < 3; i++)
             {

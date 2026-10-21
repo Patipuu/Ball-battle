@@ -28,7 +28,8 @@ namespace BallBattle.View
         /// <summary>Test hook: answers every request at once (null = cancel).</summary>
         public static Func<string, string> TestAnswer;
         /// <summary>Desktop typing in progress (the field shows it); null when no desktop entry is open.</summary>
-        public static string Typing => instance != null && instance.desktop ? instance.typed : null;
+        public static string Typing => instance == null || instance.done == null ? null
+            : instance.desktop ? instance.typed : instance.keyboard?.text;
         public static bool Open => instance != null && instance.done != null;
 
         static TextEntry Instance
@@ -87,8 +88,9 @@ namespace BallBattle.View
                 switch (keyboard.status)
                 {
                     case TouchScreenKeyboard.Status.Done: Finish(keyboard.text ?? ""); break;
-                    case TouchScreenKeyboard.Status.Canceled:
-                    case TouchScreenKeyboard.Status.LostFocus: Finish(null); break;
+                    // Tapping the game (e.g. the next field) closes the phone keyboard with LostFocus: keep what was typed.
+                    case TouchScreenKeyboard.Status.LostFocus: Finish(keyboard.text ?? ""); break;
+                    case TouchScreenKeyboard.Status.Canceled: Finish(null); break;
                 }
                 return;
             }

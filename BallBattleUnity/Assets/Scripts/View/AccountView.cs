@@ -88,15 +88,15 @@ namespace BallBattle.View
             Text(formRoot, art, PasswordArea.xMin, PasswordArea.yMax + 6, 1, PixelText.Align.Left).Set("PASSWORD", Palette.TextDim);
             passField = Field(formRoot, art, "PasswordField", PasswordArea, () => Edit(1));
             passValue = Text(formRoot, art, PasswordArea.xMin + 7, PasswordArea.yMin + 9, 1, PixelText.Align.Left, passField.IconOrder + 1);
-            Text(formRoot, art, ConfirmArea.xMin, ConfirmArea.yMax + 6, 1, PixelText.Align.Left).Set("CONFIRM PASSWORD - REGISTER ONLY", Palette.TextDim);
+            Text(formRoot, art, ConfirmArea.xMin, ConfirmArea.yMax + 6, 1, PixelText.Align.Left).Set("CONFIRM PASSWORD", Palette.TextDim);
             confirmField = Field(formRoot, art, "ConfirmField", ConfirmArea, () => Edit(2));
             confirmValue = Text(formRoot, art, ConfirmArea.xMin + 7, ConfirmArea.yMin + 9, 1, PixelText.Align.Left, confirmField.IconOrder + 1);
             caret = PixelRect.Create(formRoot, "Caret", art.Pixel, Palette.WallWarning, Order + 8);
             caret.enabled = false;
             rule1 = Text(formRoot, art, 0, 2, 1);
             rule2 = Text(formRoot, art, 0, -12, 1);
-            rule1.Set("NAME: 3-12 LETTERS A-Z OR DIGITS", Palette.TextDim);
-            rule2.Set("PASSWORD: AT LEAST 6 CHARACTERS", Palette.TextDim);
+            rule1.Set("", Palette.TextDim);
+            rule2.Set("", Palette.TextDim);
             registerButton = Button(formRoot, art, "Register", RegisterArea, "REGISTER", Palette.PrimaryFill, Palette.PrimaryText, () => Submit(true));
             loginButton = Button(formRoot, art, "Login", LoginArea, "LOG IN", Palette.Floor, Palette.WallWarning, () => Submit(false));
 
@@ -163,7 +163,7 @@ namespace BallBattle.View
             formRoot.gameObject.SetActive(!manage);
             manageRoot.gameObject.SetActive(manage);
             title.Set("ACCOUNT", Palette.Text);
-            subtitle.Set(manage ? "" : "NAME + PASSWORD KEEP YOUR PROGRESS", Palette.TextDim);
+            subtitle.Set("", Palette.TextDim);
             if (manage)
             {
                 signedIn.Set("SIGNED IN: " + AccountSession.Name, Palette.WallWarning);
@@ -240,10 +240,10 @@ namespace BallBattle.View
             var shownName = typing != null && !editingPassword ? Clean(typing) : nameText;
             var shownPass = typing != null && editingField == 1 ? typing : password;
             var shownConfirm = typing != null && editingField == 2 ? typing : confirm;
-            nameValue.Set(shownName.Length > 0 ? shownName : "TAP TO TYPE", shownName.Length > 0 ? Palette.Text : Palette.TextDim);
-            passValue.Set(shownPass.Length > 0 ? Dots(shownPass.Length) : "TAP TO TYPE", shownPass.Length > 0 ? Palette.Text : Palette.TextDim);
+            nameValue.Set(shownName, Palette.Text);
+            passValue.Set(Dots(shownPass.Length), Palette.Text);
             var mismatch = shownConfirm.Length > 0 && password.Length > 0 && shownConfirm != password && !(editing && editingField == 2);
-            confirmValue.Set(shownConfirm.Length > 0 ? Dots(shownConfirm.Length) : "TAP TO TYPE", shownConfirm.Length == 0 ? Palette.TextDim : mismatch ? Palette.HpLost : Palette.Text);
+            confirmValue.Set(Dots(shownConfirm.Length), mismatch ? Palette.HpLost : Palette.Text);
             nameField.SetColors(RunUi.Panel, editing && editingField == 0 ? Palette.WallWarning : Palette.TextDim);
             passField.SetColors(RunUi.Panel, editing && editingField == 1 ? Palette.WallWarning : Palette.TextDim);
             confirmField.SetColors(RunUi.Panel, editing && editingField == 2 ? Palette.WallWarning : mismatch ? Palette.HpLost : Palette.TextDim);
@@ -359,7 +359,7 @@ namespace BallBattle.View
             var cloud = AccountSession.ParseSave(json);
             chooseRoot.gameObject.SetActive(true);
             choose1.Set("TWO SAVES FOUND. KEEP WHICH ONE?", Palette.Text);
-            choose2.Set("THE OTHER ONE IS REPLACED", Palette.TextDim);
+            choose2.Set("", Palette.TextDim);
             choose3.Set("ACCOUNT: " + Summary(cloud), Palette.WallWarning);
             choose4.Set("THIS DEVICE: " + Summary(local), Palette.Text);
             PixelButton.NoteShownAll(chooseRoot);

@@ -91,7 +91,7 @@ namespace BallBattle.View
             chapterName.Set(RunStrings.ChapterTitle(SelectedChapter, ch.Name), !open ? Palette.TextDim : cleared ? NextGoalBox.Green : Palette.WallWarning);
             chapterInfo.Set(open ? RunStrings.ChapterBosses(BossText.Name(ch.Bosses[0]), BossText.Name(ch.Bosses[1]))
                 : RunStrings.ChapterLocked(SelectedChapter), open ? Palette.Text : Palette.TextDim);
-            chapterLore.Set(RunStrings.ChapterLore(SelectedChapter), Palette.TextDim);
+            chapterLore.Set("", Palette.TextDim);
             prevChapter.gameObject.SetActive(SelectedChapter > 0);
             nextChapter.gameObject.SetActive(SelectedChapter < count - 1);
             unlockedHeat = open && flow != null ? BallBattle.Sim.Run.HeatRules.Unlocked(flow.Progress, SelectedChapter) : 0;

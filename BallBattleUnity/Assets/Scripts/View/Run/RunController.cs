@@ -257,7 +257,7 @@ namespace BallBattle.View
                 case RunFlow.State.StartPick: startPick.Show(Flow.Run); break;
                 case RunFlow.State.Prepare:
                     prepare.ArenaOverride = Flow.ForceArenaId;
-                    prepare.TutorialHintActive = Flow.Run?.TutorialRun == true && !DebugOptions.NoTips && Flow.Progress.Onboarding.HintsOff == false &&
+                    prepare.TutorialHintActive = !GuideView.Enabled && Flow.Run?.TutorialRun == true && !DebugOptions.NoTips && Flow.Progress.Onboarding.HintsOff == false &&
                         (Flow.Run.FightIndex == 1 && !Flow.HintSeen("shop") || Flow.Run.FightIndex == 3 && !Flow.HintSeen("boss"));
                     prepare.Show(Flow.Run);
                     break;
@@ -274,6 +274,7 @@ namespace BallBattle.View
         void OfferHint(RunFlow.State state)
         {
             hints.Hide();
+            if (GuideView.Enabled) return;   // BI explains each screen now: no floating hint captions on top of it
             if (DebugOptions.NoTips || !(Flow.Run?.TutorialRun == true || state == RunFlow.State.PickWeapon && Flow.PendingTutorial) ||
                 Flow.Progress?.Onboarding == null || Flow.Progress.Onboarding.HintsOff) return;
             foreach (var hint in HintPointer.Hints)
