@@ -4,6 +4,7 @@ services:
     name: ballbattle-pvp
     runtime: docker
     plan: free
+    branch: dev/step3-view
     region: singapore
     dockerfilePath: ./PvpServer/Dockerfile
     dockerContext: .
