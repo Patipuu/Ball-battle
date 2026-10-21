@@ -19,11 +19,13 @@ namespace BallBattle.View
         public const int Order = 150;
         /// <summary>First launch opens this screen (off with -bbNoTips and in the EditMode test assembly).</summary>
         public static bool ShowOnLaunch = !DebugOptions.NoTips;
-        public static readonly Rect NameArea = new Rect(-110, 100, 220, 26);
-        public static readonly Rect PasswordArea = new Rect(-110, 50, 220, 26);
-        public static readonly Rect RegisterArea = new Rect(-110, -30, 106, 30);
-        public static readonly Rect LoginArea = new Rect(4, -30, 106, 30);
-        public static readonly Rect LaterArea = new Rect(-60, -130, 120, 26);
+        public static readonly Rect NameArea = new Rect(-110, 110, 220, 26);
+        public static readonly Rect PasswordArea = new Rect(-110, 66, 220, 26);
+        /// <summary>Password typed a second time: REGISTER only goes ahead when both match (LOG IN ignores it).</summary>
+        public static readonly Rect ConfirmArea = new Rect(-110, 22, 220, 26);
+        public static readonly Rect RegisterArea = new Rect(-110, -50, 106, 30);
+        public static readonly Rect LoginArea = new Rect(4, -50, 106, 30);
+        public static readonly Rect LaterArea = new Rect(-60, -140, 120, 26);
         public static readonly Rect LogoutArea = new Rect(-110, 40, 220, 28);
         public static readonly Rect KeepCloudArea = new Rect(-114, -176, 110, 28);
         public static readonly Rect KeepLocalArea = new Rect(4, -176, 110, 28);
@@ -35,14 +37,14 @@ namespace BallBattle.View
         ISaveStore store;
         Mode mode;
         Action onDone;
-        string nameText = "", password = "";
+        string nameText = "", password = "", confirm = "";
         string cloudJson;
         int cloudVersion;
         bool busy;
         float caretClock;
 
-        PixelText title, subtitle, nameValue, passValue, rule1, rule2, status1, status2, signedIn, choose1, choose2, choose3, choose4;
-        PixelButton nameField, passField, registerButton, loginButton, laterButton, logoutButton, keepCloudButton, keepLocalButton;
+        PixelText title, subtitle, nameValue, passValue, confirmValue, rule1, rule2, status1, status2, signedIn, choose1, choose2, choose3, choose4;
+        PixelButton nameField, passField, confirmField, registerButton, loginButton, laterButton, logoutButton, keepCloudButton, keepLocalButton;
         SpriteRenderer caret, chooseBorder, chooseFill;
         Transform formRoot, manageRoot, chooseRoot;
 
@@ -55,6 +57,7 @@ namespace BallBattle.View
         public PixelButton LaterButton => laterButton;
         public PixelButton NameField => nameField;
         public PixelButton PasswordField => passField;
+        public PixelButton ConfirmField => confirmField;
         public PixelButton LogoutButton => logoutButton;
         public PixelButton KeepCloudButton => keepCloudButton;
         public PixelButton KeepLocalButton => keepLocalButton;
@@ -80,22 +83,25 @@ namespace BallBattle.View
 
             formRoot = Child("Form");
             Text(formRoot, art, NameArea.xMin, NameArea.yMax + 6, 1, PixelText.Align.Left).Set("NAME", Palette.TextDim);
-            nameField = Field(formRoot, art, "NameField", NameArea, () => Edit(false));
+            nameField = Field(formRoot, art, "NameField", NameArea, () => Edit(0));
             nameValue = Text(formRoot, art, NameArea.xMin + 7, NameArea.yMin + 9, 1, PixelText.Align.Left, nameField.IconOrder + 1);
             Text(formRoot, art, PasswordArea.xMin, PasswordArea.yMax + 6, 1, PixelText.Align.Left).Set("PASSWORD", Palette.TextDim);
-            passField = Field(formRoot, art, "PasswordField", PasswordArea, () => Edit(true));
+            passField = Field(formRoot, art, "PasswordField", PasswordArea, () => Edit(1));
             passValue = Text(formRoot, art, PasswordArea.xMin + 7, PasswordArea.yMin + 9, 1, PixelText.Align.Left, passField.IconOrder + 1);
+            Text(formRoot, art, ConfirmArea.xMin, ConfirmArea.yMax + 6, 1, PixelText.Align.Left).Set("CONFIRM PASSWORD - REGISTER ONLY", Palette.TextDim);
+            confirmField = Field(formRoot, art, "ConfirmField", ConfirmArea, () => Edit(2));
+            confirmValue = Text(formRoot, art, ConfirmArea.xMin + 7, ConfirmArea.yMin + 9, 1, PixelText.Align.Left, confirmField.IconOrder + 1);
             caret = PixelRect.Create(formRoot, "Caret", art.Pixel, Palette.WallWarning, Order + 8);
             caret.enabled = false;
-            rule1 = Text(formRoot, art, 0, 28, 1);
-            rule2 = Text(formRoot, art, 0, 14, 1);
+            rule1 = Text(formRoot, art, 0, 2, 1);
+            rule2 = Text(formRoot, art, 0, -12, 1);
             rule1.Set("NAME: 3-12 LETTERS A-Z OR DIGITS", Palette.TextDim);
             rule2.Set("PASSWORD: AT LEAST 6 CHARACTERS", Palette.TextDim);
             registerButton = Button(formRoot, art, "Register", RegisterArea, "REGISTER", Palette.PrimaryFill, Palette.PrimaryText, () => Submit(true));
             loginButton = Button(formRoot, art, "Login", LoginArea, "LOG IN", Palette.Floor, Palette.WallWarning, () => Submit(false));
 
-            status1 = Text(transform, art, 0, -52, 1);
-            status2 = Text(transform, art, 0, -66, 1);
+            status1 = Text(transform, art, 0, -72, 1);
+            status2 = Text(transform, art, 0, -86, 1);
 
             manageRoot = Child("Manage");
             signedIn = Text(manageRoot, art, 0, 110, 1);
@@ -163,7 +169,7 @@ namespace BallBattle.View
                 signedIn.Set("SIGNED IN: " + AccountSession.Name, Palette.WallWarning);
                 if (AccountSession.Conflict) Go(ResolveConflict());
             }
-            else { nameText = AccountSession.Name; password = ""; }
+            else { nameText = AccountSession.Name; password = ""; confirm = ""; }
             // First launch: no way out until the server answers (LATER appears after a failed try). Elsewhere BACK closes.
             laterButton.gameObject.SetActive(mode != Mode.FirstLaunch);
             laterButton.SetText(mode == Mode.FirstLaunch ? "LATER" : "BACK", Palette.TextDim);
@@ -182,23 +188,28 @@ namespace BallBattle.View
 
         // ---- Form ----
 
-        void Edit(bool isPassword)
+        /// <summary>0 = name, 1 = password, 2 = confirm password.</summary>
+        void Edit(int field)
         {
             if (busy) return;
-            editingPassword = isPassword;
+            editingField = field;
             editing = true;
-            TextEntry.Request(isPassword ? "PASSWORD" : "NAME", isPassword ? "" : nameText, isPassword, isPassword ? 64 : 12, value =>
+            var secret = field > 0;
+            TextEntry.Request(field == 0 ? "NAME" : field == 1 ? "PASSWORD" : "CONFIRM PASSWORD", secret ? "" : nameText, secret, secret ? 64 : 12, value =>
             {
                 editing = false;
                 if (value == null) { Redraw(); return; }
-                if (isPassword) password = value;
+                if (field == 1) password = value;
+                else if (field == 2) confirm = value;
                 else nameText = Clean(value);
                 Redraw();
             });
             Redraw();
         }
 
-        bool editing, editingPassword;
+        bool editing;
+        int editingField;
+        bool editingPassword => editingField > 0;
 
         /// <summary>Upper case, A-Z and 0-9 only (what the server accepts and the font draws).</summary>
         public static string Clean(string value)
@@ -211,30 +222,40 @@ namespace BallBattle.View
         public static string Dots(int n) => n <= 0 ? "" : new string('.', Mathf.Min(n, 24));
 
         /// <summary>Set both fields directly (tests, automation).</summary>
-        public void SetFields(string name, string pass)
+        /// <summary>Set the fields directly (tests, automation). <paramref name="confirmPass"/> null = same as the password.</summary>
+        public void SetFields(string name, string pass, string confirmPass = null)
         {
             nameText = Clean(name);
             password = pass ?? "";
+            confirm = confirmPass ?? password;
             Redraw();
         }
+
+        /// <summary>REGISTER needs the password typed twice the same.</summary>
+        public bool PasswordsMatch => password.Length > 0 && password == confirm;
 
         void Redraw()
         {
             var typing = editing ? TextEntry.Typing : null;
             var shownName = typing != null && !editingPassword ? Clean(typing) : nameText;
-            var shownPass = typing != null && editingPassword ? typing : password;
+            var shownPass = typing != null && editingField == 1 ? typing : password;
+            var shownConfirm = typing != null && editingField == 2 ? typing : confirm;
             nameValue.Set(shownName.Length > 0 ? shownName : "TAP TO TYPE", shownName.Length > 0 ? Palette.Text : Palette.TextDim);
             passValue.Set(shownPass.Length > 0 ? Dots(shownPass.Length) : "TAP TO TYPE", shownPass.Length > 0 ? Palette.Text : Palette.TextDim);
-            nameField.SetColors(RunUi.Panel, editing && !editingPassword ? Palette.WallWarning : Palette.TextDim);
-            passField.SetColors(RunUi.Panel, editing && editingPassword ? Palette.WallWarning : Palette.TextDim);
+            var mismatch = shownConfirm.Length > 0 && password.Length > 0 && shownConfirm != password && !(editing && editingField == 2);
+            confirmValue.Set(shownConfirm.Length > 0 ? Dots(shownConfirm.Length) : "TAP TO TYPE", shownConfirm.Length == 0 ? Palette.TextDim : mismatch ? Palette.HpLost : Palette.Text);
+            nameField.SetColors(RunUi.Panel, editing && editingField == 0 ? Palette.WallWarning : Palette.TextDim);
+            passField.SetColors(RunUi.Panel, editing && editingField == 1 ? Palette.WallWarning : Palette.TextDim);
+            confirmField.SetColors(RunUi.Panel, editing && editingField == 2 ? Palette.WallWarning : mismatch ? Palette.HpLost : Palette.TextDim);
             var valid = NameValid(nameText) && password.Length >= 6;
-            registerButton.SetColors(valid && !busy ? Palette.PrimaryFill : Palette.Floor, valid && !busy ? Palette.PrimaryFill : Palette.Wall);
-            registerButton.SetText("REGISTER", valid && !busy ? Palette.PrimaryText : Palette.Wall);
+            var canRegister = valid && PasswordsMatch && !busy;
+            registerButton.SetColors(canRegister ? Palette.PrimaryFill : Palette.Floor, canRegister ? Palette.PrimaryFill : Palette.Wall);
+            registerButton.SetText("REGISTER", canRegister ? Palette.PrimaryText : Palette.Wall);
             loginButton.SetColors(Palette.Floor, valid && !busy ? Palette.WallWarning : Palette.Wall);
             loginButton.SetText("LOG IN", valid && !busy ? Palette.WallWarning : Palette.Wall);
             if (typing != null)
             {
-                var field = editingPassword ? PasswordArea : NameArea;
+                var field = editingField == 1 ? PasswordArea : editingField == 2 ? ConfirmArea : NameArea;
                 var text = editingPassword ? Dots(typing.Length) : Clean(typing);
                 var x = field.xMin + 7 + PixelFont.MeasureWidth(text) + 1;
                 PixelRect.Set(caret, x, field.yMin + 7, x + 2, field.yMin + 19);
@@ -264,6 +285,7 @@ namespace BallBattle.View
             if (busy) return;
             if (!NameValid(nameText)) { SetStatus(nameText.StartsWith("BOT") ? "THAT NAME IS KEPT FOR BOTS." : "NAME: 3-12 LETTERS A-Z OR DIGITS", Palette.HpLost); return; }
             if (password.Length < 6) { SetStatus("PASSWORD: AT LEAST 6 CHARACTERS", Palette.HpLost); return; }
+            if (register && !PasswordsMatch) { SetStatus("PASSWORDS DO NOT MATCH", Palette.HpLost); return; }
             Go(Authenticate(register));
         }
 
@@ -289,6 +311,7 @@ namespace BallBattle.View
             }
             var auth = JsonUtility.FromJson<AuthReply>(reply.Text);
             password = "";
+            confirm = "";
             AccountSession.SignedIn(auth.token, auth.account.name, register ? 0 : AccountSession.SaveVersion);
             if (register)
             {
@@ -396,8 +419,9 @@ namespace BallBattle.View
         public void PressLater() => Later();
         public void PressKeepLocal() => KeepLocal();
         public void PressKeepCloud() => KeepCloud();
-        public void PressNameField() => Edit(false);
-        public void PressPasswordField() => Edit(true);
+        public void PressNameField() => Edit(0);
+        public void PressPasswordField() => Edit(1);
+        public void PressConfirmField() => Edit(2);
 
         // ---- Manage / leave ----
 

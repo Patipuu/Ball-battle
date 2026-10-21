@@ -155,6 +155,8 @@ namespace BallBattle.Tests
             TextEntry.TestAnswer = title => title == "NAME" ? "phu123" : "secret!1";
             view.PressNameField();
             view.PressPasswordField();
+            view.PressConfirmField();
+            Assert.That(view.PasswordsMatch, Is.True);
             view.PressRegister();
             Assert.That(closed, Is.True, view.Status);
             Assert.That(AccountSession.HasAccount, Is.True);
@@ -228,6 +230,24 @@ namespace BallBattle.Tests
             Assert.That(closed, Is.True);
             Assert.That(AccountSession.SkippedThisSession, Is.True);
             AccountSession.SkippedThisSession = false;
+        }
+
+        [Test]
+        public void RegisterNeedsThePasswordTypedTwiceTheSame()
+        {
+            var calls = 0;
+            PvpHttp.Fake = (method, route, body) => { calls++; return new PvpHttp.Reply { Code = 500, Error = "?" }; };
+            var view = AccountView.Create(root.transform, art, new MemorySaveStore());
+            view.Open(AccountView.Mode.Required, null);
+            view.SetFields("phu123", "secret!1", "secret!2");
+            Assert.That(view.PasswordsMatch, Is.False);
+            view.PressRegister();
+            Assert.That(view.Status, Is.EqualTo("PASSWORDS DO NOT MATCH"));
+            Assert.That(calls, Is.Zero, "nothing is sent");
+            Assert.That(view.RegisterButton.FillColor, Is.Not.EqualTo((Color32)Palette.PrimaryFill), "REGISTER looks disabled");
+            view.PressLogin();
+            Assert.That(calls, Is.EqualTo(1), "LOG IN does not need the second password");
+            Assert.That(AccountView.ConfirmArea.Overlaps(AccountView.PasswordArea) || AccountView.ConfirmArea.Overlaps(AccountView.RegisterArea), Is.False);
         }
 
         static string Quote(string s) => "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
