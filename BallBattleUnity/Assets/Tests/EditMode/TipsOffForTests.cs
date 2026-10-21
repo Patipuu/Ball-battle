@@ -22,6 +22,7 @@ namespace BallBattle.Tests
             TutorialCoach.Enabled = false;
             GuideView.Enabled = false;
             AccountView.ShowOnLaunch = false;
+            HudView.PlayerName = () => "";   // HUD asserts read "YOU EMBER", whatever account this machine is signed in to
             previousLanguage = StringTable.Current;
             hadSavedLanguage = PlayerPrefs.HasKey("language_vi");
             savedLanguage = PlayerPrefs.GetInt("language_vi", 1);
@@ -35,6 +36,7 @@ namespace BallBattle.Tests
             TutorialCoach.Enabled = !DebugOptions.NoTips;
             GuideView.Enabled = !DebugOptions.NoTips;
             AccountView.ShowOnLaunch = !DebugOptions.NoTips;
+            HudView.PlayerName = () => AccountSession.Name;
             StringTable.Current = previousLanguage;
             if (hadSavedLanguage) PlayerPrefs.SetInt("language_vi", savedLanguage);
             else PlayerPrefs.DeleteKey("language_vi");

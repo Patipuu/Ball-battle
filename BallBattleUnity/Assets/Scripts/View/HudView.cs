@@ -50,6 +50,10 @@ namespace BallBattle.View
         public const string PlayerTag = "YOU";
         static int ArrowWidth => ProceduralSprites.ArrowRows[0].Length;
         const int ArrowGap = 2;
+        /// <summary>Name shown on the player's side instead of YOU (the signed-in account; tests swap it).</summary>
+        public static System.Func<string> PlayerName = () => AccountSession.Name;
+        /// <summary>Width kept free for the x2 HP number at the right end of the name row ("1000" plus a gap).</summary>
+        const int HpRoom = 54;
 
         /// <summary>True when side <paramref name="side"/> shows the player arrow (tests).</summary>
         public bool ShowsPlayerArrow(int side) => For(side).Arrow.enabled;
@@ -141,9 +145,18 @@ namespace BallBattle.View
             var name = weaponId == BallBattle.Sim.Boss.BossCoreRule.WeaponId ? "" : WeaponNames.Of(weaponId);
             var you = tag == PlayerTag;
             s.Arrow.enabled = you;
-            s.Name.transform.localPosition = you ? s.NameHome + new Vector3(ArrowWidth + ArrowGap, 0f, 0f) : s.NameHome;
             var shownTag = StringTable.Current == Lang.Vi && tag == "FOE" ? "ĐỊCH" : UiVietnamese.Translate(tag);
-            s.Name.Set(string.IsNullOrEmpty(tag) ? name : (shownTag + " " + name).Trim(), s.Color);
+            // 21/10: the player's side shows their account name (then the ball) instead of YOU / CAO THU.
+            var account = PlayerName?.Invoke();
+            if (you && !string.IsNullOrEmpty(account)) shownTag = account;
+            var text = string.IsNullOrEmpty(tag) ? name : (shownTag + " " + name).Trim();
+            // x2 unless it would run into the HP number on the right (a 12-letter name + SPARKLER): then x1, centred on the x2 row.
+            var room = BarWidth - (you ? ArrowWidth + ArrowGap : 0) - HpRoom;
+            var small = PixelFont.MeasureWidth(PixelFont.Normalize(UiVietnamese.Translate(text))) * 2 > room;
+            s.Name.SetScale(small ? 1 : 2);
+            s.Name.transform.localPosition = (you ? s.NameHome + new Vector3(ArrowWidth + ArrowGap, 0f, 0f) : s.NameHome) +
+                (small ? new Vector3(0f, Mathf.Floor(PixelFont.CellHeight / 2f), 0f) : Vector3.zero);
+            s.Name.Set(text, s.Color);
         }
 
         public void Render(MatchSim sim, float deltaTime)

@@ -47,6 +47,17 @@ namespace BallBattle.View
 
         public int TextScale => scale;
 
+        /// <summary>Change the scale and redraw the current text (HUD names that are too long for x2 drop to x1).</summary>
+        public void SetScale(int newScale)
+        {
+            newScale = Mathf.Max(1, newScale);
+            if (newScale == scale) return;
+            scale = newScale;
+            var text = current;
+            current = null;
+            if (text != null) Set(text, currentColor);
+        }
+
         /// <summary>Area the current text covers, in this object's parent space (whole pixels). Empty text = zero width.</summary>
         public Rect Bounds
         {

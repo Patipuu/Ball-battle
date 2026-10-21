@@ -146,6 +146,24 @@ namespace BallBattle.Tests
         }
 
         [Test]
+        public void PlayerSideShowsTheAccountNameThenTheBall()
+        {
+            try
+            {
+                HudView.PlayerName = () => "QATEST1";
+                var view = Arena(root, art, new BallLoadout(WeaponRegistry.Create(BladeRule.WeaponId)), new BallLoadout(WeaponRegistry.Create(RigRule.WeaponId)));
+                Assert.That(view.Hud.NameText(0).Text, Is.EqualTo("QATEST1 EMBER"));
+                Assert.That(view.Hud.NameText(0).TextScale, Is.EqualTo(2));
+                Assert.That(view.Hud.NameText(1).Text, Is.EqualTo("FOE HIVE"), "the enemy keeps its tag");
+                HudView.PlayerName = () => "ABCDEFGHIJKL";
+                view.Hud.Bind(0, VolleyRule.WeaponId, HudView.PlayerTag);
+                Assert.That(view.Hud.NameText(0).Text, Is.EqualTo("ABCDEFGHIJKL SPARKLER"));
+                Assert.That(view.Hud.NameText(0).TextScale, Is.EqualTo(1), "too long for x2: drops to x1");
+            }
+            finally { HudView.PlayerName = () => ""; }
+        }
+
+        [Test]
         public void OutlineFlashRecolorsExactlyTheSpritesOwnRim()
         {
             Assert.That(BallEdges.Source, Is.InstanceOf<SpriteOutlineEdgeSource>());
