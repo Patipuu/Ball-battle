@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using BallBattle.Sim;
 using BallBattle.Sim.Meta;
 using BallBattle.Sim.Pvp;
 using BallBattle.Sim.Weapons;
@@ -20,6 +21,8 @@ namespace BallBattle.PvpServer
 
         /// <summary>An unfinished challenge is settled or dropped after this long (see <see cref="Sweep"/>).</summary>
         public static readonly TimeSpan ChallengeLife = TimeSpan.FromMinutes(15);
+        /// <summary>A started fight the client never finished settles after this (no presses).</summary>
+        public static readonly TimeSpan FightLife = TimeSpan.FromMinutes(20);
         /// <summary>The same three offers come back until this runs out, so leaving the page cannot reroll easy opponents.</summary>
         public static readonly TimeSpan OfferLife = TimeSpan.FromMinutes(10);
         /// <summary>Server clock (tests move it forward).</summary>
@@ -375,21 +378,65 @@ namespace BallBattle.PvpServer
                 var c = OwnedChallenge(id, challengeId);
                 if (c.State == "done") return Result(c);
                 if (c.State == "expired") throw new ArgumentException("Challenge expired. Start a new offer.");
+                if (c.State == "fight") return Fight(c);
                 if (c.State != "pick") throw new ArgumentException("Submit your blind bans first.");
-                Settle(c, request?.BallId, false);
+                var draft = Draft(c, request?.BallId);   // throws for a ball that is not legal
+                c.PickBall = request.BallId;
+                c.ArenaId = draft.ArenaId;
+                c.State = "fight";
+                c.FightStartedUtc = Clock();
+                Save();
+                return Fight(c);
+            }
+        }
+
+        /// <summary>
+        /// 21/10 live PvP: the challenger played the series on their device and sends only their skill presses, flattened as
+        /// round, step, round, step... The series is simulated here with those presses (the defender's bot is part of the
+        /// rules), so a client can never report a result. Once per challenge; a second call returns the stored result.
+        /// </summary>
+        public object Finish(string id, string challengeId, FightRequest request)
+        {
+            lock (gate)
+            {
+                Sweep(id);
+                var c = OwnedChallenge(id, challengeId);
+                if (c.State == "done") return Result(c);
+                if (c.State == "expired") throw new ArgumentException("Challenge expired. Start a new offer.");
+                if (c.State != "fight") throw new ArgumentException("Pick your ball first.");
+                if (request != null && request.RulesVersion != 0 && request.RulesVersion != SimVersion.Rules)
+                    throw new ArgumentException("UPDATE THE GAME TO PLAY PVP");
+                Settle(c, c.PickBall, false, Taps(request?.Taps));
                 Save();
                 return Result(c);
             }
         }
 
-        /// <summary>Runs the series once and commits the challenger's MMR. The only place a challenge becomes "done".</summary>
-        void Settle(Challenge c, string ballId, bool auto)
+        static List<PvpTap> Taps(int[] flat)
         {
-            var draft = PvpDraft.Resolve(new PvpBan(c.ChallengerBanBall, c.ChallengerBanArena),
-                new PvpBan(c.DefenderBanBall, c.DefenderBanArena), ballId,
-                c.ChallengerBalls.Select(b => new PvpBallSnapshot(b)).ToList(),
-                c.DefenderRoster.Select(r => new PvpBallSnapshot(c.DefenderBalls.First(b => b.Id == r))).ToList(), c.Seed);
-            var series = PvpSeries.Run(draft, c.Seed);
+            var taps = new List<PvpTap>();
+            if (flat == null) return taps;
+            if (flat.Length % 2 != 0 || flat.Length / 2 > PvpSeries.MaxTaps) throw new ArgumentException("Invalid taps.");
+            for (var i = 0; i < flat.Length; i += 2)
+            {
+                if (flat[i] < 0 || flat[i] >= PvpSeries.MaxRounds || flat[i + 1] < 0 || flat[i + 1] > PvpSeries.MaxStepsPerRound)
+                    throw new ArgumentException("Invalid taps.");
+                taps.Add(new PvpTap(flat[i], flat[i + 1]));
+            }
+            return taps;
+        }
+
+        PvpDraft Draft(Challenge c, string ballId) => PvpDraft.Resolve(new PvpBan(c.ChallengerBanBall, c.ChallengerBanArena),
+            new PvpBan(c.DefenderBanBall, c.DefenderBanArena), ballId,
+            c.ChallengerBalls.Select(b => new PvpBallSnapshot(b)).ToList(),
+            c.DefenderRoster.Select(r => new PvpBallSnapshot(c.DefenderBalls.First(b => b.Id == r))).ToList(), c.Seed);
+
+        /// <summary>Runs the series once and commits the challenger's MMR. The only place a challenge becomes "done".</summary>
+        void Settle(Challenge c, string ballId, bool auto, IReadOnlyList<PvpTap> taps = null)
+        {
+            var draft = Draft(c, ballId);
+            var series = PvpSeries.Run(draft, c.Seed, taps);
+            c.Taps = taps?.Count ?? 0;
             var challenger = Get(c.ChallengerId);
             var defender = data.Accounts.FirstOrDefault(a => a.Id == c.DefenderId);
             c.PickBall = ballId;
@@ -417,7 +464,8 @@ namespace BallBattle.PvpServer
         /// <summary>
         /// Timeout fallback for the challenger's unfinished challenges. Before the bans are revealed nothing is known, so the
         /// challenge is simply dropped ("expired", no MMR). After the reveal, walking away would dodge a bad matchup, so the
-        /// server picks for the player (their highest-level legal ball) and settles the series as usual.
+        /// server picks for the player (their highest-level legal ball) and settles the series as usual. A fight that was started
+        /// but never finished settles after FightLife as a fight in which the challenger never pressed their skill.
         /// </summary>
         void Sweep(string challengerId)
         {
@@ -425,8 +473,10 @@ namespace BallBattle.PvpServer
             var changed = false;
             foreach (var c in data.Challenges)
             {
-                if (c.ChallengerId != challengerId || !Open(c) || now <= c.CreatedUtc + ChallengeLife) continue;
-                if (c.State == "ban") c.State = "expired";
+                if (c.ChallengerId != challengerId || !Open(c)) continue;
+                if (c.State == "fight") { if (now <= c.FightStartedUtc + FightLife) continue; Settle(c, c.PickBall, true); }
+                else if (now <= c.CreatedUtc + ChallengeLife) continue;
+                else if (c.State == "ban") c.State = "expired";
                 else Settle(c, AutoPick(c), true);
                 changed = true;
             }
@@ -441,7 +491,7 @@ namespace BallBattle.PvpServer
             return best?.Id;
         }
 
-        static bool Open(Challenge c) => c.State == "ban" || c.State == "pick";
+        static bool Open(Challenge c) => c.State == "ban" || c.State == "pick" || c.State == "fight";
 
         public object GetChallenge(string id, string challengeId)
         {
@@ -450,7 +500,7 @@ namespace BallBattle.PvpServer
                 Sweep(id);
                 var c = OwnedChallenge(id, challengeId);
                 return c.State == "ban" || c.State == "expired" ? new { challengeId = c.Id, state = c.State, opponentName = NameOf(c.DefenderId) }
-                    : c.State == "pick" ? Reveal(c) : Result(c);
+                    : c.State == "pick" ? Reveal(c) : c.State == "fight" ? Fight(c) : Result(c);
             }
         }
 
@@ -479,6 +529,19 @@ namespace BallBattle.PvpServer
             challengerBanBall = c.ChallengerBanBall, challengerBanArena = c.ChallengerBanArena,
             defenderBanBall = c.DefenderBanBall, defenderBanArena = c.DefenderBanArena,
             legalBalls = c.ChallengerBalls.Select(b => b.Id).Where(b => b != c.ChallengerBanBall && b != c.DefenderBanBall && !WeaponRegistry.IsPlayerOnly(b)).ToArray() };
+
+        /// <summary>Everything the client needs to play the series itself (the same draft the server will simulate).</summary>
+        object Fight(Challenge c)
+        {
+            var defenderBall = c.DefenderRoster.FirstOrDefault(b => b != c.ChallengerBanBall && b != c.DefenderBanBall);
+            return new { challengeId = c.Id, state = c.State, opponentName = NameOf(c.DefenderId), arenaId = c.ArenaId, seed = c.Seed,
+                rulesVersion = SimVersion.Rules, challengerBall = c.PickBall, defenderBall,
+                challengerProgress = c.ChallengerBalls.FirstOrDefault(b => b.Id == c.PickBall),
+                defenderProgress = c.DefenderBalls.FirstOrDefault(b => b.Id == defenderBall),
+                challengerBanBall = c.ChallengerBanBall, challengerBanArena = c.ChallengerBanArena,
+                defenderBanBall = c.DefenderBanBall, defenderBanArena = c.DefenderBanArena,
+                secondsLeft = Math.Max(0, (int)(c.FightStartedUtc + FightLife - Clock()).TotalSeconds) };
+        }
 
         object Result(Challenge c) => new { challengeId = c.Id, state = c.State,
             opponentId = c.DefenderId, opponentName = NameOf(c.DefenderId),

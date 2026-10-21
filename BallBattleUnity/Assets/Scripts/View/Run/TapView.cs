@@ -106,7 +106,12 @@ namespace BallBattle.View
             popups.Clear();
         }
 
-        static BallBattle.Sim.Tap.TapState PlayerTap(MatchSim sim) => sim != null && sim.Balls.Count > 0 ? sim.Balls[0].Tap : null;
+        /// <summary>21/10: the ball the player controls (Run: 0; live PvP: the challenger's side, which swaps every round).</summary>
+        public int PlayerIndex { get; set; }
+        /// <summary>Raised for every press that reaches the Sim (before MatchSim.Tap), with the sim it goes to (live PvP records it).</summary>
+        public event System.Action<MatchSim> Requesting;
+
+        BallBattle.Sim.Tap.TapState PlayerTap(MatchSim sim) => sim != null && PlayerIndex >= 0 && PlayerIndex < sim.Balls.Count ? sim.Balls[PlayerIndex].Tap : null;
 
         void SetActive(bool on)
         {
@@ -118,16 +123,31 @@ namespace BallBattle.View
         public void Tick(RunFlow flow, float dt)
         {
             clock += dt;
+            if (flow != null) PlayerIndex = 0;
             var sim = arena != null ? arena.Sim : null;
             var tap = PlayerTap(sim);
             var state = flow != null ? flow.Current : RunFlow.State.Closed;
             var inFight = flow != null && tap != null && sim == flow.CurrentMatch &&
                           (state == RunFlow.State.Countdown || state == RunFlow.State.Playing);
-            SetActive(inFight && state == RunFlow.State.Playing && sim.Outcome == MatchOutcome.Ongoing);
+            TickCore(sim, tap, inFight, inFight && state == RunFlow.State.Playing, dt);
+        }
+
+        /// <summary>21/10 live PvP: same input, ring and words, driven by PvpView (<paramref name="live"/> = a round is playing).</summary>
+        public void TickLive(bool live, float dt)
+        {
+            clock += dt;
+            var sim = arena != null ? arena.Sim : null;
+            var tap = PlayerTap(sim);
+            TickCore(sim, tap, live && tap != null, live && tap != null, dt);
+        }
+
+        void TickCore(MatchSim sim, BallBattle.Sim.Tap.TapState tap, bool inFight, bool playing, float dt)
+        {
+            SetActive(playing && sim.Outcome == MatchOutcome.Ongoing);
             if (active && Input.GetKeyDown(KeyCode.Space)) Request();
 
-            var me = inFight ? sim.Balls[0] : null;
-            var view = me != null ? arena.GetBallView(0) : null;
+            var me = inFight ? sim.Balls[PlayerIndex] : null;
+            var view = me != null ? arena.GetBallView(PlayerIndex) : null;
             ring.enabled = me != null && me.Alive && view != null && sim.Outcome == MatchOutcome.Ongoing;
             if (ring.enabled) RenderRing(tap, view);
 
@@ -178,7 +198,8 @@ namespace BallBattle.View
         BallBattle.Sim.Skills.WreckerCharge PlayerWindUp(BallBattle.Sim.Tap.TapState tap)
         {
             var sim = arena != null ? arena.Sim : null;
-            var act = sim != null && sim.Balls.Count > 0 && sim.Balls[0].Skill != null ? sim.Balls[0].Skill.Act as BallBattle.Sim.Skills.WreckerCharge : null;
+            var mine = sim != null && PlayerIndex < sim.Balls.Count ? sim.Balls[PlayerIndex] : null;
+            var act = mine != null && mine.Skill != null ? mine.Skill.Act as BallBattle.Sim.Skills.WreckerCharge : null;
             return act != null && act.Charging ? act : null;
         }
 
@@ -194,7 +215,8 @@ namespace BallBattle.View
             var sim = arena.Sim;
             if (!active || PlayerTap(sim) == null) return false;
             TapsSent++;
-            return sim.Tap(0);
+            Requesting?.Invoke(sim);
+            return sim.Tap(PlayerIndex);
         }
 
         Vector2 Above(BallState b, float extra) => new Vector2(b.Pos.X.ToFloat(), b.Pos.Y.ToFloat() + b.Radius.ToFloat() + extra);
@@ -202,7 +224,7 @@ namespace BallBattle.View
         void OnSimEvent(SimEvent e)
         {
             var sim = arena.Sim;
-            if (sim == null || e.A != 0 || PlayerTap(sim) == null) return;
+            if (sim == null || e.A != PlayerIndex || PlayerTap(sim) == null) return;
             switch (e.Type)
             {
                 case SimEventType.TapStrike:
@@ -211,7 +233,7 @@ namespace BallBattle.View
                 case SimEventType.TapPerfect:
                 {
                     var at = new Vector2(e.Point.X.ToFloat(), e.Point.Y.ToFloat());
-                    var target = e.B >= 0 && e.B < sim.Balls.Count ? sim.Balls[e.B] : sim.Balls[0];
+                    var target = e.B >= 0 && e.B < sim.Balls.Count ? sim.Balls[e.B] : sim.Balls[PlayerIndex];
                     popups.ShowText(Above(target, 14f), PerfectWord, ReadyColor, sim.Arena, 2);
                     particles.Burst(at, 12, ReadyColor, 60f, 150f, 0.4f, 2);
                     particles.Burst(at, 6, Palette.Text, 40f, 110f, 0.3f);
@@ -221,7 +243,7 @@ namespace BallBattle.View
                     break;
                 }
                 case SimEventType.TapMiss:
-                    popups.ShowText(Above(sim.Balls[0], 14f), MissWord, Palette.TextDim, sim.Arena);
+                    popups.ShowText(Above(sim.Balls[PlayerIndex], 14f), MissWord, Palette.TextDim, sim.Arena);
                     MissesShown++;
                     break;
             }

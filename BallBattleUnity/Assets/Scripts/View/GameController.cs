@@ -46,6 +46,7 @@ namespace BallBattle.View
             store = FileSaveStore.Default();
             Run = RunController.Create(transform, Arena, store);
             Pvp = PvpView.Create(transform, Arena.Art, store, Arena);
+            Pvp.Tap = Run.Tap;   // 21/10 live PvP: the same tap input and ring as Run fights
             Pvp.Closed += () => Menu.Show(true);
             Menu.PvpRequested += () => { Menu.Show(false); Pvp.Open(); };
             Account = AccountView.Create(transform, Arena.Art, store);
@@ -249,6 +250,7 @@ namespace BallBattle.View
                     case "Offers": return First(GuideScripts.PvpIntro, GuideScripts.PvpOffers);
                     case "Ban": return First(GuideScripts.PvpBan);
                     case "Pick": return First(GuideScripts.PvpPick);
+                    case "Fight": return First(GuideScripts.PvpFight);
                     case "Result": return First(GuideScripts.PvpResult);
                     default: return null;
                 }

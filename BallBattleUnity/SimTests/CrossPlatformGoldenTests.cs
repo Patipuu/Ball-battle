@@ -25,7 +25,9 @@ namespace BallBattle.SimTests
             0x794573E6B0A58033UL, 0x32089F649AA33643UL, 0x711E97B9F59E2D48UL, 0x7B39BD1379F55673UL, 0x56AE5105EE29D931UL
         };
 
-        /// <summary>Rules 23 (Run enemies use their active skill; Versus results unchanged, so ExpectedBySeedMasked stays pinned).
+        /// <summary>Rules 24 (live PvP and the PvP-only power table; Versus results unchanged, so ExpectedBySeedMasked stays pinned).
+        /// Rules 23 values, in order: 0x79EF09E10B2BC0D4 0x35811D5EBCDC9601 0xA48D7104430131C1 0x199BF6DC4A65F0AF 0xB6A75E7E63A71F5A 0x6B3BE7E5998613F3 0x6B577C2A26F6667C 0x43966E5A3C47F097 0xACF24053D648BF66 0xFD29936B04DE15BC 0xB9F6F71AD5AF7792 0x79F3CDA95A21006B 0x5C7D729D23892032 0x8D75CA89534C65B4 0xA7670023DA80769B 0x6C283C20A3FB8057 0x69B1B786A187297B 0xB430954A5FA288A0 0x50795522CAAB6513 0x07B06A8822E47D41.
+        /// Rules 23 was (Run enemies use their active skill; Versus results unchanged, so ExpectedBySeedMasked stays pinned).
         /// Rules 22 values, in order: 0xA398C154800C012C 0x3282DC6A667FEF5D 0xC12E62DF8074F1C5 0xABB6F1E34E66B87F 0x6CB66CC2BB726BA6
         /// 0x1B6CE42FA3D2297F 0xF1BC1911F945F988 0xB323D5E2BD58955B 0xB8581A3A323B3DDA 0x2CA9DA02C90E52E8
         /// 0x7DE581C5B7B005B2 0xAC21C67FC2BACCCB 0xC45F38B21ABF64B2 0x2CA869441AC21854 0xDCC4ADD32D3A0333
@@ -59,10 +61,10 @@ namespace BallBattle.SimTests
         /// 0x43F45697702DE948 0x6FF67070AAC1A293 0x45935FB5C9792F35.</summary>
         static readonly ulong[] ExpectedBySeed =
         {
-            0x79EF09E10B2BC0D4UL, 0x35811D5EBCDC9601UL, 0xA48D7104430131C1UL, 0x199BF6DC4A65F0AFUL, 0xB6A75E7E63A71F5AUL,
-            0x6B3BE7E5998613F3UL, 0x6B577C2A26F6667CUL, 0x43966E5A3C47F097UL, 0xACF24053D648BF66UL, 0xFD29936B04DE15BCUL,
-            0xB9F6F71AD5AF7792UL, 0x79F3CDA95A21006BUL, 0x5C7D729D23892032UL, 0x8D75CA89534C65B4UL, 0xA7670023DA80769BUL,
-            0x6C283C20A3FB8057UL, 0x69B1B786A187297BUL, 0xB430954A5FA288A0UL, 0x50795522CAAB6513UL, 0x07B06A8822E47D41UL
+            0xBF4701B61958EC6CUL, 0x7A6A8C950BA3B745UL, 0x23B34DC0592FDB11UL, 0xC7130C874F07A357UL, 0xCE26E6EE37A09BB6UL,
+            0x8CCA518191CC743FUL, 0xA273EC6303C113A4UL, 0x5A47ABB2619B491FUL, 0xE5262BDEB478F356UL, 0x14DA46D56C47943CUL,
+            0x86024C0C719BF5E2UL, 0xE4A0029E827D20DFUL, 0x03A93CEB25375E42UL, 0xDAF194017C3E11F0UL, 0x994D2E857B458217UL,
+            0xC03B48489199ACB3UL, 0xD2D1095EDE8A7D43UL, 0x3A047DDEDD0CAEF8UL, 0x4DF4263ACD0BC973UL, 0xD379E57C6353E4D1UL
         };
 
         static ulong[] Digests(System.Func<MatchSim, ulong> hash, string label)
@@ -95,14 +97,14 @@ namespace BallBattle.SimTests
         [Test]
         public void MaskedMatchHashesMatchTheSignatureSkillGolden()
         {
-            Assert.That(SimVersion.Rules, Is.EqualTo(23));
+            Assert.That(SimVersion.Rules, Is.EqualTo(24));
             Assert.That(Digests(m => m.ComputeHash(0), "masked"), Is.EqualTo(ExpectedBySeedMasked));
         }
 
         [Test]
         public void FixedMatchHashesMatchAcrossPlatforms()
         {
-            var actual = Digests(m => m.ComputeHash(), "rules23");
+            var actual = Digests(m => m.ComputeHash(), "rules24");
             Assert.That(actual, Is.EqualTo(ExpectedBySeed));
         }
 

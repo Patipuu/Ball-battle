@@ -54,10 +54,19 @@ namespace BallBattle.SimTests
                 new[] { defender, Ball("venom"), Ball("aegis") }, 42);
             var a = draft.Challenger.ToLoadout();
             var b = draft.Defender.ToLoadout();
-            Assert.That(a.MaxHp, Is.GreaterThan(BallBattle.Sim.Run.RunTuning.PlayerStartHp));
-            Assert.That(b.MaxHp, Is.GreaterThan(a.MaxHp));
-            Assert.That(a.Bonus.DamagePct, Is.GreaterThan(Fix.Zero));
-            Assert.That(b.Bonus.DamagePct, Is.EqualTo(Fix.Zero));
+            // The trees are carried (before the PvP power table)...
+            var aBuild = draft.Challenger.ToBuild();
+            var bBuild = draft.Defender.ToBuild();
+            Assert.That(aBuild.MaxHp, Is.GreaterThan(BallBattle.Sim.Run.RunTuning.PlayerStartHp));
+            Assert.That(bBuild.MaxHp, Is.GreaterThan(aBuild.MaxHp));
+            Assert.That(aBuild.DamagePct, Is.GreaterThan(Fix.Zero));
+            Assert.That(bBuild.DamagePct, Is.EqualTo(Fix.Zero));
+            // ...and the loadout is that build with the PvP power table (Rules 24) on top.
+            PvpTuning.Apply(aBuild);
+            PvpTuning.Apply(bBuild);
+            Assert.That(a.MaxHp, Is.EqualTo(aBuild.MaxHp));
+            Assert.That(b.MaxHp, Is.EqualTo(bBuild.MaxHp));
+            Assert.That(a.Bonus.DamagePct, Is.EqualTo(aBuild.DamagePct));
             Assert.That(a.SkillLevel, Is.EqualTo(2));
             Assert.That(b.SkillLevel, Is.EqualTo(1));
             Assert.That(a.Tree.Growth, Is.EqualTo(1));
@@ -114,6 +123,50 @@ namespace BallBattle.SimTests
             Assert.That(a.RoundSeeds.Length, Is.InRange(2, PvpSeries.MaxRounds));
             Assert.That(a.ChallengerWins + a.DefenderWins + a.Draws, Is.EqualTo(a.RoundSeeds.Length));
             Assert.That(a.Winner == -1 || a.ChallengerWins == 2 || a.DefenderWins == 2, Is.True);
+        }
+
+        [Test]
+        public void PvpPowerTableCoversEveryRankedBallAndBranch()
+        {
+            foreach (var w in WeaponRegistry.All)
+            {
+                if (WeaponRegistry.IsPlayerOnly(w.Id)) continue;
+                Assert.That(PvpTuning.Power.ContainsKey(w.Id), Is.True, w.Id);
+                Assert.That(PvpTuning.Power[w.Id].Length, Is.EqualTo(3), w.Id);
+            }
+            var hive = new BallBattle.Sim.Run.RunBuild { WeaponId = "rig" };
+            var hp = hive.MaxHp;
+            PvpTuning.Apply(hive);
+            Assert.That(hive.MaxHp < hp, Is.True, "HIVE is weaker in PvP than in Run");
+        }
+
+        [Test]
+        public void LiveSeriesReplaysTheChallengersPressesExactly()
+        {
+            var draft = PvpDraft.ForFight(ArenaRegistry.Classic, Ball("blade", 4), Ball("fang", 4));
+            // Played like the client: a press every 40 steps, recorded as (round, step) before that step runs.
+            var taps = new System.Collections.Generic.List<PvpTap>();
+            var hashes = new System.Collections.Generic.List<ulong>();
+            int mine = 0, theirs = 0;
+            for (var r = 0; r < PvpSeries.MaxRounds && mine < 2 && theirs < 2; r++)
+            {
+                var sim = PvpSeries.CreateRound(draft, 714, r, out var me);
+                Assert.That(me, Is.EqualTo(r % 2), "sides swap every round");
+                Assert.That(sim.Balls[1 - me].AutoSkill, Is.True, "the defender's bot presses its skill");
+                Assert.That(sim.Balls[me].AutoSkill, Is.False, "the challenger presses their own");
+                var step = 0;
+                while (sim.Outcome == BallBattle.Sim.MatchOutcome.Ongoing && step < PvpSeries.MaxStepsPerRound)
+                {
+                    if (step % 40 == 7) { taps.Add(new PvpTap(r, step)); sim.Tap(me); }
+                    sim.Step();
+                    step++;
+                }
+                hashes.Add(sim.ComputeHash());
+                if (sim.WinnerIndex == me) mine++; else if (sim.WinnerIndex >= 0) theirs++;
+            }
+            var server = PvpSeries.Run(draft, 714, taps);
+            Assert.That(server.RoundHashes, Is.EqualTo(hashes.ToArray()), "the server's rounds are the ones the client played");
+            Assert.That(PvpSeries.Run(draft, 714).RoundHashes, Is.Not.EqualTo(server.RoundHashes), "presses change the fight");
         }
 
         static PvpCandidate Candidate(string id, int mmr, int level, bool verified = true, DateTime last = default, bool bot = false) =>

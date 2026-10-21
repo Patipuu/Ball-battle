@@ -15,6 +15,14 @@ namespace BallBattle.SimTests
     {
         static JsonElement Json(object value) => JsonSerializer.SerializeToElement(value);
 
+        /// <summary>21/10 live PvP: pick (state "fight"), then send the presses (none by default) and get the settled result.</summary>
+        static JsonElement PickAndFight(PvpStore store, string id, string challengeId, string ball, int[] taps = null)
+        {
+            var fight = Json(store.Pick(id, challengeId, new PickRequest { BallId = ball }));
+            Assert.That(fight.GetProperty("state").GetString(), Is.EqualTo("fight"));
+            return Json(store.Finish(id, challengeId, new FightRequest { RulesVersion = BallBattle.Sim.SimVersion.Rules, Taps = taps }));
+        }
+
         [Test]
         public void FourRealAccountsBlindBanAndOneSettlementSurviveRestart()
         {
@@ -51,7 +59,7 @@ namespace BallBattle.SimTests
                 Assert.That(hidden.TryGetProperty("defenderBanBall", out _), Is.False);
                 var revealed = Json(store.Ban(ids[0], challengeId, new BanRequest { BallId = "aegis", ArenaId = "low-gravity" }));
                 Assert.That(revealed.GetProperty("defenderBanBall").GetString(), Is.EqualTo("serpent"));
-                var first = Json(store.Pick(ids[0], challengeId, new PickRequest { BallId = "blade" }));
+                var first = PickAndFight(store, ids[0], challengeId, "blade");
                 var mmr = first.GetProperty("mmrAfter").GetInt32();
                 Assert.That(mmr, Is.EqualTo(1000 + first.GetProperty("delta").GetInt32()));
                 Assert.That(first.GetProperty("roundHashes").GetArrayLength(), Is.GreaterThanOrEqualTo(2));
@@ -191,7 +199,7 @@ namespace BallBattle.SimTests
                     .GetProperty("challengeId").GetString();
                 var reveal = Json(store.Ban(id, c, new BanRequest { BallId = "aegis", ArenaId = "classic" }));
                 var pick = reveal.GetProperty("legalBalls")[0].GetString();
-                var result = Json(store.Pick(id, c, new PickRequest { BallId = pick }));
+                var result = PickAndFight(store, id, c, pick);
                 Assert.That(result.GetProperty("state").GetString(), Is.EqualTo("done"));
                 Assert.That(result.GetProperty("opponentName").GetString(), Does.StartWith(PvpBots.NamePrefix));
 
@@ -223,6 +231,59 @@ namespace BallBattle.SimTests
             Assert.That(CorsRules.Allowed("https://evil-itch.zone", none), Is.False);
             Assert.That(CorsRules.Allowed("https://itch.zone.evil.com", none), Is.False);
             Assert.That(CorsRules.Allowed("https://mygame.example", new[] { "https://mygame.example/" }), Is.True);
+        }
+
+        [Test]
+        public void LiveFightSettlesFromThePressesAndOnlyOnce()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "bb-pvp-test-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            try
+            {
+                var now = new DateTime(2026, 10, 21, 12, 0, 0, DateTimeKind.Utc);
+                var store = new PvpStore(Path.Combine(folder, "data.json"), bots: true) { Clock = () => now };
+                var id = Json(store.Register()).GetProperty("account").GetProperty("id").GetString();
+                store.Publish(id, new PublishRequest
+                {
+                    Balls = WeaponRegistry.All.Select(w => new BallProgress { Id = w.Id }).ToList(),
+                    Roster = new List<string> { "blade", "fang", "pike" }, BanBall = "serpent", BanArena = "spike-walls"
+                });
+                string Start()
+                {
+                    var offers = Json(store.Offers(id));
+                    var c = Json(store.Choose(id, new ChooseRequest { OfferId = offers.GetProperty("offerId").GetString(),
+                        OpponentId = offers.GetProperty("opponents")[0].GetProperty("id").GetString() })).GetProperty("challengeId").GetString();
+                    store.Ban(id, c, new BanRequest { BallId = "aegis", ArenaId = "classic" });
+                    return c;
+                }
+
+                var c1 = Start();
+                var fight = Json(store.Pick(id, c1, new PickRequest { BallId = "blade" }));
+                Assert.That(fight.GetProperty("state").GetString(), Is.EqualTo("fight"));
+                Assert.That(fight.GetProperty("challengerBall").GetString(), Is.EqualTo("blade"));
+                Assert.That(fight.TryGetProperty("challengerProgress", out _) && fight.TryGetProperty("seed", out _), Is.True);
+                Assert.That(fight.TryGetProperty("winner", out _), Is.False, "no result before the presses are in");
+                Assert.That(Json(store.GetChallenge(id, c1)).GetProperty("state").GetString(), Is.EqualTo("fight"), "a restart can see the fight");
+                Assert.Throws<ArgumentException>(() => store.Finish(id, c1, new FightRequest { Taps = new[] { 0 } }), "odd tap list");
+                Assert.Throws<ArgumentException>(() => store.Finish(id, c1, new FightRequest { Taps = new[] { 99, 5 } }), "round out of range");
+                Assert.Throws<ArgumentException>(() => store.Finish(id, c1, new FightRequest { RulesVersion = 1 }), "old client rules");
+                var taps = new List<int>();
+                for (var step = 30; step < 3000; step += 30) { taps.Add(0); taps.Add(step); taps.Add(1); taps.Add(step); }
+                var done = Json(store.Finish(id, c1, new FightRequest { RulesVersion = BallBattle.Sim.SimVersion.Rules, Taps = taps.ToArray() }));
+                Assert.That(done.GetProperty("state").GetString(), Is.EqualTo("done"));
+                var mmr = done.GetProperty("mmrAfter").GetInt32();
+                var again = Json(store.Finish(id, c1, new FightRequest { RulesVersion = BallBattle.Sim.SimVersion.Rules }));
+                Assert.That(again.GetProperty("mmrAfter").GetInt32(), Is.EqualTo(mmr), "a second send changes nothing");
+
+                // Left in the middle: after FightLife the series settles as a fight without presses.
+                var c2 = Start();
+                store.Pick(id, c2, new PickRequest { BallId = "fang" });
+                now += PvpStore.FightLife + TimeSpan.FromSeconds(1);
+                var settled = Json(store.GetChallenge(id, c2));
+                Assert.That(settled.GetProperty("state").GetString(), Is.EqualTo("done"));
+                Assert.That(settled.GetProperty("challengerBall").GetString(), Is.EqualTo("fang"));
+            }
+            finally { Directory.Delete(folder, true); }
         }
     }
 }

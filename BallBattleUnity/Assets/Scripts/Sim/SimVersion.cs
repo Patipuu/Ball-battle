@@ -24,6 +24,7 @@ namespace BallBattle.Sim
         // 21: Eight authored bosses, boss-only attacks and Mimic adaptation.
         // 22: Chorus touch refresh and 15-second fade; Mimic echo blast and Warden crossfire.
         // 23: Run enemies use their active skill (same as the player's) through BallLoadout.AutoSkill. Versus and PvP unchanged.
-        public const int Rules = 23;
+        // 24: PvP is played live: the challenger's taps press the skill, the defender's bot presses its own; PvP-only HP/damage table.
+        public const int Rules = 24;
     }
 }

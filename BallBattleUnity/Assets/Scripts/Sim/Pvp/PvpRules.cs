@@ -45,9 +45,43 @@ namespace BallBattle.Sim.Pvp
 
         public BallLoadout ToLoadout()
         {
-            var loadout = ToBuild().ToLoadout();
-            loadout.TapEnabled = true;   // ranked auto-tap policy drives the same active tree skill as Run
+            var build = ToBuild();
+            PvpTuning.Apply(build);
+            var loadout = build.ToLoadout();
+            loadout.TapEnabled = true;   // the same active tree skill as Run: the challenger taps it, the defender's bot presses it
             return loadout;
+        }
+    }
+
+    /// <summary>
+    /// 21/10 PvP-only balance (Rules 24): each ball's max HP and damage in ranked fights, in percent of its Run values, for its
+    /// skill branch (none before skill LV2, then A or B). Run and Versus never read this. Tuned with PvP series simulations
+    /// (both sides on the PvP bot policy, levels 1, 5 and 10) so every ball and branch wins about half of its series.
+    /// </summary>
+    public static class PvpTuning
+    {
+        /// <summary>Power in percent of Run HP and damage: { no branch, branch A, branch B } per weapon id.</summary>
+        public static readonly Dictionary<string, int[]> Power = new Dictionary<string, int[]>
+        {
+            // Before (all 100): HIVE won 80-98% of its series, SPORE 70-90%, EMBER 60-90%; WRECKER 0-5%, SPARKLER ~20%, MIRROR ~25%.
+            { "blade", new[] { 95, 81, 103 } }, { "fang", new[] { 90, 93, 95 } }, { "pike", new[] { 118, 130, 121 } },
+            { "brawler", new[] { 153, 170, 153 } }, { "volley", new[] { 129, 142, 139 } }, { "venom", new[] { 98, 71, 91 } },
+            { "aegis", new[] { 130, 136, 144 } }, { "rig", new[] { 80, 79, 69 } }, { "serpent", new[] { 134, 149, 116 } },
+        };
+
+        /// <summary>Defender bot (AutoSkill): first cast after this many ticks, then this long after the skill is ready again.</summary>
+        public const int BotFirstTick = 180, BotRepeatTicks = 60;
+
+        public static int PercentFor(string weaponId, Skills.SkillBranch branch) =>
+            Power.TryGetValue(weaponId ?? "", out var p) ? p[(int)branch] : 100;
+
+        public static void Apply(RunBuild build)
+        {
+            var pct = PercentFor(build.WeaponId, build.SkillBranch);
+            if (pct == 100) return;
+            build.MaxHp = FixMath.Max(Fix.One, FixMath.RoundToEven(build.MaxHp * Fix.Ratio(pct, 100)));
+            build.Hp = build.MaxHp;
+            build.DamagePct = (Fix.One + build.DamagePct) * Fix.Ratio(pct, 100) - Fix.One;   // scales the tree's bonus too
         }
     }
 
@@ -87,6 +121,14 @@ namespace BallBattle.Sim.Pvp
             ArenaId = arenaId;
             Challenger = challenger;
             Defender = defender;
+        }
+
+        /// <summary>21/10 live PvP: the draft the server already resolved (its arena and both picked balls), rebuilt on the client.</summary>
+        public static PvpDraft ForFight(string arenaId, PvpBallSnapshot challenger, PvpBallSnapshot defender)
+        {
+            if (challenger == null || defender == null) throw new ArgumentException("Both balls are needed.");
+            ArenaRegistry.Get(arenaId);
+            return new PvpDraft(new string[0], new string[0], arenaId, challenger, defender);
         }
 
         public static PvpDraft Resolve(PvpBan challengerBan, PvpBan defenderBan,

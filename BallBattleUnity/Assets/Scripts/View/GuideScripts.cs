@@ -201,8 +201,14 @@ namespace BallBattle.View
         public static readonly GuideScene PvpPick = new GuideScene("pvp_pick",
             new GuideLine("GIỜ CHỌN BÓNG CỦA CAO THỦ TRONG SỐ BÓNG CÒN DÙNG ĐƯỢC. CHẠM ĐỂ ĐỔI.",
                           "NOW PICK YOUR BALL FROM THE ONES STILL ALLOWED. TAP TO CHANGE.", PvpBall),
-            new GuideLine("BẤM VÀO ĐẤU ĐỂ XEM TRẬN. NẾU CAO THỦ BỎ ĐI LÚC NÀY, MÁY CHỦ SẼ CHỌN GIÚP.",
-                          "PRESS FIGHT TO WATCH. IF YOU LEAVE NOW, THE SERVER PICKS FOR YOU.", PvpAction));
+            new GuideLine("BẤM VÀO ĐẤU ĐỂ ĐÁNH. NẾU CAO THỦ BỎ ĐI LÚC NÀY, MÁY CHỦ SẼ CHỌN GIÚP.",
+                          "PRESS FIGHT TO PLAY. IF YOU LEAVE NOW, THE SERVER PICKS FOR YOU.", PvpAction));
+
+        public static readonly GuideScene PvpFight = new GuideScene("pvp_fight",
+            new GuideLine("TRẬN PVP LÀ ĐÁNH THẬT: CHẠM MÀN HÌNH ĐỂ TUNG KỸ NĂNG KHI VÒNG SÁNG QUANH BÓNG ĐẦY.",
+                          "PVP IS PLAYED LIVE: TAP THE SCREEN TO USE YOUR SKILL WHEN THE RING AROUND YOUR BALL IS FULL.", HudBottom),
+            new GuideLine("ĐỐI THỦ KHÔNG ONLINE, NÊN BÓNG CỦA HỌ DO BOT ĐIỀU KHIỂN. THẮNG 2 HIỆP LÀ THẮNG TRẬN.",
+                          "YOUR OPPONENT IS NOT ONLINE, SO A BOT PLAYS THEIR BALL. WIN 2 ROUNDS TO WIN."));
 
         public static readonly GuideScene PvpResult = new GuideScene("pvp_result",
             new GuideLine("XONG! MMR CỦA CAO THỦ ĐÃ ĐƯỢC CẬP NHẬT.", "DONE! YOUR MMR HAS BEEN UPDATED."),
@@ -212,7 +218,7 @@ namespace BallBattle.View
         public static readonly GuideScene[] All =
         {
             Welcome, MenuStart, RunTitle, Heat, Pick, StartPick, Prepare, Fight, Result, Boss, Summary, MenuMore, MenuPvp,
-            Balls, Tree, Codex, Settings, PvpIntro, PvpSetup, PvpOffers, PvpBan, PvpPick, PvpResult,
+            Balls, Tree, Codex, Settings, PvpIntro, PvpSetup, PvpOffers, PvpBan, PvpPick, PvpFight, PvpResult,
         };
     }
 }

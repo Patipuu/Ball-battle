@@ -80,7 +80,7 @@ app.UseCors();
 app.UseRateLimiter();
 
 // Deploy behind HTTPS (deploy/Caddyfile). The bearer token is an account credential and must never travel over public HTTP.
-app.MapGet("/health", () => Results.Ok(new { status = "ok", protocol = 1 }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", protocol = 2 }));
 app.MapPost("/v1/accounts", (PvpStore store) => Safe(store.Register)).RequireRateLimiting("accounts");
 
 app.MapPost("/v1/auth/register", (HttpRequest request, PvpStore store, AuthRequest body) =>
@@ -99,6 +99,8 @@ app.MapPost("/v1/challenges/{challengeId}/ban", (HttpRequest request, PvpStore s
     Authorized(request, store, id => store.Ban(id, challengeId, body)));
 app.MapPost("/v1/challenges/{challengeId}/pick", (HttpRequest request, PvpStore store, string challengeId, PickRequest body) =>
     Authorized(request, store, id => store.Pick(id, challengeId, body)));
+app.MapPost("/v1/challenges/{challengeId}/fight", (HttpRequest request, PvpStore store, string challengeId, FightRequest body) =>
+    Authorized(request, store, id => store.Finish(id, challengeId, body)));
 app.MapGet("/v1/challenges/{challengeId}", (HttpRequest request, PvpStore store, string challengeId) =>
     Authorized(request, store, id => store.GetChallenge(id, challengeId)));
 app.MapGet("/v1/history", (HttpRequest request, PvpStore store) => Authorized(request, store, store.History));

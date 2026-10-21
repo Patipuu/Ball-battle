@@ -32,6 +32,9 @@ namespace BallBattle.View
             { Id = id, Level = level, Vit = vit, Pow = pow, Growth = growth, Start = start, SkillUps = skillUps, Branch = branch, Finale = finale };
         }
         [Serializable] sealed class ErrorReply { public string error; }
+        /// <summary>21/10 live PvP: the resolved draft the client plays (state "fight").</summary>
+        [Serializable] sealed class FightReply { public string challengeId, state, opponentName, arenaId, challengerBall, defenderBall; public uint seed; public int rulesVersion, secondsLeft; public WireBall challengerProgress, defenderProgress; }
+        [Serializable] sealed class FightBody { public int rulesVersion; public int[] taps; }
         [Serializable] sealed class HistoryReply { public ResultReply[] items; }
         [Serializable] sealed class NameAndId { public string offerId, opponentId; }
         [Serializable] sealed class BanBody { public string ballId, arenaId; }
@@ -60,7 +63,19 @@ namespace BallBattle.View
         PixelText pickName, pickLevel, resultYouLabel, resultThemLabel, resultYouBall, resultThemBall, resultVs, resultScore, resultDelta, resultArena;
         ArenaView arena;
         ResultReply result;
-        int replayRound;
+        // 21/10 live PvP fight state.
+        FightReply fight;
+        PvpDraft fightDraft;
+        int fightRound, fightSteps, myIndex, myWins, theirWins;
+        bool fighting, roundLive;
+        float roundIntro;
+        readonly List<int> fightTaps = new List<int>();
+        readonly List<string> fightHashes = new List<string>();
+        PixelText roundText, scoreText;
+        SpriteRenderer roundBand;
+        /// <summary>The Run's tap input (ring, PERFECT words); GameController hands it over. Null in tests without one.</summary>
+        public TapView Tap { get; set; }
+        public const float RoundIntroSeconds = 1.2f;
         ISaveStore store;
         string[] ids, arenas, legal;
         int[] rosterIndex = { 0, 1, 2 };
@@ -77,7 +92,10 @@ namespace BallBattle.View
         /// <summary>21/10: PvP needs a named account. Raised (and the page closes) when there is none or the server forgot it.</summary>
         public event Action AccountNeeded;
         /// <summary>Screen the guide explains: "Setup", "Offers", "Ban", "Pick", "Result", "History"; "" while loading or replaying.</summary>
-        public string GuidePhase => !IsOpen || IsReplaying || busy || phase == Phase.Loading ? "" : phase.ToString();
+        public string GuidePhase => !IsOpen || busy ? "" : fighting ? "Fight" : IsReplaying || phase == Phase.Loading ? "" : phase.ToString();
+        /// <summary>A live series is being played (tests).</summary>
+        public bool Fighting => fighting;
+        public IReadOnlyList<int> FightTaps => fightTaps;
         public bool IsOpen => gameObject.activeSelf;
         public bool IsReplaying => IsOpen && !panel.gameObject.activeSelf;
         public bool IsResult => IsOpen && phase == Phase.Result && !IsReplaying;
@@ -150,10 +168,16 @@ namespace BallBattle.View
             historyButton = Button(art, "History", new Rect(-112, -158, 224, 26), "HISTORY", ToggleHistory);
             Button(art, "Back", new Rect(-60, -221, 120, 28), "BACK", Close).ClickCue = AudioIds.UiBack;
             // Outside the panel: the only control during the replay (a best-of-three can run for minutes).
-            skipButton = PixelButton.Create(transform, "SkipReplay", art, new Rect(-36, -239, 72, 16), "SKIP", 1,
+            skipButton = PixelButton.Create(transform, "LeaveFight", art, new Rect(-40, -239, 80, 16), "LEAVE FIGHT", 1,
                 Palette.Floor, Palette.WallWarning, Palette.Text, MenuView.Order + 6);
-            skipButton.Clicked += SkipReplay;
+            skipButton.Clicked += () => { if (fighting) EndFight(); };
             skipButton.gameObject.SetActive(false);
+            // Round banner over the arena while a live series plays (outside the panel, which is hidden then).
+            roundBand = PixelRect.Create(transform, "RoundBand", art.Pixel, new Color32(16, 16, 26, 220), MenuView.Order + 7);
+            PixelRect.Set(roundBand, -115, -18, 115, 30);
+            roundBand.enabled = false;
+            roundText = PixelText.Create(transform, "Round", art.Font, new Vector2(0, -12), PixelText.Align.Center, 3, MenuView.Order + 8);
+            scoreText = PixelText.Create(transform, "Score", art.Font, new Vector2(0, 128), PixelText.Align.Center, 1, MenuView.Order + 8);
         }
 
         static readonly Color32 HeaderFill = new Color32(34, 26, 60, 255), StripFill = new Color32(26, 22, 44, 255),
@@ -303,8 +327,7 @@ namespace BallBattle.View
         public void Close()
         {
             StopAllCoroutines();
-            arena.BeforeSimStep -= BeforeReplayStep;
-            arena.MatchEnded -= OnReplayRoundEnded;
+            UnhookFight();   // a fight left like this settles on the server as "no more presses"
             arena.Paused = true;
             busy = false;
             skipButton.gameObject.SetActive(false);
@@ -357,12 +380,15 @@ namespace BallBattle.View
             {
                 var reply = JsonUtility.FromJson<ChallengeReply>(response);
                 if (reply.state == "pick") ApplyReveal(reply);
+                else if (reply.state == "fight") { fight = JsonUtility.FromJson<FightReply>(response); phase = Phase.Pick; }
                 else if (reply.state == "done") ShowResult(JsonUtility.FromJson<ResultReply>(response));
                 else if (reply.state == "ban") { opponentName = reply.opponentName; phase = Phase.Ban; status.Set("BLIND BAN: 1 BALL + 1 ARENA", Palette.Text); }
                 else phase = Phase.Loading;   // expired: start over with offers
             });
             busy = false;
             if (phase == Phase.Loading) { yield return LoadOffers(); yield break; }
+            // A fight that was left (app closed, page closed): it is settled as it stands, never replayed from the start.
+            if (fight != null && fight.challengeId == challengeId) { fightTaps.Clear(); fightHashes.Clear(); yield return SendFight(); yield break; }
             Refresh();
         }
 
@@ -476,22 +502,28 @@ namespace BallBattle.View
         {
             busy = true;
             result = null;
+            fight = null;
             yield return Request("POST", "/v1/challenges/" + challengeId + "/pick", JsonUtility.ToJson(new PickBody { ballId = ballId }), response =>
             {
-                ShowResult(JsonUtility.FromJson<ResultReply>(response));
-                if (profile != null)
-                {
-                    profile.mmr = result.mmrAfter;
-                    if (result.winner == 0) profile.wins++;
-                    else if (result.winner == 1) profile.losses++;   // the strip's record moves with the MMR
-                }
+                var state = JsonUtility.FromJson<ChallengeReply>(response).state;
+                if (state == "done") Settled(JsonUtility.FromJson<ResultReply>(response));
+                else fight = JsonUtility.FromJson<FightReply>(response);
             });
             busy = false;
             Refresh();
-            if (result?.roundSeeds != null && result.roundSeeds.Length > 0 &&
-                result.challengerProgress != null && result.challengerProgress.Valid &&
-                result.defenderProgress != null && result.defenderProgress.Valid)
-                BeginReplay();
+            if (fight != null) BeginFight();
+        }
+
+        /// <summary>A settled series from the server: result screen, and the strip's MMR and record move with it.</summary>
+        void Settled(ResultReply reply)
+        {
+            if (profile != null)
+            {
+                profile.mmr = reply.mmrAfter;
+                if (reply.winner == 0) profile.wins++;
+                else if (reply.winner == 1) profile.losses++;
+            }
+            ShowResult(reply);   // refreshes the strip too
         }
 
         /// <summary>Result screen for a settled series (just played, restored after a restart, or opened from history).</summary>
@@ -563,82 +595,147 @@ namespace BallBattle.View
 
         static string Short(string name) => string.IsNullOrEmpty(name) ? "?" : name.Length > 10 ? name.Substring(0, 10) : name;
 
-        /// <summary>Jump straight to the (already settled) result.</summary>
-        void SkipReplay()
-        {
-            if (result?.roundSeeds == null) return;
-            replayRound = result.roundSeeds.Length;
-            StartReplayRound();
-        }
+        // ---- 21/10 live PvP ----
 
-        void BeginReplay()
+        void BeginFight()
         {
-            replayRound = 0;
-            panel.gameObject.SetActive(false);
-            skipButton.gameObject.SetActive(true);
-            arena.BeforeSimStep += BeforeReplayStep;
-            arena.MatchEnded += OnReplayRoundEnded;
-            StartReplayRound();
-        }
-
-        void StartReplayRound()
-        {
-            if (replayRound >= result.roundSeeds.Length)
+            if (fight.rulesVersion != SimVersion.Rules)
             {
-                arena.BeforeSimStep -= BeforeReplayStep;
-                arena.MatchEnded -= OnReplayRoundEnded;
-                arena.Paused = true;
-                skipButton.gameObject.SetActive(false);
-                panel.gameObject.SetActive(true);
-                PixelButton.NoteShownAll(panel);
+                status.Set("UPDATE THE GAME TO PLAY PVP", Palette.WallWarning);
                 return;
             }
-            var swapped = (replayRound & 1) == 1;
-            MatchSim sim;
             try
             {
-                var challenger = new PvpBallSnapshot(result.challengerProgress.ToProgress()).ToLoadout();
-                var defender = new PvpBallSnapshot(result.defenderProgress.ToProgress()).ToLoadout();
-                sim = new MatchSim(ArenaRegistry.Create(result.arenaId), result.roundSeeds[replayRound],
-                    swapped ? new[] { defender, challenger } : new[] { challenger, defender });
+                fightDraft = PvpDraft.ForFight(fight.arenaId, new PvpBallSnapshot(fight.challengerProgress.ToProgress()),
+                    new PvpBallSnapshot(fight.defenderProgress.ToProgress()));
             }
             catch (ArgumentException e)
             {
-                // Never leave the player on a frozen arena: the result is already settled, so just show it.
-                Debug.LogWarning("[PvP] replay skipped: " + e.Message);
-                replayRound = result.roundSeeds.Length;
-                StartReplayRound();
+                Debug.LogWarning("[PvP] fight not playable: " + e.Message);
+                StartCoroutine(SendFight());
                 return;
             }
-            arena.MarkedBall = swapped ? 1 : 0;
-            arena.StartMatch(sim, swapped ? "THEM" : "YOU", swapped ? "YOU" : "THEM");
-            arena.Paused = false;
+            fightTaps.Clear();
+            fightHashes.Clear();
+            fightRound = myWins = theirWins = 0;
+            fighting = true;
+            panel.gameObject.SetActive(false);
+            skipButton.gameObject.SetActive(true);
+            arena.BeforeSimStep += OnFightStep;
+            arena.MatchEnded += OnFightRoundEnded;
+            if (Tap != null) Tap.Requesting += OnFightTap;
+            StartFightRound();
         }
 
-        void BeforeReplayStep(MatchSim sim) => PvpSeries.BeforeStep(sim);
-
-        void OnReplayRoundEnded(int winner)
+        void StartFightRound()
         {
-            if (result == null || replayRound >= result.roundSeeds.Length) return;
+            if (myWins >= 2 || theirWins >= 2 || fightRound >= PvpSeries.MaxRounds) { EndFight(); return; }
+            var sim = PvpSeries.CreateRound(fightDraft, fight.seed, fightRound, out myIndex);
+            fightSteps = 0;
+            roundLive = false;
+            arena.MarkedBall = myIndex;
+            arena.StartMatch(sim, myIndex == 0 ? HudView.PlayerTag : "THEM", myIndex == 0 ? "THEM" : HudView.PlayerTag);
             arena.Paused = true;
-            var hash = arena.Sim.ComputeHash().ToString("X16");
-            if (result.roundHashes == null || replayRound >= result.roundHashes.Length || hash != result.roundHashes[replayRound])
-            {
-                arena.BeforeSimStep -= BeforeReplayStep;
-                arena.MatchEnded -= OnReplayRoundEnded;
-                skipButton.gameObject.SetActive(false);
-                panel.gameObject.SetActive(true);
-                status.Set("REPLAY VERSION MISMATCH", Palette.WallWarning);
-                return;
-            }
-            replayRound++;
-            StartCoroutine(NextReplayRound());
+            if (Tap != null) Tap.PlayerIndex = myIndex;
+            roundIntro = RoundIntroSeconds;
+            roundText.Set(string.Format("ROUND {0}", fightRound + 1), Palette.WallWarning);
+            roundBand.enabled = true;
+            scoreText.Set(ScoreLine(), Palette.Text);
         }
 
-        IEnumerator NextReplayRound()
+        string ScoreLine() => (string.IsNullOrEmpty(AccountSession.Name) ? Tr("YOU") : Short(AccountSession.Name)) +
+            "  " + myWins + " - " + theirWins + "  " + Short(fight.opponentName);
+
+        void Update()
+        {
+            if (!fighting) return;
+            var dt = Time.unscaledDeltaTime;
+            if (roundIntro > 0f && !GuideView.Blocking)
+            {
+                roundIntro -= dt;
+                if (roundIntro <= 0f)
+                {
+                    roundText.Set("", Palette.Text);
+                    roundBand.enabled = false;
+                    arena.Paused = false;
+                    roundLive = true;
+                }
+            }
+            Tap?.TickLive(roundLive && arena.Sim != null && arena.Sim.Outcome == MatchOutcome.Ongoing, dt);
+        }
+
+        /// <summary>ArenaView is about to run one step of the round: count it (a press is recorded against the next step).</summary>
+        void OnFightStep(MatchSim sim) => fightSteps++;
+
+        /// <summary>A press on the arena: the server will apply it before the same step (taps: round, step, round, step...).</summary>
+        void OnFightTap(MatchSim sim)
+        {
+            if (!fighting || !roundLive || sim != arena.Sim) return;
+            if (fightTaps.Count / 2 >= PvpSeries.MaxTaps) return;
+            fightTaps.Add(fightRound);
+            fightTaps.Add(fightSteps);
+        }
+
+        void OnFightRoundEnded(int winner)
+        {
+            if (!fighting || !roundLive) return;
+            roundLive = false;
+            arena.Paused = true;
+            fightHashes.Add(arena.Sim.ComputeHash().ToString("X16"));
+            if (arena.Sim.WinnerIndex == myIndex) myWins++;
+            else if (arena.Sim.WinnerIndex >= 0) theirWins++;
+            fightRound++;
+            scoreText.Set(ScoreLine(), Palette.Text);
+            StartCoroutine(NextFightRound());
+        }
+
+        IEnumerator NextFightRound()
         {
             yield return new WaitForSecondsRealtime(1.25f);
-            if (IsOpen) StartReplayRound();
+            if (IsOpen && fighting) StartFightRound();
+        }
+
+        void UnhookFight()
+        {
+            arena.BeforeSimStep -= OnFightStep;
+            arena.MatchEnded -= OnFightRoundEnded;
+            if (Tap != null) { Tap.Requesting -= OnFightTap; Tap.TickLive(false, 0f); Tap.PlayerIndex = 0; }
+            fighting = roundLive = false;
+            roundText.Set("", Palette.Text);
+            roundBand.enabled = false;
+            scoreText.Set("", Palette.Text);
+            arena.Paused = true;
+            skipButton.gameObject.SetActive(false);
+        }
+
+        /// <summary>The series is over (or the player left it): the server simulates it with the recorded presses.</summary>
+        void EndFight()
+        {
+            UnhookFight();
+            panel.gameObject.SetActive(true);
+            PixelButton.NoteShownAll(panel);
+            StartCoroutine(SendFight());
+        }
+
+        IEnumerator SendFight()
+        {
+            busy = true;
+            status.Set("CONNECTING...", Palette.Text);
+            var body = new FightBody { rulesVersion = SimVersion.Rules, taps = fightTaps.ToArray() };
+            ResultReply reply = null;
+            yield return Request("POST", "/v1/challenges/" + challengeId + "/fight", JsonUtility.ToJson(body),
+                response => reply = JsonUtility.FromJson<ResultReply>(response));
+            busy = false;
+            fight = null;
+            if (reply == null) { Refresh(); yield break; }
+            // Same sim, same presses: the server's rounds must match the ones just played.
+            for (var i = 0; i < fightHashes.Count; i++)
+                if (reply.roundHashes == null || i >= reply.roundHashes.Length || reply.roundHashes[i] != fightHashes[i])
+                {
+                    Debug.LogWarning($"[PvP] round {i + 1} differs from the server ({fightHashes[i]} vs {(reply.roundHashes != null && i < reply.roundHashes.Length ? reply.roundHashes[i] : "-")})");
+                    break;
+                }
+            Settled(reply);
         }
 
         IEnumerator Request(string method, string route, string body, Action<string> receive)
