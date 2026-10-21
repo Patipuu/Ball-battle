@@ -75,6 +75,13 @@ namespace BallBattle.Sim.Pvp
             spec.BanBall = pool[rng.RangeInt(0, pool.Count)];
             var arenas = ArenaRegistry.All;
             spec.BanArena = arenas[rng.RangeInt(0, arenas.Count)].Id;
+            // 21/10 teams of three: two bench balls (one level lower) fill roster slots that a blind ban removes.
+            for (var r = 0; r < 2 && pool.Count > 0; r++)
+            {
+                var pick = pool[rng.RangeInt(0, pool.Count)];
+                pool.Remove(pick);
+                spec.Balls.Add(Tree(pick, Clamp(level - 1, 1, MetaTuning.MaxLevel), rng));
+            }
             return spec;
         }
 

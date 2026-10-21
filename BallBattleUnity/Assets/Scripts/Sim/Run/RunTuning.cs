@@ -45,7 +45,8 @@ namespace BallBattle.Sim.Run
         // Rules 23 balance (bots use their skill, Phu 21/10: a LV1 player clears a run in about 5-6 runs): fights 1-3 keep base stats and slower
         // bots; the ramp after the first boss is steeper. Measured before chapters (SimTests BotBalanceProbe, N=800, LV1 balls): Skilled 18.5% run wins
         // (first clear ~5.4 runs), reaches boss 1 in 64.3%; Greedy 1.1%. Chapter 1 (+5% HP) now measures 20.1% / 61.3% (see Chapters).
-        public static readonly Fix[] EnemyHpPct = { 0, Fix.Ratio(50, 100), Fix.Ratio(100, 100) };
+        // Rules 24 (BallPower: strong balls lowered, weak ones raised, Run enemies included): +40% / +85% keeps Skilled LV1 at ~19.6% run wins.
+        public static readonly Fix[] EnemyHpPct = { 0, Fix.Ratio(40, 100), Fix.Ratio(85, 100) };
         /// <summary>Extra damage of normal (non-boss) enemies per stage (fights 1-3, 4-6, 7-8).</summary>
         public static readonly Fix[] EnemyDamagePct = { 0, Fix.Ratio(35, 100), Fix.Ratio(60, 100) };
         /// <summary>Bot skill timing per stage (ticks, 60 = 1 s): first cast, then delay after the skill is ready again. Early foes are slower.</summary>

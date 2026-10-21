@@ -52,7 +52,7 @@ namespace BallBattle.SimTests
         {
             var run = NewRun();
             run.ApplyResult(Forced(run, true, 0.5f));
-            Assert.That(run.Build.Hp, Is.EqualTo(Fix.FromInt(FixMath.RoundToEven(RunTuning.WinHealPct * 100 + 50))), "HP kept in whole points (round half to even)");
+            Assert.That(run.Build.Hp, Is.EqualTo(Fix.FromInt(FixMath.RoundToEven((RunTuning.WinHealPct + Fix.Ratio(1, 2)) * run.Build.MaxHp))), "HP kept in whole points (round half to even)");
             Assert.That(run.Coins, Is.EqualTo(RunTuning.StartCoins + RunTuning.WinCoins));
             Assert.That(run.RetryCount, Is.Zero);
 

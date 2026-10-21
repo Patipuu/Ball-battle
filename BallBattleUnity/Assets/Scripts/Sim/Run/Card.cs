@@ -45,7 +45,7 @@ namespace BallBattle.Sim.Run
                     break;
                 case CardKind.DamageUp: b.DamagePct += RunTuning.DamageCardPct; break;
                 case CardKind.SpeedUp: b.SpeedPct += RunTuning.SpeedCardPct; break;
-                case CardKind.SwapWeapon: b.WeaponId = Id; break;
+                case CardKind.SwapWeapon: BallPower.Swap(b, Id); break;
                 case CardKind.SkillUp:
                     if (b.SkillLevel >= 3) throw new InvalidOperationException("Skill is already level 3");
                     if (b.SkillLevel == 1)

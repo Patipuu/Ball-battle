@@ -128,7 +128,7 @@ namespace BallBattle.View
                 arena.StartMatch(sim, "YOU", Flow.Run.IsBossFight ? "BOSS" : "FOE");
                 // Stat cards taken this run: HUD badges with the card icons (DAMAGE, SPEED CAP, MAX HP).
                 var build = Flow.Run.Build;
-                arena.Badges?.SetCardBadges(0, build.DamagePct > BallBattle.Sim.Fix.Zero, build.SpeedPct > BallBattle.Sim.Fix.Zero, build.MaxHp > BallBattle.Sim.Run.RunTuning.PlayerStartHp);
+                arena.Badges?.SetCardBadges(0, build.DamagePct > BallBattle.Sim.Fix.Zero, build.SpeedPct > BallBattle.Sim.Fix.Zero, build.MaxHp > BallBattle.Sim.Run.BallPower.BaseHp(build.WeaponId));   // above the ball's own base HP
                 arena.Paused = true;
                 if (Flow.Run.IsRetry) overlay.ShowRetryBanner();
             };

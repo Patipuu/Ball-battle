@@ -39,50 +39,26 @@ namespace BallBattle.Sim.Pvp
                 Start = Start, SkillUps = SkillUps, Branch = Branch, Finale = Finale
             };
             var build = new RunBuild { WeaponId = Id };
+            build.MaxHp = build.Hp = BallPower.BaseHp(Id);   // the same ball as in Run
             MetaTree.ApplyToRun(build, progress);
             return build;
         }
 
         public BallLoadout ToLoadout()
         {
-            var build = ToBuild();
-            PvpTuning.Apply(build);
-            var loadout = build.ToLoadout();
+            var loadout = ToBuild().ToLoadout();   // the same ball as in Run (BallPower included), without traits or cards
             loadout.TapEnabled = true;   // the same active tree skill as Run: the challenger taps it, the defender's bot presses it
             return loadout;
         }
     }
 
-    /// <summary>
-    /// 21/10 PvP-only balance (Rules 24): each ball's max HP and damage in ranked fights, in percent of its Run values, for its
-    /// skill branch (none before skill LV2, then A or B). Run and Versus never read this. Tuned with PvP series simulations
-    /// (both sides on the PvP bot policy, levels 1, 5 and 10) so every ball and branch wins about half of its series.
-    /// </summary>
+    /// <summary>PvP-only settings. Balls are the same as in Run (see BallPower); only the offline defender's bot timing lives here.</summary>
     public static class PvpTuning
     {
-        /// <summary>Power in percent of Run HP and damage: { no branch, branch A, branch B } per weapon id.</summary>
-        public static readonly Dictionary<string, int[]> Power = new Dictionary<string, int[]>
-        {
-            // Before (all 100): HIVE won 80-98% of its series, SPORE 70-90%, EMBER 60-90%; WRECKER 0-5%, SPARKLER ~20%, MIRROR ~25%.
-            { "blade", new[] { 95, 81, 103 } }, { "fang", new[] { 90, 93, 95 } }, { "pike", new[] { 118, 130, 121 } },
-            { "brawler", new[] { 153, 170, 153 } }, { "volley", new[] { 129, 142, 139 } }, { "venom", new[] { 98, 71, 91 } },
-            { "aegis", new[] { 130, 136, 144 } }, { "rig", new[] { 80, 79, 69 } }, { "serpent", new[] { 134, 149, 116 } },
-        };
-
         /// <summary>Defender bot (AutoSkill): first cast after this many ticks, then this long after the skill is ready again.</summary>
         public const int BotFirstTick = 180, BotRepeatTicks = 60;
-
-        public static int PercentFor(string weaponId, Skills.SkillBranch branch) =>
-            Power.TryGetValue(weaponId ?? "", out var p) ? p[(int)branch] : 100;
-
-        public static void Apply(RunBuild build)
-        {
-            var pct = PercentFor(build.WeaponId, build.SkillBranch);
-            if (pct == 100) return;
-            build.MaxHp = FixMath.Max(Fix.One, FixMath.RoundToEven(build.MaxHp * Fix.Ratio(pct, 100)));
-            build.Hp = build.MaxHp;
-            build.DamagePct = (Fix.One + build.DamagePct) * Fix.Ratio(pct, 100) - Fix.One;   // scales the tree's bonus too
-        }
+        /// <summary>Balls per side: round pair 1 is team slot 1 against slot 1, and so on (a draw replays the same pair).</summary>
+        public const int TeamSize = 3;
     }
 
     /// <summary>Blind selections submitted separately by each account before either is revealed.</summary>
@@ -106,56 +82,83 @@ namespace BallBattle.Sim.Pvp
         }
     }
 
-    /// <summary>Resolved ranked draft. Both bans apply to both sides; a duplicate removes only one option.</summary>
+    /// <summary>
+    /// Resolved ranked draft (21/10: teams of three). Both bans apply to both sides; a duplicate removes only one option.
+    /// The challenger picks three distinct legal balls in order; the defender's team is their roster in priority order with
+    /// banned balls replaced by their next balls (the rest of their collection after the roster, as the service sends it).
+    /// </summary>
     public sealed class PvpDraft
     {
         public readonly string[] BannedBalls, BannedArenas;
         public readonly string ArenaId;
-        public readonly PvpBallSnapshot Challenger, Defender;
+        public readonly PvpBallSnapshot[] ChallengerTeam, DefenderTeam;
 
-        PvpDraft(string[] bannedBalls, string[] bannedArenas, string arenaId,
-            PvpBallSnapshot challenger, PvpBallSnapshot defender)
+        PvpDraft(string[] bannedBalls, string[] bannedArenas, string arenaId, PvpBallSnapshot[] challenger, PvpBallSnapshot[] defender)
         {
             BannedBalls = bannedBalls;
             BannedArenas = bannedArenas;
             ArenaId = arenaId;
-            Challenger = challenger;
-            Defender = defender;
+            ChallengerTeam = challenger;
+            DefenderTeam = defender;
         }
 
-        /// <summary>21/10 live PvP: the draft the server already resolved (its arena and both picked balls), rebuilt on the client.</summary>
-        public static PvpDraft ForFight(string arenaId, PvpBallSnapshot challenger, PvpBallSnapshot defender)
+        /// <summary>21/10 live PvP: the draft the server already resolved (its arena and both teams), rebuilt on the client.</summary>
+        public static PvpDraft ForFight(string arenaId, IReadOnlyList<PvpBallSnapshot> challenger, IReadOnlyList<PvpBallSnapshot> defender)
         {
-            if (challenger == null || defender == null) throw new ArgumentException("Both balls are needed.");
+            if (challenger == null || defender == null || challenger.Count != PvpTuning.TeamSize || defender.Count != PvpTuning.TeamSize)
+                throw new ArgumentException("Both teams need three balls.");
+            foreach (var b in challenger) if (b == null) throw new ArgumentException("Missing ball.");
+            foreach (var b in defender) if (b == null) throw new ArgumentException("Missing ball.");
             ArenaRegistry.Get(arenaId);
-            return new PvpDraft(new string[0], new string[0], arenaId, challenger, defender);
+            return new PvpDraft(new string[0], new string[0], arenaId, Copy(challenger), Copy(defender));
+        }
+
+        static PvpBallSnapshot[] Copy(IReadOnlyList<PvpBallSnapshot> list)
+        {
+            var a = new PvpBallSnapshot[list.Count];
+            for (var i = 0; i < a.Length; i++) a[i] = list[i];
+            return a;
         }
 
         public static PvpDraft Resolve(PvpBan challengerBan, PvpBan defenderBan,
-            string challengerPick, IReadOnlyList<PvpBallSnapshot> challengerBalls,
+            IReadOnlyList<string> challengerPicks, IReadOnlyList<PvpBallSnapshot> challengerBalls,
             IReadOnlyList<PvpBallSnapshot> defenderPriority, uint serverSeed)
         {
-            if (challengerBalls == null || defenderPriority == null || defenderPriority.Count < 3)
+            if (challengerBalls == null || defenderPriority == null || defenderPriority.Count < PvpTuning.TeamSize)
                 throw new ArgumentException("Both profiles need balls and the defender needs three fallbacks.");
+            if (challengerPicks == null || challengerPicks.Count != PvpTuning.TeamSize)
+                throw new ArgumentException("Pick three balls.");
             var distinctDefense = new HashSet<string>();
             foreach (var b in defenderPriority)
                 if (b == null || !distinctDefense.Add(b.Id))
                     throw new ArgumentException("Defense roster must contain distinct valid balls.", nameof(defenderPriority));
             var bannedBalls = Distinct(challengerBan.BallId, defenderBan.BallId);
             var bannedArenas = Distinct(challengerBan.ArenaId, defenderBan.ArenaId);
-            PvpBallSnapshot challenger = null, defender = null;
-            foreach (var b in challengerBalls)
-                if (b != null && b.Id == challengerPick && !Contains(bannedBalls, b.Id) && !WeaponRegistry.IsPlayerOnly(b.Id)) challenger = b;
+
+            var challenger = new PvpBallSnapshot[PvpTuning.TeamSize];
+            var picked = new HashSet<string>();
+            for (var i = 0; i < challenger.Length; i++)
+            {
+                var id = challengerPicks[i];
+                if (id == null || !picked.Add(id) || Contains(bannedBalls, id) || WeaponRegistry.IsPlayerOnly(id))
+                    throw new ArgumentException("No legal picked ball remains.");
+                foreach (var b in challengerBalls) if (b != null && b.Id == id) challenger[i] = b;
+                if (challenger[i] == null) throw new ArgumentException("No legal picked ball remains.");
+            }
+            var defender = new List<PvpBallSnapshot>();
             foreach (var b in defenderPriority)   // BGLGXLQ (tribute) never fights as a defender
-                if (b != null && !Contains(bannedBalls, b.Id) && !WeaponRegistry.IsPlayerOnly(b.Id)) { defender = b; break; }
-            if (challenger == null || defender == null) throw new ArgumentException("No legal picked ball remains.");
+            {
+                if (defender.Count == PvpTuning.TeamSize) break;
+                if (!Contains(bannedBalls, b.Id) && !WeaponRegistry.IsPlayerOnly(b.Id)) defender.Add(b);
+            }
+            if (defender.Count < PvpTuning.TeamSize) throw new ArgumentException("No legal defender team remains.");
 
             var arenas = new List<string>();
             foreach (var a in ArenaRegistry.All)
                 if (!Contains(bannedArenas, a.Id)) arenas.Add(a.Id);
             if (arenas.Count == 0) throw new ArgumentException("No legal arena remains.");
             var arena = arenas[(int)(serverSeed % (uint)arenas.Count)];
-            return new PvpDraft(bannedBalls, bannedArenas, arena, challenger, defender);
+            return new PvpDraft(bannedBalls, bannedArenas, arena, challenger, defender.ToArray());
         }
 
         static string[] Distinct(string a, string b) => a == b ? new[] { a } : new[] { a, b };

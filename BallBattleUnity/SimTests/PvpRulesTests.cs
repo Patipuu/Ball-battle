@@ -17,27 +17,33 @@ namespace BallBattle.SimTests
         [Test]
         public void BlindBansRemoveTheUnionAndSelectTheFirstLegalDefenseBall()
         {
-            var attack = new[] { Ball("blade"), Ball("fang"), Ball("pike") };
-            var defense = new[] { Ball("fang"), Ball("pike"), Ball("brawler") };
+            var attack = new[] { Ball("blade"), Ball("fang"), Ball("pike"), Ball("volley"), Ball("rig") };
+            // Roster first (fang, pike, brawler), then the rest of the defender's balls fill banned slots.
+            var defense = new[] { Ball("fang"), Ball("pike"), Ball("brawler"), Ball("venom"), Ball("aegis") };
             var draft = PvpDraft.Resolve(new PvpBan("fang", ArenaRegistry.Classic),
-                new PvpBan("pike", ArenaRegistry.Pillar), "blade", attack, defense, 0);
+                new PvpBan("pike", ArenaRegistry.Pillar), new[] { "blade", "volley", "rig" }, attack, defense, 0);
             Assert.That(draft.BannedBalls, Is.EqualTo(new[] { "fang", "pike" }));
             Assert.That(draft.BannedArenas, Is.EqualTo(new[] { ArenaRegistry.Classic, ArenaRegistry.Pillar }));
-            Assert.That(draft.Defender.Id, Is.EqualTo("brawler"));
+            Assert.That(draft.ChallengerTeam.Select(b => b.Id), Is.EqualTo(new[] { "blade", "volley", "rig" }));
+            Assert.That(draft.DefenderTeam.Select(b => b.Id), Is.EqualTo(new[] { "brawler", "venom", "aegis" }));
             Assert.That(draft.ArenaId, Is.EqualTo(ArenaRegistry.Bumpers));
             Assert.Throws<ArgumentException>(() => PvpDraft.Resolve(new PvpBan("fang", ArenaRegistry.Classic),
-                new PvpBan("pike", ArenaRegistry.Pillar), "fang", attack, defense, 0));
+                new PvpBan("pike", ArenaRegistry.Pillar), new[] { "fang", "blade", "rig" }, attack, defense, 0), "a banned ball");
+            Assert.Throws<ArgumentException>(() => PvpDraft.Resolve(new PvpBan("fang", ArenaRegistry.Classic),
+                new PvpBan("pike", ArenaRegistry.Pillar), new[] { "blade", "blade", "rig" }, attack, defense, 0), "the same ball twice");
+            Assert.Throws<ArgumentException>(() => PvpDraft.Resolve(new PvpBan("fang", ArenaRegistry.Classic),
+                new PvpBan("pike", ArenaRegistry.Pillar), new[] { "blade", "rig" }, attack, defense, 0), "two balls");
         }
 
         [Test]
         public void DuplicateBlindBansAreValidAndRemoveAnOptionOnce()
         {
             var draft = PvpDraft.Resolve(new PvpBan("fang", ArenaRegistry.Classic),
-                new PvpBan("fang", ArenaRegistry.Classic), "blade", new[] { Ball("blade") },
-                new[] { Ball("fang"), Ball("pike"), Ball("brawler") }, 0);
+                new PvpBan("fang", ArenaRegistry.Classic), new[] { "blade", "pike", "rig" }, new[] { Ball("blade"), Ball("pike"), Ball("rig") },
+                new[] { Ball("fang"), Ball("pike"), Ball("brawler"), Ball("venom") }, 0);
             Assert.That(draft.BannedBalls, Is.EqualTo(new[] { "fang" }));
             Assert.That(draft.BannedArenas, Is.EqualTo(new[] { ArenaRegistry.Classic }));
-            Assert.That(draft.Defender.Id, Is.EqualTo("pike"));
+            Assert.That(draft.DefenderTeam.Select(b => b.Id), Is.EqualTo(new[] { "pike", "brawler", "venom" }));
             Assert.That(draft.ArenaId, Is.EqualTo(ArenaRegistry.Pillar));
         }
 
@@ -50,23 +56,17 @@ namespace BallBattle.SimTests
             });
             var defender = new PvpBallSnapshot(new BallProgress { Id = "fang", Level = 3, Vit = 2 });
             var draft = PvpDraft.Resolve(new PvpBan("pike", ArenaRegistry.Classic),
-                new PvpBan("brawler", ArenaRegistry.Pillar), "blade", new[] { attacker },
+                new PvpBan("brawler", ArenaRegistry.Pillar), new[] { "blade", "venom", "aegis" }, new[] { attacker, Ball("venom"), Ball("aegis") },
                 new[] { defender, Ball("venom"), Ball("aegis") }, 42);
-            var a = draft.Challenger.ToLoadout();
-            var b = draft.Defender.ToLoadout();
-            // The trees are carried (before the PvP power table)...
-            var aBuild = draft.Challenger.ToBuild();
-            var bBuild = draft.Defender.ToBuild();
-            Assert.That(aBuild.MaxHp, Is.GreaterThan(BallBattle.Sim.Run.RunTuning.PlayerStartHp));
-            Assert.That(bBuild.MaxHp, Is.GreaterThan(aBuild.MaxHp));
-            Assert.That(aBuild.DamagePct, Is.GreaterThan(Fix.Zero));
-            Assert.That(bBuild.DamagePct, Is.EqualTo(Fix.Zero));
-            // ...and the loadout is that build with the PvP power table (Rules 24) on top.
-            PvpTuning.Apply(aBuild);
-            PvpTuning.Apply(bBuild);
-            Assert.That(a.MaxHp, Is.EqualTo(aBuild.MaxHp));
-            Assert.That(b.MaxHp, Is.EqualTo(bBuild.MaxHp));
-            Assert.That(a.Bonus.DamagePct, Is.EqualTo(aBuild.DamagePct));
+            var a = draft.ChallengerTeam[0].ToLoadout();
+            var b = draft.DefenderTeam[0].ToLoadout();
+            // The trees are carried on top of each ball's own base (BallPower, the same as in Run).
+            var aBase = BallBattle.Sim.Run.BallPower.BaseHp("blade");
+            var bBase = BallBattle.Sim.Run.BallPower.BaseHp("fang");
+            Assert.That(a.MaxHp, Is.GreaterThan(aBase));
+            Assert.That(b.MaxHp, Is.GreaterThan(bBase));
+            Assert.That(a.Bonus.DamagePct, Is.GreaterThan(BallBattle.Sim.Run.BallPower.Scale("blade", Fix.Zero)));
+            Assert.That(b.Bonus.DamagePct, Is.EqualTo(BallBattle.Sim.Run.BallPower.Scale("fang", Fix.Zero)));
             Assert.That(a.SkillLevel, Is.EqualTo(2));
             Assert.That(b.SkillLevel, Is.EqualTo(1));
             Assert.That(a.Tree.Growth, Is.EqualTo(1));
@@ -113,7 +113,7 @@ namespace BallBattle.SimTests
         public void RankedSeriesReplaysFromTheServerSeedAndResolvedDraft()
         {
             var draft = PvpDraft.Resolve(new PvpBan("pike", ArenaRegistry.Classic),
-                new PvpBan("brawler", ArenaRegistry.Pillar), "blade", new[] { Ball("blade", 4) },
+                new PvpBan("brawler", ArenaRegistry.Pillar), new[] { "blade", "rig", "volley" }, new[] { Ball("blade", 4), Ball("rig"), Ball("volley") },
                 new[] { Ball("fang", 4), Ball("venom"), Ball("aegis") }, 501);
             var a = PvpSeries.Run(draft, 714);
             var b = PvpSeries.Run(draft, 714);
@@ -123,34 +123,43 @@ namespace BallBattle.SimTests
             Assert.That(a.RoundSeeds.Length, Is.InRange(2, PvpSeries.MaxRounds));
             Assert.That(a.ChallengerWins + a.DefenderWins + a.Draws, Is.EqualTo(a.RoundSeeds.Length));
             Assert.That(a.Winner == -1 || a.ChallengerWins == 2 || a.DefenderWins == 2, Is.True);
+            // Pairs move on after a decided round and replay after a draw.
+            Assert.That(a.RoundPairs[0], Is.Zero);
+            for (var i = 1; i < a.RoundPairs.Length; i++)
+                Assert.That(a.RoundPairs[i], Is.EqualTo(PvpSeries.NextPair(a.RoundPairs[i - 1], a.RoundWinners[i - 1])));
         }
 
         [Test]
-        public void PvpPowerTableCoversEveryRankedBallAndBranch()
+        public void PvpBallsAreTheRunBallsWithoutTraits()
         {
+            // 21/10: no PvP-only table. A PvP ball is its Run build (base HP and damage from BallPower, then the tree).
             foreach (var w in WeaponRegistry.All)
             {
                 if (WeaponRegistry.IsPlayerOnly(w.Id)) continue;
-                Assert.That(PvpTuning.Power.ContainsKey(w.Id), Is.True, w.Id);
-                Assert.That(PvpTuning.Power[w.Id].Length, Is.EqualTo(3), w.Id);
+                var pvp = new PvpBallSnapshot(new BallProgress { Id = w.Id, Level = 1 }).ToLoadout();
+                var run = new BallBattle.Sim.Run.RunBuild { WeaponId = w.Id };
+                run.MaxHp = run.Hp = BallBattle.Sim.Run.BallPower.BaseHp(w.Id);
+                BallBattle.Sim.Meta.MetaTree.ApplyToRun(run, new BallProgress { Id = w.Id, Level = 1 });
+                var runLoadout = run.ToLoadout();
+                Assert.That(pvp.MaxHp, Is.EqualTo(runLoadout.MaxHp), w.Id);
+                Assert.That(pvp.Bonus.DamagePct, Is.EqualTo(runLoadout.Bonus.DamagePct), w.Id);
+                Assert.That(pvp.Traits, Is.Empty, w.Id);
             }
-            var hive = new BallBattle.Sim.Run.RunBuild { WeaponId = "rig" };
-            var hp = hive.MaxHp;
-            PvpTuning.Apply(hive);
-            Assert.That(hive.MaxHp < hp, Is.True, "HIVE is weaker in PvP than in Run");
+            Assert.That(BallBattle.Sim.Run.BallPower.BaseHp("rig"), Is.LessThan(BallBattle.Sim.Run.RunTuning.PlayerStartHp), "HIVE was lowered");
         }
 
         [Test]
         public void LiveSeriesReplaysTheChallengersPressesExactly()
         {
-            var draft = PvpDraft.ForFight(ArenaRegistry.Classic, Ball("blade", 4), Ball("fang", 4));
+            var draft = PvpDraft.ForFight(ArenaRegistry.Classic, new[] { Ball("blade", 4), Ball("rig"), Ball("pike") },
+                new[] { Ball("fang", 4), Ball("venom"), Ball("aegis") });
             // Played like the client: a press every 40 steps, recorded as (round, step) before that step runs.
             var taps = new System.Collections.Generic.List<PvpTap>();
             var hashes = new System.Collections.Generic.List<ulong>();
-            int mine = 0, theirs = 0;
-            for (var r = 0; r < PvpSeries.MaxRounds && mine < 2 && theirs < 2; r++)
+            int mine = 0, theirs = 0, pair = 0;
+            for (var r = 0; PvpSeries.Continues(r, pair, mine, theirs); r++)
             {
-                var sim = PvpSeries.CreateRound(draft, 714, r, out var me);
+                var sim = PvpSeries.CreateRound(draft, 714, r, pair, out var me);
                 Assert.That(me, Is.EqualTo(r % 2), "sides swap every round");
                 Assert.That(sim.Balls[1 - me].AutoSkill, Is.True, "the defender's bot presses its skill");
                 Assert.That(sim.Balls[me].AutoSkill, Is.False, "the challenger presses their own");
@@ -162,7 +171,9 @@ namespace BallBattle.SimTests
                     step++;
                 }
                 hashes.Add(sim.ComputeHash());
-                if (sim.WinnerIndex == me) mine++; else if (sim.WinnerIndex >= 0) theirs++;
+                var w = sim.WinnerIndex < 0 ? -1 : sim.WinnerIndex == me ? 0 : 1;
+                if (w == 0) mine++; else if (w == 1) theirs++;
+                pair = PvpSeries.NextPair(pair, w);
             }
             var server = PvpSeries.Run(draft, 714, taps);
             Assert.That(server.RoundHashes, Is.EqualTo(hashes.ToArray()), "the server's rounds are the ones the client played");

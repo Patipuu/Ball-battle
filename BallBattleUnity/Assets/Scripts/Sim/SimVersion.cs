@@ -25,6 +25,7 @@ namespace BallBattle.Sim
         // 22: Chorus touch refresh and 15-second fade; Mimic echo blast and Warden crossfire.
         // 23: Run enemies use their active skill (same as the player's) through BallLoadout.AutoSkill. Versus and PvP unchanged.
         // 24: PvP is played live: the challenger's taps press the skill, the defender's bot presses its own; PvP-only HP/damage table.
-        public const int Rules = 24;
+        // 25: Teams of three in PvP; BallPower (per-ball base HP and damage, shared by Run and PvP) replaces the PvP-only table; Run enemy HP ramp +40/+85%.
+        public const int Rules = 25;
     }
 }

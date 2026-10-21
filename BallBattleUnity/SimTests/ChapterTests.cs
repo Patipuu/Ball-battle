@@ -124,13 +124,14 @@ namespace BallBattle.SimTests
         {
             Assert.Throws<ArgumentException>(() => new PvpBan(ChorusRule.WeaponId, ArenaRegistry.Classic));
             var balls = WeaponRegistry.All.Select(w => new PvpBallSnapshot(new BallProgress { Id = w.Id })).ToList();
-            var defense = new[] { ChorusRule.WeaponId, FangRule.WeaponId, PikeRule.WeaponId }
+            var defense = new[] { ChorusRule.WeaponId, FangRule.WeaponId, PikeRule.WeaponId, BladeRule.WeaponId }
                 .Select(id => new PvpBallSnapshot(new BallProgress { Id = id })).ToList();
             var draft = PvpDraft.Resolve(new PvpBan(VolleyRule.WeaponId, ArenaRegistry.Classic), new PvpBan(VolleyRule.WeaponId, ArenaRegistry.Classic),
-                BladeRule.WeaponId, balls, defense, 7);
-            Assert.That(draft.Defender.Id, Is.EqualTo(FangRule.WeaponId), "a stored BGLGXLQ defender is skipped");
+                new[] { BladeRule.WeaponId, FangRule.WeaponId, PikeRule.WeaponId }, balls, defense, 7);
+            Assert.That(draft.DefenderTeam.Select(b => b.Id), Is.EqualTo(new[] { FangRule.WeaponId, PikeRule.WeaponId, BladeRule.WeaponId }),
+                "a stored BGLGXLQ defender is skipped");
             Assert.Throws<ArgumentException>(() => PvpDraft.Resolve(new PvpBan(VolleyRule.WeaponId, ArenaRegistry.Classic),
-                new PvpBan(VolleyRule.WeaponId, ArenaRegistry.Classic), ChorusRule.WeaponId, balls, defense, 7));
+                new PvpBan(VolleyRule.WeaponId, ArenaRegistry.Classic), new[] { ChorusRule.WeaponId, FangRule.WeaponId, PikeRule.WeaponId }, balls, defense, 7));
         }
     }
 }

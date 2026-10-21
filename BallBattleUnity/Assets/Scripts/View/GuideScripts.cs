@@ -199,16 +199,16 @@ namespace BallBattle.View
                           "PRESS LOCK BANS AND BOTH SIDES ARE REVEALED.", PvpAction));
 
         public static readonly GuideScene PvpPick = new GuideScene("pvp_pick",
-            new GuideLine("GIỜ CHỌN BÓNG CỦA CAO THỦ TRONG SỐ BÓNG CÒN DÙNG ĐƯỢC. CHẠM ĐỂ ĐỔI.",
-                          "NOW PICK YOUR BALL FROM THE ONES STILL ALLOWED. TAP TO CHANGE.", PvpBall),
+            new GuideLine("GIỜ CHỌN ĐỘI 3 BÓNG THEO THỨ TỰ ĐÁNH: HIỆP 1 LÀ BÓNG ĐẦU, HIỆP 2 BÓNG THỨ HAI... CHẠM ĐỂ ĐỔI.",
+                          "NOW PICK A TEAM OF 3 IN FIGHTING ORDER: ROUND 1 IS THE FIRST BALL, ROUND 2 THE SECOND... TAP TO CHANGE.", PvpCards),
             new GuideLine("BẤM VÀO ĐẤU ĐỂ ĐÁNH. NẾU CAO THỦ BỎ ĐI LÚC NÀY, MÁY CHỦ SẼ CHỌN GIÚP.",
                           "PRESS FIGHT TO PLAY. IF YOU LEAVE NOW, THE SERVER PICKS FOR YOU.", PvpAction));
 
         public static readonly GuideScene PvpFight = new GuideScene("pvp_fight",
             new GuideLine("TRẬN PVP LÀ ĐÁNH THẬT: CHẠM MÀN HÌNH ĐỂ TUNG KỸ NĂNG KHI VÒNG SÁNG QUANH BÓNG ĐẦY.",
                           "PVP IS PLAYED LIVE: TAP THE SCREEN TO USE YOUR SKILL WHEN THE RING AROUND YOUR BALL IS FULL.", HudBottom),
-            new GuideLine("ĐỐI THỦ KHÔNG ONLINE, NÊN BÓNG CỦA HỌ DO BOT ĐIỀU KHIỂN. THẮNG 2 HIỆP LÀ THẮNG TRẬN.",
-                          "YOUR OPPONENT IS NOT ONLINE, SO A BOT PLAYS THEIR BALL. WIN 2 ROUNDS TO WIN."));
+            new GuideLine("MỖI HIỆP LÀ MỘT CẶP BÓNG KHÁC. ĐỐI THỦ KHÔNG ONLINE NÊN BOT ĐIỀU KHIỂN BÓNG CỦA HỌ. THẮNG 2 HIỆP LÀ THẮNG.",
+                          "EACH ROUND IS A NEW PAIR OF BALLS. YOUR OPPONENT IS OFFLINE, SO A BOT PLAYS THEIRS. WIN 2 ROUNDS TO WIN."));
 
         public static readonly GuideScene PvpResult = new GuideScene("pvp_result",
             new GuideLine("XONG! MMR CỦA CAO THỦ ĐÃ ĐƯỢC CẬP NHẬT.", "DONE! YOUR MMR HAS BEEN UPDATED."),

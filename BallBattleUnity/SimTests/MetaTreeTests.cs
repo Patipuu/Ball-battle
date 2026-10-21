@@ -106,7 +106,7 @@ namespace BallBattle.SimTests
             Assert.That(MetaTree.Spent(t), Is.EqualTo(10));
             var run = RunState.Start(7, id, p);
             Assert.That((run.Build.SkillLevel, run.Build.SkillBranch), Is.EqualTo((3, SkillBranch.B)));
-            Assert.That(run.Build.MaxHp, Is.EqualTo(RunTuning.PlayerStartHp * Fix.Ratio(100 + TreeTuning.HpPct(id), 100)));
+            Assert.That(run.Build.MaxHp, Is.EqualTo(BallPower.BaseHp(id) * Fix.Ratio(100 + TreeTuning.HpPct(id), 100)));
             Assert.That(run.Build.Hp, Is.EqualTo(run.Build.MaxHp));
             Assert.That(run.Build.DamagePct, Is.EqualTo(Fix.Ratio(TreeTuning.DamagePct(id), 100)));
             Assert.That((run.Build.TreeOn, run.Build.TreeGrowth, run.Build.TreeStart, run.Build.TreeFinale), Is.EqualTo((true, 1, true, 2)));

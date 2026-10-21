@@ -281,7 +281,7 @@ namespace BallBattle.Tests
             }
             Assert.That(seed, Is.Not.Zero);
             rig.rc.Flow.Progress.ChaptersCleared = 1;
-            LogAssert.Expect(LogType.Log, new Regex(@"^\[BallBattle\] Fight 1 ended: seed " + seed + @" \(match \d+\), outcome (Win|Lost|Draw), tick \d+, you brawler HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, enemy aegis HP start \d+\.\d\d heal \d+\.\d\d end \d+\.\d\d, DMG DEALT \d+\.\d\d TAKEN \d+\.\d\d$"));
+            LogAssert.Expect(LogType.Log, new Regex(@"^\[BallBattle\] Fight 1 ended: seed " + seed + @" \(match \d+\), outcome (Win|Lost|Draw), tick \d+, you brawler HP start \d+\.\d\d heal \d+\.\d\d end \d+\.\d\d, enemy aegis HP start \d+\.\d\d heal \d+\.\d\d end \d+\.\d\d, DMG DEALT \d+\.\d\d TAKEN \d+\.\d\d$"));
             PlayFightOne(rig, seed, BrawlerRule.WeaponId, 1);
             var healed = rig.events.Where(e => e.Type == SimEventType.Heal && e.A == 1).Sum(e => e.Value.ToFloat());
             Assert.That(healed, Is.GreaterThan(0f));

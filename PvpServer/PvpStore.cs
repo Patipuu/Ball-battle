@@ -380,8 +380,10 @@ namespace BallBattle.PvpServer
                 if (c.State == "expired") throw new ArgumentException("Challenge expired. Start a new offer.");
                 if (c.State == "fight") return Fight(c);
                 if (c.State != "pick") throw new ArgumentException("Submit your blind bans first.");
-                var draft = Draft(c, request?.BallId);   // throws for a ball that is not legal
-                c.PickBall = request.BallId;
+                var picks = request?.BallIds?.ToList() ?? new List<string>();
+                var draft = Draft(c, picks);   // throws for a team that is not legal
+                c.PickBalls = picks;
+                c.PickBall = picks[0];
                 c.ArenaId = draft.ArenaId;
                 c.State = "fight";
                 c.FightStartedUtc = Clock();
@@ -406,7 +408,7 @@ namespace BallBattle.PvpServer
                 if (c.State != "fight") throw new ArgumentException("Pick your ball first.");
                 if (request != null && request.RulesVersion != 0 && request.RulesVersion != SimVersion.Rules)
                     throw new ArgumentException("UPDATE THE GAME TO PLAY PVP");
-                Settle(c, c.PickBall, false, Taps(request?.Taps));
+                Settle(c, Picks(c), false, Taps(request?.Taps));
                 Save();
                 return Result(c);
             }
@@ -426,20 +428,33 @@ namespace BallBattle.PvpServer
             return taps;
         }
 
-        PvpDraft Draft(Challenge c, string ballId) => PvpDraft.Resolve(new PvpBan(c.ChallengerBanBall, c.ChallengerBanArena),
-            new PvpBan(c.DefenderBanBall, c.DefenderBanArena), ballId,
-            c.ChallengerBalls.Select(b => new PvpBallSnapshot(b)).ToList(),
-            c.DefenderRoster.Select(r => new PvpBallSnapshot(c.DefenderBalls.First(b => b.Id == r))).ToList(), c.Seed);
+        /// <summary>21/10 teams of three: the defender's roster in order, then (for banned slots) their other balls by level.</summary>
+        PvpDraft Draft(Challenge c, IReadOnlyList<string> picks) => PvpDraft.Resolve(new PvpBan(c.ChallengerBanBall, c.ChallengerBanArena),
+            new PvpBan(c.DefenderBanBall, c.DefenderBanArena), picks,
+            c.ChallengerBalls.Select(b => new PvpBallSnapshot(b)).ToList(), DefenderPriority(c), c.Seed);
+
+        static List<PvpBallSnapshot> DefenderPriority(Challenge c) =>
+            c.DefenderRoster.Select(r => c.DefenderBalls.First(b => b.Id == r))
+                .Concat(c.DefenderBalls.Where(b => !c.DefenderRoster.Contains(b.Id)).OrderByDescending(b => b.Level).ThenBy(b => b.Id, StringComparer.Ordinal))
+                .Select(b => new PvpBallSnapshot(b))
+                // Last resort (an old account with fewer balls than bans need): unowned balls at level 1.
+                .Concat(WeaponRegistry.All.Where(w => !WeaponRegistry.IsPlayerOnly(w.Id) && c.DefenderBalls.All(b => b.Id != w.Id))
+                    .Select(w => new PvpBallSnapshot(new BallProgress { Id = w.Id, Level = 1 })))
+                .ToList();
 
         /// <summary>Runs the series once and commits the challenger's MMR. The only place a challenge becomes "done".</summary>
-        void Settle(Challenge c, string ballId, bool auto, IReadOnlyList<PvpTap> taps = null)
+        void Settle(Challenge c, List<string> picks, bool auto, IReadOnlyList<PvpTap> taps = null)
         {
-            var draft = Draft(c, ballId);
+            var draft = Draft(c, picks);
             var series = PvpSeries.Run(draft, c.Seed, taps);
             c.Taps = taps?.Count ?? 0;
             var challenger = Get(c.ChallengerId);
             var defender = data.Accounts.FirstOrDefault(a => a.Id == c.DefenderId);
-            c.PickBall = ballId;
+            c.PickBalls = picks;
+            c.PickBall = picks[0];
+            c.DefenderTeam = draft.DefenderTeam.Select(b => b.Id).ToList();
+            c.RoundPairs = series.RoundPairs;
+            c.RoundWinners = series.RoundWinners;
             c.AutoPicked = auto;
             c.ArenaId = draft.ArenaId;
             c.Winner = series.Winner;
@@ -474,22 +489,23 @@ namespace BallBattle.PvpServer
             foreach (var c in data.Challenges)
             {
                 if (c.ChallengerId != challengerId || !Open(c)) continue;
-                if (c.State == "fight") { if (now <= c.FightStartedUtc + FightLife) continue; Settle(c, c.PickBall, true); }
+                if (c.State == "fight") { if (now <= c.FightStartedUtc + FightLife) continue; Settle(c, Picks(c), true); }
                 else if (now <= c.CreatedUtc + ChallengeLife) continue;
                 else if (c.State == "ban") c.State = "expired";
+                else if (AutoPick(c).Count < PvpTuning.TeamSize) c.State = "expired";
                 else Settle(c, AutoPick(c), true);
                 changed = true;
             }
             if (changed) Save();
         }
 
-        static string AutoPick(Challenge c)
-        {
-            BallProgress best = null;
-            foreach (var b in c.ChallengerBalls)
-                if (b.Id != c.ChallengerBanBall && b.Id != c.DefenderBanBall && (best == null || b.Level > best.Level)) best = b;
-            return best?.Id;
-        }
+        /// <summary>The team picked, or (a fight started by a one-ball client before teams) the auto pick.</summary>
+        static List<string> Picks(Challenge c) => c.PickBalls != null && c.PickBalls.Count == PvpTuning.TeamSize ? c.PickBalls : AutoPick(c);
+
+        /// <summary>The challenger's three highest-level legal balls (left after the reveal without picking).</summary>
+        static List<string> AutoPick(Challenge c) => c.ChallengerBalls
+            .Where(b => b.Id != c.ChallengerBanBall && b.Id != c.DefenderBanBall && !WeaponRegistry.IsPlayerOnly(b.Id))
+            .OrderByDescending(b => b.Level).ThenBy(b => b.Id, StringComparer.Ordinal).Take(PvpTuning.TeamSize).Select(b => b.Id).ToList();
 
         static bool Open(Challenge c) => c.State == "ban" || c.State == "pick" || c.State == "fight";
 
@@ -533,11 +549,12 @@ namespace BallBattle.PvpServer
         /// <summary>Everything the client needs to play the series itself (the same draft the server will simulate).</summary>
         object Fight(Challenge c)
         {
-            var defenderBall = c.DefenderRoster.FirstOrDefault(b => b != c.ChallengerBanBall && b != c.DefenderBanBall);
+            var draft = Draft(c, Picks(c));
+            var defenderTeam = draft.DefenderTeam.Select(b => b.Id).ToArray();
             return new { challengeId = c.Id, state = c.State, opponentName = NameOf(c.DefenderId), arenaId = c.ArenaId, seed = c.Seed,
-                rulesVersion = SimVersion.Rules, challengerBall = c.PickBall, defenderBall,
-                challengerProgress = c.ChallengerBalls.FirstOrDefault(b => b.Id == c.PickBall),
-                defenderProgress = c.DefenderBalls.FirstOrDefault(b => b.Id == defenderBall),
+                rulesVersion = SimVersion.Rules, challengerTeam = Picks(c).ToArray(), defenderTeam,
+                challengerProgress = Picks(c).Select(id => c.ChallengerBalls.First(b => b.Id == id)).ToArray(),
+                defenderProgress = defenderTeam.Select(id => c.DefenderBalls.First(b => b.Id == id)).ToArray(),
                 challengerBanBall = c.ChallengerBanBall, challengerBanArena = c.ChallengerBanArena,
                 defenderBanBall = c.DefenderBanBall, defenderBanArena = c.DefenderBanArena,
                 secondsLeft = Math.Max(0, (int)(c.FightStartedUtc + FightLife - Clock()).TotalSeconds) };
@@ -548,9 +565,10 @@ namespace BallBattle.PvpServer
             autoPicked = c.AutoPicked, createdUtc = c.CreatedUtc.ToString("o"), winner = c.Winner, challengerWins = c.ChallengerWins,
             defenderWins = c.DefenderWins, draws = c.Draws, arenaId = c.ArenaId,
             challengerBall = c.PickBall,
-            defenderBall = c.DefenderRoster.FirstOrDefault(b => b != c.ChallengerBanBall && b != c.DefenderBanBall),
-            challengerProgress = c.ChallengerBalls.FirstOrDefault(b => b.Id == c.PickBall),
-            defenderProgress = c.DefenderBalls.FirstOrDefault(b => b.Id == c.DefenderRoster.FirstOrDefault(r => r != c.ChallengerBanBall && r != c.DefenderBanBall)),
+            defenderBall = c.DefenderTeam?.FirstOrDefault(),
+            challengerTeam = c.PickBalls?.ToArray() ?? new[] { c.PickBall },
+            defenderTeam = c.DefenderTeam?.ToArray() ?? new string[0],
+            roundPairs = c.RoundPairs ?? new int[0], roundWinners = c.RoundWinners ?? new int[0],
             challengerBanBall = c.ChallengerBanBall, challengerBanArena = c.ChallengerBanArena,
             defenderBanBall = c.DefenderBanBall, defenderBanArena = c.DefenderBanArena,
             mmrBefore = c.ChallengerMmrBefore, mmrAfter = c.ChallengerMmrBefore + c.Delta,

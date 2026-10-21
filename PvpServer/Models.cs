@@ -74,6 +74,11 @@ namespace BallBattle.PvpServer
         public uint[] RoundSeeds { get; set; }
         public string[] RoundHashes { get; set; }
         /// <summary>21/10 live PvP: when the challenger started playing (state "fight") and how many presses they sent.</summary>
+        /// <summary>21/10 teams of three: the challenger's picks in order, the defender's resolved team, and per round the pair and winner.</summary>
+        public List<string> PickBalls { get; set; } = new List<string>();
+        public List<string> DefenderTeam { get; set; }
+        public int[] RoundPairs { get; set; }
+        public int[] RoundWinners { get; set; }
         public DateTime FightStartedUtc { get; set; }
         public int Taps { get; set; }
     }
@@ -95,7 +100,8 @@ namespace BallBattle.PvpServer
 
     public sealed class ChooseRequest { public string OfferId { get; set; } public string OpponentId { get; set; } }
     public sealed class BanRequest { public string BallId { get; set; } public string ArenaId { get; set; } }
-    public sealed class PickRequest { public string BallId { get; set; } }
+    /// <summary>21/10: three distinct balls in fighting order.</summary>
+    public sealed class PickRequest { public string[] BallIds { get; set; } }
     /// <summary>The challenger's skill presses: round, step, round, step... and the rules the client played with.</summary>
     public sealed class FightRequest { public int RulesVersion { get; set; } public int[] Taps { get; set; } }
     public sealed class NameRequest { public string Name { get; set; } }

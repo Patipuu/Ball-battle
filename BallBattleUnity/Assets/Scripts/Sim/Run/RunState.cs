@@ -130,6 +130,7 @@ namespace BallBattle.Sim.Run
             foreach (var w in ch.EnemyWeapons) if (!WeaponRegistry.IsPlayerOnly(w)) run.EnemyWeapons.Add(w);
             foreach (var t in TraitRegistry.All) if (!t.PlayerOnly) run.EnemyTraits.Add(t.Id);
             run.Build.WeaponId = weaponId;
+            run.Build.MaxHp = run.Build.Hp = BallPower.BaseHp(weaponId);   // Rules 24: each ball's own base HP
             // BB-12g: the ball's skill tree (points from its level) gives the run its root bonuses, skill level/branch and in-match nodes.
             if (RunTuning.SkillTree) Meta.MetaTree.ApplyToRun(run.Build, FindBall(progress, weaponId));
             run.SkillOverride = forceSkill;

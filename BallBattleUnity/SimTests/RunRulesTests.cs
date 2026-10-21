@@ -142,6 +142,7 @@ namespace BallBattle.SimTests
         public void HeavyKeepsTheHpFractionSoNoFreeHpCarriesOver()
         {
             var run = NewRun();
+            run.Build.MaxHp = FT.X(100f);   // this test's numbers are out of 100 (the ball's own base HP may differ: BallPower)
             run.Build.Hp = FT.X(30f);
             run.Build.Traits.Add(new TraitSlot("heavy", 2));
             var m = run.CreateMatch();

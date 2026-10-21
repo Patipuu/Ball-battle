@@ -16,6 +16,58 @@ namespace BallBattle.Sim.Run
     }
 
     /// <summary>
+    /// 21/10 (Rules 24) per-ball damage, in percent: the same in Run (player and enemies) and in PvP, so the two modes stay alike
+    /// (PvP only drops traits and cards). Tuned on 1v1 PvP rounds (bot policy, LV1/5/10, both branches) and checked against the
+    /// Run gate. Before (one-on-one round wins): HIVE 89%, SPORE 80%, EMBER 70%, MANTIS 68% ... WRECKER 7%, SPARKLER 27%, MIRROR 30%;
+    /// after: all 42-52% except SPORE 75% (kept strong enough for Run, where its poison meets bigger HP pools). PvE skilled LV1 run
+    /// wins per ball went from 0-78% (HIVE 78%) to 4-32%. Versus keeps its own profile and never reads this.
+    /// </summary>
+    public static class BallPower
+    {
+        /// <summary>Base max HP in percent of RunTuning.PlayerStartHp (the start of a run, an enemy before its stage bonus, a PvP ball).</summary>
+        public static readonly System.Collections.Generic.Dictionary<string, int> HpPercent =
+            new System.Collections.Generic.Dictionary<string, int>
+        {
+            { "rig", 62 }, { "venom", 85 }, { "blade", 75 }, { "fang", 74 },          // too strong: lowered
+            { "brawler", 135 }, { "volley", 116 }, { "aegis", 115 },              // too weak: raised
+        };
+        /// <summary>Damage in percent (every kind: weapon, shots, poison, reflects, skills).</summary>
+        public static readonly System.Collections.Generic.Dictionary<string, int> DamagePercent =
+            new System.Collections.Generic.Dictionary<string, int>
+        {
+            { "rig", 62 }, { "venom", 85 }, { "blade", 75 }, { "fang", 74 },          // too strong: lowered
+            { "brawler", 135 }, { "volley", 116 }, { "aegis", 115 },              // too weak: raised
+        };
+
+        static int Get(System.Collections.Generic.Dictionary<string, int> table, string weaponId) =>
+            weaponId != null && table.TryGetValue(weaponId, out var p) ? p : 100;
+
+        public static int HpPercentFor(string weaponId) => Get(HpPercent, weaponId);
+        public static int DamagePercentFor(string weaponId) => Get(DamagePercent, weaponId);
+
+        /// <summary>The ball's base max HP (whole points).</summary>
+        public static Fix BaseHp(string weaponId) => FixMath.RoundToEven(RunTuning.PlayerStartHp * Fix.Ratio(HpPercentFor(weaponId), 100));
+
+        /// <summary>The damage bonus with the ball's power on top: (1 + bonus) * pct - 1.</summary>
+        public static Fix Scale(string weaponId, Fix damagePct)
+        {
+            var pct = DamagePercentFor(weaponId);
+            return pct == 100 ? damagePct : (Fix.One + damagePct) * Fix.Ratio(pct, 100) - Fix.One;
+        }
+
+        /// <summary>SWAP card: the new ball's base HP replaces the old one's, keeping everything earned on top in proportion.</summary>
+        public static void Swap(RunBuild b, string newWeapon)
+        {
+            var from = HpPercentFor(b.WeaponId);
+            var to = HpPercentFor(newWeapon);
+            b.WeaponId = newWeapon;
+            if (from == to) return;
+            b.MaxHp = FixMath.Max(Fix.One, FixMath.RoundToEven(b.MaxHp * Fix.Ratio(to, from)));
+            b.SetHp(b.Hp * Fix.Ratio(to, from));
+        }
+    }
+
+    /// <summary>
     /// A ball described by ids and numbers (serializable, reusable). ToLoadout() makes fresh weapon/trait
     /// instances for one match. Used for the player (carried between fights) and for generated enemies.
     /// </summary>
@@ -59,7 +111,8 @@ namespace BallBattle.Sim.Run
             var l = new BallLoadout(!string.IsNullOrEmpty(BossId) && BossId != Boss.BossIds.Mimic
                 ? (WeaponRule)new Boss.BossCoreRule(BossId) : WeaponRegistry.Create(WeaponId))
             {
-                Bonus = new StatBonus { DamagePct = DamagePct, SpeedPct = SpeedPct },
+                // BallPower: the ball's own damage (Run player, Run enemies and PvP alike; bosses keep theirs).
+                Bonus = new StatBonus { DamagePct = string.IsNullOrEmpty(BossId) ? BallPower.Scale(WeaponId, DamagePct) : DamagePct, SpeedPct = SpeedPct },
                 MaxHp = MaxHp,
                 Hp = Hp,
                 Radius = Radius,

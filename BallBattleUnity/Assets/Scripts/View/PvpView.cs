@@ -19,7 +19,7 @@ namespace BallBattle.View
         [Serializable] sealed class OfferReply { public string offerId; public int refreshSeconds; public Opponent[] opponents; }
         [Serializable] sealed class Opponent { public string id, name; public int mmr, averageLevel, winDelta, lossDelta; }
         [Serializable] sealed class ChallengeReply { public string challengeId, state, opponentName; public string[] legalBalls; public string challengerBanBall, challengerBanArena, defenderBanBall, defenderBanArena; }
-        [Serializable] sealed class ResultReply { public string state, arenaId, challengerBall, defenderBall, opponentName; public bool autoPicked; public int winner, challengerWins, defenderWins, delta, mmrAfter; public uint[] roundSeeds; public string[] roundHashes; public WireBall challengerProgress, defenderProgress; }
+        [Serializable] sealed class ResultReply { public string state, arenaId, challengerBall, defenderBall, opponentName; public bool autoPicked; public int winner, challengerWins, defenderWins, delta, mmrAfter; public uint[] roundSeeds; public string[] roundHashes; public WireBall challengerProgress, defenderProgress; public string[] challengerTeam, defenderTeam; public int[] roundPairs, roundWinners; }
         /// <summary>
         /// A ball build as the server sends it. ASP.NET writes camelCase ("id", "level"), and JsonUtility only matches exact field
         /// names, so BallProgress (Id, Level) would come back empty and the replay could not start.
@@ -33,12 +33,12 @@ namespace BallBattle.View
         }
         [Serializable] sealed class ErrorReply { public string error; }
         /// <summary>21/10 live PvP: the resolved draft the client plays (state "fight").</summary>
-        [Serializable] sealed class FightReply { public string challengeId, state, opponentName, arenaId, challengerBall, defenderBall; public uint seed; public int rulesVersion, secondsLeft; public WireBall challengerProgress, defenderProgress; }
+        [Serializable] sealed class FightReply { public string challengeId, state, opponentName, arenaId; public string[] challengerTeam, defenderTeam; public uint seed; public int rulesVersion, secondsLeft; public WireBall[] challengerProgress, defenderProgress; }
         [Serializable] sealed class FightBody { public int rulesVersion; public int[] taps; }
         [Serializable] sealed class HistoryReply { public ResultReply[] items; }
         [Serializable] sealed class NameAndId { public string offerId, opponentId; }
         [Serializable] sealed class BanBody { public string ballId, arenaId; }
-        [Serializable] sealed class PickBody { public string ballId; }
+        [Serializable] sealed class PickBody { public string[] ballIds; }
         [Serializable] sealed class PublishBody { public List<BallProgress> balls; public string[] roster; public string banBall, banArena; }
 
         enum Phase { Loading, Setup, Offers, Ban, Pick, Result, History }
@@ -60,13 +60,15 @@ namespace BallBattle.View
         SpriteRenderer tierBadge, banBallIcon, arenaSwatch, arenaSwatchWall;
         GameObject pickRoot, resultRoot;
         SpriteRenderer pickIcon, resultYouIcon, resultThemIcon;
+        readonly SpriteRenderer[] rowMine = new SpriteRenderer[3], rowTheirs = new SpriteRenderer[3];
+        readonly PixelText[] rowMineName = new PixelText[3], rowTheirName = new PixelText[3], rowResult = new PixelText[3];
         PixelText pickName, pickLevel, resultYouLabel, resultThemLabel, resultYouBall, resultThemBall, resultVs, resultScore, resultDelta, resultArena;
         ArenaView arena;
         ResultReply result;
         // 21/10 live PvP fight state.
         FightReply fight;
         PvpDraft fightDraft;
-        int fightRound, fightSteps, myIndex, myWins, theirWins;
+        int fightRound, fightPair, fightSteps, myIndex, myWins, theirWins;
         bool fighting, roundLive;
         float roundIntro;
         readonly List<int> fightTaps = new List<int>();
@@ -79,7 +81,9 @@ namespace BallBattle.View
         ISaveStore store;
         string[] ids, arenas, legal;
         int[] rosterIndex = { 0, 1, 2 };
-        int banBallIndex = 3, banArenaIndex, pickIndex, historyPage, offerRefreshSeconds;
+        int banBallIndex = 3, banArenaIndex, historyPage, offerRefreshSeconds;
+        /// <summary>21/10 teams of three: the picked balls, as indexes into <see cref="legal"/>, in fighting order.</summary>
+        readonly int[] team = { 0, 1, 2 };
         float offersLoadedAt;
         ResultReply[] history;
         Phase beforeHistory;
@@ -151,8 +155,7 @@ namespace BallBattle.View
             ballButton = Button(art, "BanBall", new Rect(-112, -58, 224, 26), "", () =>
             {
                 if (busy) return;
-                if (phase == Phase.Pick) pickIndex = legal != null && legal.Length > 0 ? (pickIndex + 1) % legal.Length : 0;
-                else banBallIndex = (banBallIndex + 1) % ids.Length;
+                banBallIndex = (banBallIndex + 1) % ids.Length;
                 Refresh();
             });
             arenaButton = Button(art, "BanArena", new Rect(-112, -90, 224, 26), "", () => { if (busy) return; banArenaIndex = (banArenaIndex + 1) % arenas.Length; Refresh(); });
@@ -235,14 +238,22 @@ namespace BallBattle.View
             var o = MenuView.Order + 9;
             PixelRect.Set(PixelRect.Create(t, "Border", art.Pixel, StripBorder, MenuView.Order + 7), -112, -76, 112, 124);
             PixelRect.Set(PixelRect.Create(t, "Fill", art.Pixel, StripFill, MenuView.Order + 8), -111, -75, 111, 123);
-            resultYouLabel = PixelText.Create(t, "YouLabel", art.Font, new Vector2(-56, 62), PixelText.Align.Center, 1, o);
-            resultThemLabel = PixelText.Create(t, "ThemLabel", art.Font, new Vector2(56, 62), PixelText.Align.Center, 1, o);
-            resultYouIcon = RunUi.Icon(t, new Vector2(-56, 40), o);
-            resultThemIcon = RunUi.Icon(t, new Vector2(56, 40), o);
-            resultVs = PixelText.Create(t, "Vs", art.Font, new Vector2(0, 28), PixelText.Align.Center, 2, o);
-            resultYouBall = PixelText.Create(t, "YouBall", art.Font, new Vector2(-56, 9), PixelText.Align.Center, 1, o);
-            resultThemBall = PixelText.Create(t, "ThemBall", art.Font, new Vector2(56, 9), PixelText.Align.Center, 1, o);
-            resultScore = PixelText.Create(t, "Score", art.Font, new Vector2(0, -36), PixelText.Align.Center, 3, o);
+            resultYouLabel = PixelText.Create(t, "YouLabel", art.Font, new Vector2(-104, 64), PixelText.Align.Left, 1, o);
+            resultThemLabel = PixelText.Create(t, "ThemLabel", art.Font, new Vector2(104, 64), PixelText.Align.Right, 1, o);
+            // 21/10 teams: one row per pair, my ball | result | their ball.
+            for (var r = 0; r < PvpTuning.TeamSize; r++)
+            {
+                var y = 50 - r * 20;
+                rowMine[r] = RunUi.Icon(t, new Vector2(-96, y), o);
+                rowMine[r].transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+                rowTheirs[r] = RunUi.Icon(t, new Vector2(96, y), o);
+                rowTheirs[r].transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+                rowMineName[r] = PixelText.Create(t, "MineName" + r, art.Font, new Vector2(-84, y - 6), PixelText.Align.Left, 1, o);
+                rowTheirName[r] = PixelText.Create(t, "TheirName" + r, art.Font, new Vector2(84, y - 6), PixelText.Align.Right, 1, o);
+                rowResult[r] = PixelText.Create(t, "Row" + r, art.Font, new Vector2(0, y - 6), PixelText.Align.Center, 1, o);
+            }
+            resultVs = PixelText.Create(t, "Vs", art.Font, new Vector2(0, 64), PixelText.Align.Center, 1, o);
+            resultScore = PixelText.Create(t, "Score", art.Font, new Vector2(0, -38), PixelText.Align.Center, 3, o);
             resultDelta = PixelText.Create(t, "Delta", art.Font, new Vector2(0, -54), PixelText.Align.Center, 1, o);
             resultArena = PixelText.Create(t, "Arena", art.Font, new Vector2(0, -70), PixelText.Align.Center, 1, o);
             resultRoot.SetActive(false);
@@ -429,6 +440,18 @@ namespace BallBattle.View
             }
             else if (phase == Phase.Offers && opponents != null && i < opponents.Length)
                 StartCoroutine(Choose(opponents[i]));
+            else if (phase == Phase.Pick && legal != null && legal.Length >= PvpTuning.TeamSize)
+            {
+                // Next legal ball that no other slot holds.
+                for (var n = 1; n <= legal.Length; n++)
+                {
+                    var next = (team[i] + n) % legal.Length;
+                    if (next == team[(i + 1) % 3] || next == team[(i + 2) % 3]) continue;
+                    team[i] = next;
+                    break;
+                }
+                Refresh();
+            }
             else if (phase == Phase.History && history != null && historyPage * 3 + i < history.Length)
                 ShowResult(history[historyPage * 3 + i]);
         }
@@ -440,7 +463,8 @@ namespace BallBattle.View
             else if (phase == Phase.Setup) StartCoroutine(Publish());
             else if (phase == Phase.Offers) StartCoroutine(LoadOffers());
             else if (phase == Phase.Ban) StartCoroutine(Ban());
-            else if (phase == Phase.Pick && legal != null && legal.Length > 0) StartCoroutine(Pick(legal[pickIndex % legal.Length]));
+            else if (phase == Phase.Pick && legal != null && legal.Length >= PvpTuning.TeamSize)
+                StartCoroutine(Pick(new[] { legal[team[0]], legal[team[1]], legal[team[2]] }));
             else if (phase == Phase.Result) StartCoroutine(LoadOffers());
             else if (phase == Phase.History && history != null && history.Length > 3)
             {
@@ -492,18 +516,18 @@ namespace BallBattle.View
         void ApplyReveal(ChallengeReply reply)
         {
             legal = reply.legalBalls;
-            pickIndex = BestLegal();
+            BestTeam();
             phase = Phase.Pick;
-            status.Set("PICK A BALL", Palette.Text);
+            status.Set("PICK YOUR TEAM OF 3", Palette.Text);
             details.Set(string.Format("THEIR BANS: {0} / {1}", BallName(reply.defenderBanBall), ArenaName(reply.defenderBanArena)), LossColor);
         }
 
-        IEnumerator Pick(string ballId)
+        IEnumerator Pick(string[] ballIds)
         {
             busy = true;
             result = null;
             fight = null;
-            yield return Request("POST", "/v1/challenges/" + challengeId + "/pick", JsonUtility.ToJson(new PickBody { ballId = ballId }), response =>
+            yield return Request("POST", "/v1/challenges/" + challengeId + "/pick", JsonUtility.ToJson(new PickBody { ballIds = ballIds }), response =>
             {
                 var state = JsonUtility.FromJson<ChallengeReply>(response).state;
                 if (state == "done") Settled(JsonUtility.FromJson<ResultReply>(response));
@@ -536,28 +560,46 @@ namespace BallBattle.View
             banner.Set(outcome, outcomeColor);
             status.Set(reply.autoPicked ? "AUTO: " + outcome : "", outcomeColor);
             details.Set("", Palette.Text);
-            resultYouLabel.Set("YOU", Palette.TextDim);
+            resultYouLabel.Set(string.IsNullOrEmpty(AccountSession.Name) ? "YOU" : Short(AccountSession.Name), Palette.TextDim);
             resultThemLabel.Set(Short(reply.opponentName ?? opponentName), Palette.TextDim);
-            resultYouIcon.sprite = string.IsNullOrEmpty(reply.challengerBall) ? null : art.Get(reply.challengerBall).Ball;
-            resultThemIcon.sprite = string.IsNullOrEmpty(reply.defenderBall) ? null : art.Get(reply.defenderBall).Ball;
-            resultYouBall.Set(BallName(reply.challengerBall), Palette.Look(reply.challengerBall).Body);
-            resultThemBall.Set(BallName(reply.defenderBall), Palette.Look(reply.defenderBall).Body);
             resultVs.Set("VS", Palette.WallWarning);
+            var mine = reply.challengerTeam != null && reply.challengerTeam.Length > 0 ? reply.challengerTeam : new[] { reply.challengerBall };
+            var theirs = reply.defenderTeam != null && reply.defenderTeam.Length > 0 ? reply.defenderTeam : new[] { reply.defenderBall };
+            for (var r = 0; r < PvpTuning.TeamSize; r++)
+            {
+                var a = r < mine.Length ? mine[r] : null;
+                var b = r < theirs.Length ? theirs[r] : null;
+                rowMine[r].sprite = string.IsNullOrEmpty(a) ? null : art.Get(a).Ball;
+                rowTheirs[r].sprite = string.IsNullOrEmpty(b) ? null : art.Get(b).Ball;
+                rowMineName[r].Set(string.IsNullOrEmpty(a) ? "" : BallName(a), string.IsNullOrEmpty(a) ? Palette.Text : Palette.Look(a).Body);
+                rowTheirName[r].Set(string.IsNullOrEmpty(b) ? "" : BallName(b), string.IsNullOrEmpty(b) ? Palette.Text : Palette.Look(b).Body);
+                // The pair's last decided round (a draw replays the pair); not reached: dim dash.
+                var outcomeOfPair = -2;
+                if (reply.roundPairs != null && reply.roundWinners != null)
+                    for (var k = 0; k < reply.roundPairs.Length && k < reply.roundWinners.Length; k++)
+                        if (reply.roundPairs[k] == r) outcomeOfPair = reply.roundWinners[k];
+                rowResult[r].Set(outcomeOfPair == 0 ? "WON" : outcomeOfPair == 1 ? "LOST" : outcomeOfPair == -1 ? "DRAW" : "-",
+                    outcomeOfPair == 0 ? WinColor : outcomeOfPair == 1 ? LossColor : outcomeOfPair == -1 ? EvenColor : Palette.TextDim);
+            }
             resultScore.Set(reply.challengerWins + " - " + reply.defenderWins, outcomeColor);
             resultDelta.Set("MMR " + reply.mmrAfter + "  " + (reply.delta >= 0 ? "+" : "") + reply.delta, reply.delta >= 0 ? WinColor : LossColor);
             resultArena.Set(string.Format("ARENA: {0}", ArenaName(reply.arenaId)), Palette.TextDim);
             Refresh();
         }
 
-        /// <summary>Index of the challenger's highest-level legal ball (the default pick).</summary>
-        int BestLegal()
+        /// <summary>Default team: the three highest-level legal balls, strongest first.</summary>
+        void BestTeam()
         {
-            if (legal == null || legal.Length == 0) return 0;
+            if (legal == null || legal.Length < PvpTuning.TeamSize) return;
             var progress = store.Load().Progress;
-            var best = 0;
-            for (var i = 1; i < legal.Length; i++)
-                if (MetaRules.Ball(progress, legal[i]).Level > MetaRules.Ball(progress, legal[best]).Level) best = i;
-            return best;
+            var order = new List<int>();
+            for (var i = 0; i < legal.Length; i++) order.Add(i);
+            order.Sort((a, b) =>
+            {
+                var c = MetaRules.Ball(progress, legal[b]).Level.CompareTo(MetaRules.Ball(progress, legal[a]).Level);
+                return c != 0 ? c : a.CompareTo(b);
+            });
+            for (var i = 0; i < PvpTuning.TeamSize; i++) team[i] = order[i];
         }
 
         void ToggleHistory()
@@ -597,6 +639,14 @@ namespace BallBattle.View
 
         // ---- 21/10 live PvP ----
 
+        static PvpBallSnapshot[] Snapshots(WireBall[] balls)
+        {
+            if (balls == null || balls.Length != PvpTuning.TeamSize) throw new ArgumentException("A team needs three balls.");
+            var a = new PvpBallSnapshot[balls.Length];
+            for (var i = 0; i < a.Length; i++) a[i] = new PvpBallSnapshot(balls[i].ToProgress());
+            return a;
+        }
+
         void BeginFight()
         {
             if (fight.rulesVersion != SimVersion.Rules)
@@ -606,8 +656,7 @@ namespace BallBattle.View
             }
             try
             {
-                fightDraft = PvpDraft.ForFight(fight.arenaId, new PvpBallSnapshot(fight.challengerProgress.ToProgress()),
-                    new PvpBallSnapshot(fight.defenderProgress.ToProgress()));
+                fightDraft = PvpDraft.ForFight(fight.arenaId, Snapshots(fight.challengerProgress), Snapshots(fight.defenderProgress));
             }
             catch (ArgumentException e)
             {
@@ -617,7 +666,7 @@ namespace BallBattle.View
             }
             fightTaps.Clear();
             fightHashes.Clear();
-            fightRound = myWins = theirWins = 0;
+            fightRound = fightPair = myWins = theirWins = 0;
             fighting = true;
             panel.gameObject.SetActive(false);
             skipButton.gameObject.SetActive(true);
@@ -629,8 +678,8 @@ namespace BallBattle.View
 
         void StartFightRound()
         {
-            if (myWins >= 2 || theirWins >= 2 || fightRound >= PvpSeries.MaxRounds) { EndFight(); return; }
-            var sim = PvpSeries.CreateRound(fightDraft, fight.seed, fightRound, out myIndex);
+            if (!PvpSeries.Continues(fightRound, fightPair, myWins, theirWins)) { EndFight(); return; }
+            var sim = PvpSeries.CreateRound(fightDraft, fight.seed, fightRound, fightPair, out myIndex);
             fightSteps = 0;
             roundLive = false;
             arena.MarkedBall = myIndex;
@@ -682,9 +731,11 @@ namespace BallBattle.View
             roundLive = false;
             arena.Paused = true;
             fightHashes.Add(arena.Sim.ComputeHash().ToString("X16"));
-            if (arena.Sim.WinnerIndex == myIndex) myWins++;
-            else if (arena.Sim.WinnerIndex >= 0) theirWins++;
+            var w = arena.Sim.WinnerIndex < 0 ? -1 : arena.Sim.WinnerIndex == myIndex ? 0 : 1;
+            if (w == 0) myWins++;
+            else if (w == 1) theirWins++;
             fightRound++;
+            fightPair = PvpSeries.NextPair(fightPair, w);
             scoreText.Set(ScoreLine(), Palette.Text);
             StartCoroutine(NextFightRound());
         }
@@ -861,6 +912,13 @@ namespace BallBattle.View
                     deco[i].Avatar.color = AvatarColor(o.name);
                     deco[i].Line1.Set(Short(o.name), Palette.Text);
                 }
+                else if (phase == Phase.Pick && legal != null && legal.Length >= PvpTuning.TeamSize)
+                {
+                    var id = legal[team[i]];
+                    var look = Palette.Look(id).Body;
+                    SetCard(i, look, id, null, BallName(id), look, string.Format("LV {0}", MetaRules.Ball(progress, id).Level), Palette.TextDim,
+                        string.Format("ROUND {0}", i + 1), Palette.WallWarning, Tr("TAP TO CHANGE"), Palette.TextDim);
+                }
                 else if (phase == Phase.Ban && i == 0 && !string.IsNullOrEmpty(opponentName))
                 {
                     SetCard(0, LossColor, null, Initial(opponentName), Short(opponentName), Palette.Text, Tr("OPPONENT"), Palette.TextDim,
@@ -879,9 +937,9 @@ namespace BallBattle.View
                 cards[i].gameObject.SetActive(on);
             }
             var bansVisible = phase == Phase.Setup || phase == Phase.Ban;
-            ballButton.gameObject.SetActive(bansVisible || phase == Phase.Pick);
+            ballButton.gameObject.SetActive(bansVisible);
             arenaButton.gameObject.SetActive(bansVisible);
-            pickRoot.SetActive(phase == Phase.Pick && legal != null && legal.Length > 0);
+            pickRoot.SetActive(false);   // 21/10 teams: the three cards are the pick
             resultRoot.SetActive(phase == Phase.Result);
             if (bansVisible)
             {
@@ -897,17 +955,7 @@ namespace BallBattle.View
                 arenaSwatch.color = floor;
                 arenaSwatchWall.color = wall;
             }
-            else if (phase == Phase.Pick && legal != null && legal.Length > 0)
-            {
-                var id = legal[pickIndex % legal.Length];
-                var look = Palette.Look(id).Body;
-                ballButton.SetColors(Dim(look), look);
-                ballButton.SetText(string.Format("CHANGE BALL  {0}/{1}", pickIndex % legal.Length + 1, legal.Length), Palette.Text);
-                banBallIcon.enabled = false;
-                pickIcon.sprite = art.Get(id).Ball;
-                pickName.Set(BallName(id), look);
-                pickLevel.Set(string.Format("LV {0}", MetaRules.Ball(progress, id).Level), Palette.Text);
-            }
+
             setupButton.gameObject.SetActive(phase == Phase.Offers);
             historyButton.gameObject.SetActive(phase == Phase.Offers || phase == Phase.Result || phase == Phase.History);
             historyButton.SetText(phase == Phase.History ? "BACK TO PVP" : "HISTORY", Palette.Text);

@@ -62,7 +62,7 @@ namespace BallBattle.Sim.Run
                 var min = RunTuning.EnemyMinTraits[stage];
                 var max = RunTuning.EnemyMaxTraits[stage];
                 traitCount = min + (int)(rng.NextUInt() % (uint)(max - min + 1)) + HeatRules.ExtraTraits(heat);
-                e.MaxHp = RunTuning.PlayerStartHp * (Fix.One + RunTuning.EnemyHpPct[stage] + (chapter?.HpPct ?? Fix.Zero) + HeatRules.HpPct(heat));
+                e.MaxHp = BallPower.BaseHp(e.WeaponId) * (Fix.One + RunTuning.EnemyHpPct[stage] + (chapter?.HpPct ?? Fix.Zero) + HeatRules.HpPct(heat));
                 e.DamagePct = RunTuning.EnemyDamagePct[stage] + (chapter?.DamagePct ?? Fix.Zero);
             }
             e.Hp = e.MaxHp;

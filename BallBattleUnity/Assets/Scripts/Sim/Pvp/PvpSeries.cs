@@ -9,10 +9,14 @@ namespace BallBattle.Sim.Pvp
         public readonly int Winner, ChallengerWins, DefenderWins, Draws, RulesVersion;
         public readonly uint[] RoundSeeds;
         public readonly ulong[] RoundHashes;
+        /// <summary>Per round: team pair played (0..2) and who won it (0 challenger, 1 defender, -1 draw).</summary>
+        public readonly int[] RoundPairs, RoundWinners;
 
         internal PvpSeriesResult(int winner, int challengerWins, int defenderWins, int draws,
-            uint[] seeds, ulong[] hashes)
+            uint[] seeds, ulong[] hashes, int[] pairs, int[] winners)
         {
+            RoundPairs = pairs;
+            RoundWinners = winners;
             Winner = winner;
             ChallengerWins = challengerWins;
             DefenderWins = defenderWins;
@@ -31,7 +35,8 @@ namespace BallBattle.Sim.Pvp
     }
 
     /// <summary>
-    /// 21/10 (Rules 24) live ranked combat. The challenger plays: their taps press the ball's active skill, recorded as
+    /// 21/10 (Rules 24) live ranked combat, teams of three: round pair p is team slot p against slot p; a decided round moves to
+    /// the next pair, a draw replays the same pair; first to two rounds wins. The challenger plays: their taps press the ball's active skill, recorded as
     /// (round, step). The defender is not online, so a bot presses its skill (BallLoadout.AutoSkill, PvpTuning timing).
     /// The service replays the recorded taps on the same deterministic sim, so the client never reports a result, only
     /// its inputs. No taps (left the fight, never sent) is simply a fight where the challenger never pressed.
@@ -44,14 +49,15 @@ namespace BallBattle.Sim.Pvp
         /// <summary>A round longer than this many steps is cut (the sim's own time cap ends rounds long before).</summary>
         public const int MaxStepsPerRound = 60 * 60 * 5;
 
-        /// <summary>The two loadouts of round <paramref name="round"/> (sides swap every round) and the challenger's index.</summary>
-        public static MatchSim CreateRound(PvpDraft draft, uint matchSeed, int round, out int challengerIndex)
+        /// <summary>Round <paramref name="round"/> with team pair <paramref name="pair"/> (sides swap every round) and the challenger's index.</summary>
+        public static MatchSim CreateRound(PvpDraft draft, uint matchSeed, int round, int pair, out int challengerIndex)
         {
             if (draft == null) throw new ArgumentNullException(nameof(draft));
+            if (pair < 0 || pair >= PvpTuning.TeamSize) throw new ArgumentOutOfRangeException(nameof(pair));
             var swapped = (round & 1) == 1;
             challengerIndex = swapped ? 1 : 0;
-            var challenger = draft.Challenger.ToLoadout();
-            var defender = draft.Defender.ToLoadout();
+            var challenger = draft.ChallengerTeam[pair].ToLoadout();
+            var defender = draft.DefenderTeam[pair].ToLoadout();
             defender.AutoSkill = true;
             defender.BotFirstTick = PvpTuning.BotFirstTick;
             defender.BotRepeatTicks = PvpTuning.BotRepeatTicks;
@@ -61,21 +67,27 @@ namespace BallBattle.Sim.Pvp
 
         public static uint SeedFor(uint matchSeed, int round) => Series.SeedFor(matchSeed, round);
 
+        /// <summary>Pair after a round: the next one when it was decided, the same one after a draw.</summary>
+        public static int NextPair(int pair, int roundWinner) => roundWinner < 0 ? pair : pair + 1;
+
+        /// <summary>True when the series goes on after these counts.</summary>
+        public static bool Continues(int rounds, int pair, int challengerWins, int defenderWins) =>
+            rounds < MaxRounds && pair < PvpTuning.TeamSize && challengerWins < 2 && defenderWins < 2;
+
         /// <summary>The series with the challenger's taps (null or empty: they never pressed).</summary>
         public static PvpSeriesResult Run(PvpDraft draft, uint matchSeed, IReadOnlyList<PvpTap> taps = null)
         {
             if (draft == null) throw new ArgumentNullException(nameof(draft));
             if (taps != null && taps.Count > MaxTaps) throw new ArgumentException("Too many taps.", nameof(taps));
-            var seeds = new uint[MaxRounds];
-            var hashes = new ulong[MaxRounds];
-            var challengerWins = 0;
-            var defenderWins = 0;
-            var draws = 0;
-            var rounds = 0;
+            var seeds = new List<uint>();
+            var hashes = new List<ulong>();
+            var pairs = new List<int>();
+            var winners = new List<int>();
+            int challengerWins = 0, defenderWins = 0, draws = 0, rounds = 0, pair = 0;
             var next = 0;   // taps are applied in order; out-of-order or past ones are skipped
-            while (rounds < MaxRounds && challengerWins < 2 && defenderWins < 2)
+            while (Continues(rounds, pair, challengerWins, defenderWins))
             {
-                var sim = CreateRound(draft, matchSeed, rounds, out var me);
+                var sim = CreateRound(draft, matchSeed, rounds, pair, out var me);
                 var step = 0;
                 while (sim.Outcome == MatchOutcome.Ongoing && step < MaxStepsPerRound)
                 {
@@ -90,17 +102,19 @@ namespace BallBattle.Sim.Pvp
                     sim.Step();
                     step++;
                 }
-                seeds[rounds] = SeedFor(matchSeed, rounds);
-                hashes[rounds] = sim.ComputeHash();
+                var w = sim.WinnerIndex < 0 ? -1 : sim.WinnerIndex == me ? 0 : 1;
+                seeds.Add(SeedFor(matchSeed, rounds));
+                hashes.Add(sim.ComputeHash());
+                pairs.Add(pair);
+                winners.Add(w);
                 rounds++;
-                if (sim.WinnerIndex < 0) draws++;
-                else if (sim.WinnerIndex == me) challengerWins++;
+                if (w < 0) draws++;
+                else if (w == 0) challengerWins++;
                 else defenderWins++;
+                pair = NextPair(pair, w);
             }
-            Array.Resize(ref seeds, rounds);
-            Array.Resize(ref hashes, rounds);
             var winner = challengerWins >= 2 ? 0 : defenderWins >= 2 ? 1 : -1;
-            return new PvpSeriesResult(winner, challengerWins, defenderWins, draws, seeds, hashes);
+            return new PvpSeriesResult(winner, challengerWins, defenderWins, draws, seeds.ToArray(), hashes.ToArray(), pairs.ToArray(), winners.ToArray());
         }
     }
 }
