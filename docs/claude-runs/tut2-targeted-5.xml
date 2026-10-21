@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="6" result="Skipped:Ignored" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.375793">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="563" result="Skipped" label="Ignored" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.375793" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <reason>
+      <message><![CDATA[One or more child tests were ignored]]></message>
+    </reason>
+    <test-suite type="Assembly" id="1652" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="563" result="Skipped" label="Ignored" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.365413" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+      <properties>
+        <property name="_PID" value="39884" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <reason>
+        <message><![CDATA[One or more child tests were ignored]]></message>
+      </reason>
+      <test-suite type="TestSuite" id="1653" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="563" result="Skipped" label="Ignored" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.362785" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+        <properties />
+        <reason>
+          <message><![CDATA[One or more child tests were ignored]]></message>
+        </reason>
+        <test-suite type="SetUpFixture" id="1635" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="563" result="Skipped" label="Ignored" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.359834" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+          <properties />
+          <reason>
+            <message><![CDATA[One or more child tests were ignored]]></message>
+          </reason>
+          <test-suite type="TestFixture" id="1307" name="BbTut2Tests" fullname="BallBattle.Tests.BbTut2Tests" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" testcasecount="6" result="Skipped" label="Ignored" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.345783" total="6" passed="5" failed="0" inconclusive="0" skipped="1" asserts="0">
+            <properties />
+            <reason>
+              <message><![CDATA[One or more child tests were ignored]]></message>
+            </reason>
+            <test-case id="1313" name="CaptureFirstStepsInBothLanguages" fullname="BallBattle.Tests.BbTut2Tests.CaptureFirstStepsInBothLanguages" methodname="CaptureFirstStepsInBothLanguages" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" seed="2072113744" result="Skipped" label="Ignored" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.082514" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <reason>
+                <message><![CDATA[BB_TUT2_OUT not set]]></message>
+              </reason>
+            </test-case>
+            <test-case id="1312" name="EveryHintFitsInEnglishAndVietnamese" fullname="BallBattle.Tests.BbTut2Tests.EveryHintFitsInEnglishAndVietnamese" methodname="EveryHintFitsInEnglishAndVietnamese" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" seed="2069309801" result="Passed" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.046753" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1308" name="FreshProfileOffersThreePinnedBallsAndPersistsTheTutorialRun" fullname="BallBattle.Tests.BbTut2Tests.FreshProfileOffersThreePinnedBallsAndPersistsTheTutorialRun" methodname="FreshProfileOffersThreePinnedBallsAndPersistsTheTutorialRun" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" seed="503898496" result="Passed" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.024547" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 128020897, weapon blade, bosses shellking/mimic
+]]></output>
+            </test-case>
+            <test-case id="1309" name="HintsDoNotDisableAnyScreenButtons" fullname="BallBattle.Tests.BbTut2Tests.HintsDoNotDisableAnyScreenButtons" methodname="HintsDoNotDisableAnyScreenButtons" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" seed="731441671" result="Passed" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.101638" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 128020897, weapon blade, bosses shellking/mimic
+]]></output>
+            </test-case>
+            <test-case id="1310" name="MenuRevealsPagesAsTheFirstRunProgresses" fullname="BallBattle.Tests.BbTut2Tests.MenuRevealsPagesAsTheFirstRunProgresses" methodname="MenuRevealsPagesAsTheFirstRunProgresses" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" seed="2016491993" result="Passed" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.077706" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1311" name="VersionFiveSaveMigratesWithoutDroppingItsRun" fullname="BallBattle.Tests.BbTut2Tests.VersionFiveSaveMigratesWithoutDroppingItsRun" methodname="VersionFiveSaveMigratesWithoutDroppingItsRun" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" seed="900503443" result="Passed" start-time="2026-10-17 07:01:23Z" end-time="2026-10-17 07:01:23Z" duration="0.001192" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

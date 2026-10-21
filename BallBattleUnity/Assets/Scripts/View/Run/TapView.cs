@@ -5,26 +5,24 @@ using UnityEngine;
 namespace BallBattle.View
 {
     /// <summary>
-    /// TAP-4: "tap to strike" in Run fights. A press anywhere on the arena (or Space) asks the Sim for the player's strike
+    /// TAP-4: active skill input in Run fights. A press anywhere on the arena (or Space) asks the Sim for the player's skill
     /// (MatchSim.Tap(0), applied on the next tick); the Sim decides whether the cooldown allows it. Around the player's ball a
     /// 2 px arc fills as the cooldown runs (grey; red after a missed strike) and turns into a pulsing yellow ring when ready.
     /// PERFECT! = yellow word, sparks, a small shake and a 0.06 s hit-stop; a missed strike shows MISS. During the first
-    /// seconds of a fight with no tap yet, "TAP TO STRIKE!" blinks at the bottom. View only: it reads the Sim and calls Tap.
+    /// first tutorial fight, the skill prompt appears when the skill is ready. View only: it reads the Sim and calls Tap.
     /// </summary>
     public sealed class TapView : MonoBehaviour
     {
         public const string PerfectWord = "PERFECT!";
         public const string MissWord = "MISS";
-        public const string PromptText = "TAP TO STRIKE!";
-        /// <summary>Tap target: the arena (x2 button below y -214 and the HUD above y 200 keep their own taps).</summary>
+        public const string PromptText = "TAP TO USE YOUR SKILL!";
+        /// <summary>Tap target: the arena (the gear and X1/X2 above y 200 keep their own taps).</summary>
         public static readonly Rect TapArea = new Rect(-135, -212, 270, 412);
         public const int RingSegments = 24;
         /// <summary>Arc distance from the ball's visible edge (the player marker's dashed ring is at 3 px).</summary>
         public const int RingGap = 5;
         public const int RingThickness = 2;
         public const float HitStopSeconds = 0.06f;
-        /// <summary>The prompt shows during this many active ticks of a fight while the player has not tapped (5 s).</summary>
-        public const int PromptTicks = 300;
         /// <summary>Prompt row: in the gap between the arena's bottom wall and the FOE name.</summary>
         public const float PromptY = -134f;
         public const int RingOrder = 9;   // under the ball bodies (10+)
@@ -58,6 +56,7 @@ namespace BallBattle.View
         public int MissesShown { get; private set; }
         public int TapsSent { get; private set; }
         public bool TutorialLesson { get; set; }
+        public bool TutorialWreckerFollowUp { get; set; }
 
         public static TapView Create(Transform parent, ArenaView arena)
         {
@@ -133,12 +132,18 @@ namespace BallBattle.View
             if (ring.enabled) RenderRing(tap, view);
 
             var lessonPrompt = TutorialLesson && active && tap.Taps == 0 && tap.Ready;
-            var showPrompt = lessonPrompt || active && tap.Taps == 0 && sim.ActiveTick < PromptTicks;
+            var wind = active && TutorialWreckerFollowUp ? PlayerWindUp(tap) : null;
+            var chargePrompt = wind != null;
+            var readyToRam = chargePrompt && wind.Charge.ToFloat() >= 0.8f;
+            var showPrompt = lessonPrompt || chargePrompt;
             if (prompt.gameObject.activeSelf != showPrompt) prompt.gameObject.SetActive(showPrompt);
-            if (showPrompt) prompt.Set(lessonPrompt ? "TAP NOW TO STRIKE!" : PromptText,
+            if (showPrompt) prompt.Set(chargePrompt
+                    ? readyToRam ? "TAP AGAIN TO RAM!" : "WAIT FOR THE RING TO FILL"
+                    : "TAP NOW TO USE YOUR SKILL!",
                 Mathf.Repeat(clock, 0.8f) < 0.55f ? ReadyColor : Palette.TextDim);
-            lessonArrow.gameObject.SetActive(lessonPrompt);
-            if (lessonPrompt) lessonArrow.localPosition = new Vector3(0, PromptY + 22 + Mathf.Round(Mathf.Sin(clock * 8f) * 2f), 0);
+            lessonArrow.gameObject.SetActive(lessonPrompt || readyToRam);
+            if (lessonArrow.gameObject.activeSelf)
+                lessonArrow.localPosition = new Vector3(0, PromptY + 22 + Mathf.Round(Mathf.Sin(clock * 8f) * 2f), 0);
 
             popups.SetBounds(sim != null ? sim.Arena : (ArenaRect?)null);
             particles.Tick(dt);
@@ -177,7 +182,7 @@ namespace BallBattle.View
             return act != null && act.Charging ? act : null;
         }
 
-        /// <summary>Press on the arena: ask for the strike (the Sim ignores it while the cooldown runs).</summary>
+        /// <summary>Press on the arena: ask for the skill (the Sim ignores it while unavailable).</summary>
         void OnPressed()
         {
             if (!active) return;

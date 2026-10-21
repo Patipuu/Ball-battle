@@ -1,4 +1,5 @@
 using System;
+using BallBattle.Sim.Run;
 using UnityEngine;
 
 namespace BallBattle.View
@@ -21,7 +22,7 @@ namespace BallBattle.View
             new Hint { Id = "startpick", Screen = RunFlow.State.StartPick, Line = "KEEP THIS CARD ALL RUN", Label = new Vector2(0, -174), Arrow = new Vector2(0, -155) },
             new Hint { Id = "carry", Screen = RunFlow.State.FightResult, Line = "LEFTOVER HP GOES TO THE NEXT FIGHT", Label = new Vector2(0, -108), Arrow = new Vector2(0, -91) },
             new Hint { Id = "shop", Screen = RunFlow.State.Prepare, Line = "SPEND COINS ON ANOTHER CARD", Label = new Vector2(0, 11), Arrow = new Vector2(0, -3) },
-            new Hint { Id = "boss", Screen = RunFlow.State.Prepare, Line = "BEAT THE BOSS TO UNLOCK A BALL", Label = new Vector2(0, 11), Arrow = new Vector2(0, -3) },
+            new Hint { Id = "boss", Screen = RunFlow.State.Prepare, Line = "BEAT THE BOSS FOR A BETTER CHEST", Label = new Vector2(0, 11), Arrow = new Vector2(0, -3) },
             new Hint { Id = "next", Screen = RunFlow.State.Summary, Line = "NEXT: UPGRADE A BALL IN BALLS", Label = new Vector2(0, -228), Arrow = new Vector2(0, -210) },
         };
 
@@ -32,6 +33,13 @@ namespace BallBattle.View
         public string CurrentId { get; private set; }
         public bool Showing => gameObject.activeSelf;
         public string Text => label.Text;
+
+        public static string NextStepLine(ProgressData progress)
+        {
+            if ((progress?.PendingChests?.Count ?? 0) > 0) return "NEXT: OPEN YOUR CHEST ON MENU";
+            if (MenuView.AnyUpgrade(progress)) return "NEXT: UPGRADE A BALL IN BALLS";
+            return "NEXT: PLAY AGAIN FOR MORE SHARDS";
+        }
 
         public static HintPointer Create(Transform parent, ArtLibrary art)
         {
@@ -44,7 +52,7 @@ namespace BallBattle.View
             return v;
         }
 
-        public void Show(Hint hint)
+        public void Show(Hint hint, string line = null)
         {
             if (hint == null) { Hide(); return; }
             CurrentId = hint.Id;
@@ -53,7 +61,7 @@ namespace BallBattle.View
             arrow.transform.localPosition = hint.Arrow;
             arrowBase = hint.Arrow;
             arrow.localScale = new Vector3(1f, hint.Id == "pick" || hint.Id == "shop" || hint.Id == "boss" ? -1f : 1f, 1f);
-            label.Set(hint.Line, Palette.WallWarning);
+            label.Set(line ?? hint.Line, Palette.WallWarning);
         }
 
         public void Hide()

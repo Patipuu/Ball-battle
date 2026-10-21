@@ -11,8 +11,8 @@ namespace BallBattle.Tests
         public void DamageCardTextNamesSporePoisonAndMirrorReflectAndFits()
         {
             var card = new Card(CardKind.DamageUp);
-            Assert.That(CardText.Detail2(card), Is.EqualTo("ALSO SPORE POISON, MIRROR REFLECT"));
-            Assert.That(CardText.Detail2(card), Does.Not.Contain("NOT POISON"));
+            Assert.That(CardText.Detail(card), Is.EqualTo("MELEE, SHOTS, POISON, REFLECT"));
+            Assert.That(CardText.Detail2(card), Is.Empty);
             Assert.That(PixelFont.MeasureWidth(CardText.Detail(card)), Is.LessThanOrEqualTo(CardText.MaxDetailWidth));
             Assert.That(PixelFont.MeasureWidth(CardText.Detail2(card)), Is.LessThanOrEqualTo(CardText.MaxDetailWidth));
         }

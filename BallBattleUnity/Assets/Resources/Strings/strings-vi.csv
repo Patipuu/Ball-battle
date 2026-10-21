@@ -6,13 +6,21 @@ run.boss_at.many,TRÙM Ở CÁC TRẬN {0}
 run.lose_once,THUA 1 LẦN: ĐƯỢC ĐẤU LẠI VỚI {0}% MÁU
 versus.draw,HÒA
 boss.shellking.name,VUA VỎ CỨNG
-boss.shellking.hint,CHẮN TRƯỚC. ĐÁNH SAU.
+boss.shellking.hint,KHIÊN DỰNG LÊN THÌ VÒNG RA SAU.
 boss.magnet.name,NAM CHÂM
-boss.magnet.hint,HÚT BẠN MỖI 5 GIÂY.
+boss.magnet.hint,HÚT BẠN VÀO RỒI PHÁT NỔ.
 boss.mimic.name,BÓNG BẮT CHƯỚC
-boss.mimic.hint,SAO CHÉP VŨ KHÍ, NỘI TẠI.
+boss.mimic.hint,MƯỢN VŨ KHÍ. NÉ VÙNG NỔ ĐÃ ĐÁNH DẤU.
 boss.warden.name,CAI NGỤC
-boss.warden.hint,TƯỜNG DI ĐỘNG CÓ GAI.
-boss.mimic.copies_you,BẮT CHƯỚC BẠN
+boss.warden.hint,NÉ ĐƯỜNG CHỮ THẬP VÀ TƯỜNG GAI.
+boss.hunter.name,KẺ SĂN
+boss.hunter.hint,NHẮM CHỖ BẠN ĐỨNG RỒI LAO TỚI.
+boss.bell.name,CHUÔNG RỀN
+boss.bell.hint,SÓNG XUNG KÍCH LAN TỪ TÂM.
+boss.ember.name,LÒ THAN
+boss.ember.hint,RỜI ĐIỂM ĐÁNH DẤU TRƯỚC KHI CHÁY.
+boss.prism.name,LĂNG KÍNH
+boss.prism.hint,RỜI LÀN SÁNG ĐANG ĐƯỢC NHẮM.
+boss.mimic.copies_you,MƯỢN VŨ KHÍ CỦA BẠN
 boss.summary.beaten,ĐÃ HẠ {0}
 boss.summary.met,ĐÃ GẶP {0}

@@ -164,7 +164,7 @@ namespace BallBattle.Sim
             attacker.Weapon.OnHit(ctx);
             Emit(SimEventType.Hit, attacker.Index, target.Index, damage, contact, arcAngleTenths: arcAngleTenths);
             Emit(SimEventType.StatChanged, attacker.Index, -1, Fix.Zero, attacker.Pos);
-            ApplyHitHp(attacker, target, damage);
+            ApplyHitHp(attacker, target, damage, DamageKind.Weapon);
         }
 
         /// <summary>Elastic collision weighted by mass (∝ radius²): equal sizes swap normal velocity components.</summary>

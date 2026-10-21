@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="12" result="Passed" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-19 12:33:58Z" end-time="2026-10-19 12:34:09Z" duration="10.4280706">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="576" result="Passed" start-time="2026-10-19 12:33:58Z" end-time="2026-10-19 12:34:09Z" duration="10.428071" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1669" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="576" result="Passed" start-time="2026-10-19 12:33:58Z" end-time="2026-10-19 12:34:09Z" duration="10.411736" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="38892" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1670" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="576" result="Passed" start-time="2026-10-19 12:33:58Z" end-time="2026-10-19 12:34:09Z" duration="10.407699" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="SetUpFixture" id="1645" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="576" result="Passed" start-time="2026-10-19 12:33:58Z" end-time="2026-10-19 12:34:09Z" duration="10.403785" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1197" name="BbFont1Tests" fullname="BallBattle.Tests.BbFont1Tests" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-10-19 12:33:58Z" end-time="2026-10-19 12:34:09Z" duration="10.373843" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1209" name="CaptureFontScreens" fullname="BallBattle.Tests.BbFont1Tests.CaptureFontScreens" methodname="CaptureFontScreens" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="89578686" result="Passed" start-time="2026-10-19 12:33:58Z" end-time="2026-10-19 12:34:06Z" duration="7.219080" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[PixelFont: no glyph for '&' (U+0026), drawn as the fallback
+PixelFont: no glyph for ';' (U+003B), drawn as the fallback
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses magnet/warden
+[BallBattle] Fight 4 prepared: seed 1918389994, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 1918389994, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses magnet/warden
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Fight 4 began: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Fight 4 began: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Fight 4 ended: seed 1791713962 (match 3687194566), outcome Lost, tick 2484, you blade HP start 100.00 heal 0.00 end 0.00, enemy fang HP start 156.00 heal 0.00 end 149.10, DMG DEALT 6.90 TAKEN 100.00
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses magnet/warden
+[BallBattle] Fight 4 prepared: seed 1918389994, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 1918389994, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses magnet/warden
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Fight 4 began: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Fight 4 began: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Fight 4 ended: seed 1791713962 (match 3687194566), outcome Lost, tick 2484, you blade HP start 100.00 heal 0.00 end 0.00, enemy fang HP start 156.00 heal 0.00 end 149.10, DMG DEALT 6.90 TAKEN 100.00
+]]></output>
+            </test-case>
+            <test-case id="1206" name="EveryGoalThatUnlocksSomethingNamesItsRewards" fullname="BallBattle.Tests.BbFont1Tests.EveryGoalThatUnlocksSomethingNamesItsRewards" methodname="EveryGoalThatUnlocksSomethingNamesItsRewards" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="2044228923" result="Passed" start-time="2026-10-19 12:34:06Z" end-time="2026-10-19 12:34:06Z" duration="0.012425" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1207" name="EveryScreenFitsWithoutOverlapInEnglish" fullname="BallBattle.Tests.BbFont1Tests.EveryScreenFitsWithoutOverlapInEnglish" methodname="EveryScreenFitsWithoutOverlapInEnglish" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="1954943417" result="Passed" start-time="2026-10-19 12:34:06Z" end-time="2026-10-19 12:34:07Z" duration="1.161075" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses magnet/warden
+[BallBattle] Fight 4 prepared: seed 1918389994, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 1918389994, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses magnet/warden
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Fight 4 began: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Fight 4 began: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Fight 4 ended: seed 1791713962 (match 3687194566), outcome Lost, tick 2484, you blade HP start 100.00 heal 0.00 end 0.00, enemy fang HP start 156.00 heal 0.00 end 149.10, DMG DEALT 6.90 TAKEN 100.00
+]]></output>
+            </test-case>
+            <test-case id="1208" name="EveryScreenFitsWithoutOverlapInVietnamese" fullname="BallBattle.Tests.BbFont1Tests.EveryScreenFitsWithoutOverlapInVietnamese" methodname="EveryScreenFitsWithoutOverlapInVietnamese" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="1667248810" result="Passed" start-time="2026-10-19 12:34:07Z" end-time="2026-10-19 12:34:09Z" duration="1.895643" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses magnet/warden
+[BallBattle] Fight 4 prepared: seed 1918389994, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 1918389994, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses magnet/warden
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Fight 4 began: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 225/225 []
+[BallBattle] Run started: seed 1791713962, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 4 prepared: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Fight 4 began: seed 3687194566, tick 0, you blade HP 100/100 [], enemy fang HP 156/156 []
+[BallBattle] Fight 4 ended: seed 1791713962 (match 3687194566), outcome Lost, tick 2484, you blade HP start 100.00 heal 0.00 end 0.00, enemy fang HP start 156.00 heal 0.00 end 149.10, DMG DEALT 6.90 TAKEN 100.00
+]]></output>
+            </test-case>
+            <test-case id="1198" name="FontFileIsValidAndEveryCharacterLoads" fullname="BallBattle.Tests.BbFont1Tests.FontFileIsValidAndEveryCharacterLoads" methodname="FontFileIsValidAndEveryCharacterLoads" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="1958744684" result="Passed" start-time="2026-10-19 12:34:09Z" end-time="2026-10-19 12:34:09Z" duration="0.013436" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1201" name="LowercaseAndDecomposedInputDrawTheSameAsNfcCapitals" fullname="BallBattle.Tests.BbFont1Tests.LowercaseAndDecomposedInputDrawTheSameAsNfcCapitals" methodname="LowercaseAndDecomposedInputDrawTheSameAsNfcCapitals" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="1336263479" result="Passed" start-time="2026-10-19 12:34:09Z" end-time="2026-10-19 12:34:09Z" duration="0.002039" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1203" name="MeasureWidthSumsRealGlyphWidthsPlusOnePixelSpacing" fullname="BallBattle.Tests.BbFont1Tests.MeasureWidthSumsRealGlyphWidthsPlusOnePixelSpacing" methodname="MeasureWidthSumsRealGlyphWidthsPlusOnePixelSpacing" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="398358790" result="Passed" start-time="2026-10-19 12:34:09Z" end-time="2026-10-19 12:34:09Z" duration="0.008708" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1202" name="MissingCharacterDrawsTheFallbackAndIsLoggedOnce" fullname="BallBattle.Tests.BbFont1Tests.MissingCharacterDrawsTheFallbackAndIsLoggedOnce" methodname="MissingCharacterDrawsTheFallbackAndIsLoggedOnce" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="1656524706" result="Passed" start-time="2026-10-19 12:34:09Z" end-time="2026-10-19 12:34:09Z" duration="0.007939" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[PixelFont: no glyph for '#' (U+0023), drawn as the fallback
+]]></output>
+            </test-case>
+            <test-case id="1200" name="MixedWidthsDrawAtTheirRealWidthsOnePixelApart" fullname="BallBattle.Tests.BbFont1Tests.MixedWidthsDrawAtTheirRealWidthsOnePixelApart" methodname="MixedWidthsDrawAtTheirRealWidthsOnePixelApart" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="1514524239" result="Passed" start-time="2026-10-19 12:34:09Z" end-time="2026-10-19 12:34:09Z" duration="0.008415" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1199" name="ParseRejectsMalformedGlyphs" fullname="BallBattle.Tests.BbFont1Tests.ParseRejectsMalformedGlyphs" methodname="ParseRejectsMalformedGlyphs" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="311457115" result="Passed" start-time="2026-10-19 12:34:09Z" end-time="2026-10-19 12:34:09Z" duration="0.005923" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1205" name="VietnameseIsOffByDefaultAndOnlyAHiddenSwitchTurnsItOn" fullname="BallBattle.Tests.BbFont1Tests.VietnameseIsOffByDefaultAndOnlyAHiddenSwitchTurnsItOn" methodname="VietnameseIsOffByDefaultAndOnlyAHiddenSwitchTurnsItOn" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="1290036847" result="Passed" start-time="2026-10-19 12:34:09Z" end-time="2026-10-19 12:34:09Z" duration="0.005724" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1204" name="WrapUsesPixelWidths" fullname="BallBattle.Tests.BbFont1Tests.WrapUsesPixelWidths" methodname="WrapUsesPixelWidths" classname="BallBattle.Tests.BbFont1Tests" runstate="Runnable" seed="245580064" result="Passed" start-time="2026-10-19 12:34:09Z" end-time="2026-10-19 12:34:09Z" duration="0.001947" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

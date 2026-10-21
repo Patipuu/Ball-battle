@@ -1,0 +1,5 @@
+.claude/hooks/.logs/hook-log.jsonl
+docs/claude-runs/trace-unity-2686071142.fields.txt
+docs/claude-runs/trace-unity-2686071142.txt
+docs/claude-runs/trace-unity-4134000519.fields.txt
+docs/claude-runs/trace-unity-4134000519.txt

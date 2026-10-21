@@ -16,7 +16,11 @@ namespace BallBattle.SimTests
             PickObserved?.Invoke(run, card, branch);
             run.Pick(index, branch);
         }
-        public enum Policy { Random, Greedy }
+        public enum Policy { Random, Greedy, Skilled }
+        /// <summary>PvE chapter the bot plays (0 = chapter 1, the balance reference).</summary>
+        public static int Chapter;
+        /// <summary>HEAT of the runs the bot plays (0-based).</summary>
+        public static int Heat;
 
         public readonly struct Result
         {
@@ -31,11 +35,30 @@ namespace BallBattle.SimTests
         /// from its seed (both bosses of each slot appear across seeds). A fresh save would always meet SHELL KING + MIMIC (first-run
         /// rule). Unlocks depend only on achievements, so the bot's weapons and traits are the same as before.
         /// </summary>
-        /// <summary>BB-19: the bot plays like a player who taps the skill the moment it is ready.</summary>
-        public static void TapIfReady(MatchSim m)
+        /// <summary>
+        /// BB-19: the greedy run bot remembers to use its skill once, five seconds into each fight.
+        /// It does not time a second cast or react to the opponent. The random picker models a
+        /// new player who has not learned the active skill yet. Neither policy changes Sim rules.
+        /// </summary>
+        public static void TapIfReady(MatchSim m, Policy policy = Policy.Greedy)
         {
             var tap = m.Balls.Count > 0 ? m.Balls[0].Tap : null;
-            if (tap != null && tap.Ready) m.Tap(0);
+            if (policy == Policy.Skilled) { TapSkilled(m, tap); return; }
+            if (policy == Policy.Greedy && m.ActiveTick == 5 * MatchConfig.TicksPerSecond && tap != null && tap.Ready)
+                m.Tap(0);
+        }
+
+        /// <summary>
+        /// Skilled: a player who has learned the skill. Looks at the bar 4 times a second and taps whenever it is ready; WRECKER
+        /// holds the wind-up to full charge before ramming. Same card picks as Greedy. This is the reference for "a LV1 player clears
+        /// the run in about 5-6 runs" (target ~15-20% run wins per run).
+        /// </summary>
+        static void TapSkilled(MatchSim m, BallBattle.Sim.Tap.TapState tap)
+        {
+            if (tap == null || m.ActiveTick % 15 != 0) return;
+            var act = m.Balls[0].Skill?.Act;
+            if (act is BallBattle.Sim.Skills.WreckerCharge w && w.Charging) { if (w.Charge >= Fix.One) m.Tap(0); return; }
+            if (tap.Ready) m.Tap(0);
         }
 
         public static ProgressData BotProgress() => new ProgressData { RunsPlayed = 1 };
@@ -55,7 +78,7 @@ namespace BallBattle.SimTests
             var progress = BotProgress();
             var choices = RunState.StartChoices(seed, UnlockRules.Weapons(progress));
             var rng = new SimRandom(seed ^ 0xB07B07u);
-            var run = RunState.Start(seed, choices[(int)(rng.NextUInt() % (uint)choices.Count)], progress);
+            var run = RunState.Start(seed, choices[(int)(rng.NextUInt() % (uint)choices.Count)], progress, chapter: Chapter, heat: Heat);
             if (forcedWeapon != null) run.Build.WeaponId = forcedWeapon;
             if (policy == Policy.Random) PickRandom(run, rng);
             else PickGreedyStart(run);
@@ -67,7 +90,7 @@ namespace BallBattle.SimTests
                 else PickGreedy(run);
 
                 var m = run.CreateMatch();
-                while (m.Outcome == MatchOutcome.Ongoing) { TapIfReady(m); m.Step(); onStep?.Invoke(run, m); }
+                while (m.Outcome == MatchOutcome.Ongoing) { TapIfReady(m, policy); m.Step(); onStep?.Invoke(run, m); }
                 onFight?.Invoke(run, m);
                 run.ApplyResult(m);
             }

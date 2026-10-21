@@ -32,7 +32,7 @@ namespace BallBattle.SimTests
             var m = run.CreateMatch();
             var p = m.Balls[0];
             p.Hp = p.MaxHp * FT.X(playerHpFraction);
-            m.DealDamage(null, m.Balls[playerWins ? 1 : 0], FT.X(30000), DamageKind.Hazard);
+            m.DealDamage(null, m.Balls[playerWins ? 1 : 0], FT.X(20000), DamageKind.Hazard);   // < 32767 / 1.2 (SHELL KING takes x1.2 unshelled; Q16.16 would overflow)
             return Finish(m);
         }
     }

@@ -136,7 +136,10 @@ namespace BallBattle.Sim
                 MaxHp = maxHp,
                 Hp = l.Hp >= Fix.Zero ? FixMath.Min(l.Hp, maxHp) : maxHp,
                 Bonus = l.Bonus,
-                Tree = l.Tree
+                Tree = l.Tree,
+                AutoSkill = l.AutoSkill && l.TapEnabled,
+                BotFirstTick = l.BotFirstTick,
+                BotRepeatTicks = l.BotRepeatTicks
             };
             l.Weapon.Attach(this, b);
             if ((l.Boss == null || l.Boss is Boss.MimicRule) && Skills.SkillDefinition.ForWeapon(l.Weapon.Id) != null)
@@ -180,6 +183,8 @@ namespace BallBattle.Sim
             if (bossRules.Length > 0) BossPreTick();   // BB-04: boss phases, pull, Warden walls (limits Arena)
             SkillsPreTick();
             UpdateFx();   // BB-19b: skill effects (before the taps, so a new effect first acts next tick)
+            foreach (var ball in balls)   // Run enemies press their active skill themselves (the player taps through TapView)
+                if (ball.AutoSkill && Active(ball) && ball.Tap != null && ball.Skill?.Act != null && ball.Skill.Act.BotWantsTap) ball.Tap.Request();
             foreach (var ball in balls) if (Active(ball)) ball.Tap?.Tick();   // TAP-1: taps queued since the last step
 
             var substeps = SubstepCount();

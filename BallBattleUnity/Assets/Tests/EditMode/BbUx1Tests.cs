@@ -55,7 +55,8 @@ namespace BallBattle.Tests
             view.GetComponentsInChildren<PixelButton>().Single(b => b.name == "Pick_venom").SimulateClick();
             Assert.That(picked, Is.Null, "first tap only explains");
             Assert.That(view.Selected, Is.EqualTo("venom"));
-            Assert.That(view.DetailText, Does.Contain("DRAIN").And.Contain("POISONER").And.Contain("WEAK:"));
+            Assert.That(view.DetailText, Does.Contain("SPORE CLOUD").And.Contain("POISONER"));
+            Assert.That(view.DetailText, Does.Not.Contain("GOOD:").And.Not.Contain("WEAK:"));
             Assert.That(view.PickButton.gameObject.activeSelf, Is.True);
             view.GetComponentsInChildren<PixelButton>().Single(b => b.name == "Pick_aegis").SimulateClick();
             Assert.That((picked, view.Selected), Is.EqualTo(((string)null, "aegis")), "tapping another ball switches the details");
@@ -97,10 +98,14 @@ namespace BallBattle.Tests
             var codex = SkillCodexView.Create(root.transform, art);
             codex.Show();
             var next = codex.GetComponentsInChildren<PixelButton>().Single(b => b.LabelText == "NEXT");
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < 10; i++)
             {
                 var texts = codex.GetComponentsInChildren<PixelText>().Select(t => t.Text).ToList();
-                Assert.That(texts.Any(t => t.StartsWith("PLAY: ")), Is.True, $"page {i}");
+                // Codex rewrite: intro, skill and one play tip, each from CodexText.
+                Assert.That(texts, Does.Contain("PLAY TIP"), $"page {i}");
+                var entry = CodexText.For(BallBattle.Sim.Skills.SkillDefinition.All[codex.Index].WeaponId);
+                Assert.That(entry, Is.Not.Null, $"page {i}");
+                Assert.That(texts, Does.Contain(entry.IntroEn[0]).And.Contain(entry.TipEn[0]), $"page {i}");
                 Assert.That(texts.Any(t => t.StartsWith("GOOD: ") || t.StartsWith("WEAK: ")), Is.False, $"page {i}");
                 Bb0102Tests.AssertTextFitsAndNoOverlap(codex.transform);
                 next.SimulateClick();
@@ -215,13 +220,14 @@ namespace BallBattle.Tests
             var codex = SkillCodexView.Create(root.transform, art);
             codex.Show();
             var next = codex.GetComponentsInChildren<PixelButton>().Single(b => b.LabelText == "NEXT");
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < 10; i++)
             {
                 Assert.That(codex.SkillIcon.enabled, Is.True, $"page {i}");
-                var name = codex.GetComponentsInChildren<PixelText>().Single(t => t.TextScale == 2 && t.transform.localPosition.y == 34f);
-                var iconRight = codex.SkillIcon.transform.localPosition.x + 14f;   // 14 px sprite at x2
-                Assert.That(iconRight, Is.LessThanOrEqualTo(name.Bounds.xMin - 6f), $"page {i}: icon touches '{name.Text}'");
-                Assert.That(codex.SkillIcon.transform.localPosition.x - 14f, Is.GreaterThanOrEqualTo(-135f), $"page {i}: icon off screen");
+                // Codex rewrite: the skill name (scale 1) with the 14 px icon left of it.
+                var name = codex.SkillHeader;
+                var iconRight = codex.SkillIcon.transform.localPosition.x + 7f;   // 14 px sprite at x1, centred
+                Assert.That(iconRight, Is.LessThanOrEqualTo(name.Bounds.xMin - 3f), $"page {i}: icon touches '{name.Text}'");
+                Assert.That(codex.SkillIcon.transform.localPosition.x - 7f, Is.GreaterThanOrEqualTo(-135f), $"page {i}: icon off screen");
                 next.SimulateClick();
             }
         }

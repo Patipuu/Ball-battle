@@ -32,11 +32,15 @@ namespace BallBattle.Sim.Boss
         /// <summary>Pull multiplier on a ball with the Heavy trait (any level): 1/2.</summary>
         public static Fix MagnetHeavyScale = Fix.Ratio(1, 2);
 
-        // ---- MIMIC (fight 8): copies the player's weapon and traits at fight start ----
-        public static Fix MimicHp = 275;   // BB-04 it2: 220 -> 275 (+25%)
+        // ---- MIMIC (fight 8): borrows the player's weapon, then adapts ----
+        public static Fix MimicHp = 255;
+        public static int MimicEchoFirstTick = 180, MimicEchoCycleTicks = 300, MimicEchoWarnTicks = 45;
+        public static Fix MimicEchoRadius = 38, MimicEchoDamage = 16;
 
         // ---- WARDEN (fight 8): the walls step in every few seconds ----
-        public static Fix WardenHp = 230;   // BB-6e: 275 -> 207 (-24.7% vs BB-04 it3), retained by BB-6f; BB-BAL1: 207 -> 230 (+11.1%)
+        public static Fix WardenHp = 290;
+        public static int WardenCrossFirstTick = 210, WardenCrossCycleTicks = 360, WardenCrossWarnTicks = 45;
+        public static Fix WardenCrossHalfWidth = 16, WardenCrossDamage = 12;
         /// <summary>Random traits, as the fight-8 boss had before BB-04.</summary>
         public static int WardenTraits = 2;
         public static int WardenFirstStepTick = 450;   // BB-6e: 360 -> 450 (+25% vs BB-04 it3)
@@ -52,6 +56,26 @@ namespace BallBattle.Sim.Boss
 
         /// <summary>Damage per contact during a WARDEN spike window (player only, never the floor).</summary>
         public static Fix WardenSpikeDamage = 3;   // BB-6e it1: 2 (range 2-3); BB-BAL1: 2 -> 3
+
+        // All non-Mimic bosses use one restrained touch hit plus their authored rule; none rolls a player weapon or trait.
+        public static Fix ContactDamage(string id)
+        {
+            switch (id)
+            {
+                case BossIds.ShellKing: return 1;
+                case BossIds.Magnet: return 1;
+                case BossIds.Hunter: return Fix.Ratio(5, 2);
+                case BossIds.Bell: return Fix.Ratio(3, 2);
+                case BossIds.Warden: return 5;
+                case BossIds.Ember: return Fix.Ratio(9, 2);
+                case BossIds.Prism: return 4;
+                default: return 3;
+            }
+        }
+        public static Fix HunterHp = 180;
+        public static Fix BellHp = 190;
+        public static Fix EmberHp = 255;
+        public static Fix PrismHp = 245;
 
         /// <summary>Number of steps the Warden can take ((100 − MinPct) / StepPct: 4 with the spec's 10%/60%, also 4 with 12%/45%).</summary>
         public static int WardenMaxSteps => WardenStepPct > 0 ? (100 - WardenMinPct) / WardenStepPct : 0;

@@ -285,6 +285,39 @@ namespace BallBattle.Tests
         }
 
         [Test]
+        public void NextPlayerBuildResetsProgressAndTutorialExactlyOnce()
+        {
+            var dir = Path.Combine(Path.GetTempPath(), "bb-playtest-reset-" + System.Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                var path = Path.Combine(dir, "save.json");
+                var old = new SaveData { HasRun = true, musicVol = 3, sfxVol = 7 };
+                old.Progress.RunsPlayed = 4;
+                old.Progress.Achievements.Add(UnlockRules.Boss1);
+                old.Progress.Onboarding.HintsOff = true;
+                old.Progress.Onboarding.MarkSeen("startpick");
+                File.WriteAllText(path, JsonUtility.ToJson(old));
+
+                var playerStore = new FileSaveStore(path, playerBuild: true);
+                var fresh = playerStore.Load();
+                Assert.That((fresh.Progress.RunsPlayed, fresh.HasRun), Is.EqualTo((0, false)));
+                Assert.That(fresh.Progress.Achievements, Is.Empty);
+                Assert.That((fresh.Progress.Onboarding.MenuStage, fresh.Progress.Onboarding.HintsOff), Is.EqualTo((0, false)));
+                Assert.That(fresh.Progress.Onboarding.HasSeen("startpick"), Is.False);
+                Assert.That((fresh.musicVol, fresh.sfxVol), Is.EqualTo((3, 7)));
+                Assert.That(File.Exists(path + ".before-playtest-reset"), Is.True);
+                Assert.That(new FileSaveStore(path).Load().Progress.RunsPlayed, Is.EqualTo(4), "Editor save stays untouched");
+
+                fresh.Progress.RunsPlayed = 1;
+                playerStore.Save(fresh);
+                Assert.That(playerStore.Load().Progress.RunsPlayed, Is.EqualTo(1), "subsequent launches keep new progress");
+                Assert.That(playerStore.Load().PlaytestEpoch, Is.EqualTo(SaveData.CurrentPlaytestEpoch));
+            }
+            finally { Directory.Delete(dir, true); }
+        }
+
+        [Test]
         public void FailedSaveIsLoggedAndNeverThrows()
         {
             var blocker = Path.Combine(Path.GetTempPath(), "bb-save-blocker-" + System.Guid.NewGuid().ToString("N"));

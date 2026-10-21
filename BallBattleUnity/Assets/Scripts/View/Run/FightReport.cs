@@ -239,7 +239,7 @@ namespace BallBattle.View
                 if (Outcome == FightOutcome.Win) return $"WIN  +{CoinsGained} COINS";
                 var lost = Outcome == FightOutcome.Draw ? "DRAW COUNTS AS LOST" : "LOST";
                 if (IsRetry) return lost + $" - RETRY AT {Pct(HpNext, MaxHpNext)}% HP";
-                return lost + "  RUN OVER";
+                return RunOver ? lost + "  RUN OVER" : "";   // a continuing run must never claim it is over
             }
         }
 
@@ -263,7 +263,8 @@ namespace BallBattle.View
 
         public string NextStats => $"HP {HpText.Of(NextEnemyHp)}   ARENA {ArenaRegistry.Get(NextArenaId).DisplayName}";
 
-        public string NextWeaponName => NextWeaponId != null ? WeaponNames.Of(NextWeaponId) : "";
+        public string NextWeaponName => !string.IsNullOrEmpty(NextBossId) && NextWeaponId == BallBattle.Sim.Boss.BossCoreRule.WeaponId
+            ? BossText.Name(NextBossId) : NextWeaponId != null ? WeaponNames.Of(NextWeaponId) : "";
 
         public static string Number(float v)
         {

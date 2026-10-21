@@ -4,11 +4,12 @@ namespace BallBattle.Sim.Boss
     public static class BossIds
     {
         public const string ShellKing = "shellking", Magnet = "magnet", Mimic = "mimic", Warden = "warden";
+        public const string Hunter = "hunter", Bell = "bell", Ember = "ember_boss", Prism = "prism";
 
-        public static readonly string[] All = { ShellKing, Magnet, Mimic, Warden };
+        public static readonly string[] All = { ShellKing, Magnet, Hunter, Bell, Mimic, Warden, Ember, Prism };
 
         /// <summary>Candidates per boss slot: slot 0 = fight 4, slot 1 = fight 8 (RunTuning.BossFights).</summary>
-        public static readonly string[][] Slots = { new[] { ShellKing, Magnet }, new[] { Mimic, Warden } };
+        public static readonly string[][] Slots = { new[] { ShellKing, Magnet, Hunter, Bell }, new[] { Mimic, Warden, Ember, Prism } };
 
         public static bool Exists(string id)
         {
@@ -38,6 +39,10 @@ namespace BallBattle.Sim.Boss
                 case BossIds.Magnet: return new MagnetRule();
                 case BossIds.Mimic: return new MimicRule();
                 case BossIds.Warden: return new WardenRule();
+                case BossIds.Hunter: return new HunterRule();
+                case BossIds.Bell: return new BellRule();
+                case BossIds.Ember: return new EmberRule();
+                case BossIds.Prism: return new PrismRule();
                 default: throw new System.ArgumentException($"Unknown boss '{id}'", nameof(id));
             }
         }
@@ -81,6 +86,10 @@ namespace BallBattle.Sim.Boss
                 ShellOn = true;
                 if (target != null) Facing = (target.Pos - Self.Pos).NormalizedOr(Facing);
                 Sim.EmitBoss(BossEvent.ShellOn, Self.Index, targetIndex, Fix.Zero, Self.Pos + Facing * Self.Radius);
+                // The shield's tell also warns of a short frontal slam. Circling behind avoids both effects.
+                if (target != null && (target.Pos - Self.Pos).LengthSq <= FixMath.Sq(95) &&
+                    FixVec2.DotFix((target.Pos - Self.Pos).NormalizedOr(Facing), Facing) >= Fix.Ratio(1, 2))
+                    Sim.DealDamage(Self, target, 20, DamageKind.Ability);
             }
             if (p == BossTuning.ShellWarnTicks + BossTuning.ShellOnTicks)
             {
@@ -90,6 +99,9 @@ namespace BallBattle.Sim.Boss
         }
 
         public override bool BlocksHit(BallState attacker, FixVec2 contact) => ShellOn && attacker != Self && InArc(contact);
+
+        public override Fix ModifyIncomingDamage(Fix damage, DamageKind kind) =>
+            ShellOn || Warning ? damage : damage * Fix.Ratio(6, 5);
 
         public override int HitArcAngleTenths(BallState attacker, FixVec2 contact) =>
             ShellOn && attacker != Self ? ContactAngleTenths(contact) : -1;
@@ -168,6 +180,11 @@ namespace BallBattle.Sim.Boss
             if (p == BossTuning.MagnetWarnTicks + BossTuning.MagnetPullTicks)
             {
                 Pulling = false;
+                if (target != null)
+                {
+                    DamageNear(Self.Pos, 92, 22);
+                    target.Vel += (target.Pos - Self.Pos).NormalizedOr(FixVec2.Right) * 5;
+                }
                 Sim.EmitBoss(BossEvent.MagnetEnd, Self.Index, targetIndex, Fix.Zero, Self.Pos);
             }
             if (!Pulling) return;
@@ -206,24 +223,84 @@ namespace BallBattle.Sim.Boss
     }
 
     /// <summary>
-    /// MIMIC: the copy itself happens in the Run layer (RunState builds the enemy from the player's weapon and traits when the fight
-    /// starts). In the match it only announces the copy on the first active tick.
+    /// MIMIC borrows the player's weapon and active skill at fight start, and periodically strikes a marked position.
+    /// After 15 seconds it resists the damage type that actually hurt it most. Player traits are not copied.
     /// </summary>
     public sealed class MimicRule : BossRule
     {
         public override string Id => BossIds.Mimic;
 
         public bool Announced { get; private set; }
+        public bool Adapted { get; private set; }
+        public DamageKind AdaptedKind { get; private set; }
+        public bool EchoWarning { get; private set; }
+        public FixVec2 EchoMark { get; private set; }
+        readonly Fix[] damageByKind = new Fix[6];
+
+        public override void OnDamageTaken(DamageKind kind, Fix damage)
+        {
+            if (!Adapted && kind != DamageKind.Hazard && (int)kind < damageByKind.Length)
+                damageByKind[(int)kind] += damage;
+        }
+
+        public override Fix ModifyIncomingDamage(Fix damage, DamageKind kind) =>
+            Adapted && kind == AdaptedKind ? damage * Fix.Ratio(7, 10) : damage;
 
         public override void OnActiveTick()
         {
-            if (Announced) return;
-            Announced = true;
-            var target = Target;
-            Sim.EmitBoss(BossEvent.MimicCopied, Self.Index, target != null ? target.Index : -1, Fix.Zero, Self.Pos);
+            var echoTick = Sim.ActiveTick - BossTuning.MimicEchoFirstTick;
+            if (echoTick >= 0)
+            {
+                var phase = echoTick % BossTuning.MimicEchoCycleTicks;
+                if (phase == 0)
+                {
+                    var target = Target;
+                    if (target != null)
+                    {
+                        EchoMark = target.Pos;
+                        EchoWarning = true;
+                        Sim.EmitBoss(BossEvent.MimicEchoWarn, Self.Index, target.Index, BossTuning.MimicEchoRadius, EchoMark);
+                    }
+                }
+                if (phase == BossTuning.MimicEchoWarnTicks && EchoWarning)
+                {
+                    EchoWarning = false;
+                    DamageNear(EchoMark, BossTuning.MimicEchoRadius, BossTuning.MimicEchoDamage);
+                    Sim.EmitBoss(BossEvent.MimicEchoStrike, Self.Index, Target?.Index ?? -1, BossTuning.MimicEchoRadius, EchoMark);
+                }
+            }
+            if (Sim.ActiveTick >= 360 && Sim.ActiveTick % 360 == 0) Sim.Tap(Self.Index);
+            if (!Announced)
+            {
+                Announced = true;
+                var target = Target;
+                Sim.EmitBoss(BossEvent.MimicCopied, Self.Index, target != null ? target.Index : -1, Fix.Zero, Self.Pos);
+            }
+            if (!Adapted && Sim.ActiveTick >= 900)
+            {
+                var best = Fix.Zero;
+                for (var i = 0; i < damageByKind.Length; i++)
+                    if (damageByKind[i] > best) { best = damageByKind[i]; AdaptedKind = (DamageKind)i; }
+                Adapted = true;
+                Sim.EmitBoss(BossEvent.MimicAdapted, Self.Index, Target?.Index ?? -1, best, Self.Pos);
+            }
         }
 
-        protected override ulong HashState(ulong h) => SimHash.Mix(h, Announced);
+        protected override ulong HashState(ulong h)
+        {
+            h = SimHash.Mix(h, Announced);
+            h = SimHash.Mix(h, Adapted);
+            h = SimHash.Mix(h, (int)AdaptedKind);
+            h = SimHash.Mix(h, EchoWarning);
+            h = SimHash.Mix(h, EchoMark);
+            h = SimHash.Mix(h, BossTuning.MimicEchoFirstTick);
+            h = SimHash.Mix(h, BossTuning.MimicEchoCycleTicks);
+            h = SimHash.Mix(h, BossTuning.MimicEchoWarnTicks);
+            h = SimHash.Mix(h, BossTuning.MimicEchoRadius);
+            h = SimHash.Mix(h, BossTuning.MimicEchoDamage);
+            foreach (var amount in damageByKind) h = SimHash.Mix(h, amount);
+            return h;
+        }
     }
 
     /// <summary>
@@ -240,6 +317,8 @@ namespace BallBattle.Sim.Boss
 
         public int Steps { get; private set; }
         public bool Warning { get; private set; }
+        public bool CrossWarning { get; private set; }
+        public FixVec2 CrossMark { get; private set; }
 
         byte movedWalls;
         int spikeUntilActiveTick;
@@ -252,6 +331,31 @@ namespace BallBattle.Sim.Boss
 
         public override void OnActiveTick()
         {
+            var crossTick = Sim.ActiveTick - BossTuning.WardenCrossFirstTick;
+            if (crossTick >= 0)
+            {
+                var phase = crossTick % BossTuning.WardenCrossCycleTicks;
+                if (phase == 0)
+                {
+                    var target = Target;
+                    if (target != null)
+                    {
+                        CrossMark = target.Pos;
+                        CrossWarning = true;
+                        Sim.EmitBoss(BossEvent.WardenCrossWarn, Self.Index, target.Index, BossTuning.WardenCrossHalfWidth, CrossMark);
+                    }
+                }
+                if (phase == BossTuning.WardenCrossWarnTicks && CrossWarning)
+                {
+                    CrossWarning = false;
+                    var target = Target;
+                    if (target != null &&
+                        (FixMath.Abs(target.Pos.X - CrossMark.X) <= BossTuning.WardenCrossHalfWidth ||
+                         FixMath.Abs(target.Pos.Y - CrossMark.Y) <= BossTuning.WardenCrossHalfWidth))
+                        Sim.DealDamage(Self, target, BossTuning.WardenCrossDamage, DamageKind.Ability);
+                    Sim.EmitBoss(BossEvent.WardenCrossFire, Self.Index, target?.Index ?? -1, BossTuning.WardenCrossHalfWidth, CrossMark);
+                }
+            }
             if (Steps >= BossTuning.WardenMaxSteps) { Warning = false; return; }
             var next = StepTick(Steps + 1);
             if (Sim.ActiveTick == next - BossTuning.WardenWarnTicks)
@@ -272,6 +376,15 @@ namespace BallBattle.Sim.Boss
                 spikeUntilActiveTick = movedWalls != 0 ? Sim.ActiveTick + BossTuning.SpikeWindowTicks : 0;
                 Warning = false;
                 Sim.RequestPushIn();
+                // The wall step pushes the player toward the edge; the warning shows when to turn inward.
+                var target = Target;
+                if (target != null)
+                {
+                    if (FixMath.Abs(target.Pos.X) > Sim.Arena.Width * Fix.Ratio(1, 4) ||
+                        target.Pos.Y > Sim.Arena.Height * Fix.Ratio(1, 4))
+                        Sim.DealDamage(Self, target, 18, DamageKind.Ability);
+                    target.Vel += target.Pos.NormalizedOr(FixVec2.Right) * 4;
+                }
                 Sim.EmitBoss(BossEvent.WardenStep, Self.Index, -1, SizeAfter(Sim.Config.ArenaWidth, Steps), Self.Pos);
             }
         }
@@ -298,6 +411,13 @@ namespace BallBattle.Sim.Boss
         {
             h = SimHash.Mix(h, Steps);
             h = SimHash.Mix(h, Warning);
+            h = SimHash.Mix(h, CrossWarning);
+            h = SimHash.Mix(h, CrossMark);
+            h = SimHash.Mix(h, BossTuning.WardenCrossFirstTick);
+            h = SimHash.Mix(h, BossTuning.WardenCrossCycleTicks);
+            h = SimHash.Mix(h, BossTuning.WardenCrossWarnTicks);
+            h = SimHash.Mix(h, BossTuning.WardenCrossHalfWidth);
+            h = SimHash.Mix(h, BossTuning.WardenCrossDamage);
             h = SimHash.Mix(h, (int)movedWalls);
             h = SimHash.Mix(h, spikeUntilActiveTick);
             h = SimHash.Mix(h, BossTuning.SpikeWindowTicks);

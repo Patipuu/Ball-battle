@@ -1,0 +1,17 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SimTests -> E:\ball-battle\BallBattleUnity\SimTests\bin\Debug\net10.0\SimTests.dll
+Test run for E:\ball-battle\BallBattleUnity\SimTests\bin\Debug\net10.0\SimTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+NUnit Adapter 5.0.0.0: Test execution started
+Running selected tests in E:\ball-battle\BallBattleUnity\SimTests\bin\Debug\net10.0\SimTests.dll
+   NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Non-Explicit run
+Run bot wins (N=800): random 2.3%, greedy 22.5%
+NUnit Adapter 5.0.0.0: Test execution complete
+  Passed GreedyBotWins22To40Percent [6 ms]
+  Passed RandomBotWins1To6Percent [< 1 ms]
+
+Test Run Successful.
+Total tests: 2
+     Passed: 2
+ Total time: 17.0456 Seconds

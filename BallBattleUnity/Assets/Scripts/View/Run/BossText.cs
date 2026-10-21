@@ -15,6 +15,10 @@ namespace BallBattle.View
                 case BossIds.Magnet: return StringTable.Get(StringKeys.BossMagnetName);
                 case BossIds.Mimic: return StringTable.Get(StringKeys.BossMimicName);
                 case BossIds.Warden: return StringTable.Get(StringKeys.BossWardenName);
+                case BossIds.Hunter: return StringTable.Get(StringKeys.BossHunterName);
+                case BossIds.Bell: return StringTable.Get(StringKeys.BossBellName);
+                case BossIds.Ember: return StringTable.Get(StringKeys.BossEmberName);
+                case BossIds.Prism: return StringTable.Get(StringKeys.BossPrismName);
                 default: return (bossId ?? "").ToUpperInvariant();
             }
         }
@@ -28,6 +32,10 @@ namespace BallBattle.View
                 case BossIds.Magnet: return StringTable.Get(StringKeys.BossMagnetHint);
                 case BossIds.Mimic: return StringTable.Get(StringKeys.BossMimicHint);
                 case BossIds.Warden: return StringTable.Get(StringKeys.BossWardenHint);
+                case BossIds.Hunter: return StringTable.Get(StringKeys.BossHunterHint);
+                case BossIds.Bell: return StringTable.Get(StringKeys.BossBellHint);
+                case BossIds.Ember: return StringTable.Get(StringKeys.BossEmberHint);
+                case BossIds.Prism: return StringTable.Get(StringKeys.BossPrismHint);
                 default: return "";
             }
         }
@@ -45,7 +53,7 @@ namespace BallBattle.View
             return lines;
         }
 
-        /// <summary>MIMIC's preview name: "COPIES YOU" (its weapon and traits are only known when the fight starts).</summary>
+        /// <summary>MIMIC's preview name: its borrowed weapon is finalized when the fight starts.</summary>
         public static string CopiesYou => StringTable.Get(StringKeys.BossCopiesYou);
 
         /// <summary>Bosses this run met, in fight order, each once: (boss id, beaten?).</summary>

@@ -84,7 +84,7 @@ namespace BallBattle.View
             return null;
         }
         public Sprite BossBody(string id) => id == "shellking" ? ShellKing : id == "magnet" ? MagnetBody :
-            id == "warden" ? WardenBody : id == "mimic" ? MimicSprite(MimicLook.Idle) : null;
+            id == "warden" ? WardenBody : id == "mimic" ? MimicSprite(MimicLook.Idle) : BossPortraits.Get(id);
 
         [Header("Art v1: arenas")]
         public ArenaArt[] Arenas = new ArenaArt[0];
@@ -97,6 +97,7 @@ namespace BallBattle.View
 
         public WeaponArt Get(string id)
         {
+            if (id == BallBattle.Sim.Boss.BossCoreRule.WeaponId) id = BallBattle.Sim.Weapons.BrawlerRule.WeaponId;
             foreach (var w in Weapons)
                 if (w.Id == id) return w;
             throw new ArgumentException($"No art for weapon '{id}'", nameof(id));

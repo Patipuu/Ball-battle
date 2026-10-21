@@ -65,7 +65,14 @@ namespace BallBattle.Tests
                 { BossEvent.ShellWarn, "boss_shellking_warn" }, { BossEvent.ShellOn, "boss_shellking_hit" }, { BossEvent.ShellOff, null },
                 { BossEvent.MagnetWarn, "boss_magnet_warn" }, { BossEvent.MagnetPull, "boss_magnet_hit" }, { BossEvent.MagnetEnd, null },
                 { BossEvent.MimicCopied, "boss_mimic_hit" },
+                { BossEvent.MimicAdapted, "boss_mimic_hit" },
+                { BossEvent.MimicEchoWarn, "boss_shellking_warn" }, { BossEvent.MimicEchoStrike, "boss_mimic_hit" },
                 { BossEvent.WardenWarn, "boss_warden_warn" }, { BossEvent.WardenStep, "boss_warden_hit" },
+                { BossEvent.WardenCrossWarn, "boss_warden_warn" }, { BossEvent.WardenCrossFire, "boss_warden_hit" },
+                { BossEvent.HunterMark, "boss_shellking_warn" }, { BossEvent.HunterCharge, "boss_shellking_hit" },
+                { BossEvent.BellWarn, "boss_warden_warn" }, { BossEvent.BellWave, "boss_warden_hit" },
+                { BossEvent.EmberMark, "boss_magnet_warn" }, { BossEvent.EmberIgnite, "boss_magnet_hit" },
+                { BossEvent.PrismWarn, "boss_shellking_warn" }, { BossEvent.PrismBeam, "boss_shellking_hit" },
             };
             foreach (BossEvent k in System.Enum.GetValues(typeof(BossEvent)))
                 Assert.That(AudioIds.BossCue(k), Is.EqualTo(expected[k]), k.ToString());
@@ -88,8 +95,10 @@ namespace BallBattle.Tests
                 Assert.DoesNotThrow(() => result = d.RequestBossCue(BossEv(k, tick++), Sim()));
                 Assert.That(result, Is.EqualTo(AudioIds.BossCue(k) == null ? AudioDirector.BossCueResult.None : AudioDirector.BossCueResult.Played));
             }
-            Assert.That(d.Played.Select(p => p.Id), Is.EquivalentTo(AudioIds.BossCues));
-            Assert.That(d.LogLines.Count(l => l.Contains("result=played")), Is.EqualTo(7));
+            var sounded = System.Enum.GetValues(typeof(BossEvent)).Cast<BossEvent>()
+                .Select(AudioIds.BossCue).Where(id => id != null).ToArray();
+            Assert.That(d.Played.Select(p => p.Id), Is.EqualTo(sounded));
+            Assert.That(d.LogLines.Count(l => l.Contains("result=played")), Is.EqualTo(sounded.Length));
             Assert.That(d.LogLines.Any(l => l.Contains("ShellOff") || l.Contains("MagnetEnd")), Is.False, "off/end have no cue");
         }
 
@@ -138,6 +147,8 @@ namespace BallBattle.Tests
         [TestCase(BossIds.ShellKing, BossEvent.ShellWarn, BossEvent.ShellOn)]
         [TestCase(BossIds.Magnet, BossEvent.MagnetWarn, BossEvent.MagnetPull)]
         [TestCase(BossIds.Warden, BossEvent.WardenWarn, BossEvent.WardenStep)]
+        [TestCase(BossIds.Mimic, BossEvent.MimicEchoWarn, BossEvent.MimicEchoStrike)]
+        [TestCase(BossIds.Warden, BossEvent.WardenCrossWarn, BossEvent.WardenCrossFire)]
         public void BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(string bossId, BossEvent warn, BossEvent action)
         {
             var cfg = new MatchConfig { Gravity = Fix.Zero, MinHorizontalSpeed = Fix.Zero, ShrinkStartTick = int.MaxValue };
@@ -151,7 +162,10 @@ namespace BallBattle.Tests
             var director = Director(lib);
             AudioLog.ForceOn = true;
             int warnTick = -1, warnActive = -1, actionTick = -1, actionActive = -1;
-            var expectedDelay = bossId == BossIds.ShellKing ? BossTuning.ShellWarnTicks : bossId == BossIds.Magnet ? BossTuning.MagnetWarnTicks : BossTuning.WardenWarnTicks;
+            var expectedDelay = bossId == BossIds.ShellKing ? BossTuning.ShellWarnTicks :
+                bossId == BossIds.Magnet ? BossTuning.MagnetWarnTicks :
+                warn == BossEvent.MimicEchoWarn ? BossTuning.MimicEchoWarnTicks :
+                warn == BossEvent.WardenCrossWarn ? BossTuning.WardenCrossWarnTicks : BossTuning.WardenWarnTicks;
             while (actionTick < 0 && m.Tick < 1000)
             {
                 m.Balls[0].Pos = TFix.V(-60, 0); m.Balls[0].Vel = FixVec2.Zero;
@@ -201,10 +215,10 @@ namespace BallBattle.Tests
             return run;
         }
 
-        [TestCase(BossIds.ShellKing, "SHELL KING", "SHELL BLOCKS ONE SIDE. HIT ITS BACK.")]
-        [TestCase(BossIds.Magnet, "MAGNET", "PULLS YOU IN EVERY 5S.")]
-        [TestCase(BossIds.Mimic, "MIMIC", "COPIES YOUR WEAPON AND TRAITS.")]
-        [TestCase(BossIds.Warden, "WARDEN", "MOVING WALLS SPIKE YOU.")]   // BB-6f: one line, traits retained
+        [TestCase(BossIds.ShellKing, "SHELL KING", "SHIELD UP: CIRCLE BEHIND IT.")]
+        [TestCase(BossIds.Magnet, "MAGNET", "PULLS YOU IN THEN BURSTS.")]
+        [TestCase(BossIds.Mimic, "MIMIC", "COPIES YOUR WEAPON. DODGE THE MARKED BLAST.")]
+        [TestCase(BossIds.Warden, "WARDEN", "DODGE CROSS LANES AND CLOSING SPIKED WALLS.")]
         public void PrepareShowsTheBossNameAndItsHint(string boss, string name, string hint)
         {
             var run = RunAt(RunTuning.BossFights[BossIds.SlotOf(boss)], boss);
@@ -214,13 +228,12 @@ namespace BallBattle.Tests
             Assert.That(v.EnemyLinesText, Does.EndWith(hint), "the hint, wrapped onto the two lines when needed");
             if (boss == BossIds.Warden)
             {
-                Assert.That(PixelFont.MeasureWidth(hint), Is.LessThanOrEqualTo(195), "WARDEN hint fits one line");
                 var lines = PrepareView.BossLines(run.Enemy, boss, 195);
-                Assert.That(lines.Count, Is.EqualTo(2), "keep WARDEN's traits line");
+                Assert.That(lines.Count, Is.GreaterThanOrEqualTo(2));
+                Assert.That(lines.All(line => PixelFont.MeasureWidth(line) <= 195), Is.True, "the wrapped hint fits");
                 Assert.That(lines[0], Is.Not.Empty);
-                Assert.That(lines[1], Is.EqualTo(hint));
             }
-            if (boss == BossIds.Mimic) Assert.That(v.EnemyNameText, Is.EqualTo("COPIES YOU"));
+            if (boss == BossIds.Mimic) Assert.That(v.EnemyNameText, Is.EqualTo(BossText.CopiesYou));
             Bb0102Tests.AssertTextFitsAndNoOverlap(v.transform);
         }
 
@@ -269,6 +282,26 @@ namespace BallBattle.Tests
             Assert.That(versus.Sim.Bosses.Count, Is.Zero, "Versus never has a boss");
             versus.Advance(1f / 60f);
             Assert.That(versus.Telegraph.DotsShown, Is.Zero);
+        }
+
+        [TestCase(BossIds.Mimic, 180, "mimic-echo")]
+        [TestCase(BossIds.Warden, 210, "warden-cross")]
+        public void NewBossAttacksShowTheirWarnings(string id, int warnTick, string shown)
+        {
+            var cfg = new MatchConfig { Gravity = Fix.Zero, MinHorizontalSpeed = Fix.Zero, ShrinkStartTick = int.MaxValue };
+            var sim = new MatchSim(cfg, 33, new[] {
+                new BallLoadout(new BossCoreRule()) { MaxHp = 9999 },
+                new BallLoadout(new BossCoreRule()) { MaxHp = 9999, Boss = BossRegistry.Create(id) }
+            });
+            while (sim.ActiveTick < warnTick) sim.Step();
+            var view = root.AddComponent<ArenaView>();
+            view.Art = art;
+            view.AutoRestart = false;
+            view.StartMatch(sim, "YOU", "BOSS");
+            var p = sim.Balls[sim.BossBallIndex].Pos;
+            view.Telegraph.Render(sim, new Vector2(p.X.ToFloat(), p.Y.ToFloat()));
+            Assert.That(view.Telegraph.Shown, Is.EqualTo(shown));
+            Assert.That(view.Telegraph.DotsShown, Is.GreaterThan(10));
         }
 
         [Test]

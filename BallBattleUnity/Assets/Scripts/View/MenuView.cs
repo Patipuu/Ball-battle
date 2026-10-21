@@ -36,6 +36,7 @@ namespace BallBattle.View
         public static readonly Rect VersusBackArea = new Rect(-60, -214, 120, 32);
 
         public event Action<string, string> StartRequested;
+        public event Action PvpRequested;
         /// <summary>RUN with no saved run: open Run mode on its title screen.</summary>
         public event Action RunRequested;
         /// <summary>CONTINUE RUN: open Run mode and resume the saved run.</summary>
@@ -189,8 +190,8 @@ namespace BallBattle.View
             PixelRect.Set(ballsBadgePill, BallsBadgeArea.xMin, BallsBadgeArea.yMin, BallsBadgeArea.xMax, BallsBadgeArea.yMax);
             ballsBadgePill.enabled = false;
             ballsBadge = PixelText.Create(BallsButton.transform, "Badge", art.Font, new Vector2(BallsBadgeArea.center.x, BallsBadgeArea.yMin + 1), PixelText.Align.Center, 1, BallsButton.IconOrder + 2);
-            var vs = PixelButton.Create(hub, "Versus", art, VersusArea, RunStrings.Versus, 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
-            vs.Clicked += ShowVersus;
+            var vs = PixelButton.Create(hub, "Versus", art, VersusArea, "PVP", 2, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
+            vs.Clicked += () => PvpRequested?.Invoke();
             VersusButton = vs;
             codexButton = PixelButton.Create(hub, "CodexButton", art, CodexArea, "CODEX", 2,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);

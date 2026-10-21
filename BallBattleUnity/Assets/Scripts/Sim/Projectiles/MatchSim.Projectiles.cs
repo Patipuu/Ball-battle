@@ -120,7 +120,7 @@ namespace BallBattle.Sim
                 }
                 else
                 {
-                    ApplyHitHp(owner, b, damage);
+                    ApplyHitHp(owner, b, damage, DamageKind.Projectile);
                     if (!p.Reflected) RunHitHooks(owner, b, damage, DamageKind.Projectile);
                 }
 

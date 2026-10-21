@@ -17,6 +17,7 @@ namespace BallBattle.View
         public MenuView Menu { get; private set; }
         public OverlayView Overlay { get; private set; }
         public RunController Run { get; private set; }
+        public PvpView Pvp { get; private set; }
         public AudioDirector Audio { get; private set; }
 
         ISaveStore store;
@@ -40,6 +41,9 @@ namespace BallBattle.View
             Overlay = OverlayView.Create(transform, Arena.Art);
             store = FileSaveStore.Default();
             Run = RunController.Create(transform, Arena, store);
+            Pvp = PvpView.Create(transform, Arena.Art, store, Arena);
+            Pvp.Closed += () => Menu.Show(true);
+            Menu.PvpRequested += () => { Menu.Show(false); Pvp.Open(); };
             menuChest = ChestView.Create(transform, Arena.Art);   // BB-12b: welcome chests opened from the menu
             menuChest.Collected += RefreshMenuInfo;
             Menu.Store = store;   // BB-12c: BALLS reads and saves progress
@@ -147,6 +151,8 @@ namespace BallBattle.View
         /// <summary>Screen shown now, for the music (AudioIds.TrackFor).</summary>
         public MusicScreen CurrentScreen()
         {
+            if (Pvp != null && Pvp.IsOpen)
+                return Pvp.IsReplaying ? MusicScreen.Fight : Pvp.IsResult ? MusicScreen.VersusResult : MusicScreen.VersusPick;
             if (Run.IsOpen)
             {
                 switch (Run.Flow.Current)
@@ -180,7 +186,7 @@ namespace BallBattle.View
             var result = BallBattle.Sim.Meta.MetaRules.OpenPending(data.Progress, unchecked((uint)data.Progress.RunsPlayed * 2654435761u + 97u));
             if (result == null) { RefreshMenuInfo(); return; }
             store.Save(data);
-            menuChest.Show(result, data.Progress, "WELCOME BACK", Menu.transform);
+            menuChest.Show(result, data.Progress, "QUEST REWARD", Menu.transform);   // waiting chests now come from daily quests
         }
 
         void RefreshMenuInfo()
@@ -214,6 +220,7 @@ namespace BallBattle.View
             {
                 var back = true;
                 if (Run.IsOpen) Run.Flow.Close();
+                else if (Pvp.IsOpen) Pvp.Close();
                 else if (Flow.Current != MatchFlow.State.Menu) Flow.ToMenu();
                 else if (Menu.VersusOpen || Menu.SettingsOpen) Menu.ShowHub();
                 else back = false;

@@ -77,7 +77,7 @@ namespace BallBattle.View
 
         /// <summary>Second line of CONTINUE RUN: "FIGHT 3/8  RETRY 1" (fight 1-based, retries still left).</summary>
         public static string ContinueLine(RunState run) =>
-            $"FIGHT {run.FightIndex + 1}/{RunTuning.Fights}{ListSep}RETRY {Mathf.Max(0, RunTuning.Retries - run.RetryCount)}";
+            $"FIGHT {run.FightIndex + 1}/{RunTuning.Fights}{ListSep}RETRY {Mathf.Max(0, run.MaxRetries - run.RetryCount)}";
 
         /// <summary>
         /// BB-VIEW3: the fight-4 goal (boss1) and the fight-8 goal (win1: beating the last boss wins the run) name the boss that run
@@ -103,6 +103,56 @@ namespace BallBattle.View
                 default: return (goalId ?? "").ToUpperInvariant();
             }
         }
+
+        // ---- Daily quests (NextGoalBox, run summary). English source; ui-vi.txt has the Vietnamese. ----
+        public const string DailyQuests = "DAILY QUESTS";
+        public const string QuestDone = "DONE";
+        public const string QuestsAllDone = "BONUS CHEST!";
+        public const string QuestsCompleted = "QUESTS DONE THIS RUN";
+        public static string ChapterTitle(int index, string name) => $"CHAPTER {index + 1}: {name}";
+        public static string ChapterBosses(string boss1, string boss2) => $"BOSSES: {boss1} + {boss2}";
+        public static string ChapterLocked(int index) => $"CLEAR CHAPTER {index} TO OPEN";
+        public static string ChapterUnlocked(int index) => $"CHAPTER {index + 1} UNLOCKED!";
+        public const string QuestBonus = "ALL QUESTS DONE: BONUS";
+        /// <summary>The chapter's background concept line (ChapterDef.Lore, English source; ui-vi translates it).</summary>
+        public static string ChapterLore(int index) => BallBattle.Sim.Run.Chapters.Get(index).Lore;
+        // ---- HEAT (HeatRules): three difficulty steps per chapter ----
+        public static string HeatName(int heat) => $"HEAT {heat + 1}";
+        public static string HeatRule(int heat) =>
+            heat <= 0 ? "BASE RULES" : heat == 1 ? "FOES +1 TRAIT, +10% HP" : "HEAT 2 + NO RETRY, BOSSES +25% HP";
+        public static string HeatReward(int heat) =>
+            heat <= 0 ? "" : heat == 1 ? "CHEST +1 TIER, +50% GOLD" : "CHEST +2 TIERS, +100% GOLD";
+        public static string HeatLocked(int heat) => $"WIN HEAT {heat} TO OPEN";
+        public static string HeatUnlocked(int chapter, int heat) => $"CHAPTER {chapter + 1}: HEAT {heat + 1} OPEN!";
+
+        /// <summary>"NEW IN 5H" / "NEW IN 40M": time to local midnight (the next roll).</summary>
+        public static string QuestsRefresh(System.DateTime now)
+        {
+            var left = now.Date.AddDays(1) - now;
+            return left.TotalHours >= 1 ? $"NEW IN {(int)left.TotalHours}H" : $"NEW IN {System.Math.Max(1, (int)System.Math.Ceiling(left.TotalMinutes))}M";
+        }
+
+        /// <summary>What a quest asks, e.g. "WIN 3 FIGHTS", "WIN 2 WITH EMBER".</summary>
+        public static string QuestTitle(QuestSlot slot)
+        {
+            var def = BallBattle.Sim.Run.DailyQuests.Def(slot?.Id);
+            if (def == null) return "";
+            var n = def.Target;
+            switch (def.Kind)
+            {
+                case QuestKind.WinFights: return $"WIN {n} FIGHTS";
+                case QuestKind.FinishRuns: return n == 1 ? "FINISH A RUN" : $"FINISH {n} RUNS";
+                case QuestKind.BeatBoss: return n == 1 ? "BEAT A BOSS" : $"BEAT {n} BOSSES";
+                case QuestKind.WinsInOneRun: return $"WIN {n} FIGHTS IN ONE RUN";
+                case QuestKind.WinStreak: return $"WIN {n} FIGHTS IN A ROW";
+                case QuestKind.WinWithBall: return $"WIN {n} WITH {WeaponNames.Of(slot.Ball)}";
+                case QuestKind.WinRun: return "WIN A WHOLE RUN";
+                default: return slot.Id.ToUpperInvariant();
+            }
+        }
+
+        /// <summary>"REWARD: SILVER CHEST".</summary>
+        public static string QuestReward(BallBattle.Sim.Meta.ChestTier tier) => $"REWARD: {ChestView.TierName(tier)} CHEST";
 
         public static string Progress(int current, int max) => $"{current}/{max}";
         public static string Wins(int runsWon) => $"WINS {runsWon}";

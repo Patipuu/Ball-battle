@@ -23,15 +23,19 @@ namespace BallBattle.View
         ChestView chest;
         RunFlow.State shown = RunFlow.State.Closed;
         bool dirty;
+        float tutorialSlowElapsed;
+        public const float TutorialSlowLimitSeconds = 2.5f;
 
         public RunFlow Flow { get; private set; }
         public bool IsOpen => Flow.Current != RunFlow.State.Closed;
         public PrepareView Prepare => prepare;
         public RunResultView Result => result;
         public RunSummaryView Summary => summary;
+        public RunTitleView Title => title;
         public TutorialCoach Coach => coach;
         public HintPointer Hints => hints;
         public TapView Tap => tap;
+        public RunOverlayView Overlay => overlay;
         public ChestView Chest => chest;
         public PickWeaponView Pick => pick;
         public StartPickView StartPick => startPick;
@@ -69,7 +73,7 @@ namespace BallBattle.View
             chest.Collected += () => { Flow.MarkChestShown(); dirty = true; };
 
             title.ContinueRequested += () => Flow.Continue();
-            title.NewRunRequested += () => Flow.NewRun(NewSeed(), Flow.Progress.RunsPlayed == 0);
+            title.NewRunRequested += () => Flow.NewRun(NewSeed(), Flow.Progress.RunsPlayed == 0, title.SelectedChapter, title.SelectedHeat);
             title.BackRequested += () => Flow.Close();
             pick.WeaponPicked += id => { Flow.MarkHintSeen("pick"); Flow.ChooseWeapon(id); };
             startPick.CardPicked += i => { Flow.MarkHintSeen("startpick"); Flow.PickStart(i); };
@@ -81,8 +85,9 @@ namespace BallBattle.View
             prepare.MenuRequested += () => Flow.Close();
             overlay.SpeedToggled += () =>
             {
-                arena.TimeScale = arena.TimeScale > 1f ? 1f : 2f;
-                overlay.SetSpeed(arena.TimeScale);
+                ChosenSpeed = ChosenSpeed > 1f ? 1f : 2f;
+                if (arena.TimeScale >= 1f) arena.TimeScale = ChosenSpeed;   // the tutorial's slow window keeps its 0.35
+                overlay.SetSpeed(ChosenSpeed);
             };
             overlay.PauseRequested += () =>
             {
@@ -96,16 +101,30 @@ namespace BallBattle.View
             };
             overlay.SaveExitRequested += () => Flow.Close();
             result.ContinueRequested += () => { Flow.MarkHintSeen("carry"); Flow.NextAfterResult(); };
-            summary.NewRunRequested += () => Flow.NewRun(NewSeed());
+            // Again from the summary: the same chapter and heat after a loss; after a win the chapter it opened (heat 1),
+            // or, in the last chapter, the next heat.
+            summary.NewRunRequested += () =>
+            {
+                var r = Flow.Run;
+                var ch = 0; var heat = 0;
+                if (r != null)
+                {
+                    if (r.Won && r.Chapter + 1 < BallBattle.Sim.Run.Chapters.Count) ch = r.Chapter + 1;
+                    else { ch = r.Chapter; heat = r.Won ? r.Heat + 1 : r.Heat; }
+                }
+                Flow.NewRun(NewSeed(), false, ch, heat);
+            };
             summary.MenuRequested += () => { Flow.MarkHintSeen("next"); Flow.Close(); };
 
             Flow.Changed += () => dirty = true;
             Flow.MatchPrepared += sim =>
             {
+                tutorialSlowElapsed = 0f;
                 Debug.Log(FightLog("prepared", sim));
                 arena.MarkedBall = 0;   // ball 0 is always the player in Run mode
                 arena.ArenaId = Flow.FightArenaId;   // floor tiles and wall colors of this fight's arena (-bbForceArena aware)
                 arena.Boss = BossLookFor(Flow.Run);
+                arena.ChapterIndex = Flow.Run.Chapter;   // the chapter's backdrop around the arena
                 arena.StartMatch(sim, "YOU", Flow.Run.IsBossFight ? "BOSS" : "FOE");
                 // Stat cards taken this run: HUD badges with the card icons (DAMAGE, SPEED CAP, MAX HP).
                 var build = Flow.Run.Build;
@@ -116,7 +135,8 @@ namespace BallBattle.View
             Flow.FightBegan += () =>
             {
                 arena.Paused = false;
-                arena.TimeScale = 1f;
+                arena.TimeScale = ChosenSpeed;   // X2 stays on from fight to fight (it used to drop to x1 while the button said X2)
+                overlay.SetSpeed(ChosenSpeed);
                 Debug.Log(FightLog(arena.Sim == Flow.CurrentMatch ? "began" : "began ON ANOTHER MATCH", arena.Sim));
             };
             Flow.Closed += () =>
@@ -126,13 +146,23 @@ namespace BallBattle.View
                 arena.TimeScale = 1f;
                 arena.MarkedBall = -1;
                 arena.Boss = ArenaView.BossLook.None;
+                arena.ChapterIndex = -1;
                 Closed?.Invoke();
             };
             arena.MatchEnded += OnArenaMatchEnded;
             arena.SimEventRaised += OnArenaEvent;
 
             HideAll();
-            overlay.SetSpeed(1f);
+            overlay.SetSpeed(ChosenSpeed);
+        }
+
+        const string SpeedPref = "run_speed";
+
+        /// <summary>The player's X1 / X2 choice; kept for the next fights and the next session.</summary>
+        public float ChosenSpeed
+        {
+            get { var v = PlayerPrefs.GetFloat(SpeedPref, 1f); return v > 1f ? 2f : 1f; }
+            set { PlayerPrefs.SetFloat(SpeedPref, value > 1f ? 2f : 1f); PlayerPrefs.Save(); }
         }
 
         void OnArenaMatchEnded(int winner) => Flow.OnMatchEnded(arena.Sim);
@@ -147,8 +177,12 @@ namespace BallBattle.View
                     (e.Type == BallBattle.Sim.SimEventType.TapStrike || e.Type == BallBattle.Sim.SimEventType.TapPerfect))
                 {
                     Flow.MarkStrikeLearned();
-                    arena.TimeScale = 1f;
+                    arena.TimeScale = ChosenSpeed;
                 }
+                if (Flow.Run?.TutorialRun == true && Flow.Run.FightIndex == 0 && e.A == 0 &&
+                    e.Type == BallBattle.Sim.SimEventType.SkillFx &&
+                    e.Variant == (byte)BallBattle.Sim.SkillFxEvent.WreckLaunch)
+                    Flow.MarkHintSeen("wrecker_release");
             }
         }
 
@@ -189,12 +223,13 @@ namespace BallBattle.View
         {
             if (!IsOpen) return;
             if (overlay.PauseOpen) return;
+            var wasPlaying = Flow.Current == RunFlow.State.Playing;
             CheckArenaShowsTheFight();
             if (!overlay.TickRetryBanner(dt)) Flow.Tick(dt);
             if (dirty) Refresh();
             overlay.Render(Flow, dt);
             result.Tick(dt);
-            TickLesson();
+            TickLesson(wasPlaying ? dt : 0f);
             tap.Tick(Flow, dt);
         }
 
@@ -246,20 +281,33 @@ namespace BallBattle.View
                 if (hint.Id == "carry" && Flow.LastReport?.FightNumber != 1) continue;
                 if (hint.Id == "shop" && (Flow.Run.FightIndex != 1 || Flow.Run.Coins <= 0)) continue;
                 if (hint.Id == "boss" && Flow.Run.FightIndex != 3) continue;
-                hints.Show(hint);
+                hints.Show(hint, hint.Id == "next" ? HintPointer.NextStepLine(Flow.Progress) : null);
                 return;
             }
         }
 
-        void TickLesson()
+        void TickLesson(float dt)
         {
-            var lesson = Flow.Current == RunFlow.State.Playing && Flow.Run?.TutorialRun == true &&
-                         Flow.Run.FightIndex == 0 && Flow.Progress?.Onboarding?.StrikeLearned == false &&
-                         Flow.Progress.Onboarding.HintsOff == false && !DebugOptions.NoTips;
+            var firstFight = Flow.Current == RunFlow.State.Playing && Flow.Run?.TutorialRun == true &&
+                             Flow.Run.FightIndex == 0 && Flow.Progress?.Onboarding?.HintsOff == false &&
+                             !DebugOptions.NoTips;
+            var lesson = firstFight && Flow.Progress.Onboarding.StrikeLearned == false;
             tap.TutorialLesson = lesson;
+            tap.TutorialWreckerFollowUp = firstFight && !Flow.HintSeen("wrecker_release");
             var state = lesson && arena.Sim?.Balls.Count > 0 ? arena.Sim.Balls[0].Tap : null;
-            if (state != null && state.Ready && state.Taps == 0) arena.TimeScale = 0.35f;
-            else if (arena.TimeScale < 1f) arena.TimeScale = 1f;
+            if (state != null && state.Ready && state.Taps == 0)
+            {
+                // Give the first skill a brief window to notice. The prompt stays visible,
+                // but a player who does not tap must still be able to watch the fight at full speed.
+                if (tutorialSlowElapsed < TutorialSlowLimitSeconds) arena.TimeScale = 0.35f;
+                else if (arena.TimeScale < 1f) arena.TimeScale = ChosenSpeed;
+                tutorialSlowElapsed += Mathf.Max(0f, dt);
+            }
+            else
+            {
+                if (!lesson) tutorialSlowElapsed = 0f;
+                if (arena.TimeScale < 1f) arena.TimeScale = ChosenSpeed;
+            }
         }
 
         /// <summary>
@@ -276,6 +324,10 @@ namespace BallBattle.View
                 case BallBattle.Sim.Boss.BossIds.Mimic: return ArenaView.BossLook.Mimic;
                 case BallBattle.Sim.Boss.BossIds.Magnet: return ArenaView.BossLook.Magnet;
                 case BallBattle.Sim.Boss.BossIds.Warden: return ArenaView.BossLook.Warden;
+                case BallBattle.Sim.Boss.BossIds.Hunter: return ArenaView.BossLook.Hunter;
+                case BallBattle.Sim.Boss.BossIds.Bell: return ArenaView.BossLook.Bell;
+                case BallBattle.Sim.Boss.BossIds.Ember: return ArenaView.BossLook.Ember;
+                case BallBattle.Sim.Boss.BossIds.Prism: return ArenaView.BossLook.Prism;
                 default: return ArenaView.BossLook.None;
             }
         }

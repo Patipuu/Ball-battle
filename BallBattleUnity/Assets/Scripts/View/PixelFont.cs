@@ -26,6 +26,17 @@ namespace BallBattle.View
         /// <summary>Body rows (cap height 7): rows 4..10 of the cell.</summary>
         public const int BodyTopRow = 4, BodyBottomRow = 10;
         public const char Fallback = ' ';
+        /// <summary>The gold coin icon: written in text instead of the word GOLD / VÀNG ("¤ 120"). Drawn in its own colours.</summary>
+        public const char Coin = '\u00A4';
+        /// <summary>Coin pixels (rows 0..12 of the cell, 7 wide): o outline, y gold, w shine, d shade, '.' clear.</summary>
+        static readonly string[] CoinRows =
+        {
+            ".......", ".......", ".......", ".......",
+            "..ooo..", ".owyyo.", "owyyydo", "oyydydo", "oyyyddo", ".odddo.", "..ooo..",
+            ".......", ".......",
+        };
+        static readonly Color32 CoinOutline = new Color32(110, 62, 12, 255), CoinGold = new Color32(250, 196, 54, 255),
+            CoinShine = new Color32(255, 244, 170, 255), CoinShade = new Color32(214, 136, 30, 255);
 
         public sealed class Glyph
         {
@@ -34,6 +45,8 @@ namespace BallBattle.View
             public string[] Rows;
             public Sprite Sprite;
             public bool Blank;
+            /// <summary>Drawn in its own colours (the coin): text colour does not tint it.</summary>
+            public bool Colored;
         }
 
         readonly Dictionary<char, Glyph> glyphs = new Dictionary<char, Glyph>();
@@ -41,6 +54,8 @@ namespace BallBattle.View
         readonly HashSet<char> warned = new HashSet<char>();
 #endif
         Texture2D atlas;
+        /// <summary>The coin icon, built with the atlas (not one of the file's glyphs, so Count stays the file's count).</summary>
+        Glyph coin;
 
         public int Count => glyphs.Count;
         public IEnumerable<char> Chars => glyphs.Keys;
@@ -99,8 +114,11 @@ namespace BallBattle.View
 
         void BuildAtlas()
         {
+            if (!glyphs.ContainsKey(Coin)) coin = new Glyph { Char = Coin, Width = CoinRows[0].Length, Rows = CoinRows, Colored = true };
+            var all = new List<Glyph>(glyphs.Values);
+            if (coin != null) all.Add(coin);
             var width = 0;
-            foreach (var g in glyphs.Values) width += g.Width + 1;
+            foreach (var g in all) width += g.Width + 1;
             atlas = new Texture2D(Math.Max(1, width), CellHeight, TextureFormat.RGBA32, false)
             {
                 name = "pixelfont_5x7_atlas",
@@ -113,11 +131,16 @@ namespace BallBattle.View
             var pixels = new Color32[atlas.width * CellHeight];
             for (var i = 0; i < pixels.Length; i++) pixels[i] = clear;
             var x = 0;
-            foreach (var g in glyphs.Values)
+            foreach (var g in all)
             {
                 for (var r = 0; r < CellHeight; r++)
                     for (var col = 0; col < g.Width; col++)
-                        if (g.Rows[r][col] == '#') pixels[(CellHeight - 1 - r) * atlas.width + x + col] = ink;
+                    {
+                        var c = g.Rows[r][col];
+                        if (c == '.') continue;
+                        pixels[(CellHeight - 1 - r) * atlas.width + x + col] = !g.Colored ? ink
+                            : c == 'o' ? CoinOutline : c == 'w' ? CoinShine : c == 'd' ? CoinShade : CoinGold;
+                    }
                 g.Sprite = Sprite.Create(atlas, new Rect(x, 0, g.Width, CellHeight), Vector2.zero, 1f, 0, SpriteMeshType.FullRect);
                 g.Sprite.name = "glyph_" + g.Char;
                 g.Sprite.hideFlags = HideFlags.DontSave;
@@ -129,12 +152,13 @@ namespace BallBattle.View
 
         // ---------------- lookup and measuring ----------------
 
-        public bool Has(char c) => glyphs.ContainsKey(c);
+        public bool Has(char c) => glyphs.ContainsKey(c) || (c == Coin && coin != null);
 
         /// <summary>Glyph of a character of an already normalized string; the fallback (logged once in the Editor) when missing.</summary>
         public Glyph Get(char c)
         {
             if (glyphs.TryGetValue(c, out var g)) return g;
+            if (c == Coin && coin != null) return coin;
             if (glyphs.TryGetValue(char.ToUpperInvariant(c), out g)) return g;
 #if UNITY_EDITOR
             if (warned.Add(c)) Debug.LogWarning($"PixelFont: no glyph for '{c}' (U+{(int)c:X4}), drawn as the fallback");

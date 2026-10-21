@@ -1,0 +1,9 @@
+weapon,first_seed,seed_count,vitality,power,growth,hp_pct_per_rank,damage_pct_per_rank,start,skill,keystone,wins,win_pct,avg_fights_won
+blade,1,200,0,0,0,4,6,1,L1,-,67,33.50,4.720
+fang,1,200,0,0,0,4,6,1,L1,-,51,25.50,4.165
+pike,1,200,0,0,0,4,6,1,L1,-,74,37.00,4.705
+brawler,1,200,0,0,0,4,6,1,L1,-,129,64.50,6.040
+volley,1,200,0,0,0,4,6,1,L1,-,87,43.50,5.325
+venom,1,200,0,0,0,4,6,1,L1,-,37,18.50,3.760
+aegis,1,200,0,0,0,4,6,1,L1,-,54,27.00,4.645
+rig,1,200,0,0,0,4,6,1,L1,-,94,47.00,5.590

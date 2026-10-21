@@ -183,7 +183,7 @@ namespace BallBattle.View
 
         void RefreshGrid(ProgressData p)
         {
-            gold.Set("GOLD " + p.Gold, Palette.PrimaryFill);
+            gold.Set("¤ " + p.Gold, Palette.PrimaryFill);
             var unlocked = UnlockRules.Weapons(p);
             foreach (var t in tiles)
             {
@@ -250,7 +250,7 @@ namespace BallBattle.View
         void RefreshDetail(ProgressData p)
         {
             var id = DetailId;
-            gold.Set("GOLD " + p.Gold, Palette.PrimaryFill);
+            gold.Set("¤ " + p.Gold, Palette.PrimaryFill);
             detailBall.sprite = art.Get(id).Ball;
             detailName.Set(WeaponNames.Of(id), Palette.Look(id).Body);
             var level = MetaRules.LevelOf(p, id);
@@ -263,13 +263,13 @@ namespace BallBattle.View
             detailBarFill.enabled = fill > 0f;
             PixelRect.Set(detailBarFill, DetailBarLeft, 14, Mathf.Round(DetailBarLeft + (DetailBarRight - DetailBarLeft) * fill), 22);
             var goldNeed = MetaRules.GoldToNext(level);
-            detailCost.Set(max ? "" : $"NEXT LEVEL: {need} SHARDS  {goldNeed} GOLD", Palette.TextDim);
+            detailCost.Set(max ? "" : $"NEXT LEVEL: {need} SHARDS  {goldNeed} ¤", Palette.TextDim);
             UpgradeReady = MetaRules.CanUpgrade(p, id);
             string note;
             if (max) note = "THIS BALL IS MAXED";
             else if (UpgradeReady) note = "READY TO LEVEL UP";
             else if (have < need) note = $"NEED {need - have} MORE SHARDS";
-            else note = $"NEED {goldNeed - p.Gold} MORE GOLD";
+            else note = $"NEED {goldNeed - p.Gold} MORE ¤";
             detailNote.Set(note, UpgradeReady ? UpColor : Palette.TextDim);
             upgrade.gameObject.SetActive(!max);
             upgrade.SetColors(UpgradeReady ? (Color32)Palette.WallWarning : Palette.Floor, UpgradeReady ? (Color32)Palette.WallWarning : Palette.HpBack);

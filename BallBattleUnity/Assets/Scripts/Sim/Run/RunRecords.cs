@@ -36,13 +36,14 @@ namespace BallBattle.Sim.Run
         public static bool IsValid(RunState run)
         {
             if (run == null || run.Build == null || run.Over) return false;
-            if (run.FightIndex < 0 || run.FightIndex >= RunTuning.Fights || run.RetryCount < 0 || run.RetryCount > RunTuning.Retries) return false;
+            if (run.FightIndex < 0 || run.FightIndex >= RunTuning.Fights || run.RetryCount < 0 || run.RetryCount > run.MaxRetries) return false;
             if (!WeaponExists(run.Build.WeaponId) || run.Build.MaxHp <= Fix.Zero || run.Build.Hp <= Fix.Zero) return false;
             if (!Skills.SkillSpec.Valid(run.Build.SkillLevel, run.Build.SkillBranch)) return false;
             if (run.Build.Traits.Count > RunTuning.MaxTraits) return false;
             foreach (var t in run.Build.Traits)
                 if (!TraitRegistry.Exists(t.Id) || t.Level < 1 || t.Level > RunTuning.MaxTraitLevel) return false;
             if (run.Weapons.Count == 0 || run.EnemyWeapons.Count == 0 || run.EnemyTraits.Count == 0) return false;
+            if (run.Chapter < 0 || run.Chapter >= Chapters.Count || run.Heat < 0 || run.Heat >= HeatRules.Count) return false;
             // BB-04: one valid boss per slot, in its own slot; a forced (debug) boss must exist.
             if (run.BossIds == null || run.BossIds.Count != RunTuning.BossFights.Length) return false;
             for (var s = 0; s < run.BossIds.Count; s++)

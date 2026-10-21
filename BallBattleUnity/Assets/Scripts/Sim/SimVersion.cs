@@ -21,6 +21,9 @@ namespace BallBattle.Sim
         // 17: BB-18: BGLGXLQ orbs light on touch, any order
         // 18: BB-18 Versus-only BGLGXLQ damage and orb guard profile
         // 19: BB-19: the Run player's tap presses the skill
-        public const int Rules = 20;   // BB-19b: ten active skills (fire trail, phantom, hook, charge, ricochet, cloud, parry, swarm, hand UNITY, coil)
+        // 21: Eight authored bosses, boss-only attacks and Mimic adaptation.
+        // 22: Chorus touch refresh and 15-second fade; Mimic echo blast and Warden crossfire.
+        // 23: Run enemies use their active skill (same as the player's) through BallLoadout.AutoSkill. Versus and PvP unchanged.
+        public const int Rules = 23;
     }
 }

@@ -96,7 +96,7 @@ namespace BallBattle.View
             onYes = yes;
             onNo = no;
             var l = layouts[current];
-            var big = PixelFont.MeasureWidth(question) * 2 <= PanelWidth - 8f;
+            var big = PixelFont.MeasureWidth(UiVietnamese.Translate(question)) * 2 <= PanelWidth - 8f;
             l.Question.Set(big ? question : "", Palette.WallWarning);
             l.QuestionSmall.Set(big ? "" : question, Palette.WallWarning);
             l.Info.Set(info ?? "", Palette.TextDim);

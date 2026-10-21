@@ -1,0 +1,29 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SimTests -> E:\ball-battle\BallBattleUnity\SimTests\bin\Debug\net10.0\SimTests.dll
+Test run for E:\ball-battle\BallBattleUnity\SimTests\bin\Debug\net10.0\SimTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+NUnit Adapter 5.0.0.0: Test execution started
+Running selected tests in E:\ball-battle\BallBattleUnity\SimTests\bin\Debug\net10.0\SimTests.dll
+   NUnit3TestExecutor discovered 2 of 2 NUnit test cases using Current Discovery mode, Non-Explicit run
+NUnit Adapter 5.0.0.0: Test execution complete
+  Failed GreedyBotWins22To40Percent [75 ms]
+  Error Message:
+     N=800, measured 18.8%
+Assert.That(WinPct(greedy), Is.InRange(22.0, 40.0))
+  Expected: in range (22,40)
+  But was:  18.75d
+
+  Stack Trace:
+     at BallBattle.SimTests.RunDifficultyThresholdTests.GreedyBotWins22To40Percent() in E:\ball-battle\BallBattleUnity\SimTests\RunDifficultyThresholdTests.cs:line 40
+
+1)    at BallBattle.SimTests.RunDifficultyThresholdTests.GreedyBotWins22To40Percent() in E:\ball-battle\BallBattleUnity\SimTests\RunDifficultyThresholdTests.cs:line 40
+
+
+  Passed RandomBotWins1To6Percent [< 1 ms]
+
+Total tests: 2
+     Passed: 1
+     Failed: 1
+ Total time: 27.2124 Seconds
+Test Run Failed.

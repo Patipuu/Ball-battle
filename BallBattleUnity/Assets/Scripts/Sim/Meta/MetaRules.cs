@@ -137,7 +137,11 @@ namespace BallBattle.Sim.Meta
             if (run == null) return null;
             var furthest = -1;
             foreach (var h in run.History) if (h.Won && h.FightIndex > furthest) furthest = h.FightIndex;
-            return TierFor(run.Over && run.Won, furthest, run.History.Count);
+            var tier = TierFor(run.Over && run.Won, furthest, run.History.Count);
+            if (!tier.HasValue) return null;
+            // HEAT: one tier higher per heat step, capped at GOLD.
+            var t = (int)tier.Value + HeatRules.ChestTierBonus(run.Heat);
+            return (ChestTier)(t > (int)ChestTier.Gold ? (int)ChestTier.Gold : t);
         }
 
         /// <summary>The seed of the next chest: run seed mixed with how many chests were opened before.</summary>
@@ -149,11 +153,11 @@ namespace BallBattle.Sim.Meta
         /// return what it gave. Random shards go to unlocked balls with equal odds (locked balls get none); shards of a max-level
         /// ball become gold.
         /// </summary>
-        public static ChestResult Open(ProgressData p, ChestTier tier, string playedBall, uint runSeed)
+        public static ChestResult Open(ProgressData p, ChestTier tier, string playedBall, uint runSeed, int goldBonusPct = 0)
         {
             var t = (int)tier;
             var rng = new SimRandom(ChestSeed(runSeed, p.ChestsOpened));
-            var result = new ChestResult { Tier = tier, PlayedBall = playedBall ?? "", Gold = MetaTuning.ChestGold[t] };
+            var result = new ChestResult { Tier = tier, PlayedBall = playedBall ?? "", Gold = MetaTuning.ChestGold[t] * (100 + goldBonusPct) / 100 };
             var unlocked = UnlockRules.Weapons(p);
             var played = MetaTuning.PlayedShards[t];
             var random = MetaTuning.RandomShards[t];
@@ -182,7 +186,7 @@ namespace BallBattle.Sim.Meta
         public static ChestResult AwardRun(ProgressData p, RunState run)
         {
             var tier = TierFor(run);
-            return tier.HasValue ? Open(p, tier.Value, run.Build?.WeaponId, run.Seed) : null;
+            return tier.HasValue ? Open(p, tier.Value, run.Build?.WeaponId, run.Seed, HeatRules.ChestGoldBonusPct(run.Heat)) : null;
         }
 
         /// <summary>Old saves: one SILVER chest per run already won (at most 5), waiting in PendingChests.</summary>

@@ -41,7 +41,7 @@ namespace BallBattle.Sim.Weapons
 
         /// <summary>Turrets that fire (BB-12g: + the OPENER reserve turret until its first volley).</summary>
         public int TurretCount => count + (reserveActive ? 1 : 0);
-        public FixVec2 GetTurret(int index) => turrets[index];
+        public FixVec2 GetTurret(int index) => index < count ? turrets[index] : reservePos;
         internal void BeginOverclock() => timer = 0;
         /// <summary>BB-12g OPENER: one reserve turret at the start position, gone after its first volley.</summary>
         internal void ApplyTreeStart() { reservePos = Self.Pos; reserveActive = true; }

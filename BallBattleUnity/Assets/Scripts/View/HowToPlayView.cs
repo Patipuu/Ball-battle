@@ -21,10 +21,10 @@ namespace BallBattle.View
         {
             ("1 PICK A BALL", "EACH HAS A WEAPON AND A SKILL"),
             ("2 PICK CARDS", "CARDS STAY FOR THE WHOLE RUN"),
-            ("3 WATCH IT FIGHT", "TAP TO STRIKE"),
-            ("4 WIN 8 FIGHTS", "HP CARRIES OVER. 1 RETRY"),
+            ("3 WATCH IT FIGHT", "TAP TO USE YOUR SKILL"),
+            ("4 WIN 8 FIGHTS", "HP CARRIES OVER"),
         };
-        public const string UnlockLine = "BEAT BOSSES TO UNLOCK NEW BALLS";
+        public const string UnlockLine = "DAILY QUESTS GIVE CHESTS";
 
         public PixelButton StartButton { get; private set; }
         public PixelButton BackButton { get; private set; }

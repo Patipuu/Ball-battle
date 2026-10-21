@@ -60,6 +60,12 @@ namespace BallBattle.Sim.Run
         public int ChestsOpened;
         /// <summary>BB-12a: earned chests not opened yet (welcome chests for old saves).</summary>
         public List<Meta.ChestTier> PendingChests = new List<Meta.ChestTier>();
+        /// <summary>Daily quests (DailyQuests). Old saves load it empty: the day's quests are rolled on first use.</summary>
+        public DailyQuestState Daily = new DailyQuestState();
+        /// <summary>PvE chapters won at least once (0 = none; chapter n+1 opens when n is cleared). See Chapters.</summary>
+        public int ChaptersCleared;
+        /// <summary>HEAT steps cleared per chapter (index = chapter; 0..HeatRules.Count). Old saves load it empty. See HeatRules.</summary>
+        public List<int> ChapterHeat = new List<int>();
 
         public bool Has(string achievement) => Achievements.Contains(achievement);
 
@@ -106,24 +112,26 @@ namespace BallBattle.Sim.Run
     }
 
     /// <summary>
-    /// What is unlocked. Start: the 4 Step-1 weapons + 5 traits. Achievements unlock the rest.
+    /// What is unlocked. Every ball is open from the start (balls no longer unlock through progress; daily quests pay chests
+    /// instead). Traits: the starting set + the newer traits; achievements still unlock the older trait rewards.
     /// Ids not implemented yet are skipped (content arrives in later phases), so the table is stable.
     /// </summary>
     public static class UnlockRules
     {
         public const string Boss1 = "boss1", Boss2 = "boss2", Boss3 = "boss3", Win1 = "win1", Win3 = "win3";
 
-        static readonly string[] StartWeapons = { "blade", "fang", "pike", "brawler" };
-        static readonly string[] StartTraits = { "heavy", "vampire", "spiky", "thorns", "second-wind" };
+        static readonly string[] StartWeapons = { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig", "chorus", "serpent" };
+        static readonly string[] StartTraits = { "heavy", "vampire", "spiky", "thorns", "second-wind",
+            "berserker", "iron-skin", "regen", "executioner", "bank-shot" };
 
         /// <summary>achievement → (weapons, traits) it unlocks.</summary>
         static readonly (string achievement, string[] weapons, string[] traits)[] Table =
         {
-            (Boss1, new[] { "chorus" }, new[] { "glass-cannon" }),   // BB-14: BGLGXLQ with the first boss
-            (Boss2, new[] { "volley" }, new[] { "poison-tip" }),
-            (Boss3, new[] { "venom" }, new[] { "parry-master" }),
-            (Win1, new[] { "aegis", "venom", "serpent" }, new[] { "bubble", "parry-master" }),   // BB-14: the snake with the first run win
-            (Win3, new[] { "rig" }, new[] { "twin-blade" }),
+            (Boss1, new string[0], new[] { "glass-cannon" }),
+            (Boss2, new string[0], new[] { "poison-tip" }),
+            (Boss3, new string[0], new[] { "parry-master" }),
+            (Win1, new string[0], new[] { "bubble", "parry-master" }),
+            (Win3, new string[0], new[] { "twin-blade" }),
         };
 
         public static List<string> Weapons(ProgressData p) => Collect(p, StartWeapons, true);
@@ -180,7 +188,9 @@ namespace BallBattle.Sim.Run
                 p.RunsPlayed++;
                 if (run.Won)
                 {
+                    HeatRules.RecordWin(p, run);   // first: a first win must still read its chapter as uncleared
                     p.RunsWon++;
+                    Chapters.RecordWin(p, run);
                     Earn(Win1);
                     if (p.RunsWon >= 3) Earn(Win3);
                 }

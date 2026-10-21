@@ -1,0 +1,28 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SimTests -> E:\ball-battle\BallBattleUnity\SimTests\bin\Debug\net10.0\SimTests.dll
+Test run for E:\ball-battle\BallBattleUnity\SimTests\bin\Debug\net10.0\SimTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+  Skipped EachVariantChangesAtLeastTwoRanksVsClassic [23 ms]
+  Skipped ReportAndWeaponAveragesStay25To75 [28 ms]
+  Skipped Brawler [< 1 ms]
+  Skipped Fang [< 1 ms]
+  Skipped FangLength [< 1 ms]
+  Skipped Pike [< 1 ms]
+  Skipped DrawsUnder5PercentAndCapUnder1Percent [< 1 ms]
+  Skipped MedianMatchLengthBetween20And90Seconds [< 1 ms]
+  Skipped NonMirrorPairsWinBetween30And70Percent [< 1 ms]
+  Skipped PacingReport [< 1 ms]
+  Skipped WriteFixSanityTable [2 ms]
+  Skipped WinRateMatrix [< 1 ms]
+  Skipped RoundRobinCli [< 1 ms]
+  Skipped RunWinRates [< 1 ms]
+  Skipped Sweep [< 1 ms]
+  Skipped TraceDump [< 1 ms]
+  Skipped RandomThreeTraitCombos [< 1 ms]
+  Skipped TraitDeltas [< 1 ms]
+  Skipped EveryTraitAtLevel1AddsThreeToFifteenPoints [< 1 ms]
+  Skipped Level2IsStrongerThanLevel1 [< 1 ms]
+Results File: E:\ball-battle\docs\claude-runs\bbsfx2-simtests.trx
+
+Passed!  - Failed:     0, Passed:   211, Skipped:     0, Total:   211, Duration: 1 m 50 s - SimTests.dll (net10.0)

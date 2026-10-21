@@ -1,0 +1,17 @@
+context,opponent,matches,threeStackMatches,threeStackActiveTicks,totalActiveTicks,pureFires,viewFires,skillLines,played,missing,zeroFireMatches,eligibleMisses
+Versus,blade,13,9,682,42213,11,11,11,11,0,6,0
+Versus,fang,13,9,2124,43702,15,15,15,15,0,4,0
+Versus,pike,13,9,1735,49673,12,12,12,12,0,6,0
+Versus,brawler,13,13,4418,29107,21,21,21,21,0,0,0
+Versus,volley,12,9,1487,40476,14,14,14,14,0,3,0
+Versus,venom,12,5,886,47868,6,6,6,6,0,8,0
+Versus,aegis,12,8,1692,60360,10,10,10,10,0,5,0
+Versus,rig,12,9,1779,45007,13,13,13,13,0,4,0
+Run,blade,13,10,2942,43059,16,16,16,16,0,3,0
+Run,fang,13,10,2093,42833,14,14,14,14,0,4,0
+Run,pike,13,9,1873,42443,12,12,12,12,0,4,0
+Run,brawler,13,12,4003,27299,19,19,19,19,0,1,0
+Run,volley,12,10,2661,38140,13,13,13,13,0,3,0
+Run,venom,12,6,897,42344,6,6,6,6,0,7,0
+Run,aegis,12,12,4478,44761,22,22,22,22,0,0,0
+Run,rig,12,8,1618,40353,11,11,11,11,0,4,0

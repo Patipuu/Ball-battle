@@ -53,8 +53,21 @@ namespace BallBattle.View
                 case BallBattle.Sim.Boss.BossEvent.MagnetWarn: return BossMagnetWarn;
                 case BallBattle.Sim.Boss.BossEvent.MagnetPull: return BossMagnetHit;
                 case BallBattle.Sim.Boss.BossEvent.MimicCopied: return BossMimicHit;
+                case BallBattle.Sim.Boss.BossEvent.MimicAdapted: return BossMimicHit;
+                case BallBattle.Sim.Boss.BossEvent.MimicEchoWarn: return BossShellKingWarn;
+                case BallBattle.Sim.Boss.BossEvent.MimicEchoStrike: return BossMimicHit;
                 case BallBattle.Sim.Boss.BossEvent.WardenWarn: return BossWardenWarn;
                 case BallBattle.Sim.Boss.BossEvent.WardenStep: return BossWardenHit;
+                case BallBattle.Sim.Boss.BossEvent.WardenCrossWarn: return BossWardenWarn;
+                case BallBattle.Sim.Boss.BossEvent.WardenCrossFire: return BossWardenHit;
+                case BallBattle.Sim.Boss.BossEvent.HunterMark: return BossShellKingWarn;
+                case BallBattle.Sim.Boss.BossEvent.HunterCharge: return BossShellKingHit;
+                case BallBattle.Sim.Boss.BossEvent.BellWarn: return BossWardenWarn;
+                case BallBattle.Sim.Boss.BossEvent.BellWave: return BossWardenHit;
+                case BallBattle.Sim.Boss.BossEvent.EmberMark: return BossMagnetWarn;
+                case BallBattle.Sim.Boss.BossEvent.EmberIgnite: return BossMagnetHit;
+                case BallBattle.Sim.Boss.BossEvent.PrismWarn: return BossShellKingWarn;
+                case BallBattle.Sim.Boss.BossEvent.PrismBeam: return BossShellKingHit;
                 default: return null;   // ShellOff, MagnetEnd
             }
         }

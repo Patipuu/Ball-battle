@@ -37,7 +37,7 @@ namespace BallBattle.Tests
             flow.ChooseWeapon("blade");
             Assert.That(flow.Run.TutorialRun, Is.True);
             Assert.That(flow.Run.Seed, Is.EqualTo(RunState.TutorialSeed));
-            Assert.That(flow.Run.Enemy.WeaponId, Is.EqualTo("pike"));
+            Assert.That(flow.Run.Enemy.WeaponId, Is.EqualTo("brawler"));
             Assert.That(flow.Run.Enemy.MaxHp.ToFloat(), Is.EqualTo(60f));
             Assert.That(flow.Run.ArenaId, Is.EqualTo(BallBattle.Sim.ArenaRegistry.Classic));
             Assert.That(store.Load().Run.TutorialRun, Is.True);
@@ -129,6 +129,121 @@ namespace BallBattle.Tests
         }
 
         [Test]
+        public void FirstSkillPromptStopsSlowingTheFightWhenThePlayerDoesNotTap()
+        {
+            var arena = root.AddComponent<ArenaView>();
+            arena.Art = art;
+            arena.AutoRestart = false;
+            var rc = RunController.Create(root.transform, arena, new MemorySaveStore());
+            rc.Open();
+            rc.Flow.NewRun(123, true);
+            rc.Flow.ChooseWeapon("blade");
+            rc.Flow.PickStart(0);
+            rc.Flow.Fight();
+            rc.Tick(3f);
+            Assert.That(rc.Flow.Current, Is.EqualTo(RunFlow.State.Playing));
+            for (var frame = 0; frame < 300 && rc.Flow.Current == RunFlow.State.Playing &&
+                 !arena.Sim.Balls[0].Tap.Ready; frame++)
+            {
+                arena.TimeScale = 2f;
+                arena.Advance(1f / 60f);
+                rc.Tick(1f / 60f);
+            }
+            Assert.That(rc.Flow.Current, Is.EqualTo(RunFlow.State.Playing));
+            Assert.That(arena.Sim.Balls[0].Tap.Ready, Is.True);
+            rc.Tick(1f / 60f);
+            Assert.That(arena.TimeScale, Is.EqualTo(0.35f));
+            rc.Tick(RunController.TutorialSlowLimitSeconds + 0.1f);
+            Assert.That(arena.TimeScale, Is.EqualTo(0.35f));
+            rc.Tick(0f);
+            Assert.That(arena.TimeScale, Is.EqualTo(rc.ChosenSpeed), "back to the player's X1/X2 choice");
+            Assert.That(rc.Tap.TutorialLesson, Is.True);
+        }
+
+        [Test]
+        public void FirstWreckerChargeExplainsTheSecondTapUntilThePlayerRams()
+        {
+            var store = new MemorySaveStore();
+            var arena = root.AddComponent<ArenaView>();
+            arena.Art = art;
+            arena.AutoRestart = false;
+            var rc = RunController.Create(root.transform, arena, store);
+            rc.Open();
+            rc.Flow.NewRun(123, true);
+            rc.Flow.ChooseWeapon("brawler");
+            rc.Flow.PickStart(0);
+            rc.Flow.Fight();
+            rc.Tick(3f);
+            Assert.That(rc.Flow.Current, Is.EqualTo(RunFlow.State.Playing));
+            for (var frame = 0; frame < 600 && rc.Flow.Current == RunFlow.State.Playing &&
+                 !arena.Sim.Balls[0].Tap.Ready; frame++)
+            {
+                arena.TimeScale = 2f;
+                arena.Advance(1f / 60f);
+                rc.Tick(1f / 60f);
+            }
+            Assert.That(rc.Flow.Current, Is.EqualTo(RunFlow.State.Playing));
+            Assert.That(arena.Sim.Balls[0].Tap.Ready, Is.True);
+            Assert.That(rc.Tap.Request(), Is.True);
+            arena.TimeScale = 1f;
+            arena.Advance(1f / 60f);
+            rc.Tick(1f / 60f);
+            Assert.That(rc.Tap.Prompt.gameObject.activeSelf, Is.True);
+            Assert.That(rc.Tap.Prompt.Text, Is.EqualTo(PixelFont.Normalize(UiVietnamese.Translate("WAIT FOR THE RING TO FILL"))));
+            Assert.That(rc.Flow.HintSeen("wrecker_release"), Is.False);
+
+            var charge = arena.Sim.Balls[0].Skill.Act as BallBattle.Sim.Skills.WreckerCharge;
+            Assert.That(charge, Is.Not.Null);
+            for (var frame = 0; frame < 180 && rc.Flow.Current == RunFlow.State.Playing &&
+                 charge.Charge.ToFloat() < 0.8f; frame++)
+            {
+                arena.Advance(1f / 60f);
+                rc.Tick(1f / 60f);
+            }
+            Assert.That(charge.Charging, Is.True);
+            Assert.That(charge.Charge.ToFloat(), Is.GreaterThanOrEqualTo(0.8f));
+            Assert.That(rc.Tap.Prompt.Text, Is.EqualTo(PixelFont.Normalize(UiVietnamese.Translate("TAP AGAIN TO RAM!"))));
+            Assert.That(rc.Tap.Request(), Is.True);
+            arena.Advance(1f / 60f);
+            rc.Tick(1f / 60f);
+            Assert.That(rc.Flow.HintSeen("wrecker_release"), Is.True);
+            Assert.That(store.Load().Progress.Onboarding.HasSeen("wrecker_release"), Is.True);
+            Assert.That(rc.Tap.Prompt.gameObject.activeSelf, Is.False);
+        }
+
+        [Test]
+        public void WreckerChargePromptsFitInBothLanguages()
+        {
+            var before = StringTable.Current;
+            try
+            {
+                foreach (var language in new[] { Lang.En, Lang.Vi })
+                {
+                    StringTable.Current = language;
+                    foreach (var line in new[] { "WAIT FOR THE RING TO FILL", "TAP AGAIN TO RAM!",
+                        "TAP NOW TO USE YOUR SKILL!" })
+                        Assert.That(PixelFont.MeasureWidth(UiVietnamese.Translate(line)), Is.LessThanOrEqualTo(250), language + " " + line);
+                }
+            }
+            finally { StringTable.Current = before; }
+        }
+
+        [Test]
+        public void EndOfRunHintNamesAnActionThePlayerCanTake()
+        {
+            var progress = new ProgressData();
+            Assert.That(HintPointer.NextStepLine(progress), Is.EqualTo("NEXT: PLAY AGAIN FOR MORE SHARDS"));
+
+            var ball = BallBattle.Sim.Meta.MetaRules.Ball(progress, "blade");
+            ball.Shards = BallBattle.Sim.Meta.MetaRules.ShardsToNext(ball.Level);
+            progress.Gold = BallBattle.Sim.Meta.MetaRules.GoldToNext(ball.Level);
+            Assert.That(HintPointer.NextStepLine(progress), Is.EqualTo("NEXT: UPGRADE A BALL IN BALLS"));
+
+            progress.PendingChests.Add(BallBattle.Sim.Meta.ChestTier.Wood);
+            Assert.That(HintPointer.NextStepLine(progress), Is.EqualTo("NEXT: OPEN YOUR CHEST ON MENU"));
+        }
+
+        [Test]
         public void MenuRevealsPagesAsTheFirstRunProgresses()
         {
             var store = new MemorySaveStore();
@@ -197,6 +312,8 @@ namespace BallBattle.Tests
                         Assert.That(hint.Label.x, Is.InRange(-125, 125));
                         Assert.That(hint.Label.y, Is.InRange(-230, 220));
                     }
+                    foreach (var line in new[] { "NEXT: OPEN YOUR CHEST ON MENU", "NEXT: PLAY AGAIN FOR MORE SHARDS" })
+                        Assert.That(PixelFont.MeasureWidth(UiVietnamese.Translate(line)), Is.LessThanOrEqualTo(250), language + " " + line);
                 }
             }
             finally { StringTable.Current = before; }
@@ -249,8 +366,16 @@ namespace BallBattle.Tests
                         Capture(camera, folder, lang + "-3-prepare");
                         rc.Flow.Fight();
                         rc.Tick(3f);
-                        arena.Advance(1f / 60f);
+                        for (var frame = 0; frame < 600 && rc.Flow.Current == RunFlow.State.Playing &&
+                             !arena.Sim.Balls[0].Tap.Ready; frame++)
+                        {
+                            arena.TimeScale = 2f;
+                            arena.Advance(1f / 60f);
+                            rc.Tick(1f / 60f);
+                        }
+                        Assert.That(arena.Sim.Balls[0].Tap.Ready, Is.True);
                         rc.Tick(1f / 60f);
+                        Assert.That(rc.Tap.Prompt.gameObject.activeSelf, Is.True);
                         Capture(camera, folder, lang + "-4-strike");
                         rc.Tap.Request();
                         arena.TimeScale = 4f;

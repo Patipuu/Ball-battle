@@ -1,0 +1,15 @@
+E:\ball-battle\docs\design\bb12\harness-v6\bin\Release\net10.0\TreeLabV6.exe
+E:\ball-battle\docs\design\bb12\harness-v6\bin\Release\net10.0\TreeLabV6.deps.json
+E:\ball-battle\docs\design\bb12\harness-v6\bin\Release\net10.0\TreeLabV6.runtimeconfig.json
+E:\ball-battle\docs\design\bb12\harness-v6\bin\Release\net10.0\TreeLabV6.dll
+E:\ball-battle\docs\design\bb12\harness-v6\bin\Release\net10.0\TreeLabV6.pdb
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\TreeLabV6.GeneratedMSBuildEditorConfig.editorconfig
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\TreeLabV6.AssemblyInfoInputs.cache
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\TreeLabV6.AssemblyInfo.cs
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\TreeLabV6.csproj.CoreCompileInputs.cache
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\TreeLabV6.sourcelink.json
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\TreeLabV6.dll
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\refint\TreeLabV6.dll
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\TreeLabV6.pdb
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\TreeLabV6.genruntimeconfig.cache
+E:\ball-battle\docs\design\bb12\harness-v6\obj\Release\net10.0\ref\TreeLabV6.dll

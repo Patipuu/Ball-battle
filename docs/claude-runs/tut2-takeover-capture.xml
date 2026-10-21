@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-20 07:27:40Z" end-time="2026-10-20 07:27:43Z" duration="3.0164522">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="593" result="Passed" start-time="2026-10-20 07:27:40Z" end-time="2026-10-20 07:27:43Z" duration="3.016452" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1687" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/Builds/tut2-unity-check/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="593" result="Passed" start-time="2026-10-20 07:27:40Z" end-time="2026-10-20 07:27:43Z" duration="2.991477" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="30788" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1688" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="593" result="Passed" start-time="2026-10-20 07:27:40Z" end-time="2026-10-20 07:27:43Z" duration="2.985426" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="SetUpFixture" id="1663" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="593" result="Passed" start-time="2026-10-20 07:27:40Z" end-time="2026-10-20 07:27:43Z" duration="2.977688" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1307" name="BbTut2Tests" fullname="BallBattle.Tests.BbTut2Tests" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-10-20 07:27:40Z" end-time="2026-10-20 07:27:43Z" duration="2.943577" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1321" name="CaptureFirstStepsInBothLanguages" fullname="BallBattle.Tests.BbTut2Tests.CaptureFirstStepsInBothLanguages" methodname="CaptureFirstStepsInBothLanguages" classname="BallBattle.Tests.BbTut2Tests" runstate="Runnable" seed="143823848" result="Passed" start-time="2026-10-20 07:27:40Z" end-time="2026-10-20 07:27:43Z" duration="2.924280" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[PixelFont: no glyph for '&' (U+0026), drawn as the fallback
+[BallBattle] Run started: seed 128020897, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 1 prepared: seed 3797868669, tick 0, you blade HP 100/100 [], enemy brawler HP 60/60 []
+[BallBattle] Fight 1 began: seed 3797868669, tick 0, you blade HP 100/100 [], enemy brawler HP 60/60 []
+[BallBattle] Fight 1 ended: seed 128020897 (match 3797868669), outcome Win, tick 3114, you blade HP start 100.00 heal 0.00 end 21.19, enemy brawler HP start 60.00 heal 0.00 end 0.00, DMG DEALT 60.00 TAKEN 78.81
+[BallBattle] Run started: seed 128020897, weapon blade, bosses shellking/mimic
+[BallBattle] Fight 1 prepared: seed 3797868669, tick 0, you blade HP 100/100 [], enemy brawler HP 60/60 []
+[BallBattle] Fight 1 began: seed 3797868669, tick 0, you blade HP 100/100 [], enemy brawler HP 60/60 []
+[BallBattle] Fight 1 ended: seed 128020897 (match 3797868669), outcome Win, tick 3114, you blade HP start 100.00 heal 0.00 end 21.19, enemy brawler HP start 60.00 heal 0.00 end 0.00, DMG DEALT 60.00 TAKEN 78.81
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

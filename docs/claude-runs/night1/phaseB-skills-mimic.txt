@@ -1,0 +1,8 @@
+[Skill] tick=624 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=624 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=missing
+[Skill] tick=1230 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1230 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=missing
+[Skill] tick=1863 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1863 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=missing
+[Skill] tick=2493 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=2493 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=missing

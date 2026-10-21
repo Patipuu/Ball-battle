@@ -43,6 +43,8 @@ namespace BallBattle.View
         public event Action<SimEvent> SimEventRaised;
         /// <summary>Raised once when the current match ends: winner ball index, -1 on draw.</summary>
         public event Action<int> MatchEnded;
+        /// <summary>Optional deterministic input policy invoked immediately before each simulation step.</summary>
+        public event Action<MatchSim> BeforeSimStep;
         /// <summary>Raised after a new match (and its ball views) has been created.</summary>
         public event Action MatchStarted;
 
@@ -60,10 +62,12 @@ namespace BallBattle.View
         public ArenaFrameView Frame => frame;
 
         /// <summary>How a boss ball is drawn (art v1). Sizes and hitboxes stay the sim's; only the body sprite changes.</summary>
-        public enum BossLook { None, ShellKing, Mimic, Magnet, Warden }
+        public enum BossLook { None, ShellKing, Mimic, Magnet, Warden, Hunter, Bell, Ember, Prism }
 
         /// <summary>Boss look applied to <see cref="BossBall"/> in the next StartMatch (Run sets it per fight; Versus: None).</summary>
         public BossLook Boss { get; set; } = BossLook.None;
+        /// <summary>Run chapter whose backdrop surrounds the arena (ChapterBackdrop); -1 = plain background (Versus, PvP).</summary>
+        public int ChapterIndex { get; set; } = -1;
         public int BossBall { get; set; } = 1;
         public ArtLibrary.MimicLook MimicShown { get; private set; } = ArtLibrary.MimicLook.Idle;
 
@@ -76,6 +80,7 @@ namespace BallBattle.View
                 case DamageKind.Projectile: return ArtLibrary.MimicLook.Shot;
                 case DamageKind.Status: return ArtLibrary.MimicLook.Poison;
                 case DamageKind.Reflect: return ArtLibrary.MimicLook.Reflect;
+                case DamageKind.Ability: return ArtLibrary.MimicLook.Shot;
                 default: return ArtLibrary.MimicLook.Idle;
             }
         }
@@ -103,8 +108,11 @@ namespace BallBattle.View
             MimicShown = ArtLibrary.MimicLook.Idle;
             if (Boss == BossLook.None) return;
             var v = GetBallView(BossBall);
-            var sprite = Boss == BossLook.ShellKing ? Art.ShellKing : Boss == BossLook.Magnet ? Art.MagnetBody :
-                Boss == BossLook.Warden ? Art.WardenBody : Art.MimicSprite(ArtLibrary.MimicLook.Idle);
+            var id = Boss == BossLook.ShellKing ? "shellking" : Boss == BossLook.Magnet ? "magnet" :
+                Boss == BossLook.Warden ? "warden" : Boss == BossLook.Hunter ? "hunter" :
+                Boss == BossLook.Bell ? "bell" : Boss == BossLook.Ember ? "ember_boss" :
+                Boss == BossLook.Prism ? "prism" : "mimic";
+            var sprite = Art.BossBody(id);
             if (v != null && sprite != null) v.SetBodySprite(sprite, ArtLibrary.BossBodyRadius);   // drawn at its own size: no x1.5
         }
 
@@ -228,6 +236,8 @@ namespace BallBattle.View
                 Debug.Log("[BallBattle] Sim trace: " + path);
             }
             var n = Sim.Balls.Count;
+            // The player's ball (marked) is drawn in the bottom HUD band, the opponent on top.
+            hud.BottomBall = badges.BottomBall = MarkedBall == 0 || MarkedBall == 1 ? MarkedBall : 1;
             ballViews = new BallView[n];
             prevPos = new Vector2[n];
             prevAngle = new float[n];
@@ -278,6 +288,7 @@ namespace BallBattle.View
                 {
                     accumulator -= TickSeconds;
                     SnapshotPrevious();
+                    BeforeSimStep?.Invoke(Sim);
                     Sim.Step();
                     if (traceWriter != null)
                     {
@@ -295,6 +306,8 @@ namespace BallBattle.View
                         }
                     for (var i = 0; i < events.Count; i++)
                     {
+                        if (events[i].Type == SimEventType.Boss && events[i].Variant == (byte)BallBattle.Sim.Boss.BossEvent.MimicAdapted &&
+                            Sim.Boss is BallBattle.Sim.Boss.MimicRule mimic) SetMimicLook(MimicLookFor(mimic.AdaptedKind));
                         bossArt.OnEvent(events[i], Sim);
                         tributeView.OnEvent(events[i], Sim);
                         skillFxView.OnEvent(events[i], Sim);
@@ -350,6 +363,7 @@ namespace BallBattle.View
         {
             frame.SpikedWallMask = Sim.BossSpikedWallMask;   // BB-6f: draw only the moved walls, only during the window
             frame.WardenArtEnabled = RunController.BossArtEnabled && Art.WardenSpikeLeftOn != null;
+            frame.Chapter = ChapterIndex;
             frame.Render(Sim.Arena, Sim.ActiveTick, Sim.Config, ArenaId);
             frame.ShowObstacles(Sim);   // BB-04: Warden steps switch obstacles off
             var bossPos = Vector2.zero;

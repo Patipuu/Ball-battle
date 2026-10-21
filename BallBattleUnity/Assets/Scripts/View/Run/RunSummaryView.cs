@@ -107,7 +107,7 @@ namespace BallBattle.View
             var retryAt = RetryUsedAtFight(run);
             retry.Set(retryAt > 0 ? RunStrings.RetryUsedAt(retryAt) : "", Palette.WallWarning);
 
-            var lines = MilestoneLines(Reached(before, after), run);
+            var lines = QuestLines(run);   // daily quests finished by this run (the goal ladder is gone)
             MilestonesShown = 0;
             foreach (var l in lines) if (l.color.Equals(NextGoalBox.Green)) MilestonesShown++;   // goal-name rows (green)
             BoxText.Clear();
@@ -177,6 +177,45 @@ namespace BallBattle.View
             foreach (var f in run.History)
                 if (!f.Won) return f.FightIndex + 1;
             return 0;
+        }
+
+        /// <summary>
+        /// Frame lines for the daily quests this run finished (RunState.Achievements "quest:" marks, in order): a dim header, then per
+        /// quest its title (green) and "REWARD: WOOD CHEST" (yellow); the all-done bonus last. Empty when the run finished none.
+        /// </summary>
+        public static List<(string text, Color32 color)> QuestLines(RunState run)
+        {
+            var lines = new List<(string, Color32)>();
+            if (run == null) return lines;
+            foreach (var a in run.Achievements)   // a new chapter opened by this win comes first
+                if (a != null && a.StartsWith(Chapters.Mark) && int.TryParse(a.Substring(Chapters.Mark.Length), out var opened))
+                    lines.Add((RunStrings.ChapterUnlocked(opened), NextGoalBox.Green));
+            foreach (var a in run.Achievements)   // then a heat this win opened ("heat:chapter:heat")
+            {
+                if (a == null || !a.StartsWith(HeatRules.Mark)) continue;
+                var parts = a.Substring(HeatRules.Mark.Length).Split(':');
+                if (parts.Length == 2 && int.TryParse(parts[0], out var hc) && int.TryParse(parts[1], out var hh))
+                    lines.Add((RunStrings.HeatUnlocked(hc, hh), NextGoalBox.Green));
+            }
+            foreach (var a in run.Achievements)
+            {
+                if (a == null || !a.StartsWith(DailyQuests.QuestMark)) continue;
+                var id = a.Substring(DailyQuests.QuestMark.Length);
+                if (lines.Count == 0) lines.Add((RunStrings.QuestsCompleted, Palette.TextDim));
+                if (id == DailyQuests.BonusId)
+                {
+                    lines.Add((RunStrings.QuestBonus, NextGoalBox.Green));
+                    lines.Add((RunStrings.QuestReward(DailyQuests.BonusChest), Palette.WallWarning));
+                    continue;
+                }
+                var def = DailyQuests.Def(id);
+                if (def == null) continue;
+                var slot = new QuestSlot { Id = id, Ball = run.Build?.WeaponId ?? "" };
+                lines.Add((RunStrings.QuestTitle(slot), NextGoalBox.Green));
+                lines.Add((RunStrings.QuestReward(def.Reward), Palette.WallWarning));
+            }
+            if (lines.Count > BoxLines) lines.RemoveRange(BoxLines, lines.Count - BoxLines);
+            return lines;
         }
 
         /// <summary>Frame lines: goal name (green), "UNLOCKED: ..." wrapped (yellow), then a dim hint when anything unlocked.</summary>

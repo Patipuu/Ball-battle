@@ -12,7 +12,12 @@ namespace BallBattle.View
 
         public event Action SpeedToggled;
         public event Action PauseRequested, ResumeRequested, SaveExitRequested;
-        public static readonly Rect GearArea = new Rect(-126, 211, 26, 26);
+        public static readonly Rect GearArea = new Rect(-126, 214, 26, 26);
+        /// <summary>X1 / X2 toggle beside the gear, its label clear of the opponent's name cell (193..219).</summary>
+        public static readonly Rect SpeedArea = new Rect(-97, 214, 40, 26);   // same row and height as the gear
+        /// <summary>Speed button label (tests).</summary>
+        public string SpeedLabel => speed.LabelText;
+        public PixelButton SpeedButton => speed;
         public bool PauseOpen => pausePanel != null && pausePanel.activeSelf;
 
         PixelText label, countdown, banner, sixtyPercent;
@@ -40,7 +45,7 @@ namespace BallBattle.View
             v.band = PixelRect.Create(root, "Band", art.Pixel, new Color32(16, 16, 26, 220), Order);
             PixelRect.Set(v.band, -115, -14, 115, 14);
             v.banner = PixelText.Create(root, "Banner", art.Font, new Vector2(0, -13), PixelText.Align.Center, 2, Order + 1);   // 26 px cell in the 28 px band
-            v.speed = PixelButton.Create(root, "Speed", art, new Rect(-22, -238, 44, 24), "X1", 1, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);   // 24 px tap target (was 18)
+            v.speed = PixelButton.Create(root, "Speed", art, SpeedArea, "X1", 1, Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);   // 24 px tap target, right of the gear
             v.speed.Clicked += () => v.SpeedToggled?.Invoke();
             v.gear = PixelButton.Create(root, "FightGear", art, GearArea, null, 1,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 2);
@@ -66,8 +71,8 @@ namespace BallBattle.View
             PixelButton.Create(panel, "SaveExit", art, new Rect(-90, -75, 180, 34), "SAVE & MENU", 2,
                 Palette.Floor, Palette.TextDim, Palette.Text, Order + 11).Clicked += () => v.SaveExitRequested?.Invoke();
             v.pausePanel.SetActive(false);
-            v.retryToken = RunUi.Icon(root, new Vector2(115, 229), Order + 2);   // above the x2 HP number's ink (5x7 font: 197..211)
-            v.sixtyPercent = PixelText.Create(root, "SixtyPercent", art.Font, new Vector2(23, 185), PixelText.Align.Center, 1, Order + 2);
+            v.retryToken = RunUi.Icon(root, new Vector2(115, -229), Order + 2);   // the player's band is at the bottom: under its skill bar
+            v.sixtyPercent = PixelText.Create(root, "SixtyPercent", art.Font, new Vector2(23, -178), PixelText.Align.Center, 1, Order + 2);   // over the player's HP bar
             v.retryBorder = new[]
             {
                 PixelRect.Create(root, "RetryBorderTop", art.Pixel, Palette.WallWarning, Order + 1),
@@ -75,10 +80,11 @@ namespace BallBattle.View
                 PixelRect.Create(root, "RetryBorderLeft", art.Pixel, Palette.WallWarning, Order + 1),
                 PixelRect.Create(root, "RetryBorderRight", art.Pixel, Palette.WallWarning, Order + 1),
             };
-            PixelRect.Set(v.retryBorder[0], -125, 217, 125, 218);
-            PixelRect.Set(v.retryBorder[1], -125, 154, 125, 155);
-            PixelRect.Set(v.retryBorder[2], -125, 155, -124, 217);
-            PixelRect.Set(v.retryBorder[3], 124, 155, 125, 217);
+            // Frames the player's HUD band at the bottom: from just under the arena (-115) to the screen edge.
+            PixelRect.Set(v.retryBorder[0], -125, -137, 125, -136);
+            PixelRect.Set(v.retryBorder[1], -125, -239, 125, -238);
+            PixelRect.Set(v.retryBorder[2], -125, -238, -124, -137);
+            PixelRect.Set(v.retryBorder[3], 124, -238, 125, -137);
 
             v.retryBannerRoot = new GameObject("RetryBanner");
             v.retryBannerRoot.transform.SetParent(root, false);
@@ -155,7 +161,7 @@ namespace BallBattle.View
             var inFight = state == RunFlow.State.Countdown || state == RunFlow.State.Playing || state == RunFlow.State.FightOver;
             if (!inFight) { if (gameObject.activeSelf) Hide(); return; }
             if (!gameObject.activeSelf) gameObject.SetActive(true);
-            retryToken.sprite = flow.Run.RetryCount == 0 ? art.RetryTokenOn : art.RetryTokenOff;
+            retryToken.sprite = flow.Run.RetryCount < flow.Run.MaxRetries ? art.RetryTokenOn : art.RetryTokenOff;
             retryToken.enabled = retryToken.sprite != null;
             var retry = flow.Run.IsRetry;
             foreach (var edge in retryBorder) edge.enabled = retry;
@@ -173,7 +179,7 @@ namespace BallBattle.View
                 }
                 var over = state == RunFlow.State.FightOver;
                 band.enabled = over;
-                banner.Set(over ? (flow.LastFightWon ? $"WIN!  +{RunTuning.WinCoins} COINS" : flow.Run.RetryCount == 0 ? "LOST  RETRY" : "RUN OVER") : "",
+                banner.Set(over ? (flow.LastFightWon ? $"WIN!  +{RunTuning.WinCoins} COINS" : flow.Run.RetryCount < flow.Run.MaxRetries ? "LOST  RETRY" : "RUN OVER") : "",
                            flow.LastFightWon ? Palette.WallWarning : Palette.HpLost);
                 lastState = state;
             }

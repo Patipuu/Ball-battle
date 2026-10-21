@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-17 07:22:53Z" end-time="2026-10-17 07:22:53Z" duration="0.1550184">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="568" result="Passed" start-time="2026-10-17 07:22:53Z" end-time="2026-10-17 07:22:53Z" duration="0.155018" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1657" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="568" result="Passed" start-time="2026-10-17 07:22:53Z" end-time="2026-10-17 07:22:53Z" duration="0.146525" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="13784" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1658" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="568" result="Passed" start-time="2026-10-17 07:22:53Z" end-time="2026-10-17 07:22:53Z" duration="0.144320" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="SetUpFixture" id="1640" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="568" result="Passed" start-time="2026-10-17 07:22:53Z" end-time="2026-10-17 07:22:53Z" duration="0.142055" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1318" name="BbUx1Tests" fullname="BallBattle.Tests.BbUx1Tests" classname="BallBattle.Tests.BbUx1Tests" runstate="Runnable" testcasecount="15" result="Passed" start-time="2026-10-17 07:22:53Z" end-time="2026-10-17 07:22:53Z" duration="0.129067" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1321" name="DetailsFitForEveryBall" fullname="BallBattle.Tests.BbUx1Tests.DetailsFitForEveryBall" methodname="DetailsFitForEveryBall" classname="BallBattle.Tests.BbUx1Tests" runstate="Runnable" seed="50261947" result="Passed" start-time="2026-10-17 07:22:53Z" end-time="2026-10-17 07:22:53Z" duration="0.118112" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[PixelFont: no glyph for '=' (U+003D), drawn as the fallback
+PixelFont: no glyph for '(' (U+0028), drawn as the fallback
+PixelFont: no glyph for ')' (U+0029), drawn as the fallback
+<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

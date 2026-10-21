@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="22" result="Passed" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-20 08:18:12Z" end-time="2026-10-20 08:18:14Z" duration="1.3117799">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="597" result="Passed" start-time="2026-10-20 08:18:12Z" end-time="2026-10-20 08:18:14Z" duration="1.311780" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1692" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/Builds/tut2-unity-check/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="597" result="Passed" start-time="2026-10-20 08:18:12Z" end-time="2026-10-20 08:18:14Z" duration="1.299895" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="43164" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1693" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="597" result="Passed" start-time="2026-10-20 08:18:12Z" end-time="2026-10-20 08:18:14Z" duration="1.298709" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="SetUpFixture" id="1668" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="597" result="Passed" start-time="2026-10-20 08:18:12Z" end-time="2026-10-20 08:18:14Z" duration="1.297066" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1055" name="Bb04BossTests" fullname="BallBattle.Tests.Bb04BossTests" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" testcasecount="22" result="Passed" start-time="2026-10-20 08:18:12Z" end-time="2026-10-20 08:18:14Z" duration="1.277153" total="22" passed="22" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1058" name="BossCuePlaysOnTheSfxBusAtPointEightPitchOneAndIsGatedPerTick" fullname="BallBattle.Tests.Bb04BossTests.BossCuePlaysOnTheSfxBusAtPointEightPitchOneAndIsGatedPerTick" methodname="BossCuePlaysOnTheSfxBusAtPointEightPitchOneAndIsGatedPerTick" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="66802617" result="Passed" start-time="2026-10-20 08:18:12Z" end-time="2026-10-20 08:18:13Z" duration="0.323634" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[Audio] Boss tick=40 active=0 event=ShellOn cue=boss_shellking_hit result=played
+[Audio] Boss tick=40 active=0 event=ShellOn cue=boss_shellking_hit result=gated
+[Audio] Boss tick=43 active=0 event=WardenStep cue=boss_warden_hit result=played
+]]></output>
+            </test-case>
+            <test-case id="1078" name="BossFieldsSurviveSaveAndLoad" fullname="BallBattle.Tests.Bb04BossTests.BossFieldsSurviveSaveAndLoad" methodname="BossFieldsSurviveSaveAndLoad" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="1302142220" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.023738" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1065" name="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction" fullname="BallBattle.Tests.Bb04BossTests.BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.061926" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1060" name="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;shellking&quot;,ShellWarn,ShellOn)" fullname="BallBattle.Tests.Bb04BossTests.BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;shellking&quot;,ShellWarn,ShellOn)" methodname="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="931313144" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.030945" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Audio] Boss tick=60 active=60 event=ShellWarn cue=boss_shellking_warn result=played
+]]></output>
+              </test-case>
+              <test-case id="1061" name="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;magnet&quot;,MagnetWarn,MagnetPull)" fullname="BallBattle.Tests.Bb04BossTests.BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;magnet&quot;,MagnetWarn,MagnetPull)" methodname="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="729436919" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.005424" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Audio] Boss tick=120 active=120 event=MagnetWarn cue=boss_magnet_warn result=played
+]]></output>
+              </test-case>
+              <test-case id="1062" name="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;warden&quot;,WardenWarn,WardenStep)" fullname="BallBattle.Tests.Bb04BossTests.BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;warden&quot;,WardenWarn,WardenStep)" methodname="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="716844151" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.010575" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Audio] Boss tick=390 active=390 event=WardenWarn cue=boss_warden_warn result=played
+]]></output>
+              </test-case>
+              <test-case id="1063" name="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;mimic&quot;,MimicEchoWarn,MimicEchoStrike)" fullname="BallBattle.Tests.Bb04BossTests.BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;mimic&quot;,MimicEchoWarn,MimicEchoStrike)" methodname="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="402747042" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.004555" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Audio] Boss tick=180 active=180 event=MimicEchoWarn cue=boss_shellking_warn result=played
+]]></output>
+              </test-case>
+              <test-case id="1064" name="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;warden&quot;,WardenCrossWarn,WardenCrossFire)" fullname="BallBattle.Tests.Bb04BossTests.BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction(&quot;warden&quot;,WardenCrossWarn,WardenCrossFire)" methodname="BossWarnCueIsRequestedAtItsEventTickBeforeTheAnnouncedAction" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="731324563" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.004284" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Audio] Boss tick=210 active=210 event=WardenCrossWarn cue=boss_warden_warn result=played
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-case id="1056" name="EveryBossEventMapsToItsCueId" fullname="BallBattle.Tests.Bb04BossTests.EveryBossEventMapsToItsCueId" methodname="EveryBossEventMapsToItsCueId" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="276154037" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.006319" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1079" name="ForceBossParsing" fullname="BallBattle.Tests.Bb04BossTests.ForceBossParsing" methodname="ForceBossParsing" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="1272239082" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.008723" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] -bbForceBoss: Run boss forced to warden
+[BallBattle] -bbForceBoss: Run boss forced to shellking
+[BallBattle] -bbForceBoss: Run boss forced to shellking
+[BallBattle] -bbForceBoss: Run boss forced to magnet
+
+IgnoreFailingMessages:true
+[BallBattle] -bbForceBoss: expected shellking, magnet, mimic or warden; ignored
+
+IgnoreFailingMessages:false
+
+IgnoreFailingMessages:true
+[BallBattle] -bbForceBoss: expected shellking, magnet, mimic or warden; ignored
+
+IgnoreFailingMessages:false
+]]></output>
+            </test-case>
+            <test-case id="1080" name="ForcedBossIsRunOnlyAndNeverEntersTheHistory" fullname="BallBattle.Tests.Bb04BossTests.ForcedBossIsRunOnlyAndNeverEntersTheHistory" methodname="ForcedBossIsRunOnlyAndNeverEntersTheHistory" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="1759272787" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.010912" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[BallBattle] Run started: seed 77, weapon blade, bosses shellking/mimic, -bbForceBoss magnet
+]]></output>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1075" name="NewBossAttacksShowTheirWarnings" fullname="BallBattle.Tests.Bb04BossTests.NewBossAttacksShowTheirWarnings" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.193460" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1073" name="NewBossAttacksShowTheirWarnings(&quot;mimic&quot;,180,&quot;mimic-echo&quot;)" fullname="BallBattle.Tests.Bb04BossTests.NewBossAttacksShowTheirWarnings(&quot;mimic&quot;,180,&quot;mimic-echo&quot;)" methodname="NewBossAttacksShowTheirWarnings" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="1551415742" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.145740" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1074" name="NewBossAttacksShowTheirWarnings(&quot;warden&quot;,210,&quot;warden-cross&quot;)" fullname="BallBattle.Tests.Bb04BossTests.NewBossAttacksShowTheirWarnings(&quot;warden&quot;,210,&quot;warden-cross&quot;)" methodname="NewBossAttacksShowTheirWarnings" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="401606815" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.046511" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1077" name="OldV2SaveKeepsProgressAndDropsTheRun" fullname="BallBattle.Tests.Bb04BossTests.OldV2SaveKeepsProgressAndDropsTheRun" methodname="OldV2SaveKeepsProgressAndDropsTheRun" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="2026415746" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.004521" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1070" name="PrepareShowsTheBossNameAndItsHint" fullname="BallBattle.Tests.Bb04BossTests.PrepareShowsTheBossNameAndItsHint" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.165904" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1066" name="PrepareShowsTheBossNameAndItsHint(&quot;shellking&quot;,&quot;SHELL KING&quot;,&quot;SHIELD UP: CIRCLE BEHIND IT.&quot;)" fullname="BallBattle.Tests.Bb04BossTests.PrepareShowsTheBossNameAndItsHint(&quot;shellking&quot;,&quot;SHELL KING&quot;,&quot;SHIELD UP: CIRCLE BEHIND IT.&quot;)" methodname="PrepareShowsTheBossNameAndItsHint" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="1274816864" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.083956" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1067" name="PrepareShowsTheBossNameAndItsHint(&quot;magnet&quot;,&quot;MAGNET&quot;,&quot;PULLS YOU IN THEN BURSTS.&quot;)" fullname="BallBattle.Tests.Bb04BossTests.PrepareShowsTheBossNameAndItsHint(&quot;magnet&quot;,&quot;MAGNET&quot;,&quot;PULLS YOU IN THEN BURSTS.&quot;)" methodname="PrepareShowsTheBossNameAndItsHint" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="1973640446" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.023444" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1068" name="PrepareShowsTheBossNameAndItsHint(&quot;mimic&quot;,&quot;MIMIC&quot;,&quot;COPIES YOUR WEAPON. DODGE THE MARKED BLAST.&quot;)" fullname="BallBattle.Tests.Bb04BossTests.PrepareShowsTheBossNameAndItsHint(&quot;mimic&quot;,&quot;MIMIC&quot;,&quot;COPIES YOUR WEAPON. DODGE THE MARKED BLAST.&quot;)" methodname="PrepareShowsTheBossNameAndItsHint" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="413151578" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.030007" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1069" name="PrepareShowsTheBossNameAndItsHint(&quot;warden&quot;,&quot;WARDEN&quot;,&quot;DODGE CROSS LANES AND CLOSING SPIKED WALLS.&quot;)" fullname="BallBattle.Tests.Bb04BossTests.PrepareShowsTheBossNameAndItsHint(&quot;warden&quot;,&quot;WARDEN&quot;,&quot;DODGE CROSS LANES AND CLOSING SPIKED WALLS.&quot;)" methodname="PrepareShowsTheBossNameAndItsHint" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="1248424003" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.025823" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1057" name="RealLibraryHasAllFifteenBossAndSkillCuesAndBossEventsPlayTheirClips" fullname="BallBattle.Tests.Bb04BossTests.RealLibraryHasAllFifteenBossAndSkillCuesAndBossEventsPlayTheirClips" methodname="RealLibraryHasAllFifteenBossAndSkillCuesAndBossEventsPlayTheirClips" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="849399921" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.035401" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[Audio] Boss tick=10 active=0 event=ShellWarn cue=boss_shellking_warn result=played
+[Audio] Boss tick=11 active=0 event=ShellOn cue=boss_shellking_hit result=played
+[Audio] Boss tick=13 active=0 event=MagnetWarn cue=boss_magnet_warn result=played
+[Audio] Boss tick=14 active=0 event=MagnetPull cue=boss_magnet_hit result=played
+[Audio] Boss tick=16 active=0 event=MimicCopied cue=boss_mimic_hit result=played
+[Audio] Boss tick=17 active=0 event=MimicAdapted cue=boss_mimic_hit result=played
+[Audio] Boss tick=18 active=0 event=WardenWarn cue=boss_warden_warn result=played
+[Audio] Boss tick=19 active=0 event=WardenStep cue=boss_warden_hit result=played
+[Audio] Boss tick=20 active=0 event=HunterMark cue=boss_shellking_warn result=played
+[Audio] Boss tick=21 active=0 event=HunterCharge cue=boss_shellking_hit result=played
+[Audio] Boss tick=22 active=0 event=BellWarn cue=boss_warden_warn result=played
+[Audio] Boss tick=23 active=0 event=BellWave cue=boss_warden_hit result=played
+[Audio] Boss tick=24 active=0 event=EmberMark cue=boss_magnet_warn result=played
+[Audio] Boss tick=25 active=0 event=EmberIgnite cue=boss_magnet_hit result=played
+[Audio] Boss tick=26 active=0 event=PrismWarn cue=boss_shellking_warn result=played
+[Audio] Boss tick=27 active=0 event=PrismBeam cue=boss_shellking_hit result=played
+[Audio] Boss tick=28 active=0 event=MimicEchoWarn cue=boss_shellking_warn result=played
+[Audio] Boss tick=29 active=0 event=MimicEchoStrike cue=boss_mimic_hit result=played
+[Audio] Boss tick=30 active=0 event=WardenCrossWarn cue=boss_warden_warn result=played
+[Audio] Boss tick=31 active=0 event=WardenCrossFire cue=boss_warden_hit result=played
+]]></output>
+            </test-case>
+            <test-case id="1059" name="ShellBlockedHitsKeepTheNormalHitCue" fullname="BallBattle.Tests.Bb04BossTests.ShellBlockedHitsKeepTheNormalHitCue" methodname="ShellBlockedHitsKeepTheNormalHitCue" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="609211370" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.003934" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1071" name="SummaryShowsWhichBossesWereMetAndBeaten" fullname="BallBattle.Tests.Bb04BossTests.SummaryShowsWhichBossesWereMetAndBeaten" methodname="SummaryShowsWhichBossesWereMetAndBeaten" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="1010436062" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.029987" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1072" name="TelegraphsAreDrawnFromTheSimsBossState" fullname="BallBattle.Tests.Bb04BossTests.TelegraphsAreDrawnFromTheSimsBossState" methodname="TelegraphsAreDrawnFromTheSimsBossState" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="426085117" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:13Z" duration="0.102744" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1076" name="WardenStepHidesObstaclesOutsideTheWalls" fullname="BallBattle.Tests.Bb04BossTests.WardenStepHidesObstaclesOutsideTheWalls" methodname="WardenStepHidesObstaclesOutsideTheWalls" classname="BallBattle.Tests.Bb04BossTests" runstate="Runnable" seed="392084812" result="Passed" start-time="2026-10-20 08:18:13Z" end-time="2026-10-20 08:18:14Z" duration="0.287076" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -41,6 +41,9 @@ namespace BallBattle.View
         public List<string> BossIds = new List<string>();
         public string ForcedBossId = "";
         public int ForcedBossFight = -1;
+        /// <summary>PvE chapter and HEAT (0-based). Older saves load 0 / 0.</summary>
+        public int Chapter;
+        public int Heat;
 
         public static RunSave From(RunState r)
         {
@@ -54,7 +57,8 @@ namespace BallBattle.View
                 EnemyWeapons = new List<string>(r.EnemyWeapons), EnemyTraits = new List<string>(r.EnemyTraits),
                 Achievements = new List<string>(r.Achievements),
                 FightLocked = r.FightLocked, Over = r.Over, Won = r.Won, TutorialRun = r.TutorialRun,
-                BossIds = new List<string>(r.BossIds), ForcedBossId = r.ForcedBossId ?? "", ForcedBossFight = r.ForcedBossFight
+                BossIds = new List<string>(r.BossIds), ForcedBossId = r.ForcedBossId ?? "", ForcedBossFight = r.ForcedBossFight,
+                Chapter = r.Chapter, Heat = r.Heat
             };
             foreach (var o in r.OfferCards)
             {
@@ -81,7 +85,8 @@ namespace BallBattle.View
                 Weapons = Copy(Weapons), Traits = Copy(Traits), EnemyWeapons = Copy(EnemyWeapons), EnemyTraits = Copy(EnemyTraits),
                 Achievements = Copy(Achievements),
                 FightLocked = FightLocked, Over = Over, Won = Won, TutorialRun = TutorialRun,
-                BossIds = Copy(BossIds), ForcedBossId = ForcedBossId ?? "", ForcedBossFight = ForcedBossFight
+                BossIds = Copy(BossIds), ForcedBossId = ForcedBossId ?? "", ForcedBossFight = ForcedBossFight,
+                Chapter = Chapter, Heat = Heat
             };
             if (OfferCards != null)
                 foreach (var o in OfferCards) r.OfferCards.Add(new OfferSlot { Kind = o.Kind, Id = o.Id, Level = o.Level });

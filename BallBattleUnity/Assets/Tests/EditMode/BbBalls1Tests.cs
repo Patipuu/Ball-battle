@@ -51,7 +51,7 @@ namespace BallBattle.Tests
                 Assert.That(v.TileButton(e.Id).enabled, Is.EqualTo(open), e.Id);
                 Assert.That(v.TileText(e.Id), open ? Does.Contain("LV 1") : Does.Contain("LOCKED"), e.Id);
             }
-            Assert.That(v.GoldText, Is.EqualTo("GOLD 0"));
+            Assert.That(v.GoldText, Is.EqualTo("¤ 0")   /* gold is shown with the coin icon */);
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace BallBattle.Tests
             Assert.That(v.UpgradeReady, Is.False, "LV2 -> 3 needs 10 shards");
             v.UpgradeButton.SimulateClick();
             Assert.That(MetaRules.LevelOf(store.Load().Progress, "pike"), Is.EqualTo(2), "nothing happens when it cannot");
-            Assert.That(v.DetailCostText, Is.EqualTo("NEXT LEVEL: 10 SHARDS  20 GOLD"));
+            Assert.That(v.DetailCostText, Is.EqualTo("NEXT LEVEL: 10 SHARDS  20 ¤"));
         }
 
         [Test]

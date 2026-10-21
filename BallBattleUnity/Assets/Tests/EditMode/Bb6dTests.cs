@@ -69,6 +69,7 @@ namespace BallBattle.Tests
             var b = m.Balls[0];
             b.Pos = new FixVec2(m.Arena.Left + b.Radius + 1, Fix.Zero);
             b.Vel = TFix.V(-3, 0);
+            var hpBeforeWall = b.Hp; // the new wall-step attack may already have hit before this contact
             var played = d.Played.Count;
             var logs = d.LogLines.Count;
             m.Step();
@@ -83,7 +84,7 @@ namespace BallBattle.Tests
             var cues = d.Played.Skip(played).Select(p => p.Id).ToList();
             Assert.That(cues.Count(c => c == AudioIds.SpikeHit), Is.EqualTo(1));
             Assert.That(cues, Does.Not.Contain(AudioIds.Wall));
-            Assert.That(b.Hp, Is.EqualTo(Fix.FromInt(9999) - BossTuning.WardenSpikeDamage));
+            Assert.That(b.Hp, Is.EqualTo(hpBeforeWall - BossTuning.WardenSpikeDamage));
         }
 
         // ---------------- Task 4: QA aids ----------------

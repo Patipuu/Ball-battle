@@ -32,7 +32,23 @@ namespace BallBattle.View
             return PixelText.Create(button.transform, "Effect", art.Font, new Vector2(button.Area.center.x, button.Area.yMin + 1),
                 PixelText.Align.Center, 1, button.IconOrder + 1);
         }
-        static string EffectText(string summary) => summary.Substring(summary.IndexOf(':') + 1).Trim();
+        static string EffectText(string summary)
+        {
+            // The choice buttons have one 112 px effect row; the full explanation remains
+            // in the pick details and the skill tree card.
+            switch (summary)
+            {
+                case "LONG LINE: FASTER, BIGGER HOOK": return "FASTER HOOK";
+                case "BARB: LONGER STUN, HARDER PULL": return "LONG STUN, PULL";
+                case "GROWTH: BIGGER, LASTS LONGER": return "BIGGER CLOUD";
+                case "BLIGHT: STRONGER POISON, SMALLER": return "STRONGER POISON";
+                case "WIDE GLASS: LONGER WINDOW": return "LONGER PARRY";
+                case "SHARD: SHORT WINDOW, HARDER HIT": return "SHORT, HARD PARRY";
+                case "SWARM: MORE DRONES": return "MORE DRONES";
+                case "STINGERS: FEWER, HARDER STINGS": return "HARDER STINGS";
+                default: return summary.Substring(summary.IndexOf(':') + 1).Trim();
+            }
+        }
         void Choose(SkillBranch branch)
         {
             if (run == null || !run.CanPick(index)) return;

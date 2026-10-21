@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using BallBattle.EditorTools;
 using BallBattle.Sim;
+using BallBattle.Sim.Meta;
 using BallBattle.Sim.Run;
+using BallBattle.Sim.Skills;
 using BallBattle.Sim.Weapons;
 using BallBattle.View;
 using NUnit.Framework;
@@ -205,9 +207,10 @@ namespace BallBattle.Tests
         {
             var expected = new Dictionary<string, string[]>
             {
-                { UnlockRules.Boss1, new[] { "BGLGXLQ", "GLASS CANNON" } },   // BB-14
-                { UnlockRules.Win1, new[] { "SPARKLER", "POISON TIP", "MIRROR", "SPORE", "HUNTER", "BUBBLE", "PARRY MASTER" } },   // BB-14: + the snake
-                { UnlockRules.Win3, new[] { "HIVE", "TWIN BLADE" } },
+                // Daily-quest update: every ball is open from the start, goals unlock traits only.
+                { UnlockRules.Boss1, new[] { "GLASS CANNON" } },
+                { UnlockRules.Win1, new[] { "POISON TIP", "BUBBLE", "PARRY MASTER" } },
+                { UnlockRules.Win3, new[] { "TWIN BLADE" } },
             };
             var ids = new HashSet<string> { UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Boss3, UnlockRules.Win1, UnlockRules.Win3 };
             foreach (var row in UnlockRules.GoalTable)
@@ -218,7 +221,7 @@ namespace BallBattle.Tests
                 Assert.That(expected.ContainsKey(row.Id), Is.True, $"goal {row.Id} unlocks something: add it here");
                 Assert.That(RunStrings.UnlockedNames(row.Id), Is.EqualTo(expected[row.Id]), row.Id);
             }
-            Assert.That(RunStrings.UnlockedNames(UnlockRules.Boss2), Is.EqualTo(new[] { "SPARKLER", "POISON TIP" }), "achievement without a goal row");
+            Assert.That(RunStrings.UnlockedNames(UnlockRules.Boss2), Is.EqualTo(new[] { "POISON TIP" }), "achievement without a goal row");
             foreach (var a in ids)
                 foreach (var n in RunStrings.UnlockedNames(a))
                 {
@@ -298,12 +301,31 @@ namespace BallBattle.Tests
             {
                 if (btn.Area.width >= 270f && btn.Area.height >= 480f) continue;   // full-screen tap catcher
                 if (btn.Area.height < MinTapHeight) issues.Add($"button '{btn.name}' only {btn.Area.height} px tall");
-                var label = btn.transform.Find("Label");
-                var lt = label != null && label.gameObject.activeInHierarchy ? label.GetComponent<PixelText>() : null;
-                if (lt == null || lt.Text.Trim().Length == 0) continue;
-                var lb = lt.Bounds;
-                if (lb.xMin < btn.Area.xMin + 1 || lb.xMax > btn.Area.xMax - 1 || lb.yMin < btn.Area.yMin || lb.yMax > btn.Area.yMax)
-                    issues.Add($"label '{lt.Text}' {R(lb)} outside button {R(btn.Area)}");
+                // Cards draw their title and descriptions as child PixelText, rather than in Label.
+                // Check those too: a line can leave the card without leaving the screen or touching another line.
+                foreach (var t in btn.GetComponentsInChildren<PixelText>(false))
+                {
+                    if (t.Text.Trim().Length == 0 || t.name == "Reason") continue; // REROLL explanation sits below its button
+                    if (t.GetComponentInParent<PixelButton>() != btn) continue; // nested branch button has its own area
+                    var b = t.Bounds;
+                    if (b.xMin < btn.Area.xMin + 1 || b.xMax > btn.Area.xMax - 1 || b.yMin < btn.Area.yMin || b.yMax > btn.Area.yMax)
+                        issues.Add($"'{t.Text}' {R(b)} outside '{btn.name}' {R(btn.Area)}");
+                }
+            }
+            // ConfirmDialog owns its text directly, so the button check above cannot see a question
+            // that fits the screen but leaves the 224 px modal panel.
+            foreach (var layout in screen.GetComponentsInChildren<Transform>(false))
+            {
+                if (layout.parent == null || !layout.parent.name.StartsWith("Confirm") || !layout.name.StartsWith("Layout")) continue;
+                if (!int.TryParse(layout.name.Substring("Layout".Length), out var index) || index < 0 || index >= ConfirmDialog.PanelBottoms.Length) continue;
+                var panel = ConfirmDialog.PanelAt(index);
+                foreach (var t in layout.GetComponentsInChildren<PixelText>(false))
+                {
+                    if (t.Text.Trim().Length == 0) continue;
+                    var b = t.Bounds;
+                    if (b.xMin < panel.xMin + 2 || b.xMax > panel.xMax - 2 || b.yMin < panel.yMin + 2 || b.yMax > panel.yMax - 2)
+                        issues.Add($"modal '{t.Text}' {R(b)} outside {R(panel)}");
+                }
             }
             return issues;
         }
@@ -391,6 +413,27 @@ namespace BallBattle.Tests
             Add("menu-notice-hub", menu.transform, () => { menu.gameObject.SetActive(true); menu.SetRunInfo(P(5, 0, UnlockRules.Boss1), null); menu.ShowOldRunNotice(null); }, menu.Hub);
             Add("versus-pick", menu.transform, () => { menu.gameObject.SetActive(true); menu.ShowVersus(); menu.Select(0, VolleyRule.WeaponId); menu.Select(1, BrawlerRule.WeaponId); });
             Add("settings", menu.transform, () => { menu.gameObject.SetActive(true); menu.ShowSettings(); });
+
+            // Text-heavy guide, ball collection and every Codex page are easy to miss with run-only seeds.
+            var howTo = HowToPlayView.Create(parent, art);
+            Add("how-to-play", howTo.transform, howTo.Show);
+            var balls = BallsView.Create(parent, art);
+            var ballStore = new MemorySaveStore();
+            ballStore.Save(new SaveData { Progress = P(8, 1, UnlockRules.Boss1, UnlockRules.Win1, UnlockRules.Win3) });
+            Add("balls-grid", balls.transform, () => balls.Show(ballStore));
+            Add("balls-detail", balls.transform, () => { balls.Show(ballStore); balls.OpenDetail(BladeRule.WeaponId); });
+            var codex = SkillCodexView.Create(parent, art);
+            var codexNext = codex.GetComponentsInChildren<PixelButton>(true).Single(b => b.Area == SkillCodexView.NextArea);
+            for (var page = 0; page < SkillDefinition.All.Length; page++)
+            {
+                var advance = page > 0;
+                Add("codex-page-" + page, codex.transform, () => { codex.Show(); if (advance) codexNext.SimulateClick(); });
+            }
+            var chest = ChestView.Create(parent, art);
+            var chestProgress = P(8, 1, UnlockRules.Boss1, UnlockRules.Win1, UnlockRules.Win3);
+            var chestResult = MetaRules.Open(chestProgress, ChestTier.Gold, BladeRule.WeaponId, 5);
+            Add("chest-revealed", chest.transform, () => { chest.Show(chestResult, chestProgress, "RUN WON"); chest.SkipButton.SimulateClick(); });
+            Add("chest-odds", chest.transform, () => { chest.Show(chestResult, chestProgress, "RUN WON"); chest.ShowOdds(true); }, chest.transform.Find("OddsPanel"));
 
             // Run title (with a saved run: CONTINUE, stats, goal, rules band) and its ABANDON dialog.
             var title = RunTitleView.Create(parent, art);

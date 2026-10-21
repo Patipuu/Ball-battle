@@ -115,7 +115,8 @@ namespace BallBattle.View
             var accent = win ? Palette.WallWarning : Palette.HpLost;
             // BB-VIEW3: the boss's real name ("GIANT BOSS" only for an old report without a boss id).
             var boss = !string.IsNullOrEmpty(r.BossId) ? "  " + BossText.Name(r.BossId) : r.WasBoss ? "  GIANT BOSS" : "";
-            fight.Set($"FIGHT {r.FightNumber}/{Sim.Run.RunTuning.Fights}" + boss + "  VS " + RunUi.WeaponName(r.EnemyWeaponId), Palette.TextDim);
+            fight.Set($"FIGHT {r.FightNumber}/{Sim.Run.RunTuning.Fights}" + boss +
+                (r.EnemyWeaponId == Sim.Boss.BossCoreRule.WeaponId ? "" : "  VS " + RunUi.WeaponName(r.EnemyWeaponId)), Palette.TextDim);
             title.Set(r.Title, accent);
             how.Set(r.HowLine, Palette.TextDim);
 
@@ -125,8 +126,9 @@ namespace BallBattle.View
             foeHealed.Set(FoeHealedText(r), HealColor);
             values[3].Set($"+{r.CoinsGained}  TOTAL {r.CoinsTotal}", Palette.WallWarning);
 
-            consequence.Set(r.ConsequenceLine, accent);
-            carry.Set(r.CarryLine, Palette.Text);
+            // On a win the title, HP and coin rows already tell this story. Keep the retry warning on losses.
+            consequence.Set(win ? "" : r.ConsequenceLine, accent);
+            carry.Set(win ? "" : r.CarryLine, Palette.Text);
             traitTriggered.Set(r.PlayerSecondWindTriggered ? "2ND WIND USED" : "", HealColor);
             runLine.Set(r.RunLine, r.RunWon ? Palette.WallWarning : Palette.HpLost);
 
@@ -134,8 +136,10 @@ namespace BallBattle.View
             if (!r.RunOver)
             {
                 nextHeader.Set(r.NextHeader, r.NextIsBoss ? Palette.WallWarning : Palette.TextDim);
-                nextIcon.sprite = art.Get(r.NextWeaponId).Ball;
-                nextName.Set(r.NextWeaponName, Palette.Look(r.NextWeaponId).Body);
+                nextIcon.sprite = r.NextIsBoss ? art.BossBody(r.NextBossId) ?? art.Get(r.NextWeaponId).Ball : art.Get(r.NextWeaponId).Ball;
+                var iconScale = r.NextIsBoss && art.BossBody(r.NextBossId) != null ? 0.375f : 0.75f;
+                nextIcon.transform.localScale = new Vector3(iconScale, iconScale, 1f);
+                nextName.Set(r.NextWeaponName, r.NextIsBoss ? Palette.WallWarning : Palette.Look(r.NextWeaponId).Body);
                 var lines = r.NextTraitNames != null && r.NextTraitNames.Count > 0
                     ? TextWrap.Items(r.NextTraitNames, "", " ", NextTraitsWidth)
                     : TextWrap.SplitToFit(TraitNames.List(r.NextTraits ?? ""), NextTraitsWidth);

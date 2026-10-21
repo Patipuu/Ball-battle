@@ -53,7 +53,7 @@ namespace BallBattle.Sim.Skills
         // BGLGXLQ UNITY
         public static int UnityCooldown = 120;
         public static Fix UnityFullBonus = Fix.Ratio(3, 2);
-        public static int UnityFadeTicks = 360;
+        public static int UnityFadeTicks = 15 * MatchConfig.TicksPerSecond;
         // HUNTER COIL
         public static int CoilLunge = 36;
         public static int CoilLife = 90;
@@ -116,6 +116,10 @@ namespace BallBattle.Sim.Skills
         public virtual int CooldownTicks => SkillTuning.Cooldown;
         /// <summary>False while a tap would do nothing (cooldown, nothing to release).</summary>
         public virtual bool CanTap => Skill.IsReady;
+        /// <summary>Bot turn (Rules 23): first cast at BallState.BotFirstTick, then BotRepeatTicks after the skill is ready again (RunTuning per stage).</summary>
+        protected bool BotTurn => Skill.FireCount == 0 ? Sim.ActiveTick >= Self.BotFirstTick : Sim.ActiveTick - Skill.ReadyAt >= Self.BotRepeatTicks;
+        /// <summary>Run enemies (BallLoadout.AutoSkill): press now? Default: the skill can be used and it is the bot's turn.</summary>
+        internal virtual bool BotWantsTap => CanTap && BotTurn;
         /// <summary>The tap bar: 0..1. Default is the cooldown; a skill with a build-up or a wind-up shows that instead.</summary>
         public virtual Fix Gauge() => Skill.CooldownFraction;
         /// <summary>True while the skill is doing something the player should see (dash, wind-up, parry window).</summary>
@@ -307,6 +311,8 @@ namespace BallBattle.Sim.Skills
         public override bool Running => charging || Sim.ActiveTick < rushUntil;
         public override Fix Gauge() => charging ? Charge : Skill.CooldownFraction;
         public override bool CanTap => charging || Skill.IsReady;
+        /// <summary>A bot winds up on its turn and rams at full charge (never into the backfire).</summary>
+        internal override bool BotWantsTap => charging ? Charge >= Fix.One : Skill.IsReady && BotTurn;
 
         internal override bool Tap()
         {
@@ -484,7 +490,7 @@ namespace BallBattle.Sim.Skills
         }
     }
 
-    /// <summary>BGLGXLQ: UNITY by hand. Orbs light by touching the foe and fade after six seconds; the tap bursts what is lit (all five: bigger).</summary>
+    /// <summary>BGLGXLQ: UNITY by hand. Lit orbs stay bright for 15 seconds after their last touch; the tap bursts what is lit (all five: bigger).</summary>
     public sealed class ChorusUnityHand : ActiveSkill
     {
         readonly ChorusRule chorus;

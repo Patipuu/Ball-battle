@@ -30,6 +30,10 @@ namespace BallBattle.Tests
             Assert.That(UiVietnamese.Translate("NO BRAKES"), Is.EqualTo("LAO KHÔNG PHANH"));
             Assert.That(UiVietnamese.Translate("OUTBREAK"), Is.EqualTo("PHÁT TÁC"));
             Assert.That(UiVietnamese.Translate("PAYBACK"), Is.EqualTo("ĂN MIẾNG TRẢ MIẾNG"));
+            Assert.That(UiVietnamese.Translate("BACKDRAFT"), Is.EqualTo("THỔI BÙNG"));
+            Assert.That(UiVietnamese.Translate("OVERCHARGE"), Is.EqualTo("HÚC HẾT GA"));
+            Assert.That(UiVietnamese.Translate("CHAIN"), Is.EqualTo("NẢY LIÊN HOÀN"));
+            Assert.That(UiVietnamese.Translate("FLOW"), Is.EqualTo("THUẬN TAY"));
         }
 
         [Test]
@@ -37,15 +41,15 @@ namespace BallBattle.Tests
         {
             Assert.That(UiVietnamese.Translate("NEXT: FIGHT 4/8  SHELL KING  RETRY"),
                 Is.EqualTo("TIẾP: TRẬN 4/8  SHELL KING  ĐẤU LẠI"));
-            Assert.That(UiVietnamese.Translate("HOW: BLADE DMG +1 WITH EVERY HIT"),
-                Is.EqualTo("LỐI ĐÁNH: MỖI ĐÒN TRÚNG, ĐAO +1 SÁT THƯƠNG"));   // UI-CLEAN1: shortened to fit the 270 px panel
+            Assert.That(UiVietnamese.Translate("BLADE DMG +1 WITH EVERY HIT"),
+                Is.EqualTo("CHÉM TRÚNG: ĐAO MẠNH THÊM 1"));
             Assert.That(UiVietnamese.Translate("GOLD CHEST"), Is.EqualTo("RƯƠNG VÀNG"));
             Assert.That(UiVietnamese.Translate("WIN  +15 COINS"), Is.EqualTo("THẮNG  +15 XU"));
             Assert.That(UiVietnamese.Translate("FIGHT 4/8  BOSS"), Is.EqualTo("TRẬN 4/8  GẶP TRÙM"));
             Assert.That(UiVietnamese.Translate("COMMON"), Is.EqualTo("THƯỜNG"));
             Assert.That(UiVietnamese.Translate("RUN WON!"), Is.EqualTo("PHÁ ĐẢO!"));
             Assert.That(UiVietnamese.Translate("TOP SPEED +10%. START SPEED SAME"),
-                Is.EqualTo("TỐC ĐỘ TỐI ĐA +10%. ĐẦU TRẬN GIỮ NGUYÊN"));
+                Is.EqualTo("TỐC ĐỘ TỐI ĐA +10%, ĐẦU TRẬN KHÔNG ĐỔI"));
             Assert.That(TraitNames.List("SECOND WIND 2 THORNS 2 VAMPIRE"),
                 Is.EqualTo("HỒI SỨC 2 PHẢN GAI 2 HÚT MÁU"));
         }
@@ -92,6 +96,8 @@ namespace BallBattle.Tests
                                 $"{id} {box}: {text.Text} outside screen");
                         tree.OpenCard(box);
                         var area = TreeView.CardArea;
+                        var popupIssues = BbFont1Tests.Audit(tree.transform.Find("Card"));
+                        Assert.That(popupIssues, Is.Empty, $"{id} {box}: {string.Join("; ", popupIssues)}");
                         foreach (var text in tree.transform.Find("Card").GetComponentsInChildren<PixelText>(false))
                         {
                             if (text.Text.Length == 0) continue;
@@ -107,6 +113,31 @@ namespace BallBattle.Tests
         }
 
         [Test]
+        public void EveryNonStatTreeNodeExplainsItsEffectInVietnamese()
+        {
+            foreach (var id in new[] { "blade", "fang", "pike", "brawler", "volley", "venom", "aegis", "rig", "chorus", "serpent" })
+            {
+                foreach (var node in new[] { TreeNode.Instinct, TreeNode.Opener, TreeNode.SkillA, TreeNode.SkillB, TreeNode.Finale })
+                {
+                    foreach (var branch in node == TreeNode.Finale ? new[] { 'A', 'B' } : new[] { 'A' })
+                    {
+                        foreach (var level in node == TreeNode.SkillA || node == TreeNode.SkillB ? new[] { 2, 3 } : new[] { 2 })
+                        {
+                            var lines = TreeText.Effect(id, node, branch, level);
+                            Assert.That(lines.Length, Is.InRange(1, 4), $"{id} {node} {branch} {level}");
+                            foreach (var line in lines)
+                            {
+                                Assert.That(line, Is.Not.Empty, $"{id} {node} {branch} {level}");
+                                Assert.That(System.Text.RegularExpressions.Regex.IsMatch(line, "[À-Ỹà-ỹĐđ]"), Is.True,
+                                    $"missing Vietnamese: {id} {node} {branch} {level}: {line}");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        [Test]
         public void EveryPickPanelShowsVietnameseRolesAndBranchesWithinThePanel()
         {
             var art = AssetDatabase.LoadAssetAtPath<ArtLibrary>(PlaceholderArtGenerator.LibraryPath);
@@ -119,10 +150,10 @@ namespace BallBattle.Tests
                     pick.Show(new[] { data.WeaponId });
                     var lines = pick.DetailText.Split('|');
                     Assert.That(lines[0], Does.Contain(UiVietnamese.TranslateRole(data.Role)), data.WeaponId);
-                    Assert.That(lines[5], Does.StartWith("CẤP 2A " + UiVietnamese.Translate(data.SummaryA)), data.WeaponId);
-                    Assert.That(lines[6], Does.StartWith("CẤP 2B " + UiVietnamese.Translate(data.SummaryB)), data.WeaponId);
+                    Assert.That(lines[3], Does.StartWith("A: " + UiVietnamese.Translate(data.SummaryA)), data.WeaponId);
+                    Assert.That(lines[4], Does.StartWith("B: " + UiVietnamese.Translate(data.SummaryB)), data.WeaponId);
                     for (var i = 0; i < lines.Length; i++)
-                        Assert.That(PixelFont.MeasureWidth(lines[i]), Is.LessThanOrEqualTo(i == 4 ? 225 : 242),
+                        Assert.That(PixelFont.MeasureWidth(lines[i]), Is.LessThanOrEqualTo(i == 2 ? 225 : 242),
                             $"{data.WeaponId} pick row {i}: {lines[i]}");
                 }
                 Assert.That(UiVietnamese.Translate("HUNTER"), Is.EqualTo("HUNTER"));

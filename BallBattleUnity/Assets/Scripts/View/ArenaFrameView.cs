@@ -11,7 +11,10 @@ namespace BallBattle.View
     public sealed class ArenaFrameView : MonoBehaviour
     {
         public const int FloorOrder = 0;
-        public const int MaskOrder = 30;
+        /// <summary>29: under the chapter backdrop (30) so the backdrop's art stays on top outside the arena.</summary>
+        public const int MaskOrder = 29;
+        /// <summary>Run chapter backdrop (ChapterBackdrop): above the masks, under the walls; transparent over the arena.</summary>
+        public const int BackdropOrder = 30;
         public const int WallOrder = 31;
         const int WallThickness = 2;
         const int WarnTicks = 3 * MatchConfig.TicksPerSecond;
@@ -39,6 +42,12 @@ namespace BallBattle.View
         /// <summary>One node per obstacle (its pixel rows), so a Warden step can hide a disabled one (BB-04).</summary>
         readonly System.Collections.Generic.List<GameObject> obstacleNodes = new System.Collections.Generic.List<GameObject>();
         SpriteRenderer floor;
+        SpriteRenderer backdrop;
+        Texture2D backdropTex;
+        int builtChapter = -1;
+        RectInt builtHole;
+        /// <summary>Chapter whose backdrop is drawn around the arena (Run mode), -1 = none (plain background).</summary>
+        public int Chapter { get; set; } = -1;
         readonly SpriteRenderer[] masks = new SpriteRenderer[4];
         readonly SpriteRenderer[] walls = new SpriteRenderer[4];
         /// <summary>Red wall strips over the spike zones, used only when there is no spike_tooth art.</summary>
@@ -135,6 +144,10 @@ namespace BallBattle.View
                 floor.color = hasArt ? look.FloorColor : (Color32)Palette.Floor;
                 Box(floor, l, b, r, t);
             }
+            var maskColor = Chapter >= 0 ? ChapterBackdrop.BaseColor(Chapter) : (Color32)Palette.Background;
+            foreach (var m in masks) m.color = maskColor;
+            UpdateBackdrop(Mathf.RoundToInt(l) - WallThickness, Mathf.RoundToInt(b) - WallThickness,
+                Mathf.RoundToInt(r) + WallThickness, Mathf.RoundToInt(t) + WallThickness, activeTick);
             Box(masks[0], -Far, t, Far, Far);    // above
             Box(masks[1], -Far, -Far, Far, b);   // below
             Box(masks[2], -Far, b, l, t);        // left
@@ -172,6 +185,43 @@ namespace BallBattle.View
             shownWallColor = color;
             foreach (var wall in walls) wall.color = color;
         }
+
+        /// <summary>
+        /// Chapter backdrop around the arena: rebuilt when the chapter changes, at a fight's first tick when the arena differs from
+        /// the hole, or when the arena ever grows past the hole. The arena only shrinks during a fight, and the masks (same base
+        /// colour) fill the strip between the shrinking wall and the hole.
+        /// </summary>
+        void UpdateBackdrop(int left, int bottom, int right, int top, int activeTick)
+        {
+            if (Chapter < 0)
+            {
+                if (backdrop != null) backdrop.enabled = false;
+                return;
+            }
+            var rect = new RectInt(left, bottom, right - left, top - bottom);
+            var contained = builtHole.xMin <= rect.xMin && builtHole.yMin <= rect.yMin && builtHole.xMax >= rect.xMax && builtHole.yMax >= rect.yMax;
+            if (builtChapter != Chapter || !contained || (activeTick == 0 && !builtHole.Equals(rect)))
+            {
+                if (backdrop == null)
+                {
+                    var go = new GameObject("ChapterBackdrop");
+                    go.transform.SetParent(transform, false);
+                    backdrop = go.AddComponent<SpriteRenderer>();
+                    backdrop.sortingOrder = BackdropOrder;
+                }
+                if (backdrop.sprite != null) { if (Application.isPlaying) Destroy(backdrop.sprite); else DestroyImmediate(backdrop.sprite); }
+                if (backdropTex != null) { if (Application.isPlaying) Destroy(backdropTex); else DestroyImmediate(backdropTex); }
+                backdropTex = ChapterBackdrop.Build(Chapter, rect);
+                backdrop.sprite = Sprite.Create(backdropTex, new Rect(0, 0, ChapterBackdrop.Width, ChapterBackdrop.Height), new Vector2(0.5f, 0.5f), 1f);
+                builtChapter = Chapter;
+                builtHole = rect;
+            }
+            backdrop.enabled = true;
+        }
+
+        /// <summary>Backdrop drawn now (tests): its chapter, -1 when hidden.</summary>
+        public int BackdropShown => backdrop != null && backdrop.enabled ? builtChapter : -1;
+        public RectInt BackdropHole => builtHole;
 
         /// <summary>BB-04: hide obstacles the sim switched off (Warden step). Call after Render.</summary>
         public void ShowObstacles(MatchSim sim)

@@ -224,6 +224,20 @@ namespace BallBattle.Sim
             return false;
         }
 
+        Fix BossIncoming(BallState target, Fix damage, DamageKind kind)
+        {
+            for (var i = 0; i < bossRules.Length; i++)
+                if (bossOwner[i] == target.Index) damage = bossRules[i].ModifyIncomingDamage(damage, kind);
+            return damage;
+        }
+
+        void BossTookDamage(BallState target, DamageKind kind, Fix damage)
+        {
+            if (damage <= Fix.Zero) return;
+            for (var i = 0; i < bossRules.Length; i++)
+                if (bossOwner[i] == target.Index) bossRules[i].OnDamageTaken(kind, damage);
+        }
+
         ulong HashBosses(ulong h)
         {
             if (bossRules.Length == 0) return h;   // Versus and normal fights: hash unchanged

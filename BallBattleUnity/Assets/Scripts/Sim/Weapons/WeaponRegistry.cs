@@ -47,5 +47,8 @@ namespace BallBattle.Sim.Weapons
         }
 
         public static WeaponRule Create(string id) => Get(id).Create();
+
+        /// <summary>Tribute balls only players use (Phu 21/10: BGLGXLQ is never an enemy, a MIMIC copy or a PvP defender).</summary>
+        public static bool IsPlayerOnly(string id) => id == ChorusRule.WeaponId;
     }
 }

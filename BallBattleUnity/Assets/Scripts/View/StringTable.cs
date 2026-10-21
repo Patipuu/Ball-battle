@@ -25,13 +25,18 @@ namespace BallBattle.View
         public const string BossMagnetName = "boss.magnet.name", BossMagnetHint = "boss.magnet.hint";
         public const string BossMimicName = "boss.mimic.name", BossMimicHint = "boss.mimic.hint";
         public const string BossWardenName = "boss.warden.name", BossWardenHint = "boss.warden.hint";
+        public const string BossHunterName = "boss.hunter.name", BossHunterHint = "boss.hunter.hint";
+        public const string BossBellName = "boss.bell.name", BossBellHint = "boss.bell.hint";
+        public const string BossEmberName = "boss.ember.name", BossEmberHint = "boss.ember.hint";
+        public const string BossPrismName = "boss.prism.name", BossPrismHint = "boss.prism.hint";
         public const string BossCopiesYou = "boss.mimic.copies_you";
         public const string BossBeaten = "boss.summary.beaten", BossMet = "boss.summary.met";
 
         public static readonly string[] Boss =
         {
             BossShellKingName, BossShellKingHint, BossMagnetName, BossMagnetHint, BossMimicName, BossMimicHint,
-            BossWardenName, BossWardenHint, BossCopiesYou, BossBeaten, BossMet
+            BossWardenName, BossWardenHint, BossHunterName, BossHunterHint, BossBellName, BossBellHint,
+            BossEmberName, BossEmberHint, BossPrismName, BossPrismHint, BossCopiesYou, BossBeaten, BossMet
         };
     }
 

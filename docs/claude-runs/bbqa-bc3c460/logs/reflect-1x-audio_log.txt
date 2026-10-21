@@ -1,0 +1,324 @@
+--- audio log 2026-10-15 12:24:58 ---
+[Music] start track=music_menu slot=0 t=2.64
+[Music] track track=music_menu screen=Menu result=start t=2.64
+[Music] track track=music_menu screen=VersusPick result=same t=4.06
+[Music] start track=music_battle slot=1 t=8.94
+[Music] track track=music_battle screen=Fight result=start t=8.94
+[Music] stop track=music_menu slot=0 t=9.52
+[Audio] WallBounce tick=8 active=8 ball=1 dmg=0.00 hpChangedTick=-1 cue=wall allowed=yes
+[Audio] WallBounce tick=18 active=18 ball=1 dmg=0.00 hpChangedTick=-1 cue=wall allowed=yes
+[Audio] WallBounce tick=29 active=29 ball=0 dmg=0.00 hpChangedTick=-1 cue=wall allowed=yes
+[Audio] WallBounce tick=42 active=42 ball=1 dmg=0.00 hpChangedTick=-1 cue=wall allowed=yes
+[Audio] WallBounce tick=43 active=43 ball=0 dmg=0.00 hpChangedTick=-1 cue=wall allowed=yes
+[Reflect] tick=51 ball=0 projectile=none
+[Audio] WallBounce tick=63 active=60 ball=0 dmg=0.00 hpChangedTick=51 cue=wall allowed=yes
+[Audio] WallBounce tick=65 active=62 ball=1 dmg=0.00 hpChangedTick=51 cue=wall allowed=yes
+[Audio] WallBounce tick=74 active=71 ball=0 dmg=0.00 hpChangedTick=51 cue=wall allowed=yes
+[Reflect] tick=86 ball=0 projectile=none
+[Audio] WallBounce tick=102 active=96 ball=1 dmg=0.00 hpChangedTick=86 cue=wall allowed=yes
+[Audio] WallBounce tick=111 active=105 ball=1 dmg=0.00 hpChangedTick=86 cue=wall allowed=yes
+[Audio] WallBounce tick=118 active=112 ball=0 dmg=0.00 hpChangedTick=86 cue=wall allowed=yes
+[Audio] WallBounce tick=126 active=120 ball=0 dmg=0.00 hpChangedTick=86 cue=wall allowed=yes
+[Audio] WallBounce tick=133 active=127 ball=1 dmg=0.00 hpChangedTick=86 cue=wall allowed=yes
+[Reflect] tick=135 ball=0 projectile=none
+[Audio] WallBounce tick=155 active=146 ball=0 dmg=0.00 hpChangedTick=135 cue=wall allowed=yes
+[Audio] WallBounce tick=175 active=166 ball=0 dmg=0.00 hpChangedTick=135 cue=wall allowed=yes
+[Audio] WallBounce tick=186 active=177 ball=0 dmg=0.00 hpChangedTick=135 cue=wall allowed=yes
+[Audio] WallBounce tick=197 active=188 ball=0 dmg=0.00 hpChangedTick=135 cue=wall allowed=yes
+[Audio] WallBounce tick=208 active=199 ball=1 dmg=0.00 hpChangedTick=135 cue=wall allowed=yes
+[Audio] WallBounce tick=218 active=209 ball=0 dmg=0.00 hpChangedTick=135 cue=wall allowed=yes
+[Audio] WallBounce tick=239 active=230 ball=0 dmg=0.00 hpChangedTick=135 cue=wall allowed=yes
+[Audio] WallBounce tick=253 active=244 ball=1 dmg=0.00 hpChangedTick=135 cue=wall allowed=yes
+[Reflect] tick=256 ball=0 projectile=none
+[Audio] WallBounce tick=262 active=250 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=274 active=262 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=277 active=265 ball=0 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=295 active=283 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=308 active=296 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=311 active=299 ball=0 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=325 active=313 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=337 active=325 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=345 active=333 ball=0 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=350 active=338 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=363 active=351 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=374 active=362 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=379 active=367 ball=0 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=383 active=371 ball=0 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=388 active=376 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Audio] WallBounce tick=398 active=386 ball=1 dmg=0.00 hpChangedTick=256 cue=wall allowed=yes
+[Reflect] tick=406 ball=0 projectile=none
+[Audio] WallBounce tick=414 active=399 ball=0 dmg=0.00 hpChangedTick=406 cue=wall allowed=yes
+[Audio] WallBounce tick=422 active=407 ball=1 dmg=0.00 hpChangedTick=406 cue=wall allowed=yes
+[Audio] WallBounce tick=426 active=411 ball=0 dmg=0.00 hpChangedTick=406 cue=wall allowed=yes
+[Audio] WallBounce tick=439 active=424 ball=0 dmg=0.00 hpChangedTick=406 cue=wall allowed=yes
+[Reflect] tick=448 ball=0 projectile=none
+[Audio] WallBounce tick=458 active=440 ball=1 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=478 active=460 ball=0 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=482 active=464 ball=1 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=484 active=466 ball=1 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=496 active=478 ball=0 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=502 active=484 ball=1 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=521 active=503 ball=1 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=527 active=509 ball=0 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=532 active=514 ball=1 dmg=0.00 hpChangedTick=448 cue=wall allowed=yes
+[Audio] WallBounce tick=542 active=521 ball=1 dmg=0.00 hpChangedTick=535 cue=wall allowed=yes
+[Reflect] tick=545 ball=0 projectile=none
+[Audio] WallBounce tick=565 active=541 ball=1 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Audio] WallBounce tick=567 active=543 ball=0 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Audio] WallBounce tick=570 active=546 ball=0 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Audio] WallBounce tick=584 active=560 ball=1 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Audio] WallBounce tick=597 active=573 ball=0 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Audio] WallBounce tick=600 active=576 ball=0 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Audio] WallBounce tick=601 active=577 ball=1 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Audio] WallBounce tick=621 active=594 ball=1 dmg=0.00 hpChangedTick=612 cue=wall allowed=yes
+[Skill] tick=627 ball=1 skill=brawler_charge branch=1 cue=skill_brawler_charge result=played
+[Audio] WallBounce tick=629 active=602 ball=0 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Audio] WallBounce tick=631 active=604 ball=1 dmg=0.00 hpChangedTick=612 cue=wall allowed=yes
+[Audio] WallBounce tick=633 active=606 ball=0 dmg=0.00 hpChangedTick=545 cue=wall allowed=yes
+[Reflect] tick=637 ball=0 projectile=none
+[Audio] WallBounce tick=643 active=610 ball=1 dmg=0.00 hpChangedTick=637 cue=wall allowed=yes
+[Audio] WallBounce tick=657 active=624 ball=0 dmg=0.00 hpChangedTick=637 cue=wall allowed=yes
+[Audio] WallBounce tick=658 active=625 ball=1 dmg=0.00 hpChangedTick=637 cue=wall allowed=yes
+[Reflect] tick=667 ball=0 projectile=none
+[Audio] WallBounce tick=675 active=639 ball=0 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=677 active=641 ball=1 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=688 active=652 ball=0 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=692 active=656 ball=1 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=701 active=665 ball=0 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=705 active=669 ball=1 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=706 active=670 ball=1 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=721 active=685 ball=1 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=724 active=688 ball=0 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=727 active=691 ball=0 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Audio] WallBounce tick=736 active=700 ball=1 dmg=0.00 hpChangedTick=667 cue=wall allowed=yes
+[Reflect] tick=742 ball=0 projectile=none
+[Audio] WallBounce tick=751 active=712 ball=1 dmg=0.00 hpChangedTick=742 cue=wall allowed=yes
+[Audio] WallBounce tick=755 active=716 ball=0 dmg=0.00 hpChangedTick=742 cue=wall allowed=yes
+[Audio] WallBounce tick=761 active=719 ball=1 dmg=0.00 hpChangedTick=756 cue=wall allowed=yes
+[Skill] tick=762 ball=0 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Audio] WallBounce tick=770 active=728 ball=1 dmg=0.00 hpChangedTick=756 cue=wall allowed=yes
+[Audio] WallBounce tick=774 active=732 ball=0 dmg=0.00 hpChangedTick=742 cue=wall allowed=yes
+[Audio] WallBounce tick=786 active=744 ball=1 dmg=0.00 hpChangedTick=786 cue=wall allowed=yes
+[Reflect] tick=790 ball=0 projectile=none
+[Audio] WallBounce tick=800 active=752 ball=1 dmg=0.00 hpChangedTick=790 cue=wall allowed=yes
+[Audio] WallBounce tick=809 active=761 ball=0 dmg=0.00 hpChangedTick=790 cue=wall allowed=yes
+[Audio] WallBounce tick=819 active=771 ball=1 dmg=0.00 hpChangedTick=790 cue=wall allowed=yes
+[Audio] WallBounce tick=837 active=789 ball=1 dmg=0.00 hpChangedTick=790 cue=wall allowed=yes
+[Audio] WallBounce tick=840 active=792 ball=0 dmg=0.00 hpChangedTick=790 cue=wall allowed=yes
+[Audio] WallBounce tick=842 active=794 ball=0 dmg=0.00 hpChangedTick=790 cue=wall allowed=yes
+[Audio] WallBounce tick=854 active=806 ball=1 dmg=0.00 hpChangedTick=790 cue=wall allowed=yes
+[Reflect] tick=858 ball=0 projectile=none
+[Audio] WallBounce tick=870 active=819 ball=0 dmg=0.00 hpChangedTick=858 cue=wall allowed=yes
+[Audio] WallBounce tick=876 active=825 ball=1 dmg=0.00 hpChangedTick=858 cue=wall allowed=yes
+[Audio] WallBounce tick=877 active=826 ball=0 dmg=0.00 hpChangedTick=858 cue=wall allowed=yes
+[Audio] WallBounce tick=892 active=841 ball=1 dmg=0.00 hpChangedTick=858 cue=wall allowed=yes
+[Audio] WallBounce tick=898 active=847 ball=1 dmg=0.00 hpChangedTick=858 cue=wall allowed=yes
+[Audio] WallBounce tick=901 active=850 ball=0 dmg=0.00 hpChangedTick=858 cue=wall allowed=yes
+[Audio] WallBounce tick=904 active=853 ball=0 dmg=0.00 hpChangedTick=858 cue=wall allowed=yes
+[Audio] WallBounce tick=920 active=866 ball=1 dmg=0.00 hpChangedTick=911 cue=wall allowed=yes
+[Audio] WallBounce tick=932 active=878 ball=1 dmg=0.00 hpChangedTick=911 cue=wall allowed=yes
+[Audio] WallBounce tick=938 active=881 ball=0 dmg=0.00 hpChangedTick=858 cue=wall allowed=yes
+[Audio] WallBounce tick=938 active=881 ball=0 dmg=0.00 hpChangedTick=858 cue=wall allowed=no
+[Reflect] tick=940 ball=0 projectile=none
+[Audio] WallBounce tick=945 active=885 ball=0 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=952 active=892 ball=0 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=955 active=895 ball=1 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=965 active=905 ball=1 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=970 active=910 ball=1 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=984 active=924 ball=1 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=999 active=939 ball=1 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=1009 active=949 ball=0 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=1013 active=953 ball=1 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=1023 active=963 ball=0 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Audio] WallBounce tick=1028 active=968 ball=1 dmg=0.00 hpChangedTick=940 cue=wall allowed=yes
+[Reflect] tick=1039 ball=0 projectile=none
+[Audio] WallBounce tick=1048 active=982 ball=0 dmg=0.00 hpChangedTick=1039 cue=wall allowed=yes
+[Reflect] tick=1058 ball=0 projectile=none
+[Audio] WallBounce tick=1070 active=1001 ball=1 dmg=0.00 hpChangedTick=1058 cue=wall allowed=yes
+[Audio] WallBounce tick=1086 active=1017 ball=1 dmg=0.00 hpChangedTick=1058 cue=wall allowed=yes
+[Audio] WallBounce tick=1093 active=1024 ball=0 dmg=0.00 hpChangedTick=1058 cue=wall allowed=yes
+[Reflect] tick=1108 ball=0 projectile=none
+[Audio] WallBounce tick=1122 active=1050 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1123 active=1051 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1151 active=1079 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1154 active=1082 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1159 active=1087 ball=0 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1160 active=1088 ball=0 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1176 active=1104 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1181 active=1109 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1197 active=1125 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1204 active=1132 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1213 active=1141 ball=0 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Audio] WallBounce tick=1217 active=1145 ball=1 dmg=0.00 hpChangedTick=1108 cue=wall allowed=yes
+[Reflect] tick=1223 ball=0 projectile=none
+[Audio] WallBounce tick=1230 active=1155 ball=1 dmg=0.00 hpChangedTick=1223 cue=wall allowed=yes
+[Audio] WallBounce tick=1236 active=1161 ball=0 dmg=0.00 hpChangedTick=1223 cue=wall allowed=yes
+[Audio] WallBounce tick=1255 active=1180 ball=1 dmg=0.00 hpChangedTick=1223 cue=wall allowed=yes
+[Audio] WallBounce tick=1256 active=1181 ball=0 dmg=0.00 hpChangedTick=1223 cue=wall allowed=yes
+[Reflect] tick=1267 ball=0 projectile=none
+[Audio] WallBounce tick=1276 active=1198 ball=1 dmg=0.00 hpChangedTick=1267 cue=wall allowed=yes
+[Skill] tick=1278 ball=1 skill=brawler_charge branch=1 cue=skill_brawler_charge result=played
+[Audio] WallBounce tick=1283 active=1205 ball=1 dmg=0.00 hpChangedTick=1267 cue=wall allowed=yes
+[Audio] WallBounce tick=1293 active=1215 ball=1 dmg=0.00 hpChangedTick=1267 cue=wall allowed=yes
+[Reflect] tick=1296 ball=0 projectile=none
+[Audio] WallBounce tick=1306 active=1225 ball=1 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Audio] WallBounce tick=1307 active=1226 ball=1 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Audio] WallBounce tick=1314 active=1233 ball=0 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Audio] WallBounce tick=1322 active=1241 ball=0 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Audio] WallBounce tick=1323 active=1242 ball=1 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Audio] WallBounce tick=1336 active=1255 ball=0 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Audio] WallBounce tick=1338 active=1257 ball=1 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Audio] WallBounce tick=1348 active=1267 ball=1 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Audio] WallBounce tick=1353 active=1272 ball=1 dmg=0.00 hpChangedTick=1296 cue=wall allowed=yes
+[Reflect] tick=1355 ball=0 projectile=none
+[Audio] WallBounce tick=1363 active=1279 ball=1 dmg=0.00 hpChangedTick=1355 cue=wall allowed=yes
+[Audio] WallBounce tick=1365 active=1281 ball=0 dmg=0.00 hpChangedTick=1355 cue=wall allowed=yes
+[Audio] WallBounce tick=1371 active=1287 ball=1 dmg=0.00 hpChangedTick=1355 cue=wall allowed=yes
+[Audio] WallBounce tick=1373 active=1289 ball=0 dmg=0.00 hpChangedTick=1355 cue=wall allowed=yes
+[Reflect] tick=1381 ball=0 projectile=none
+[Audio] WallBounce tick=1390 active=1303 ball=1 dmg=0.00 hpChangedTick=1381 cue=wall allowed=yes
+[Audio] WallBounce tick=1392 active=1305 ball=0 dmg=0.00 hpChangedTick=1381 cue=wall allowed=yes
+[Audio] WallBounce tick=1399 active=1312 ball=1 dmg=0.00 hpChangedTick=1381 cue=wall allowed=yes
+[Audio] WallBounce tick=1407 active=1320 ball=1 dmg=0.00 hpChangedTick=1407 cue=wall allowed=yes
+[Reflect] tick=1411 ball=0 projectile=none
+[Audio] WallBounce tick=1416 active=1323 ball=0 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1427 active=1334 ball=1 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1429 active=1336 ball=0 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1429 active=1336 ball=1 dmg=0.00 hpChangedTick=1411 cue=wall allowed=no
+[Audio] WallBounce tick=1445 active=1352 ball=1 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1458 active=1365 ball=0 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1459 active=1366 ball=0 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1460 active=1367 ball=1 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1463 active=1370 ball=1 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1476 active=1383 ball=1 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1487 active=1394 ball=0 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1492 active=1399 ball=1 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1500 active=1407 ball=1 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1502 active=1409 ball=0 dmg=0.00 hpChangedTick=1411 cue=wall allowed=yes
+[Audio] WallBounce tick=1507 active=1414 ball=1 dmg=0.00 hpChangedTick=1507 cue=wall allowed=yes
+[Reflect] tick=1507 ball=0 projectile=none
+[Audio] WallBounce tick=1517 active=1421 ball=1 dmg=0.00 hpChangedTick=1507 cue=wall allowed=yes
+[Audio] WallBounce tick=1529 active=1433 ball=0 dmg=0.00 hpChangedTick=1507 cue=wall allowed=yes
+[Skill] tick=1536 ball=0 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Audio] WallBounce tick=1546 active=1450 ball=0 dmg=0.00 hpChangedTick=1507 cue=wall allowed=yes
+[Audio] WallBounce tick=1547 active=1451 ball=1 dmg=0.00 hpChangedTick=1507 cue=wall allowed=yes
+[Audio] WallBounce tick=1551 active=1455 ball=0 dmg=0.00 hpChangedTick=1507 cue=wall allowed=yes
+[Audio] WallBounce tick=1552 active=1456 ball=1 dmg=0.00 hpChangedTick=1507 cue=wall allowed=yes
+[Reflect] tick=1561 ball=0 projectile=none
+[Audio] WallBounce tick=1575 active=1476 ball=1 dmg=0.00 hpChangedTick=1561 cue=wall allowed=yes
+[Audio] WallBounce tick=1577 active=1478 ball=0 dmg=0.00 hpChangedTick=1561 cue=wall allowed=yes
+[Audio] WallBounce tick=1583 active=1484 ball=1 dmg=0.00 hpChangedTick=1561 cue=wall allowed=yes
+[Reflect] tick=1588 ball=0 projectile=none
+[Audio] WallBounce tick=1598 active=1496 ball=0 dmg=0.00 hpChangedTick=1588 cue=wall allowed=yes
+[Audio] WallBounce tick=1606 active=1504 ball=1 dmg=0.00 hpChangedTick=1588 cue=wall allowed=yes
+[Audio] WallBounce tick=1620 active=1518 ball=0 dmg=0.00 hpChangedTick=1588 cue=wall allowed=yes
+[Audio] WallBounce tick=1631 active=1529 ball=0 dmg=0.00 hpChangedTick=1588 cue=wall allowed=yes
+[Audio] WallBounce tick=1634 active=1532 ball=1 dmg=0.00 hpChangedTick=1588 cue=wall allowed=yes
+[Reflect] tick=1637 ball=0 projectile=none
+[Audio] WallBounce tick=1642 active=1537 ball=1 dmg=0.00 hpChangedTick=1637 cue=wall allowed=yes
+[Audio] WallBounce tick=1657 active=1552 ball=0 dmg=0.00 hpChangedTick=1637 cue=wall allowed=yes
+[Reflect] tick=1660 ball=0 projectile=none
+[Audio] WallBounce tick=1664 active=1556 ball=0 dmg=0.00 hpChangedTick=1660 cue=wall allowed=yes
+[Audio] WallBounce tick=1672 active=1561 ball=1 dmg=0.00 hpChangedTick=1665 cue=wall allowed=yes
+[Audio] WallBounce tick=1695 active=1584 ball=0 dmg=0.00 hpChangedTick=1660 cue=wall allowed=yes
+[Reflect] tick=1697 ball=0 projectile=none
+[Audio] WallBounce tick=1697 active=1586 ball=0 dmg=0.00 hpChangedTick=1697 cue=wall allowed=no
+[Audio] WallBounce tick=1702 active=1588 ball=0 dmg=0.00 hpChangedTick=1697 cue=wall allowed=yes
+[Audio] WallBounce tick=1724 active=1610 ball=1 dmg=0.00 hpChangedTick=1697 cue=wall allowed=yes
+[Reflect] tick=1726 ball=0 projectile=none
+[Audio] WallBounce tick=1732 active=1615 ball=1 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1736 active=1619 ball=1 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1741 active=1624 ball=0 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1748 active=1631 ball=0 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1762 active=1645 ball=1 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1773 active=1656 ball=0 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1774 active=1657 ball=1 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1785 active=1668 ball=1 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1788 active=1671 ball=0 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1798 active=1681 ball=0 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1805 active=1688 ball=1 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Audio] WallBounce tick=1809 active=1692 ball=1 dmg=0.00 hpChangedTick=1726 cue=wall allowed=yes
+[Reflect] tick=1815 ball=0 projectile=none
+[Audio] WallBounce tick=1823 active=1703 ball=1 dmg=0.00 hpChangedTick=1815 cue=wall allowed=yes
+[Audio] WallBounce tick=1829 active=1709 ball=0 dmg=0.00 hpChangedTick=1815 cue=wall allowed=yes
+[Audio] WallBounce tick=1831 active=1711 ball=1 dmg=0.00 hpChangedTick=1815 cue=wall allowed=yes
+[Audio] WallBounce tick=1839 active=1719 ball=0 dmg=0.00 hpChangedTick=1815 cue=wall allowed=yes
+[Reflect] tick=1842 ball=0 projectile=none
+[Audio] WallBounce tick=1848 active=1725 ball=0 dmg=0.00 hpChangedTick=1842 cue=wall allowed=yes
+[Audio] WallBounce tick=1858 active=1735 ball=0 dmg=0.00 hpChangedTick=1842 cue=wall allowed=yes
+[Audio] WallBounce tick=1870 active=1744 ball=1 dmg=0.00 hpChangedTick=1861 cue=wall allowed=yes
+[Audio] WallBounce tick=1879 active=1753 ball=1 dmg=0.00 hpChangedTick=1861 cue=wall allowed=yes
+[Audio] WallBounce tick=1883 active=1757 ball=0 dmg=0.00 hpChangedTick=1842 cue=wall allowed=yes
+[Audio] WallBounce tick=1886 active=1760 ball=0 dmg=0.00 hpChangedTick=1842 cue=wall allowed=yes
+[Reflect] tick=1897 ball=0 projectile=none
+[Audio] WallBounce tick=1914 active=1785 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1916 active=1787 ball=0 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1916 active=1787 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=no
+[Skill] tick=1929 ball=1 skill=brawler_charge branch=1 cue=skill_brawler_charge result=played
+[Audio] WallBounce tick=1931 active=1802 ball=0 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1938 active=1809 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1943 active=1814 ball=0 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1944 active=1815 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1956 active=1827 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1967 active=1838 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1970 active=1841 ball=0 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1974 active=1845 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1979 active=1850 ball=0 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1990 active=1861 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1993 active=1864 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=1997 active=1868 ball=0 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=2011 active=1882 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=2013 active=1884 ball=1 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=2023 active=1894 ball=0 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Audio] WallBounce tick=2027 active=1898 ball=0 dmg=0.00 hpChangedTick=1897 cue=wall allowed=yes
+[Reflect] tick=2031 ball=0 projectile=none
+[Audio] WallBounce tick=2035 active=1900 ball=1 dmg=0.00 hpChangedTick=2031 cue=wall allowed=yes
+[Audio] WallBounce tick=2038 active=1903 ball=0 dmg=0.00 hpChangedTick=2031 cue=wall allowed=yes
+[Audio] WallBounce tick=2051 active=1916 ball=1 dmg=0.00 hpChangedTick=2031 cue=wall allowed=yes
+[Audio] WallBounce tick=2060 active=1925 ball=0 dmg=0.00 hpChangedTick=2031 cue=wall allowed=yes
+[Audio] WallBounce tick=2060 active=1925 ball=1 dmg=0.00 hpChangedTick=2031 cue=wall allowed=no
+[Audio] WallBounce tick=2073 active=1938 ball=1 dmg=0.00 hpChangedTick=2031 cue=wall allowed=yes
+[Reflect] tick=2075 ball=0 projectile=none
+[Audio] WallBounce tick=2082 active=1944 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2096 active=1958 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2097 active=1959 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2111 active=1973 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2112 active=1974 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2122 active=1984 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2126 active=1988 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2141 active=2003 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2148 active=2010 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2149 active=2011 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2156 active=2018 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2171 active=2033 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2175 active=2037 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2185 active=2047 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2200 active=2062 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2201 active=2063 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2215 active=2077 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2227 active=2089 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2229 active=2091 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2229 active=2091 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=no
+[Audio] WallBounce tick=2233 active=2095 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2244 active=2106 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2254 active=2116 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2259 active=2121 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2274 active=2136 ball=1 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Audio] WallBounce tick=2280 active=2142 ball=0 dmg=0.00 hpChangedTick=2075 cue=wall allowed=yes
+[Reflect] tick=2285 ball=0 projectile=none
+[Audio] WallBounce tick=2293 active=2152 ball=1 dmg=0.00 hpChangedTick=2285 cue=wall allowed=yes
+[Audio] WallBounce tick=2296 active=2155 ball=1 dmg=0.00 hpChangedTick=2285 cue=wall allowed=yes
+[Skill] tick=2301 ball=0 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Audio] WallBounce tick=2303 active=2162 ball=0 dmg=0.00 hpChangedTick=2285 cue=wall allowed=yes
+[Audio] WallBounce tick=2310 active=2169 ball=1 dmg=0.00 hpChangedTick=2285 cue=wall allowed=yes
+[Reflect] tick=2313 ball=0 projectile=none
+[Audio] WallBounce tick=2323 active=2179 ball=1 dmg=0.00 hpChangedTick=2313 cue=wall allowed=yes
+[Audio] WallBounce tick=2328 active=2184 ball=0 dmg=0.00 hpChangedTick=2313 cue=wall allowed=yes
+[Audio] WallBounce tick=2335 active=2191 ball=1 dmg=0.00 hpChangedTick=2313 cue=wall allowed=yes
+[Audio] WallBounce tick=2342 active=2198 ball=1 dmg=0.00 hpChangedTick=2313 cue=wall allowed=yes
+[Audio] WallBounce tick=2348 active=2204 ball=0 dmg=0.00 hpChangedTick=2313 cue=wall allowed=yes
+[Audio] WallBounce tick=2351 active=2207 ball=0 dmg=0.00 hpChangedTick=2313 cue=wall allowed=yes
+[Music] fadeout track=music_battle cue=fight_win t=51.66
+[Music] stop track=music_battle slot=1 t=52.06
+[Music] start track=music_battle slot=0 t=53.16
+[Music] track track=music_battle reason=match-start result=start t=53.16

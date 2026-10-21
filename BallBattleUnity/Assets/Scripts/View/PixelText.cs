@@ -93,7 +93,7 @@ namespace BallBattle.View
                 var g = font.Get(text[i]);
                 sr.enabled = !g.Blank;   // spaces (and the blank fallback) only advance
                 sr.sprite = g.Sprite;
-                sr.color = color;
+                sr.color = g.Colored ? new Color32(255, 255, 255, color.a) : color;   // the coin keeps its own colours
                 sr.transform.localPosition = new Vector3(x, 0f, 0f);
                 if (shadowOn) UpdateShadow(sr);
                 x += (g.Width + PixelFont.Spacing) * scale;
@@ -112,7 +112,7 @@ namespace BallBattle.View
             text = current;   // normalized: glyph i = character i
             highlighted = true;
             for (var i = 0; i < text.Length && i < glyphs.Count; i++)
-                if (IsNumberChar(text, i)) glyphs[i].color = numberColor;
+                if (IsNumberChar(text, i) && text[i] != PixelFont.Coin) glyphs[i].color = numberColor;
         }
 
         /// <summary>

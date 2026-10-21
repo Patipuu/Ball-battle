@@ -240,9 +240,10 @@ namespace BallBattle.Tests
         public void UnlockedNamesUseTheCurrentBallNames()
         {
             var current = new[] { "EMBER", "MANTIS", "ANGLER", "WRECKER", "SPARKLER", "SPORE", "MIRROR", "HIVE" };
-            Assert.That(RunStrings.UnlockedNames(UnlockRules.Boss2), Does.Contain("SPARKLER"));
-            Assert.That(RunStrings.UnlockedNames(UnlockRules.Win1), Does.Contain("MIRROR").And.Contain("SPORE"));
-            Assert.That(RunStrings.UnlockedNames(UnlockRules.Win3), Does.Contain("HIVE"));
+            // Daily-quest update: achievements unlock traits only (every ball is open from the start).
+            Assert.That(RunStrings.UnlockedNames(UnlockRules.Boss2), Does.Contain("POISON TIP"));
+            Assert.That(RunStrings.UnlockedNames(UnlockRules.Win1), Does.Contain("BUBBLE"));
+            Assert.That(RunStrings.UnlockedNames(UnlockRules.Win3), Does.Contain("TWIN BLADE"));
             foreach (var a in new[] { UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Boss3, UnlockRules.Win1, UnlockRules.Win3 })
                 foreach (var n in RunStrings.UnlockedNames(a))
                     foreach (var w in WeaponRegistry.All)
@@ -265,11 +266,12 @@ namespace BallBattle.Tests
             run.FightIndex = RunTuning.Fights;
             run.Over = run.Won = true;
             run.Achievements.Add(UnlockRules.Win3);
+            run.Achievements.Add(DailyQuests.QuestMark + "winrun");
             var after = new ProgressData { RunsPlayed = max, RunsWon = max, BestFight = RunTuning.Fights };
             after.Achievements.AddRange(new[] { UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Win1, UnlockRules.Win3 });
             var v = RunSummaryView.Create(root.transform, art);
             v.Show(run, after);
-            Assert.That(v.BoxText, Does.Contain($"WIN {max} RUNS"));
+            Assert.That(v.BoxText, Does.Contain("WIN A WHOLE RUN"));   // daily-quest update: the frame lists finished quests
             Assert.That(v.BossesText.Text, Does.EndWith("/" + RunTuning.BossFights.Length));
         }
 
@@ -314,7 +316,7 @@ namespace BallBattle.Tests
             Assert.That(menu.NoticeOpen, Is.True);
             Assert.That(menu.HubVisible, Is.True, "menu behind the notice is drawn");
             var hubTexts = menu.Hub.GetComponentsInChildren<PixelText>(false).Select(t => t.Text).ToList();
-            Assert.That(hubTexts, Does.Contain("BALL BATTLE").And.Contain(RunStrings.Run).And.Contain(RunStrings.Versus));
+            Assert.That(hubTexts, Does.Contain("BALL BATTLE").And.Contain(RunStrings.Run).And.Contain("PVP"), "the old VERSUS button is the PVP button now");
             var hubSprites = menu.Hub.GetComponentsInChildren<SpriteRenderer>(false).Where(r => r.enabled).ToList();
             Assert.That(hubSprites, Is.Not.Empty);
             var noticeMin = menu.NoticePage.GetComponentsInChildren<SpriteRenderer>(false).Min(r => r.sortingOrder);

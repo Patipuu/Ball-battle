@@ -1,0 +1,11 @@
+[Skill] tick=615 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1221 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1854 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=2455 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=2490 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=3111 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=3202 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=3714 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=3931 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=4335 ball=0 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=4696 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played

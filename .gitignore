@@ -12,3 +12,15 @@ node_modules/
 
 # WebGL build output (Burst)
 /BallBattleUnity/Data/
+
+# PvP service runtime and account data
+/PvpServer/bin/
+/PvpServer/obj/
+/PvpServer/pvp-data.json
+/PvpServer/pvp-data.json.tmp
+
+# Android signing key (back it up, never commit)
+/keys/
+
+# dotnet test output
+**/TestResults/

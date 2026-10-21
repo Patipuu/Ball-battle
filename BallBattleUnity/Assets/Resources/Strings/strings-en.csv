@@ -6,13 +6,21 @@ run.boss_at.many,BOSS AT FIGHTS {0}
 run.lose_once,LOSE ONCE: FREE PICK  RETRY AT {0}% HP
 versus.draw,DRAW
 boss.shellking.name,SHELL KING
-boss.shellking.hint,SHELL BLOCKS ONE SIDE. HIT ITS BACK.
+boss.shellking.hint,SHIELD UP: CIRCLE BEHIND IT.
 boss.magnet.name,MAGNET
-boss.magnet.hint,PULLS YOU IN EVERY 5S.
+boss.magnet.hint,PULLS YOU IN THEN BURSTS.
 boss.mimic.name,MIMIC
-boss.mimic.hint,COPIES YOUR WEAPON AND TRAITS.
+boss.mimic.hint,COPIES YOUR WEAPON. DODGE THE MARKED BLAST.
 boss.warden.name,WARDEN
-boss.warden.hint,MOVING WALLS SPIKE YOU.
-boss.mimic.copies_you,COPIES YOU
+boss.warden.hint,DODGE CROSS LANES AND CLOSING SPIKED WALLS.
+boss.hunter.name,HUNTER
+boss.hunter.hint,MARKS YOUR SPOT THEN CHARGES.
+boss.bell.name,BELL
+boss.bell.hint,JUMP THE EXPANDING SHOCKWAVE.
+boss.ember.name,EMBER
+boss.ember.hint,LEAVE THE MARK BEFORE IT BURNS.
+boss.prism.name,PRISM
+boss.prism.hint,LEAVE THE MARKED BEAM LANE.
+boss.mimic.copies_you,COPIES YOUR WEAPON
 boss.summary.beaten,{0} BEATEN
 boss.summary.met,{0} MET

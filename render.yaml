@@ -1,0 +1,21 @@
+# Render Blueprint: Dashboard > New > Blueprint > pick this repository. DATABASE_URL is asked once (paste Neon's string).
+services:
+  - type: web
+    name: ballbattle-pvp
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./PvpServer/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - PvpServer/**
+        - BallBattleUnity/Assets/Scripts/Sim/**
+        - render.yaml
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PVP_BOTS
+        value: "1"

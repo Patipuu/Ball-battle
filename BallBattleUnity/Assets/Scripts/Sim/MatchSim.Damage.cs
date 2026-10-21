@@ -40,6 +40,7 @@ namespace BallBattle.Sim
             blocked = d > Fix.Zero && target.Status.TryConsumeShield();
             if (blocked) return Fix.Zero;
             foreach (var t in target.Traits) d = t.ModifyIncomingDamage(attacker, d, kind);
+            d = BossIncoming(target, d, kind);
             if (IsPlainVersus && target.Weapon is Weapons.ChorusRule)
             {
                 if (attacker.Weapon.BodyAttacks) d *= Weapons.TributeTuning.ChorusVersusBodyDamageScale;
@@ -49,10 +50,11 @@ namespace BallBattle.Sim
         }
 
         /// <summary>HP part of an unblocked hit. Hooks run separately (RunHitHooks) so a trade can apply both HP changes first.</summary>
-        static void ApplyHitHp(BallState attacker, BallState target, Fix damage)
+        void ApplyHitHp(BallState attacker, BallState target, Fix damage, DamageKind kind)
         {
             target.Hp -= damage;
             target.LastAttacker = attacker.Index;
+            BossTookDamage(target, kind, damage);
         }
 
         static void RunHitHooks(BallState attacker, BallState target, Fix damage, DamageKind kind)
@@ -81,11 +83,13 @@ namespace BallBattle.Sim
 
             var d = amount;
             foreach (var t in target.Traits) d = t.ModifyIncomingDamage(source, d, kind);
+            d = BossIncoming(target, d, kind);
             if (IsPlainVersus && source != null && target.Weapon is Weapons.ChorusRule && kind == DamageKind.Ability)
                 d *= Weapons.TributeTuning.ChorusVersusAbilityDamageScale;
             if (d <= Fix.Zero) return Fix.Zero;
 
             target.Hp -= d;
+            BossTookDamage(target, kind, d);
             if (source != null) target.LastAttacker = source.Index;
             if (emit)
                 Emit(SimEventType.Damage, source != null ? source.Index : -1, target.Index, d, target.Pos, (byte)kind);

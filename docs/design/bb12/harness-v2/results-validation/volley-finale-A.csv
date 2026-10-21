@@ -1,0 +1,9 @@
+weapon,first_seed,seed_count,policy,vitality,power,growth,start,skill,final,spent,wins,win_pct,avg_fights_won,avg_bosses_defeated
+blade,1501,500,greedy,1,2,2,0,A3,A,10,264,52.80,5.840,1.234
+fang,1501,500,greedy,1,2,2,0,A3,A,10,213,42.60,5.268,1.076
+pike,1501,500,greedy,1,2,2,0,A3,A,10,253,50.60,5.868,1.220
+brawler,1501,500,greedy,1,2,2,0,A3,A,10,350,70.00,6.464,1.472
+volley,1501,500,greedy,1,2,2,0,A3,A,10,292,58.40,6.030,1.308
+venom,1501,500,greedy,1,2,2,0,A3,A,10,300,60.00,6.218,1.348
+aegis,1501,500,greedy,1,2,2,0,A3,A,10,224,44.80,5.960,1.172
+rig,1501,500,greedy,1,2,2,0,A3,A,10,317,63.40,6.414,1.420

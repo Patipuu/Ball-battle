@@ -1,0 +1,9 @@
+weapon,first_seed,seed_count,policy,vitality,power,growth,start,skill,final,spent,wins,win_pct,avg_fights_won,avg_bosses_defeated
+blade,1501,200,random,2,2,2,1,A3,-,10,15,7.50,4.160,0.590
+fang,1501,200,random,2,2,2,1,A3,-,10,35,17.50,4.180,0.690
+pike,1501,200,random,2,2,2,1,A3,-,10,43,21.50,4.835,0.830
+brawler,1501,200,random,2,2,2,1,A3,-,10,58,29.00,5.420,0.955
+volley,1501,200,random,2,2,2,1,A3,-,10,35,17.50,4.470,0.725
+venom,1501,200,random,2,2,2,1,A3,-,10,29,14.50,5.095,0.770
+aegis,1501,200,random,2,2,2,1,A3,-,10,21,10.50,4.470,0.595
+rig,1501,200,random,2,2,2,1,A3,-,10,23,11.50,4.650,0.710

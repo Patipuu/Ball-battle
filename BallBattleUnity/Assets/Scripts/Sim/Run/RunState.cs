@@ -53,6 +53,12 @@ namespace BallBattle.Sim.Run
         public bool Won;
         /// <summary>TUT-2: first run has a stable starter offer and a gentle first fight; saved so Continue replays it exactly.</summary>
         public bool TutorialRun;
+        /// <summary>PvE chapter of this run (0-based, Chapters). Old saved runs load 0 = chapter 1.</summary>
+        public int Chapter;
+        /// <summary>HEAT of this run (0-based, HeatRules). Old saved runs load 0 = HEAT 1.</summary>
+        public int Heat;
+        /// <summary>Retries this run allows (HEAT 3: none).</summary>
+        public int MaxRetries => HeatRules.Retries(Heat);
         public const uint TutorialSeed = 0x7A171A1u;
 
         public uint Seed => unchecked((uint)SeedBits);
@@ -110,15 +116,19 @@ namespace BallBattle.Sim.Run
         public int EffectiveSkillLevel => SkillOverride?.Level ?? Build.SkillLevel;
         public Skills.SkillBranch EffectiveSkillBranch => SkillOverride?.Branch ?? Build.SkillBranch;
 
-        public static RunState Start(uint seed, string weaponId, ProgressData progress, Skills.SkillSpec? forceSkill = null, bool tutorial = false)
+        public static RunState Start(uint seed, string weaponId, ProgressData progress, Skills.SkillSpec? forceSkill = null, bool tutorial = false, int chapter = 0, int heat = 0)
         {
             var weapons = UnlockRules.Weapons(progress);
             if (!StartChoices(seed, weapons, tutorial).Contains(weaponId))
                 throw new ArgumentException($"'{weaponId}' is not one of this run's start choices", nameof(weaponId));
             var run = new RunState { SeedBits = unchecked((int)seed), Weapons = weapons, Traits = UnlockRules.Traits(progress), TutorialRun = tutorial };
-            run.BossIds = BossSelection.Choose(seed, progress ?? new ProgressData());
-            foreach (var w in WeaponRegistry.All) run.EnemyWeapons.Add(w.Id);
-            foreach (var t in TraitRegistry.All) run.EnemyTraits.Add(t.Id);
+            // Chapters (21/10): the chapter fixes the boss pair, the enemy balls and the arenas. The tutorial run is chapter 1.
+            run.Chapter = tutorial ? 0 : System.Math.Max(0, System.Math.Min(chapter, Chapters.Count - 1));
+            run.Heat = tutorial ? 0 : HeatRules.Clamp(heat);
+            var ch = Chapters.Get(run.Chapter);
+            run.BossIds = new List<string>(ch.Bosses);
+            foreach (var w in ch.EnemyWeapons) if (!WeaponRegistry.IsPlayerOnly(w)) run.EnemyWeapons.Add(w);
+            foreach (var t in TraitRegistry.All) if (!t.PlayerOnly) run.EnemyTraits.Add(t.Id);
             run.Build.WeaponId = weaponId;
             // BB-12g: the ball's skill tree (points from its level) gives the run its root bonuses, skill level/branch and in-match nodes.
             if (RunTuning.SkillTree) Meta.MetaTree.ApplyToRun(run.Build, FindBall(progress, weaponId));
@@ -135,28 +145,29 @@ namespace BallBattle.Sim.Run
         }
 
         /// <summary>
-        /// Opponent of the current fight. MIMIC (BB-04) copies the player's weapon and traits (same levels) as they are right now,
+        /// Opponent of the current fight. MIMIC copies the player's weapon and active skill, then adapts to damage in battle,
         /// so CreateMatch (fight start) copies the final build, including cards picked after the preview.
         /// </summary>
         public RunBuild Enemy
         {
             get
             {
-                var e = EnemyGenerator.Generate(Seed, FightIndex, EnemyWeapons, EnemyTraits, CurrentBossId);
+                var e = EnemyGenerator.Generate(Seed, FightIndex, EnemyWeapons, EnemyTraits, CurrentBossId, Chapters.Get(Chapter), Heat);
                 if (TutorialRun && FightIndex == 0 && CurrentBossId == null)
                 {
-                    e.WeaponId = "pike";
+                    // The first fight should reach contact quickly, even when the player
+                    // picked a long-range ball. The old Pike mirror could idle for 8+ seconds.
+                    e.WeaponId = "brawler";
                     e.MaxHp = e.Hp = 60;
                     e.DamagePct = -Fix.Ratio(1, 4);
                     e.Traits.Clear();
                 }
                 if (e.BossId == Boss.BossIds.Mimic)
                 {
-                    e.WeaponId = Build.WeaponId;
+                    if (!WeaponRegistry.IsPlayerOnly(Build.WeaponId)) e.WeaponId = Build.WeaponId;   // never a bot BGLGXLQ: keep its rolled ball
                     e.SkillLevel = EffectiveSkillLevel;
                     e.SkillBranch = EffectiveSkillBranch;
-                    e.Traits = new List<TraitSlot>();
-                    foreach (var t in Build.Traits) e.Traits.Add(new TraitSlot(t.Id, t.Level));
+                    e.Traits = new List<TraitSlot>();   // its own adaptation replaces borrowed player traits
                 }
                 return e;
             }
@@ -241,7 +252,9 @@ namespace BallBattle.Sim.Run
         public uint FightSeed => RunTuning.Derive(Seed, 3000 + FightIndex, IsRetry ? 1 : 0);
 
         /// <summary>Arena of the current fight, picked by its seed.</summary>
-        public string ArenaId => TutorialRun && FightIndex == 0 ? ArenaRegistry.Classic : ArenaRegistry.ForSeed(ArenaSeed);
+        public string ArenaId => TutorialRun && FightIndex == 0 ? ArenaRegistry.Classic : ChapterArena(Chapters.Get(Chapter), ArenaSeed);
+
+        static string ChapterArena(ChapterDef ch, uint seed) => ch.Arenas[(int)(seed % (uint)ch.Arenas.Length)];
 
         /// <summary>
         /// Fresh match for the current fight (ball 0 = player, ball 1 = enemy) with spawn hooks applied, so the
@@ -253,6 +266,17 @@ namespace BallBattle.Sim.Run
             var player = Build.ToLoadout();
             player.TapEnabled = RunTuning.TapStrike;   // TAP-1: only the player taps
             var enemy = Enemy.ToLoadout();
+            enemy.TapEnabled = enemy.Boss is Boss.MimicRule;   // Mimic actually uses the skill it borrowed.
+            if (enemy.Boss == null && !(TutorialRun && FightIndex == 0))
+            {
+                // Bots use the same active skill as the player (EMBER's fire trail, ANGLER's hook...). The first tutorial fight
+                // keeps the old automatic skill so the tap lesson stays calm.
+                enemy.TapEnabled = true;
+                enemy.AutoSkill = true;
+                var stage = RunTuning.StageOf(FightIndex);
+                enemy.BotFirstTick = RunTuning.BotFirstTicks[stage];
+                enemy.BotRepeatTicks = RunTuning.BotRepeatTicks[stage];
+            }
             forceSkill = SkillOverride ?? forceSkill;
             if (forceSkill.HasValue)
             {
@@ -285,7 +309,7 @@ namespace BallBattle.Sim.Run
             else
             {
                 Coins += RunTuning.LossCoins;
-                if (RetryCount < RunTuning.Retries)
+                if (RetryCount < MaxRetries)
                 {
                     RetryCount++;
                     IsRetry = true;

@@ -1,0 +1,141 @@
+[Skill] tick=744 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=1482 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2220 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2976 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=3711 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=4431 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=5084 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=5181 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[BallBattle] Fight 1 ended: seed 1 (match 3154357315), outcome Win, tick 5781, you venom HP start 115.00 heal 4.00 end 63.58, enemy aegis HP start 100.00 heal 12.42 end 0.00, DMG DEALT 112.42 TAKEN 55.42
+[Skill] tick=2191 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=2947 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=3694 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[BallBattle] Fight 2 ended: seed 1 (match 2484369155), outcome Win, tick 3713, you venom HP start 115.00 heal 0.00 end 26.98, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 88.02
+[Skill] tick=1933 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[BallBattle] Fight 3 ended: seed 1 (match 1408424090), outcome Win, tick 3335, you venom HP start 67.00 heal 7.00 end 24.70, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 49.30
+[Skill] tick=1203 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=1858 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[BallBattle] Fight 4 ended: seed 1 (match 1402126604), outcome Lost, tick 4631, you venom HP start 65.00 heal 10.50 end 0.00, enemy aegis HP start 225.00 heal 13.66 end 55.29, DMG DEALT 183.37 TAKEN 75.50
+[Skill] tick=741 ball=1 skill=rig_overclock branch=1 cue=skill_rig_overclock result=played
+[Skill] tick=1500 ball=1 skill=rig_overclock branch=1 cue=skill_rig_overclock result=played
+[Skill] tick=2268 ball=1 skill=rig_overclock branch=1 cue=skill_rig_overclock result=played
+[BallBattle] Fight 1 ended: seed 2 (match 1403674619), outcome Lost, tick 2856, you venom HP start 100.00 heal 0.00 end 0.00, enemy rig HP start 100.00 heal 0.00 end 29.23, DMG DEALT 70.77 TAKEN 100.00
+[Skill] tick=735 ball=1 skill=rig_overclock branch=1 cue=skill_rig_overclock result=played
+[Skill] tick=1031 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=1476 ball=1 skill=rig_overclock branch=1 cue=skill_rig_overclock result=played
+[Skill] tick=2205 ball=1 skill=rig_overclock branch=1 cue=skill_rig_overclock result=played
+[BallBattle] Fight 1 ended: seed 2 (match 1746032305), outcome Lost, tick 2920, you venom HP start 60.00 heal 5.00 end 0.00, enemy rig HP start 100.00 heal 0.00 end 60.77, DMG DEALT 39.23 TAKEN 65.00
+[Skill] tick=636 ball=1 skill=brawler_charge branch=1 cue=skill_brawler_charge result=played
+[Skill] tick=815 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=1263 ball=1 skill=brawler_charge branch=1 cue=skill_brawler_charge result=played
+[Skill] tick=1853 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=1899 ball=1 skill=brawler_charge branch=1 cue=skill_brawler_charge result=played
+[BallBattle] Fight 1 ended: seed 21 (match 139468780), outcome Win, tick 2242, you venom HP start 100.00 heal 30.00 end 28.76, enemy brawler HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 101.24
+[Skill] tick=735 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=1488 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2247 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2994 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=3324 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=3738 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=4500 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[BallBattle] Fight 2 ended: seed 21 (match 2256082794), outcome Lost, tick 4747, you venom HP start 64.00 heal 29.50 end 0.00, enemy aegis HP start 100.00 heal 14.49 end 36.49, DMG DEALT 78.00 TAKEN 93.50
+[Skill] tick=762 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=915 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=948 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=1851 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=3620 ball=1 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=3717 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[BallBattle] Fight 1 ended: seed 24 (match 3272319005), outcome Win, tick 3874, you venom HP start 100.00 heal 18.40 end 45.94, enemy venom HP start 100.00 heal 3.50 end 0.00, DMG DEALT 103.50 TAKEN 72.46
+[Skill] tick=759 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=1515 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2262 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2994 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=3753 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=4485 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=4684 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[BallBattle] Fight 2 ended: seed 24 (match 2614115206), outcome Win, tick 4941, you venom HP start 96.00 heal 8.43 end 19.65, enemy aegis HP start 100.00 heal 12.83 end 0.00, DMG DEALT 112.83 TAKEN 84.79
+[Skill] tick=639 ball=1 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[BallBattle] Fight 3 ended: seed 24 (match 2533473293), outcome Lost, tick 1452, you venom HP start 60.00 heal 0.00 end 0.00, enemy venom HP start 100.00 heal 5.00 end 72.29, DMG DEALT 32.71 TAKEN 60.00
+[Skill] tick=1287 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=1287 ball=1 skill=venom_drain branch=1 cue=skill_venom_drain result=missing
+[Skill] tick=1298 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=2039 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=2789 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=3530 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[BallBattle] Fight 1 ended: seed 36 (match 2768981265), outcome Lost, tick 3885, you venom HP start 135.00 heal 0.00 end 0.00, enemy fang HP start 100.00 heal 0.00 end 23.02, DMG DEALT 76.98 TAKEN 135.00
+[Skill] tick=696 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=1080 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=1827 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[BallBattle] Fight 1 ended: seed 36 (match 2676865505), outcome Win, tick 2409, you venom HP start 81.00 heal 6.90 end 16.70, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 71.20
+[Skill] tick=1073 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=1712 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[BallBattle] Fight 2 ended: seed 36 (match 2633208227), outcome Win, tick 4126, you venom HP start 130.95 heal 12.27 end 49.05, enemy venom HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 94.16
+[Skill] tick=1633 ball=1 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=2275 ball=1 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[BallBattle] Fight 3 ended: seed 36 (match 1669214716), outcome Lost, tick 3447, you venom HP start 95.85 heal 20.00 end 0.00, enemy venom HP start 100.00 heal 12.00 end 36.51, DMG DEALT 75.49 TAKEN 115.85
+[Skill] tick=747 ball=1 skill=volley_barrage branch=1 cue=skill_volley_barrage result=played
+[Skill] tick=1244 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=1509 ball=1 skill=volley_barrage branch=1 cue=skill_volley_barrage result=played
+[Skill] tick=2241 ball=1 skill=volley_barrage branch=1 cue=skill_volley_barrage result=played
+[BallBattle] Fight 1 ended: seed 51 (match 985597279), outcome Win, tick 2721, you venom HP start 135.00 heal 11.50 end 82.87, enemy volley HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 63.63
+[Skill] tick=3314 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=3434 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=4193 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[BallBattle] Fight 2 ended: seed 51 (match 1338141673), outcome Win, tick 4729, you venom HP start 129.60 heal 9.20 end 50.78, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 88.02
+[Skill] tick=1994 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=2532 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=2780 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[BallBattle] Fight 3 ended: seed 51 (match 3423786433), outcome Win, tick 3100, you venom HP start 124.10 heal 9.20 end 6.36, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 126.94
+[Skill] tick=642 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=2158 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[BallBattle] Fight 4 ended: seed 51 (match 1339963142), outcome Lost, tick 2595, you venom HP start 66.30 heal 13.80 end 0.00, enemy blade HP start 225.00 heal 0.00 end 148.83, DMG DEALT 76.17 TAKEN 80.10
+[Skill] tick=654 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1296 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1344 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=1944 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1986 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[BallBattle] Fight 1 ended: seed 55 (match 1816279134), outcome Lost, tick 2287, you venom HP start 100.00 heal 22.75 end 0.00, enemy blade HP start 100.00 heal 0.00 end 5.84, DMG DEALT 94.16 TAKEN 122.75
+[Skill] tick=624 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1154 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=1281 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[BallBattle] Fight 1 ended: seed 55 (match 3537089379), outcome Lost, tick 1677, you venom HP start 75.00 heal 11.55 end 0.00, enemy blade HP start 100.00 heal 0.00 end 46.40, DMG DEALT 53.60 TAKEN 86.55
+[Skill] tick=3082 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=3817 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=4564 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=5308 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[BallBattle] Fight 1 ended: seed 72 (match 3771987773), outcome Lost, tick 5354, you venom HP start 100.00 heal 0.00 end 0.00, enemy fang HP start 100.00 heal 0.00 end 49.55, DMG DEALT 50.45 TAKEN 100.00
+[Skill] tick=2249 ball=1 skill=fang_frenzy branch=1 cue=skill_fang_frenzy result=played
+[Skill] tick=1554 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=2684 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[BallBattle] Fight 1 ended: seed 76 (match 2459732419), outcome Win, tick 2727, you venom HP start 100.00 heal 5.50 end 74.20, enemy fang HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 31.30
+[Skill] tick=603 ball=1 skill=pike_lunge branch=1 cue=skill_pike_lunge result=played
+[Skill] tick=1167 ball=1 skill=pike_lunge branch=1 cue=skill_pike_lunge result=played
+[Skill] tick=1758 ball=1 skill=pike_lunge branch=1 cue=skill_pike_lunge result=played
+[Skill] tick=2157 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=2367 ball=1 skill=pike_lunge branch=1 cue=skill_pike_lunge result=played
+[BallBattle] Fight 2 ended: seed 76 (match 2148401134), outcome Win, tick 2646, you venom HP start 100.00 heal 9.20 end 26.95, enemy pike HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 82.25
+[Skill] tick=801 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=1558 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=1584 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2245 ball=0 skill=venom_drain branch=2A cue=skill_venom_drain result=played
+[Skill] tick=2334 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[BallBattle] Fight 3 ended: seed 76 (match 2359516392), outcome Lost, tick 2785, you venom HP start 62.00 heal 14.57 end 0.00, enemy aegis HP start 100.00 heal 13.66 end 36.01, DMG DEALT 77.65 TAKEN 76.57
+[Skill] tick=771 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=1548 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2298 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=762 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=1500 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2244 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=2985 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[Skill] tick=3741 ball=1 skill=aegis_bulwark branch=1 cue=skill_aegis_bulwark result=played
+[BallBattle] Fight 1 ended: seed 82 (match 129868568), outcome Win, tick 4261, you venom HP start 100.00 heal 0.00 end 29.10, enemy aegis HP start 100.00 heal 11.18 end 0.00, DMG DEALT 111.18 TAKEN 70.90
+[Skill] tick=639 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=748 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=1272 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1390 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[BallBattle] Fight 2 ended: seed 82 (match 1052920559), outcome Lost, tick 1448, you venom HP start 64.00 heal 5.50 end 0.00, enemy blade HP start 100.00 heal 0.00 end 16.98, DMG DEALT 83.02 TAKEN 69.50
+[Skill] tick=636 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=1148 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[Skill] tick=1281 ball=1 skill=blade_whetstone branch=1 cue=skill_blade_whetstone result=played
+[Skill] tick=3013 ball=0 skill=venom_drain branch=1 cue=skill_venom_drain result=played
+[BallBattle] Fight 1 ended: seed 84 (match 2486808139), outcome Win, tick 5162, you venom HP start 90.00 heal 4.50 end 18.33, enemy venom HP start 100.00 heal 0.00 end 0.00, DMG DEALT 100.00 TAKEN 76.17

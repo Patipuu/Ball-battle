@@ -249,10 +249,10 @@ namespace BallBattle.Tests
             return (arena, rc, events);
         }
 
-        static void PlayFightOne((ArenaView arena, RunController rc, List<SimEvent> events) rig, uint seed, string weapon)
+        static void PlayFightOne((ArenaView arena, RunController rc, List<SimEvent> events) rig, uint seed, string weapon, int chapter = 0)
         {
             var (arena, rc, _) = rig;
-            rc.Flow.NewRun(seed);
+            rc.Flow.NewRun(seed, false, chapter);
             rc.Tick(Frame);
             rc.Flow.ChooseWeapon(weapon);
             rc.Flow.Run.OfferCards[0] = OfferSlot.From(new Card(CardKind.DamageUp));
@@ -271,8 +271,18 @@ namespace BallBattle.Tests
         public void AHealingEnemyGetsAFoeHealedLineAndTheEndOfFightLog()
         {
             var rig = Rig();
-            LogAssert.Expect(LogType.Log, new Regex(@"^\[BallBattle\] Fight 1 ended: seed 1791713998 \(match \d+\), outcome (Win|Lost|Draw), tick \d+, you brawler HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, enemy aegis HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, DMG DEALT \d+\.\d\d TAKEN \d+\.\d\d$"));
-            PlayFightOne(rig, 1791713998u, BrawlerRule.WeaponId);   // fight 1: MIRROR (aegis), which heals (BB-14: new seed, the enemy pool grew)
+            // Chapters (21/10): MIRROR (aegis), which heals, is in chapter 2's pool. Find a seed whose fight 1 is MIRROR for a BRAWLER start.
+            uint seed = 0;
+            for (uint s = 1; s < 2000 && seed == 0; s++)
+            {
+                var p = new ProgressData { RunsPlayed = 1, ChaptersCleared = 1 };
+                if (!RunState.StartChoices(s, UnlockRules.Weapons(p)).Contains(BrawlerRule.WeaponId)) continue;
+                if (RunState.Start(s, BrawlerRule.WeaponId, p, chapter: 1).Enemy.WeaponId == AegisRule.WeaponId) seed = s;
+            }
+            Assert.That(seed, Is.Not.Zero);
+            rig.rc.Flow.Progress.ChaptersCleared = 1;
+            LogAssert.Expect(LogType.Log, new Regex(@"^\[BallBattle\] Fight 1 ended: seed " + seed + @" \(match \d+\), outcome (Win|Lost|Draw), tick \d+, you brawler HP start 100\.00 heal \d+\.\d\d end \d+\.\d\d, enemy aegis HP start \d+\.\d\d heal \d+\.\d\d end \d+\.\d\d, DMG DEALT \d+\.\d\d TAKEN \d+\.\d\d$"));
+            PlayFightOne(rig, seed, BrawlerRule.WeaponId, 1);
             var healed = rig.events.Where(e => e.Type == SimEventType.Heal && e.A == 1).Sum(e => e.Value.ToFloat());
             Assert.That(healed, Is.GreaterThan(0f));
             var r = rig.rc.Flow.LastReport;
@@ -400,7 +410,7 @@ namespace BallBattle.Tests
                 if (c.Kind == CardKind.SwapWeapon)
                     Assert.That(CardText.Title(c), Is.EqualTo("SWAP TO " + WeaponNames.Of(c.Id)));
             }
-            Assert.That(CardText.Detail2(new Card(CardKind.SpeedUp)), Does.StartWith(WeaponNames.Of(BrawlerRule.WeaponId) + ":"));
+            Assert.That(CardText.Detail2(new Card(CardKind.SpeedUp)), Is.Empty, "The speed card no longer shows a Wrecker-specific line");
             Assert.That(CardText.Detail(new Card(CardKind.Trait, TwinBladeTrait.TraitId, 1)), Does.StartWith("2ND BLADE BEHIND"), "blade = the weapon's edge here");
             Assert.That(CardText.Detail2(new Card(CardKind.Trait, ParryMasterTrait.TraitId, 1)), Is.EqualTo("NOT FOR " + WeaponNames.Of(BrawlerRule.WeaponId)));
         }

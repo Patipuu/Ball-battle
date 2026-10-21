@@ -48,7 +48,7 @@ namespace BallBattle.View
         // Card
         Transform card;
         SpriteRenderer cardIcon;
-        PixelText cardName, cardLine1, cardLine2, cardState, cardRank;
+        PixelText cardName, cardLine1, cardLine2, cardLine3, cardLine4, cardState, cardRank;
         PixelButton upgrade, close;
 
         public Box Selected { get; private set; } = Box.Vitality;
@@ -176,8 +176,10 @@ namespace BallBattle.View
             cardName = PixelText.Create(card, "CardName", art.Font, new Vector2(a.xMin + 76, a.yMax - 28), PixelText.Align.Left, 1, PopupOrder + 7);
             cardRank = PixelText.Create(card, "CardRank", art.Font, new Vector2(a.xMin + 76, a.yMax - 48), PixelText.Align.Left, 1, PopupOrder + 7);
             cardLine1 = PixelText.Create(card, "CardLine1", art.Font, new Vector2(a.xMin + 12, a.yMax - 92), PixelText.Align.Left, 1, PopupOrder + 7);
-            cardLine2 = PixelText.Create(card, "CardLine2", art.Font, new Vector2(a.xMin + 12, a.yMax - 108), PixelText.Align.Left, 1, PopupOrder + 7);
-            cardState = PixelText.Create(card, "CardState", art.Font, new Vector2(a.xMin + 12, a.yMax - 136), PixelText.Align.Left, 1, PopupOrder + 7);
+            cardLine2 = PixelText.Create(card, "CardLine2", art.Font, new Vector2(a.xMin + 12, a.yMax - 106), PixelText.Align.Left, 1, PopupOrder + 7);
+            cardLine3 = PixelText.Create(card, "CardLine3", art.Font, new Vector2(a.xMin + 12, a.yMax - 120), PixelText.Align.Left, 1, PopupOrder + 7);
+            cardLine4 = PixelText.Create(card, "CardLine4", art.Font, new Vector2(a.xMin + 12, a.yMax - 134), PixelText.Align.Left, 1, PopupOrder + 7);
+            cardState = PixelText.Create(card, "CardState", art.Font, new Vector2(a.xMin + 12, a.yMax - 154), PixelText.Align.Left, 1, PopupOrder + 7);
             upgrade = PixelButton.Create(card, "Upgrade", art, UpgradeArea, "UPGRADE", 2, Palette.WallWarning, Palette.WallWarning, Palette.Background, PopupOrder + 6);
             upgrade.ClickCue = null;   // SFX4: tree_add or ui_denied from PressAdd
             upgrade.Clicked += PressAdd;
@@ -308,6 +310,8 @@ namespace BallBattle.View
                 : s == State.Bought ? "OWNED" : "COST " + RankOf(t, Selected, s), Palette.Text);
             cardLine1.Set(fx[0], Palette.Text);
             cardLine2.Set(fx.Length > 1 ? fx[1] : "", Palette.Text);
+            cardLine3.Set(fx.Length > 2 ? fx[2] : "", Palette.Text);
+            cardLine4.Set(fx.Length > 3 ? fx[3] : "", Palette.Text);
             cardState.Set(s == State.Bought ? "OWNED" : s == State.Open ? $"READY. COSTS {MetaTree.Cost(NodeOf(Selected))} OF {MetaTree.Free(t)} FREE" : why,
                 s == State.Open ? BallsView.UpColor : Palette.TextDim);
             upgrade.SetColors(CanAddSelected ? (Color32)Palette.WallWarning : Palette.Floor, CanAddSelected ? (Color32)Palette.WallWarning : Palette.HpBack);

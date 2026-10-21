@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Failed(Child)" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-17 12:34:42Z" end-time="2026-10-17 12:34:43Z" duration="0.7987635">
+  <test-suite type="TestSuite" id="1000" name="Ball Battle" fullname="Ball Battle" runstate="Runnable" testcasecount="569" result="Failed" site="Child" start-time="2026-10-17 12:34:42Z" end-time="2026-10-17 12:34:43Z" duration="0.798764" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1658" name="BallBattle.Tests.EditMode.dll" fullname="E:/ball-battle/BallBattleUnity/Library/ScriptAssemblies/BallBattle.Tests.EditMode.dll" runstate="Runnable" testcasecount="569" result="Failed" site="Child" start-time="2026-10-17 12:34:42Z" end-time="2026-10-17 12:34:43Z" duration="0.749936" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="43464" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1659" name="BallBattle" fullname="BallBattle" runstate="Runnable" testcasecount="569" result="Failed" site="Child" start-time="2026-10-17 12:34:42Z" end-time="2026-10-17 12:34:43Z" duration="0.726835" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="SetUpFixture" id="1641" name="Tests" fullname="BallBattle.Tests.TipsOffForTests" classname="BallBattle.Tests.TipsOffForTests" runstate="Runnable" testcasecount="569" result="Failed" site="Child" start-time="2026-10-17 12:34:42Z" end-time="2026-10-17 12:34:43Z" duration="0.706863" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1347" name="BbViTests" fullname="BallBattle.Tests.BbViTests" classname="BallBattle.Tests.BbViTests" runstate="Runnable" testcasecount="7" result="Failed" site="Child" start-time="2026-10-17 12:34:42Z" end-time="2026-10-17 12:34:43Z" duration="0.625147" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1353" name="EveryPickPanelShowsVietnameseRolesAndBranchesWithinThePanel" fullname="BallBattle.Tests.BbViTests.EveryPickPanelShowsVietnameseRolesAndBranchesWithinThePanel" methodname="EveryPickPanelShowsVietnameseRolesAndBranchesWithinThePanel" classname="BallBattle.Tests.BbViTests" runstate="Runnable" seed="278264126" result="Failed" start-time="2026-10-17 12:34:42Z" end-time="2026-10-17 12:34:43Z" duration="0.589341" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  venom pick row 4: MÂY BÀO TỬ: MÂY LÀM CHẬM ĐỊCH, GIÚP HỒI MÁU
+  Expected: less than or equal to 225
+  But was:  236
+]]></message>
+                <stack-trace><![CDATA[at BallBattle.Tests.BbViTests.EveryPickPanelShowsVietnameseRolesAndBranchesWithinThePanel () [0x000e8] in E:\ball-battle\BallBattleUnity\Assets\Tests\EditMode\BbViTests.cs:149
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: C:/Users/Admin/AppData/LocalLow/Patipuu/Ball Battle\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

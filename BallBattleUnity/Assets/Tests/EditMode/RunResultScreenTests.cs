@@ -111,13 +111,13 @@ namespace BallBattle.Tests
             Assert.That(r.RetriesAfter, Is.EqualTo(f.Run.RetryCount));
 
             // Next fight: the exact enemy, HP and arena the next Prepare / fight will use.
-            Assert.That(r.NextFightNumber, Is.EqualTo(2));
+            Assert.That(r.NextFightNumber, Is.EqualTo(m.WinnerIndex == 0 ? 2 : 1), "a win moves on, a loss retries fight 1 (chapters changed which seed wins)");
             Assert.That(r.NextWeaponId, Is.EqualTo(f.Run.Enemy.WeaponId));
             Assert.That(r.NextArenaId, Is.EqualTo(f.Run.ArenaId));
             Assert.That(r.NextEnemyHp, Is.EqualTo(f.Run.CreateMatch().Balls[1].MaxHp.ToFloat()));
 
             f.NextAfterResult();
-            Assert.That(f.Current, Is.EqualTo(RunFlow.State.Prepare));
+            Assert.That(f.Current, Is.EqualTo(m.WinnerIndex == 0 ? RunFlow.State.Prepare : RunFlow.State.StartPick), "a loss picks the retry card first");
         }
 
         [Test]
@@ -169,10 +169,10 @@ namespace BallBattle.Tests
             Assert.That(Report(FightOutcome.Win).Title, Is.EqualTo("WIN"));
             Assert.That(Report(FightOutcome.Win).ConsequenceLine, Is.EqualTo($"WIN  +{RunTuning.WinCoins} COINS"));
             Assert.That(Report(FightOutcome.Lost).Title, Is.EqualTo("LOST"));
-            Assert.That(Report(FightOutcome.Lost).ConsequenceLine, Is.EqualTo("LOST  RUN OVER"));
+            Assert.That(Report(FightOutcome.Lost).ConsequenceLine, Is.Empty, "a continuing run does not say it is over");
             Assert.That(Report(FightOutcome.Lost).CarryLine, Does.EndWith("RETRY 1"));
             Assert.That(Report(FightOutcome.Draw).Title, Is.EqualTo("DRAW"));
-            Assert.That(Report(FightOutcome.Draw).ConsequenceLine, Does.StartWith("DRAW COUNTS AS LOST"), "a draw counts as lost");
+            Assert.That(Report(FightOutcome.Draw, over: true).ConsequenceLine, Does.StartWith("DRAW COUNTS AS LOST"), "a draw counts as lost");
             Assert.That(Report(FightOutcome.Lost, retry: true).ConsequenceLine, Is.EqualTo("LOST - RETRY AT 60% HP"), "v4 retry wording");
             Assert.That(Report(FightOutcome.Lost, retry: true).NextHeader, Does.Contain("RETRY"));
             Assert.That(Report(FightOutcome.Win, over: true, won: true).RunLine, Is.EqualTo("RUN WON!"));
@@ -199,7 +199,8 @@ namespace BallBattle.Tests
                 Assert.That(v.Value(1), Is.EqualTo(HpText.Floor(r.DamageDealt).ToString()), "whole number, rounded down");
                 Assert.That(v.Value(2), Is.EqualTo(HpText.Floor(r.DamageTaken).ToString()));
                 Assert.That(v.Value(3), Does.StartWith("+" + r.CoinsGained));
-                Assert.That(v.ConsequenceText, Is.EqualTo(r.ConsequenceLine));
+                Assert.That(v.ConsequenceText, Is.EqualTo(r.Outcome == FightOutcome.Win ? "" : r.ConsequenceLine));
+                Assert.That(v.CarryText, Is.EqualTo(r.Outcome == FightOutcome.Win ? "" : r.CarryLine));
                 if (r.RunOver) Assert.That(v.NextHeaderText, Is.Empty, "no next fight after the last one");
                 else
                 {

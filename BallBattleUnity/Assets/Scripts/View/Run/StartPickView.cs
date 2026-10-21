@@ -72,12 +72,11 @@ namespace BallBattle.View
                 view.icons[i] = iconGo.AddComponent<SpriteRenderer>();
                 view.icons[i].sortingOrder = view.cards[i].IconOrder + 1;
                 var order = view.cards[i].IconOrder + 2;
-                // Cells from the card top: title x2 2..28, details 28..41 and 41..54, rarity / TAP TO PICK 55..68.
+                // Cells from the card top: title x2 2..28, details 28..41 and 41..54, rarity 55..68.
                 view.names[i] = PixelText.Create(card, "Title", art.Font, new Vector2(TextX, area.yMax - 28), PixelText.Align.Left, 2, order);
                 view.detail1[i] = PixelText.Create(card, "Detail1", art.Font, new Vector2(TextX, area.yMax - 41), PixelText.Align.Left, 1, order);
                 view.detail2[i] = PixelText.Create(card, "Detail2", art.Font, new Vector2(TextX, area.yMax - 54), PixelText.Align.Left, 1, order);
                 view.rarity[i] = PixelText.Create(card, "Rarity", art.Font, new Vector2(TextX, area.yMin + 2), PixelText.Align.Left, 1, order);
-                PixelText.Create(card, "TapToPick", art.Font, new Vector2(117, area.yMin + 2), PixelText.Align.Right, 1, order).Set("TAP TO PICK", Palette.TextDim);
             }
             view.noReroll = RunUi.Text(root, art, -119, -79, 1, PixelText.Align.Left, "", Palette.TextDim);
             view.nextFight = RunUi.Text(root, art, -119, -93, 1, PixelText.Align.Left, "", Palette.TextDim);
@@ -123,9 +122,7 @@ namespace BallBattle.View
                     rarity[i].Set("", Palette.TextDim);
                     detail1[i].Set("", Palette.TextDim);
                     detail2[i].Set("", Palette.TextDim);
-                    cards[i].transform.Find("TapToPick").gameObject.SetActive(false);
                 }
-                else cards[i].transform.Find("TapToPick").gameObject.SetActive(true);
             }
 
             var hint = BossHint(run);

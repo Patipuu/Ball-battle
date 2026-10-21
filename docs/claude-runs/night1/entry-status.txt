@@ -1,0 +1,49 @@
+ M .claude/hooks/.logs/hook-log.jsonl
+ M docs/claude-runs/trace-unity-2686071142.fields.txt
+ M docs/claude-runs/trace-unity-2686071142.txt
+ M docs/claude-runs/trace-unity-4134000519.fields.txt
+ M docs/claude-runs/trace-unity-4134000519.txt
+?? BallBattleUnity/SimTests/Bb10aDiagnostics.cs
+?? BallBattleUnity/SimTests/Bb6cDiagnostics.cs
+?? BallBattleUnity/SimTests/Bb6fDiagnostics.cs
+?? BallBattleUnity/SimTests/BbFix2Diagnostics.cs
+?? docs/claude-runs/bb01-02-editmode.xml
+?? docs/claude-runs/bb04-editmode.xml
+?? docs/claude-runs/bb04-simtests.trx
+?? docs/claude-runs/bb6c-editmode.xml
+?? docs/claude-runs/bb6c-simtests.trx
+?? docs/claude-runs/bb6d-editmode.xml
+?? docs/claude-runs/bb6d-simtests.trx
+?? docs/claude-runs/bb6e-editmode.xml
+?? docs/claude-runs/bb6e-simtests.trx
+?? docs/claude-runs/bbbal1-simtests.trx
+?? docs/claude-runs/bbfix1b-editmode.xml
+?? docs/claude-runs/bbfix1b-simtests.err.txt
+?? docs/claude-runs/bbfix1b-simtests.out.txt
+?? docs/claude-runs/bbfix1b-simtests.trx
+?? docs/claude-runs/bbfix2-editmode.xml
+?? docs/claude-runs/bbfix2-simtests.trx
+?? docs/claude-runs/bbfont1-editmode.xml
+?? docs/claude-runs/bbfont1-simtests-final.err.txt
+?? docs/claude-runs/bbfont1-simtests-final.out.txt
+?? docs/claude-runs/bbfont1-simtests-final.trx
+?? docs/claude-runs/bbfont1-simtests.err.txt
+?? docs/claude-runs/bbfont1-simtests.out.txt
+?? docs/claude-runs/bbfont1-simtests.trx
+?? docs/claude-runs/bbsfx2-editmode.xml
+?? docs/claude-runs/bbsfx2-simtests.out.txt
+?? docs/claude-runs/bbsfx2-simtests.trx
+?? docs/claude-runs/bbview3-editmode.xml
+?? docs/claude-runs/bbview3-simtests.trx
+?? docs/claude-runs/fx-err.txt
+?? docs/claude-runs/fx-test.txt
+?? docs/claude-runs/src6a6.tgz
+?? docs/design/art/hud_retry_v2.png
+?? docs/design/art/start_pick_v1.png
+?? docs/design/boss-and-loss-rules.bak-20261011.md
+?? docs/design/card-pool-v2.bak-20261011.md
+?? docs/design/game-design-document.md
+?? docs/design/weapon-bible.bak-20261011.md
+?? plans/261013-core-loop-audio-team/
+?? plans/261014-bb10a-signature-skills/
+?? plans/261014-bb6f-warden-spike-window/

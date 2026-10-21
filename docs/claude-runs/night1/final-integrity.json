@@ -1,0 +1,18 @@
+{
+  "Head": "b60df20d230a614ba1aacc1f213aed383bd7dbf3",
+  "Branch": "dev/step3-view",
+  "GitIdentity": "phamphu422@gmail.com",
+  "Rules": 12,
+  "RealIndexEntries": 2555,
+  "HeadEntries": 2555,
+  "StagedBlobOrModeDifferences": [],
+  "RealIndexBeforeSHA256": "EF0D4ADE5D566C1317E808EDAEB3535CD3B1BB907833AA73B080F53FAFA7B363",
+  "RealIndexAfterSHA256": "4C11A42028C12FDD0D78FB41BA6B908BD91BF2D3AC808F24384DDBF8246D1992",
+  "RealIndexByteIdentical": false,
+  "PreexistingUntrackedMissing": [],
+  "HeldArtSourceChanges": [],
+  "HeldArtCount": 26,
+  "GoldensAllIdentical": true,
+  "DeletedTrackedFiles": [],
+  "SimCodeDiffPaths": []
+}

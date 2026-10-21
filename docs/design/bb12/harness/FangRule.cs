@@ -1,0 +1,48 @@
+namespace BallBattle.Sim.Weapons
+{
+    /// <summary>
+    /// Dagger-like: small damage that creeps up a little per hit; every hit spins it faster (the gain shrinks 2% per hit) and its
+    /// own hit cooldown is short, so it lands many hits and parries slow blades. Weak against bodies (no parry possible).
+    /// </summary>
+    public sealed class FangRule : WeaponRule
+    {
+        public const string WeaponId = "fang";
+
+        public Fix SpinGain { get; private set; } = WeaponTuning.FangStartSpinGain;
+        public Fix CurrentDamage { get; private set; } = WeaponTuning.FangStartDamage;
+        char keystone;
+
+        public FangRule()
+        {
+            BladeLength = WeaponTuning.FangLength;
+            SpinDegPerTick = WeaponTuning.FangStartSpin;
+            HitCooldownTicks = WeaponTuning.FangHitCooldownTicks;
+            KnockbackScale = WeaponTuning.FangKnockbackScale;
+        }
+
+        public override string Id => WeaponId;
+        public override string StatLabel => "SPIN";
+        public override Fix StatValue => SpinDegPerTick;
+
+        public override Fix Damage(in HitContext ctx) => CurrentDamage *
+            (keystone == 'A' ? Fix.Ratio(4, 5) : keystone == 'B' ? Fix.Ratio(6, 5) : Fix.One);
+
+        internal void ApplyTreeStart() => SpinDegPerTick += 2;
+        internal void ApplyTreeKeystone() => keystone = TreeLabParams.Keystone;
+
+        public override void OnHit(in HitContext ctx)
+        {
+            CurrentDamage += WeaponTuning.FangDamagePerHit;
+            SpinDegPerTick += SpinGain * (Self?.Skill != null && Self.Skill.Active ? Self.Skill.SpinGainMultiplier : Fix.One);
+            var cap = WeaponTuning.FangMaxSpin *
+                (keystone == 'A' ? Fix.Ratio(6, 5) : keystone == 'B' ? Fix.Ratio(17, 20) : Fix.One);
+            if (SpinDegPerTick > cap) SpinDegPerTick = cap;
+            if (Self?.Skill == null || !Self.Skill.Active)
+                SpinGain *= Self == Sim.Balls[0] && TreeLabParams.GrowthRank > 0
+                    ? TreeLabParams.GrowthRank == 1 ? Fix.Ratio(47, 50) : Fix.Ratio(24, 25)
+                    : WeaponTuning.FangSpinGainDecay;
+        }
+
+        protected override ulong HashState(ulong h) => SimHash.Mix(SimHash.Mix(h, SpinGain), CurrentDamage);
+    }
+}

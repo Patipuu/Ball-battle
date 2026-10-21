@@ -191,7 +191,7 @@ namespace BallBattle.View
             if (entering) OnEnter();
             var boss = run.IsBossFight;
             header.Set($"FIGHT {run.FightIndex + 1}/{RunTuning.Fights}" + (boss ? "  BOSS" : ""), boss ? Palette.WallWarning : Palette.Text);
-            purse.Set($"RETRY {(run.RetryCount == 0 ? "1" : "USED")}   COINS {run.Coins}", Palette.Text);
+            purse.Set($"COINS {run.Coins}", Palette.Text);
 
             // Numbers exactly as the fight starts: the same match RunFlow will create, spawn hooks (Heavy, Glass Cannon) applied.
             var preview = run.Over ? null : ArenaOverride != null ? run.CreateMatch(ArenaRegistry.Create(ArenaOverride)) : run.CreateMatch();
@@ -205,6 +205,7 @@ namespace BallBattle.View
             var bossId = run.CurrentBossId;
             enemyLabel.Set(boss ? BossText.Name(bossId) : "ENEMY", boss ? Palette.WallWarning : Palette.TextDim);
             SetBall(enemyIcon, enemyName, enemy.WeaponId, (foe != null ? foe.Radius.ToFloat() : (enemy.Radius > Fix.Zero ? enemy.Radius.ToFloat() : IconNativeRadius)) / IconNativeRadius);
+            if (boss && bossId != BallBattle.Sim.Boss.BossIds.Mimic) enemyName.Set("", Palette.TextDim);
             var bossArt = RunController.BossArtEnabled && art.BossBody(bossId) != null;
             PlaceEnemyColumn(bossArt);
             if (bossArt)
@@ -275,8 +276,7 @@ namespace BallBattle.View
         }
 
         /// <summary>
-        /// BB-04 ENEMY box lines under a boss's name: its traits on the first line (when it rolled any; never for MIMIC, whose traits
-        /// are the player's), then the one-line hint, wrapped to two lines when there are no traits. At most two lines.
+        /// ENEMY box lines under a boss's name: a concise mechanic hint, wrapped to two lines.
         /// </summary>
         public static System.Collections.Generic.List<string> BossLines(RunBuild enemy, string bossId, int width)
         {
@@ -287,7 +287,7 @@ namespace BallBattle.View
             if (bossId != BallBattle.Sim.Boss.BossIds.Mimic && enemy != null && enemy.Traits.Count > 0)
                 lines.Add(TextWrap.Cut(string.Join(" ", CardText.TraitNames(enemy)), width));
             var hint = BossText.Hint(bossId);
-            if (lines.Count > 0 && PixelFont.MeasureWidth(hint) > width) lines.Clear();   // BB-6e: a hint that needs two lines wins over the traits
+            if (lines.Count > 0 && PixelFont.MeasureWidth(UiVietnamese.Translate(hint)) > width) lines.Clear();   // BB-6e: a hint that needs two lines wins over the traits
             if (lines.Count > 0) lines.Add(hint);
             else
             {
@@ -385,6 +385,8 @@ namespace BallBattle.View
         /// </summary>
         void FitTitle(int i, string title, Color32 color)
         {
+            // PixelText translates when drawn; measure that same visible text before deciding whether to wrap.
+            title = UiVietnamese.Translate(title);
             var x = cardTitles[i].transform.localPosition.x;
             var y0 = CardArea(i).yMin;
             var tag = cardTags[i].Text;
@@ -707,7 +709,10 @@ namespace BallBattle.View
             icon.sprite = art.BallForSize(weaponId, scale, out var preSized);
             var s = preSized ? 1f : scale;
             icon.transform.localScale = new Vector3(s, s, 1f);
-            name.Set(RunUi.WeaponName(weaponId), Palette.Look(weaponId).Body);
+            if (weaponId == BallBattle.Sim.Boss.BossCoreRule.WeaponId)
+                name.Set("", Palette.WallWarning); // the boss label above the portrait carries its name
+            else
+                name.Set(RunUi.WeaponName(weaponId), Palette.Look(weaponId).Body);
         }
 
         static Color32 KindColor(CardKind k)

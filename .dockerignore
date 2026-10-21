@@ -1,0 +1,5 @@
+# Only the PvP server and the shared Sim go into the Docker build (render.yaml, PvpServer/Dockerfile).
+*
+!PvpServer/PvpServer.csproj
+!PvpServer/*.cs
+!BallBattleUnity/Assets/Scripts/Sim/**

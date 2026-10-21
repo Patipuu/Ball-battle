@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 
 namespace BallBattle.Tests
 {
-    /// <summary>TAP-1..4: tap to strike. Sim rules (determinism, cooldown, PERFECT, miss penalty) and the Run fight view.</summary>
+    /// <summary>Run input and cooldown view tests; BB-19 uses tapped active skills in place of the old tap strike.</summary>
     public class BbTap1Tests
     {
         const float Frame = 1f / 60f;
@@ -39,18 +39,18 @@ namespace BallBattle.Tests
 
         static MatchSim Match(string weapon, bool tap, uint seed = 3)
         {
-            var a = new BallLoadout(WeaponRegistry.Create(weapon)) { TapEnabled = tap };
-            var b = new BallLoadout(WeaponRegistry.Create("fang"));
+            var a = new BallLoadout(WeaponRegistry.Create(weapon)) { TapEnabled = tap, MaxHp = 1000, Hp = 1000 };
+            var b = new BallLoadout(WeaponRegistry.Create("fang")) { MaxHp = 1000, Hp = 1000 };
             return new MatchSim(ArenaRegistry.Create(ArenaRegistry.Classic), seed, new[] { a, b });
         }
 
         // ---------------- Sim ----------------
 
         [Test]
-        public void AnUntouchedTapStateChangesNothing([ValueSource(nameof(Weapons))] string weapon)
+        public void UntouchedManualSkillIsDeterministic([ValueSource(nameof(Weapons))] string weapon)
         {
             var with = Match(weapon, true);
-            var without = Match(weapon, false);
+            var without = Match(weapon, true);
             for (var t = 0; t < 3600 && with.Outcome == MatchOutcome.Ongoing; t++)
             {
                 with.Step();
@@ -59,14 +59,15 @@ namespace BallBattle.Tests
             }
             Assert.That(with.ComputeHash(), Is.EqualTo(without.ComputeHash()));
             Assert.That(with.WinnerIndex, Is.EqualTo(without.WinnerIndex));
+            Assert.That(with.Balls[0].Tap.Taps, Is.Zero, "the player never pressed the skill");
         }
 
         [Test]
-        public void ATapStrikesOnceThenTheCooldownRuns()
+        public void ATapFiresOnceThenTheSkillCooldownRuns()
         {
             var m = Match("blade", true);
-            for (var i = 0; i < 30; i++) m.Step();
             var tap = m.Balls[0].Tap;
+            while (!tap.Ready && m.Outcome == MatchOutcome.Ongoing) m.Step();
             Assert.That(tap.Ready, Is.True);
             Assert.That(m.Tap(0), Is.True);
             m.Step();
@@ -79,37 +80,28 @@ namespace BallBattle.Tests
             var guard = 0;
             while (!tap.Ready && guard++ < 1200) m.Step();
             Assert.That(tap.Ready, Is.True, "ready again after the cooldown");
-            Assert.That(m.ActiveTick - tap.StruckAt, Is.InRange(TapTuning.CooldownTicks, TapTuning.CooldownTicks + TapTuning.MissPenaltyTicks),
-                "2 s cooldown, +1 s after a miss (counted in active ticks)");
+            Assert.That(m.ActiveTick - tap.StruckAt, Is.GreaterThanOrEqualTo(m.Balls[0].Skill.CooldownTicks),
+                "the active skill recharges on its own cooldown");
             Assert.That(m.Balls[1].Tap, Is.Null, "the foe never taps");
             Assert.That(m.Tap(1), Is.False);
         }
 
         [Test]
-        public void TappingAsSoonAsReadyGivesPerfectsAndMisses()
+        public void TappingAsSoonAsReadyFiresTheActiveSkill()
         {
             var m = Match("blade", true, 5);
-            int perfectEvents = 0, missEvents = 0;
+            int firedEvents = 0;
             for (var t = 0; t < 3600 && m.Outcome == MatchOutcome.Ongoing; t++)
             {
                 if (m.Balls[0].Tap.Ready) m.Tap(0);
-                var readyAtBefore = m.Balls[0].Tap.ReadyAt;
                 m.Step();
                 foreach (var e in m.Events.Where(e => e.A == 0))
-                {
-                    if (e.Type == SimEventType.TapPerfect) { perfectEvents++; Assert.That(e.Value.ToFloat(), Is.GreaterThan(0f), "PERFECT adds damage"); }
-                    if (e.Type == SimEventType.TapMiss)
-                    {
-                        missEvents++;
-                        Assert.That(m.Balls[0].Tap.LastMissed, Is.True);
-                        Assert.That(m.Balls[0].Tap.ReadyAt, Is.EqualTo(readyAtBefore + TapTuning.MissPenaltyTicks), "a miss stretches the cooldown");
-                    }
-                }
+                    if (e.Type == SimEventType.SkillFired) firedEvents++;
             }
             var tap = m.Balls[0].Tap;
-            Assert.That(perfectEvents, Is.EqualTo(tap.Perfects).And.GreaterThan(0));
-            Assert.That(missEvents, Is.EqualTo(tap.Misses).And.GreaterThan(0));
-            Assert.That(tap.Perfects + tap.Misses, Is.InRange(tap.Taps - 1, tap.Taps), "every strike is judged (the last may still be open)");
+            Assert.That(firedEvents, Is.GreaterThan(0));
+            Assert.That(firedEvents, Is.EqualTo(tap.Taps));
+            Assert.That(tap.Perfects + tap.Misses, Is.Zero, "BB-19 skills do not use the old strike judgment");
         }
 
         [Test]
@@ -174,49 +166,45 @@ namespace BallBattle.Tests
             Assert.That(rc.Tap.Active, Is.False, "title screen");
             StartFight(arena, rc);
             Assert.That(arena.Sim.Balls[0].Tap, Is.Not.Null);
-            Assert.That(arena.Sim.Balls[1].Tap, Is.Null);
+            Assert.That(arena.Sim.Balls[1].AutoSkill, Is.True, "Rules 23: the foe presses its own skill (the player's taps only reach ball 0)");
             Assert.That(rc.Tap.Active, Is.True);
             Assert.That(rc.Tap.Button.gameObject.activeSelf, Is.True);
-            Assert.That(rc.Tap.Prompt.gameObject.activeSelf, Is.True, "TAP TO STRIKE! before the first tap");
+            Assert.That(rc.Tap.Prompt.gameObject.activeSelf, Is.False, "the ordinary fight leaves room for the action");
             Assert.That(rc.Tap.Ring.enabled, Is.True);
             Assert.That(TapView.TapArea.Overlaps(new Rect(-22, -238, 44, 24)), Is.False, "x2 keeps its own tap");
         }
 
         [Test]
-        public void APressOnTheArenaStrikes()
+        public void APressOnTheArenaRequestsTheSkill()
         {
             var (arena, rc) = Rig();
             StartFight(arena, rc);
             var tap = arena.Sim.Balls[0].Tap;
             PixelInput.SetTestClock(100f);
-            PixelInput.Inject(true, new Vector2(10, 20));   // press alone: a strike must not wait for the release
+            PixelInput.Inject(true, new Vector2(10, 20));   // press sends input without waiting for release
             PixelInput.Dispatch(() => new[] { rc.Tap.Button });
             Assert.That(rc.Tap.TapsSent, Is.EqualTo(1));
             var guard = 0;
             while (tap.Taps == 0 && guard++ < 10) Step(arena, rc);
-            Assert.That(tap.Taps, Is.EqualTo(1));
+            Assert.That(tap.Taps, Is.Zero, "the skill is still charging at the start of the fight");
             Step(arena, rc);
-            Assert.That(rc.Tap.Prompt.gameObject.activeSelf, Is.False, "prompt gone after the first tap");
+            Assert.That(rc.Tap.Prompt.gameObject.activeSelf, Is.False, "the prompt belongs to the first tutorial lesson");
             PixelInput.Inject(false, new Vector2(10, 20));
             PixelInput.Dispatch(() => new[] { rc.Tap.Button });
         }
 
         [Test]
-        public void PerfectShowsTheWordAndAHitStop()
+        public void ActiveSkillDoesNotShowTheOldPerfectCallout()
         {
             var (arena, rc) = Rig();
             StartFight(arena, rc);
-            var guard = 0;
-            var sawHitStop = false;
-            while (rc.Tap.PerfectsShown == 0 && rc.Flow.Current == RunFlow.State.Playing && guard++ < 60 * 120)
+            for (var guard = 0; rc.Flow.Current == RunFlow.State.Playing && guard < 600; guard++)
             {
                 if (arena.Sim.Balls[0].Tap.Ready) rc.Tap.Request();
                 Step(arena, rc);
-                sawHitStop |= arena.InHitStop;
             }
-            Assert.That(rc.Tap.PerfectsShown, Is.GreaterThan(0), "spamming the strike lands a PERFECT within 2 minutes");
-            Assert.That(sawHitStop, Is.True);
-            Assert.That(rc.Tap.Popups.Showing().Any(p => p.value == TapView.PerfectWord && p.scale == 2), Is.True);
+            Assert.That(rc.Tap.PerfectsShown, Is.Zero);
+            Assert.That(rc.Tap.Popups.Showing().Any(p => p.value == TapView.PerfectWord), Is.False);
         }
 
         [Test]

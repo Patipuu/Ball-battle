@@ -5,7 +5,8 @@ using UnityEngine;
 namespace BallBattle.View
 {
     /// <summary>
-    /// World-space HUD in the free bands above and below the square arena: ball 0 on top, ball 1 at the bottom.
+    /// World-space HUD in the free bands above and below the square arena. The player's ball (<see cref="BottomBall"/>, set from
+    /// ArenaView.MarkedBall) sits at the bottom near the thumb, the opponent on top; with no player (local versus) ball 0 is on top.
     /// Each side: weapon name (2x), HP number, HP bar with a lagging "lost" segment, growing stat ("DMG 7").
     /// </summary>
     public sealed class HudView : MonoBehaviour
@@ -34,7 +35,16 @@ namespace BallBattle.View
             public float ShownStat = float.NaN;
         }
 
-        readonly Side[] sides = new Side[2];
+        /// <summary>Slot 0 = top band, slot 1 = bottom band.</summary>
+        readonly Side[] slots = new Side[2];
+
+        /// <summary>Ball shown in the bottom band (the player's); the other ball goes on top.</summary>
+        public int BottomBall { get; set; } = 1;
+
+        Side For(int ball) => slots[ball == BottomBall ? 1 : 0];
+
+        /// <summary>True when ball <paramref name="ball"/> is drawn in the top band (tests).</summary>
+        public bool IsTop(int ball) => ball != BottomBall;
 
         /// <summary>HUD tag of the player's ball in Run mode; it gets the marker arrow in front.</summary>
         public const string PlayerTag = "YOU";
@@ -42,14 +52,14 @@ namespace BallBattle.View
         const int ArrowGap = 2;
 
         /// <summary>True when side <paramref name="side"/> shows the player arrow (tests).</summary>
-        public bool ShowsPlayerArrow(int side) => sides[side].Arrow.enabled;
+        public bool ShowsPlayerArrow(int side) => For(side).Arrow.enabled;
 
         /// <summary>Arrow and name of a side (tests).</summary>
-        public SpriteRenderer PlayerArrow(int side) => sides[side].Arrow;
-        public PixelText NameText(int side) => sides[side].Name;
-        public string HpText(int side) => sides[side].Hp.Text;
+        public SpriteRenderer PlayerArrow(int side) => For(side).Arrow;
+        public PixelText NameText(int side) => For(side).Name;
+        public string HpText(int side) => For(side).Hp.Text;
         /// <summary>Width of the red "lost" segment as a fraction of the bar (tests).</summary>
-        public float LostFraction(int side) => sides[side].LostFraction;
+        public float LostFraction(int side) => For(side).LostFraction;
 
         public static HudView Create(Transform parent, ArtLibrary art)
         {
@@ -57,8 +67,8 @@ namespace BallBattle.View
             go.transform.SetParent(parent, false);
             var v = go.AddComponent<HudView>();
             // Top band: arena top is +115; bottom band mirrors it.
-            v.sides[0] = v.BuildSide(art, top: true);
-            v.sides[1] = v.BuildSide(art, top: false);
+            v.slots[0] = v.BuildSide(art, top: true);
+            v.slots[1] = v.BuildSide(art, top: false);
             return v;
         }
 
@@ -120,27 +130,27 @@ namespace BallBattle.View
         /// <summary>Show a side's weapon; an optional tag (YOU / BOSS) goes before its name.</summary>
         public void Bind(int side, string weaponId, string tag = null)
         {
-            var s = sides[side];
+            var s = For(side);
             s.WeaponId = weaponId;
-            s.Color = Palette.Look(weaponId).Body;
+            s.Color = weaponId == BallBattle.Sim.Boss.BossCoreRule.WeaponId ? Palette.WallWarning : Palette.Look(weaponId).Body;
             s.LostFraction = 1f;
             s.Fresh = true;
             s.ShownHp = int.MinValue;
             s.ShownStat = float.NaN;
             s.BarFill.color = s.Color;
-            var name = WeaponNames.Of(weaponId);
+            var name = weaponId == BallBattle.Sim.Boss.BossCoreRule.WeaponId ? "" : WeaponNames.Of(weaponId);
             var you = tag == PlayerTag;
             s.Arrow.enabled = you;
             s.Name.transform.localPosition = you ? s.NameHome + new Vector3(ArrowWidth + ArrowGap, 0f, 0f) : s.NameHome;
             var shownTag = StringTable.Current == Lang.Vi && tag == "FOE" ? "ĐỊCH" : UiVietnamese.Translate(tag);
-            s.Name.Set(string.IsNullOrEmpty(tag) ? name : shownTag + " " + name, s.Color);
+            s.Name.Set(string.IsNullOrEmpty(tag) ? name : (shownTag + " " + name).Trim(), s.Color);
         }
 
         public void Render(MatchSim sim, float deltaTime)
         {
             for (var i = 0; i < 2 && i < sim.Balls.Count; i++)
             {
-                var s = sides[i];
+                var s = For(i);
                 var ball = sim.Balls[i];
                 var frac = Mathf.Clamp01(ball.HpFraction.ToFloat());
                 if (s.Fresh) { s.LostFraction = frac; s.Fresh = false; }   // a fight that starts hurt shows no red drain

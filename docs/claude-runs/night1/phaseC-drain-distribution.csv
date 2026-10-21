@@ -1,0 +1,5 @@
+context,level,matches,zeroFireMatches,threeStackMatches,totalThreeStackActiveTicks,totalActiveTicks,fires,averageFires
+Versus,1,52,20,37,6747,193611,51,0.980769
+Versus,3,48,16,34,8056,164795,51,1.062500
+Run,1,52,15,38,9478,167898,55,1.057692
+Run,3,48,11,39,11087,153334,58,1.208333

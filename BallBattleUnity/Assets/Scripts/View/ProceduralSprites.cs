@@ -46,7 +46,7 @@ namespace BallBattle.View
         /// <summary>Rows under the tip white pixel inside the sprite (its outline).</summary>
         public const int ArrowRowsBelowTip = 1;
 
-        static Sprite outline, thinOutline, arrow;
+        static Sprite outline, thinOutline, arrow, sparklerBolt, hiveTurret;
         static readonly Dictionary<int, Sprite> rings = new Dictionary<int, Sprite>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -55,7 +55,57 @@ namespace BallBattle.View
             outline = null;
             thinOutline = null;
             arrow = null;
+            sparklerBolt = null;
+            hiveTurret = null;
             rings.Clear();
+        }
+
+        /// <summary>A gold bolt with a pale leading tip, pointing right before the view rotates it into flight.</summary>
+        public static readonly string[] SparklerBoltRows =
+        {
+            "...o.....",
+            "..oYoo...",
+            ".oYYYHWWW",
+            "..oYoo...",
+            "...o.....",
+        };
+
+        /// <summary>A small Hive gun head with a barrel, lit core and foot; points right before aiming.</summary>
+        public static readonly string[] HiveTurretRows =
+        {
+            "...........",
+            "...oooo....",
+            "..oMMMMo...",
+            ".oMLLMMMoWW",
+            ".oMLLMMMWWW",
+            ".oMMMMMMoWW",
+            "..oMMMMo...",
+            "...oooo....",
+            "...oBBo....",
+            "...oBBo....",
+            "...oooo....",
+        };
+
+        public static Sprite SparklerBolt => sparklerBolt != null ? sparklerBolt :
+            (sparklerBolt = CombatSprite(SparklerBoltRows, "sparkler_bolt"));
+        public static Sprite HiveTurret => hiveTurret != null ? hiveTurret :
+            (hiveTurret = CombatSprite(HiveTurretRows, "hive_turret"));
+
+        static Sprite CombatSprite(string[] rows, string name)
+        {
+            var w = rows[0].Length;
+            var t = New(w, rows.Length);
+            for (var y = 0; y < rows.Length; y++)
+            for (var x = 0; x < w; x++)
+            {
+                var c = rows[y][x];
+                var ink = c == 'o' ? Palette.Outline : c == 'Y' ? Palette.Look("volley").Body :
+                    c == 'H' ? Palette.PrimaryFill : c == 'W' ? Palette.Text :
+                    c == 'M' ? Palette.Look("rig").Body : c == 'L' ? Palette.WallWarning :
+                    c == 'B' ? Palette.MetalDark : new Color32(0, 0, 0, 0);
+                if (ink.a != 0) t.SetPixel(x, rows.Length - 1 - y, ink);
+            }
+            return Finish(t, name, new Vector2(0.5f, 0.5f));
         }
 
         /// <summary>Same disc as the ball flash, but only its outer <see cref="OutlineThickness"/> pixels.</summary>

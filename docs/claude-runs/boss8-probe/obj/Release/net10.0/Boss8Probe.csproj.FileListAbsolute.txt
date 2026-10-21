@@ -1,0 +1,15 @@
+E:\ball-battle\docs\claude-runs\boss8-probe\bin\Release\net10.0\Boss8Probe.exe
+E:\ball-battle\docs\claude-runs\boss8-probe\bin\Release\net10.0\Boss8Probe.deps.json
+E:\ball-battle\docs\claude-runs\boss8-probe\bin\Release\net10.0\Boss8Probe.runtimeconfig.json
+E:\ball-battle\docs\claude-runs\boss8-probe\bin\Release\net10.0\Boss8Probe.dll
+E:\ball-battle\docs\claude-runs\boss8-probe\bin\Release\net10.0\Boss8Probe.pdb
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\Boss8Probe.GeneratedMSBuildEditorConfig.editorconfig
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\Boss8Probe.AssemblyInfoInputs.cache
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\Boss8Probe.AssemblyInfo.cs
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\Boss8Probe.csproj.CoreCompileInputs.cache
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\Boss8Probe.sourcelink.json
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\Boss8Probe.dll
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\refint\Boss8Probe.dll
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\Boss8Probe.pdb
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\Boss8Probe.genruntimeconfig.cache
+E:\ball-battle\docs\claude-runs\boss8-probe\obj\Release\net10.0\ref\Boss8Probe.dll

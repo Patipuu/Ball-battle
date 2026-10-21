@@ -17,6 +17,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Assets/Scripts/Sim/**/*.cs" />
+    <Compile Include="../../PvpServer/Models.cs" />
+    <Compile Include="../../PvpServer/PvpStore.cs" />
+    <Compile Include="../../PvpServer/CorsRules.cs" />
     <Compile Include="../Assets/Tests/EditMode/FixedMathTests.cs" />
   </ItemGroup>
 </Project>

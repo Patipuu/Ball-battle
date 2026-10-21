@@ -56,7 +56,8 @@ namespace BallBattle.Sim.Run
 
         public BallLoadout ToLoadout()
         {
-            var l = new BallLoadout(WeaponRegistry.Create(WeaponId))
+            var l = new BallLoadout(!string.IsNullOrEmpty(BossId) && BossId != Boss.BossIds.Mimic
+                ? (WeaponRule)new Boss.BossCoreRule(BossId) : WeaponRegistry.Create(WeaponId))
             {
                 Bonus = new StatBonus { DamagePct = DamagePct, SpeedPct = SpeedPct },
                 MaxHp = MaxHp,

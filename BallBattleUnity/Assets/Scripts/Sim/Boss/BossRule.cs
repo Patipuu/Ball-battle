@@ -16,10 +16,13 @@ namespace BallBattle.Sim.Boss
         MagnetEnd,
         /// <summary>A = boss (the copy), B = the ball it copied.</summary>
         MimicCopied,
+        MimicAdapted,
         /// <summary>A = boss, Value = width the walls will have after the coming step.</summary>
         WardenWarn,
         /// <summary>A = boss, Value = new Warden width (the arena is the smaller of this and the normal shrink).</summary>
-        WardenStep
+        WardenStep,
+        HunterMark, HunterCharge, BellWarn, BellWave, EmberMark, EmberIgnite, PrismWarn, PrismBeam,
+        MimicEchoWarn, MimicEchoStrike, WardenCrossWarn, WardenCrossFire
     }
 
     /// <summary>
@@ -50,6 +53,19 @@ namespace BallBattle.Sim.Boss
 
         /// <summary>A Weapon/Projectile hit on Self at <paramref name="contact"/>: true = it deals 0 and counts as no hit (no growth, no on-hit hooks). Pure.</summary>
         public virtual bool BlocksHit(BallState attacker, FixVec2 contact) => false;
+
+        /// <summary>Boss-specific resistance applied after traits to real damage, before HP changes.</summary>
+        public virtual Fix ModifyIncomingDamage(Fix damage, DamageKind kind) => damage;
+
+        /// <summary>Observe real HP loss so a boss can react to the player's attack mix.</summary>
+        public virtual void OnDamageTaken(DamageKind kind, Fix damage) { }
+
+        protected void DamageNear(FixVec2 point, Fix radius, Fix damage)
+        {
+            var target = Target;
+            if (target != null && (target.Pos - point).LengthSq <= FixMath.Sq(radius))
+                Sim.DealDamage(Self, target, damage, DamageKind.Ability);
+        }
 
         /// <summary>
         /// BB-FIX2: the angle (tenths of a degree, 0..1800) this rule's BlocksHit judged for a hit by <paramref name="attacker"/> at

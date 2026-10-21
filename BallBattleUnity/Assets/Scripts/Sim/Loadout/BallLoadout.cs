@@ -35,6 +35,11 @@ namespace BallBattle.Sim
         public Skills.SkillBranch SkillBranch;
         /// <summary>TAP-1: this ball accepts MatchSim.Tap (the Run player). False = never (enemies, Versus).</summary>
         public bool TapEnabled;
+        /// <summary>Run enemies: the sim presses this ball's active skill by itself (needs TapEnabled), so a bot EMBER lays the same fire
+        /// trail as the player's. False = the old automatic skill rule.</summary>
+        public bool AutoSkill;
+        /// <summary>AutoSkill timing: first cast at this ActiveTick, then this many ticks after the skill is ready again.</summary>
+        public int BotFirstTick = 240, BotRepeatTicks = 120;
         /// <summary>BB-12g: the Run player's skill tree (in-match nodes); null = none (Versus, enemies): exactly the old rules.</summary>
         public TreeLoadout Tree;
 

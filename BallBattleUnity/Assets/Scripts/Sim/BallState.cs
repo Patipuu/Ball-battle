@@ -10,6 +10,11 @@ namespace BallBattle.Sim
         public Tap.TapState Tap { get; internal set; }
         /// <summary>BB-12g: the Run player's tree; null for everyone else (the rules read it, the hash only mixes it when set).</summary>
         public TreeLoadout Tree { get; internal set; }
+        /// <summary>The sim presses this ball's active skill when it wants to (Run enemies). See BallLoadout.AutoSkill.</summary>
+        public bool AutoSkill { get; internal set; }
+        /// <summary>AutoSkill timing (see BallLoadout).</summary>
+        public int BotFirstTick { get; internal set; }
+        public int BotRepeatTicks { get; internal set; }
         /// <summary>Spin this tick: the weapon's, times the tap whirl while it lasts (identical when there is no tap).</summary>
         internal Fix SpinNow => Tap != null ? Weapon.SpinDegPerTick * Tap.SpinMultiplier : Weapon.SpinDegPerTick;
         /// <summary>Passive traits, hooks called in array order. Empty for a plain Versus ball.</summary>

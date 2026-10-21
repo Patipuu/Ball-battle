@@ -35,24 +35,26 @@ namespace BallBattle.View
         /// <summary>The entry for <paramref name="weaponId"/>, or null for an unknown id.</summary>
         public static Entry For(string weaponId) => weaponId != null && entries.TryGetValue(weaponId, out var e) ? e : null;
 
-        /// <summary>Four short tactical lines for the Codex, with natural Vietnamese copy.</summary>
+        /// <summary>Two tactical lines for the Codex. The skill and both branches are already shown above them.</summary>
         public static string[] CodexLines(string id, Lang language)
         {
             var vi = language == Lang.Vi;
             switch (id)
             {
-                case "blade": return vi ? new[] { "CÁCH ĐÁNH: CÀNG CHÉM CÀNG ĐAU", "ÁP SÁT ĐỂ NUÔI SÁT THƯƠNG MỖI ĐÒN", "MÀI KIẾM: BA ĐÒN TỚI ĐƯỢC TĂNG LỰC", "NHÁNH A ĐÁNH NHIỀU; B ĐÁNH ĐAU" } : new[] { "PLAY: KEEP LANDING BLADE HITS", "EACH HIT BUILDS YOUR DAMAGE", "WHETSTONE BUFFS YOUR NEXT 3 HITS", "A ADDS HITS; B MAKES THEM HEAVIER" };
-                case "fang": return vi ? new[] { "CÁCH ĐÁNH: GIỮ NHỊP QUAY", "CÀNG ĐÁNH TRÚNG, XOAY CÀNG NHANH", "CUỒNG QUAY GIỮ TỐC ĐỘ KHÔNG GIẢM", "NHÁNH A GIỮ LÂU; B LÊN NHANH" } : new[] { "PLAY: BUILD AND KEEP YOUR SPIN", "EACH HIT MAKES THE FANG SPIN FASTER", "FRENZY STOPS SPIN DECAY FOR A WHILE", "A LASTS LONGER; B BUILDS SPIN FAST" };
-                case "pike": return vi ? new[] { "CÁCH ĐÁNH: GIỮ CỰ LY", "ĐÂM TRÚNG ĐỂ MŨI GIÁO VƯƠN XA HƠN", "LAO TỚI TẠM THỜI TĂNG TẦM ĐÁNH", "NHÁNH A VƯƠN XA; B GIỮ LÂU" } : new[] { "PLAY: FIGHT FROM THE EDGE OF REACH", "HITS EXTEND THE PIKE THROUGH THE FIGHT", "LUNGE GRANTS EXTRA REACH BRIEFLY", "A ADDS REACH; B EXTENDS ITS TIME" };
-                case "brawler": return vi ? new[] { "CÁCH ĐÁNH: LẤY ĐÀ MÀ HÚC", "NẢY TƯỜNG ĐỂ TĂNG TỐC VÀ SÁT THƯƠNG", "LAO TỚI: CÚ HÚC ĐẦU MẠNH HƠN", "NHÁNH A HÚC ĐAU; B LAO LÂU" } : new[] { "PLAY: BOUNCE OFF WALLS FOR SPEED", "BODY HITS GET STRONGER AT HIGH SPEED", "CHARGE BOOSTS THE FIRST IMPACT", "A HITS HARDER; B CHARGES LONGER" };
-                case "volley": return vi ? new[] { "CÁCH ĐÁNH: BẮN TỪ XA", "ĐÁNH CẬN CHIẾN ĐỂ THÊM MŨI TÊN", "MƯA TÊN BẮN THÊM MỘT LOẠT", "NHÁNH A BẮN NHANH; B BẮN MẠNH" } : new[] { "PLAY: KEEP RANGE AND FIRE VOLLEYS", "MELEE HITS ADD SHOTS TO EACH VOLLEY", "BARRAGE FIRES AN EXTRA VOLLEY", "A FIRES SOONER; B HITS HARDER" };
-                case "venom": return vi ? new[] { "CÁCH ĐÁNH: RẢI ĐỘC RỒI CÂU GIỜ", "MỖI ĐÒN ĐỂ LẠI THÊM ĐỘC", "HÚT ĐỘC HỒI MÁU KHI ĐỦ BA TẦNG", "NHÁNH A HỒI NHIỀU; B ĐỘC LÂU" } : new[] { "PLAY: STACK POISON AND BUY TIME", "HITS ADD MORE POISON TO THE FOE", "DRAIN HEALS AT 3 POISON STACKS", "A HEALS MORE; B KEEPS POISON LONGER" };
-                case "aegis": return vi ? new[] { "CÁCH ĐÁNH: ĐỠ ĐÒN RỒI PHẢN CÔNG", "CHẶN ĐÒN ĐỂ BẬT SÁT THƯƠNG TRẢ LẠI", "HỘ THỂ TẠM TĂNG LỰC PHẢN ĐÒN", "NHÁNH A GIỮ LÂU; B PHẢN MẠNH" } : new[] { "PLAY: GUARD AND REFLECT BIG HITS", "PARRIES AND BODY HITS TRIGGER REFLECT", "BULWARK BOOSTS REFLECT BRIEFLY", "A LASTS LONGER; B REFLECTS MORE" };
-                case "rig": return vi ? new[] { "CÁCH ĐÁNH: DỰNG TRỤ GIỮ SÂN", "ĐÁNH TRÚNG ĐỂ DỰNG THÊM TRỤ SÚNG", "TĂNG TỐC CHO TRỤ BẮN DỒN DẬP", "NHÁNH A BẮN DỒN; B THÊM TRỤ" } : new[] { "PLAY: BUILD TURRETS TO CONTROL SPACE", "EACH HIT BUILDS A TURRET, UP TO SIX", "OVERCLOCK SPEEDS UP TURRET VOLLEYS", "A ADDS BURSTS; B DEPLOYS MORE" };
-                case "chorus": return vi ? new[] { "CÁCH ĐÁNH: THẮP SÁNG CẢ VÒNG", "VA CHẠM ĐỂ THẮP NĂM QUẢ CẦU", "ĐỦ NĂM MÀU SẼ HỒI VÀ GÂY SÁT THƯƠNG", "THÁNH CA THẮP NGAY HAI MÀU" } : new[] { "PLAY: LIGHT ALL FIVE ORBS", "TOUCHES LIGHT COLOURS AROUND YOU", "ALL FIVE TRIGGER HEAL AND BURST", "HYMN LIGHTS TWO UNLIT COLOURS" };
-                case "serpent": return vi ? new[] { "CÁCH ĐÁNH: ĂN MỒI NUÔI ĐUÔI", "MỖI CON MỒI LÀM ĐUÔI DÀI THÊM", "ĐUÔI QUẬT XA; CẮN MẠNH KHI DÀI", "TẤN CÔNG LAO TỚI CẮN MẠNH HƠN" } : new[] { "PLAY: EAT PREY TO GROW YOUR TAIL", "EACH PREY EXTENDS THE TAIL", "LONGER TAIL MEANS STRONGER BITES", "STRIKE LUNGES IN FOR A BIG BITE" };
+                case "blade": return vi ? Two("CÁCH ĐÁNH: CHÉM TRÚNG ĐỂ NUÔI ĐAO", "ĐỠ ĐÒN SẼ NGẮT ĐÀ TĂNG SÁT THƯƠNG") : Two("PLAY: LAND BLADE HITS", "PARRIES STOP ITS DAMAGE GROWTH");
+                case "fang": return vi ? Two("CÁCH ĐÁNH: TÍCH ĐÀ XOÁY", "TRÚNG ĐÒN LIÊN TỤC, XOÁY CÀNG NHANH") : Two("PLAY: BUILD SPIN", "EACH HIT MAKES IT SPIN FASTER");
+                case "pike": return vi ? Two("CÁCH ĐÁNH: GIỮ CỰ LY", "ĐÂM TRÚNG ĐỂ NỚI TẦM GIÁO") : Two("PLAY: KEEP YOUR DISTANCE", "HITS EXTEND THE PIKE");
+                case "brawler": return vi ? Two("CÁCH ĐÁNH: NẢY TƯỜNG LẤY ĐÀ", "TỐC ĐỘ CAO, CÚ HÚC CÀNG ĐAU") : Two("PLAY: BOUNCE FOR SPEED", "FASTER BODY HITS HURT MORE");
+                case "volley": return vi ? Two("CÁCH ĐÁNH: BẮN TỪ XA", "ĐÁNH CẬN CHIẾN ĐỂ THÊM ĐẠN") : Two("PLAY: FIRE FROM RANGE", "MELEE HITS ADD SHOTS TO VOLLEYS");
+                case "venom": return vi ? Two("CÁCH ĐÁNH: CHỒNG ĐỘC", "ĐỘC CÀNG NHIỀU, TRẬN DÀI CÀNG LỢI") : Two("PLAY: STACK POISON", "LONG FIGHTS FAVOR THE POISON");
+                case "aegis": return vi ? Two("CÁCH ĐÁNH: ĐỠ RỒI PHẢN ĐÒN", "VA CHẠM CŨNG KÍCH HOẠT PHẢN ĐÒN") : Two("PLAY: PARRY AND REFLECT", "BODY HITS ALSO TRIGGER REFLECT");
+                case "rig": return vi ? Two("CÁCH ĐÁNH: DỰNG TRỤ GIỮ SÂN", "TRÚNG ĐÒN ĐỂ DỰNG THÊM TRỤ") : Two("PLAY: CONTROL SPACE WITH TURRETS", "HITS BUILD MORE TURRETS");
+                case "chorus": return vi ? Two("CÁCH ĐÁNH: THẮP SÁNG NĂM MÀU", "ĐỦ MÀU SẼ HỒI MÁU VÀ GÂY NỔ") : Two("PLAY: LIGHT ALL FIVE ORBS", "ALL FIVE TRIGGER HEAL AND BURST");
+                case "serpent": return vi ? Two("CÁCH ĐÁNH: NUÔI ĐUÔI BẰNG MỒI", "ĐUÔI DÀI GIÚP CẮN MẠNH HƠN") : Two("PLAY: EAT PREY TO GROW", "LONGER TAIL MEANS STRONGER BITES");
                 default: return new[] { "", "", "", "" };
             }
         }
+
+        static string[] Two(string first, string second) => new[] { first, second, "", "" };
     }
 }

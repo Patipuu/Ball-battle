@@ -50,7 +50,7 @@ namespace BallBattle.Tests
         {
             var g = UnlockRules.NextGoal(new ProgressData());
             AssertGoal(g, UnlockRules.Boss1, 0, 4);
-            Assert.That(g.RewardIds, Is.EqualTo(new[] { "chorus", "glass-cannon" }));   // BB-14: BGLGXLQ with the first boss
+            Assert.That(g.RewardIds, Is.EqualTo(new[] { "glass-cannon" }));   // daily-quest update: balls are all open, only traits unlock
         }
 
         [Test]
@@ -62,7 +62,7 @@ namespace BallBattle.Tests
         {
             var g = UnlockRules.NextGoal(P(5, 0, UnlockRules.Boss1));
             AssertGoal(g, UnlockRules.Win1, 4, 8);
-            Assert.That(g.RewardIds, Is.EquivalentTo(new[] { "volley", "poison-tip", "aegis", "venom", "serpent", "bubble", "parry-master" }), "boss2 + win1 rewards merged (BB-14: + the snake)");
+            Assert.That(g.RewardIds, Is.EquivalentTo(new[] { "poison-tip", "bubble", "parry-master" }), "boss2 + win1 trait rewards merged (balls are all open)");
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace BallBattle.Tests
         {
             var g = UnlockRules.NextGoal(P(8, 1, UnlockRules.Boss1, UnlockRules.Win1));
             AssertGoal(g, UnlockRules.Win3, 1, 3);
-            Assert.That(g.RewardIds, Is.EquivalentTo(new[] { "rig", "twin-blade" }));
+            Assert.That(g.RewardIds, Is.EquivalentTo(new[] { "twin-blade" }));
         }
 
         [Test]
@@ -135,7 +135,7 @@ namespace BallBattle.Tests
             var after = P(8, 1, UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Win1);
             var reached = RunSummaryView.Reached(RunSummaryView.ProgressBefore(after, run), after);
             Assert.That(reached.Select(m => m.GoalId), Is.EqualTo(new[] { UnlockRules.Win1 }));
-            Assert.That(reached[0].RewardIds, Has.Count.EqualTo(7));   // BB-14: + the snake
+            Assert.That(reached[0].RewardIds, Has.Count.EqualTo(3));   // traits only since the daily-quest update
         }
 
         [Test]
@@ -151,12 +151,12 @@ namespace BallBattle.Tests
         {
             var v = RunSummaryView.Create(root.transform, art);
             var run = WonRun(retryAt: 3);
-            run.Achievements.AddRange(new[] { UnlockRules.Boss2, UnlockRules.Win1 });
+            run.Achievements.AddRange(new[] { UnlockRules.Boss2, UnlockRules.Win1, DailyQuests.QuestMark + "win3" });
             v.Show(run, P(8, 1, UnlockRules.Boss1, UnlockRules.Boss2, UnlockRules.Win1));
             Assert.That(v.BossesText.Text, Is.EqualTo("BOSSES 2/2"));
             Assert.That(v.RetryText.Text, Is.EqualTo("RETRY USED AT FIGHT 3"));
-            Assert.That(v.BoxText[0], Is.EqualTo("WIN A RUN"));
-            Assert.That(v.BoxText.Count(l => l == "WIN A RUN" || l == "BEAT SHELL KING"), Is.EqualTo(1));
+            // Daily-quest update: the frame lists the quests this run finished, not goal milestones.
+            Assert.That(v.BoxText, Is.EqualTo(new[] { "QUESTS DONE THIS RUN", "WIN 3 FIGHTS", "REWARD: WOOD CHEST" }));
             Assert.That(v.Goal.Info.GoalId, Is.EqualTo(UnlockRules.Win3));
         }
         static RunState WonRun(int retryAt)

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using BallBattle.Sim;
+using BallBattle.Sim.Boss;
 using BallBattle.Sim.Run;
 using BallBattle.View;
 using NUnit.Framework;
@@ -63,6 +64,7 @@ namespace BallBattle.Tests
             Assert.That(buttons.Length, Is.EqualTo(3));
             for (var i = 0; i < buttons.Length; i++)
                 Assert.That(buttons[i].LabelText, Is.EqualTo(CardText.Title(run.OfferCard(i))));
+            Assert.That(view.GetComponentsInChildren<PixelText>(false).Any(t => t.Text == "TAP TO PICK" || t.Text == "CHẠM ĐỂ CHỌN"), Is.False);
         }
 
         [Test]
@@ -256,7 +258,7 @@ namespace BallBattle.Tests
             var run = NewRun(weapon);
             run.FightIndex = RunTuning.BossFights[0];
             run.EnemyWeapons.Clear();
-            run.EnemyWeapons.Add(weapon);   // same weapon both sides: the marker is the only difference
+            run.EnemyWeapons.Add(weapon);   // the authored boss body ignores the regular enemy weapon roll
             return run.CreateMatch();
         }
 
@@ -264,7 +266,7 @@ namespace BallBattle.Tests
         public void PlayerBallHasArrowAndRingTheEnemyDoesNot()
         {
             var sim = BossFight();
-            Assert.That(sim.Balls[1].Weapon.Id, Is.EqualTo(sim.Balls[0].Weapon.Id));
+            Assert.That(sim.Balls[1].Weapon.Id, Is.EqualTo(BossCoreRule.WeaponId));
             var view = NewArena(sim, 0);
             Draw(view, 0f);
             var you = view.GetBallView(0);
@@ -302,8 +304,8 @@ namespace BallBattle.Tests
             you.Flash(0.06f);
             Draw(view, 0f);
             Assert.That(boss.UsesOutlineFlash, Is.True);
-            Assert.That(boss.ActiveFlashRenderer.sprite, Is.SameAs(BallEdges.Source.Edge(boss.BodySprite, 2)), "outline flash = the rim of the sprite shown (ball_blade_48 since 3d)");
-            Assert.That(boss.BodySprite, Is.SameAs(art.Get("blade").Ball48));
+            Assert.That(boss.ActiveFlashRenderer.sprite, Is.SameAs(BallEdges.Source.Edge(boss.BodySprite, 2)), "outline flash = the rim of the displayed boss sprite");
+            Assert.That(boss.BodySprite, Is.SameAs(art.Get(BossCoreRule.WeaponId).Ball48));
             Assert.That(boss.ActiveFlashRenderer.enabled, Is.True);
             Assert.That(boss.transform.Find("Flash").GetComponent<SpriteRenderer>().enabled, Is.False, "giant body does not flash whole");
             Assert.That(you.UsesOutlineFlash, Is.False);

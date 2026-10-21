@@ -35,6 +35,11 @@ namespace BallBattle.View
             new Style { Id = "bubble", Code = "BB", Color = new Color32(90, 160, 210, 255) },
             new Style { Id = "twin-blade", Code = "TB", Color = new Color32(180, 60, 60, 255) },
             new Style { Id = "poison-tip", Code = "PT", Color = new Color32(80, 160, 60, 255) },
+            new Style { Id = "berserker", Code = "BS", Color = new Color32(200, 70, 40, 255) },
+            new Style { Id = "iron-skin", Code = "IS", Color = new Color32(110, 130, 150, 255) },
+            new Style { Id = "regen", Code = "RG", Color = new Color32(150, 180, 50, 255) },
+            new Style { Id = "executioner", Code = "EX", Color = new Color32(120, 40, 40, 255) },
+            new Style { Id = "bank-shot", Code = "BK", Color = new Color32(210, 140, 40, 255) },
         };
 
         /// <summary>A spent badge (once-per-fight trait already used) shows at this brightness, crossed out.</summary>
@@ -128,9 +133,12 @@ namespace BallBattle.View
 
         static Color32 Dim(Color32 c, float k) => new Color32((byte)(c.r * k), (byte)(c.g * k), (byte)(c.b * k), c.a);
 
-        /// <summary>Rebuild the badges for a new match. Ball 0 is the top side, ball 1 the bottom.</summary>
-        /// <summary>HUD stat row height of a side (ball 0 top, ball 1 bottom).</summary>
-        static float BaseY(int side) => side == 0 ? 163f : -219f;
+        /// <summary>Rebuild the badges for a new match. The player's ball (BottomBall) sits in the bottom band.</summary>
+        /// <summary>HUD stat row height of a side (the player's ball at the bottom, see BottomBall).</summary>
+        float BaseY(int side) => side == BottomBall ? -204f : 163f;   // both on the stat row, above the skill cooldown line
+
+        /// <summary>Ball whose badges sit in the bottom HUD band (the player's, same as HudView.BottomBall).</summary>
+        public int BottomBall { get; set; } = 1;
 
         readonly int[] slotsUsed = new int[2];
 

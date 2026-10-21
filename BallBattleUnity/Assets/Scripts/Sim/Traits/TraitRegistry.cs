@@ -16,10 +16,13 @@ namespace BallBattle.Sim.Traits
             public readonly bool RequiresBlade;
             /// <summary>Weapon this trait is never offered with (null = none): a measured runaway combo.</summary>
             public readonly string BannedWeapon;
+            /// <summary>Offered to the player only; enemies roll from the older traits (keeps every enemy roll of a seed unchanged).</summary>
+            public readonly bool PlayerOnly;
             readonly Func<int, TraitRule> factory;
 
-            public Entry(string id, string displayName, string blurb, Func<int, TraitRule> factory, bool requiresBlade = false, string bannedWeapon = null)
+            public Entry(string id, string displayName, string blurb, Func<int, TraitRule> factory, bool requiresBlade = false, string bannedWeapon = null, bool playerOnly = false)
             {
+                PlayerOnly = playerOnly;
                 BannedWeapon = bannedWeapon;
                 RequiresBlade = requiresBlade;
                 Id = id;
@@ -44,6 +47,11 @@ namespace BallBattle.Sim.Traits
             new Entry(BubbleTrait.TraitId, "BUBBLE", "SHIELD EVERY FEW SEC", l => new BubbleTrait(l)),
             new Entry(TwinBladeTrait.TraitId, "TWIN BLADE", "SECOND BLADE BEHIND", l => new TwinBladeTrait(l), requiresBlade: true),
             new Entry(PoisonTipTrait.TraitId, "POISON TIP", "HITS POISON", l => new PoisonTipTrait(l), requiresBlade: true),
+            new Entry(BerserkerTrait.TraitId, "BERSERKER", "LOW HP HITS HARDER", l => new BerserkerTrait(l), playerOnly: true),
+            new Entry(IronSkinTrait.TraitId, "IRON SKIN", "TAKE LESS FROM HITS", l => new IronSkinTrait(l), playerOnly: true),
+            new Entry(RegenTrait.TraitId, "REGEN", "HEAL EVERY SECOND", l => new RegenTrait(l), playerOnly: true),
+            new Entry(ExecutionerTrait.TraitId, "FINISHER", "FINISH LOW HP FOES", l => new ExecutionerTrait(l), playerOnly: true),
+            new Entry(BankShotTrait.TraitId, "BANK SHOT", "BIG HIT AFTER A WALL", l => new BankShotTrait(l), playerOnly: true),
         };
 
         public static IReadOnlyList<Entry> All => entries;

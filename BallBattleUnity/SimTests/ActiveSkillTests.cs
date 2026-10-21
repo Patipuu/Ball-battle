@@ -151,6 +151,57 @@ namespace BallBattle.SimTests
             Assert.That(Count(log, SkillFxEvent.BeeSting), Is.GreaterThan(0));
         }
 
+        [Test] public void HiveBeeStingsRemoveEnemyHp()
+        {
+            var m = Make(new RigRule(), foe: new HarmlessRule());
+            Steps(m, 260);
+            var before = m.Balls[1].Hp;
+            Assert.That(m.Tap(0), Is.True);
+            var log = new List<SimEvent>();
+            Steps(m, 240, log);
+            var beeDamage = Fix.Zero;
+            foreach (var e in log)
+                if (e.Type == SimEventType.Damage && e.A == 0 && e.B == 1 &&
+                    e.Variant == (byte)DamageKind.Ability) beeDamage += e.Value;
+            Assert.That(Count(log, SkillFxEvent.BeeSting), Is.GreaterThan(0));
+            Assert.That(beeDamage, Is.GreaterThan(Fix.Zero), "bee sting must pass through the damage pipeline");
+            Assert.That(before - m.Balls[1].Hp, Is.GreaterThanOrEqualTo(beeDamage));
+        }
+
+        [Test] public void ChorusLitColourLastsFifteenSecondsFromItsMostRecentTouch()
+        {
+            var player = new BallLoadout(new ChorusRule()) { TapEnabled = true, MaxHp = 10000 };
+            var enemy = new BallLoadout(new HarmlessRule()) { MaxHp = 10000 };
+            var m = Stage.Build(Stage.StillConfig(), (player, FT.V(0, 0), 0f), (enemy, FT.V(80, 0), 0f));
+            var chorus = (ChorusRule)m.Balls[0].Weapon;
+            Assert.That(SkillTuning.UnityFadeTicks, Is.EqualTo(15 * MatchConfig.TicksPerSecond));
+            Stage.Park(m, FT.V(0, 0), chorus.Orb(ChorusRule.Pink));
+            m.Step();
+            Assert.That(chorus.IsLit(ChorusRule.Pink), Is.True);
+            var firstLitTick = m.ActiveTick;
+            while (m.ActiveTick < firstLitTick + SkillTuning.UnityFadeTicks - 10)
+            {
+                Stage.Park(m, FT.V(0, 0), FT.V(80, 0));
+                m.Step();
+            }
+            Assert.That(chorus.IsLit(ChorusRule.Pink), Is.True);
+            Stage.Park(m, FT.V(0, 0), chorus.Orb(ChorusRule.Pink));
+            m.Step();
+            var refreshedAt = m.ActiveTick;
+            while (m.ActiveTick < refreshedAt + 20)
+            {
+                Stage.Park(m, FT.V(0, 0), FT.V(80, 0));
+                m.Step();
+            }
+            Assert.That(chorus.IsLit(ChorusRule.Pink), Is.True, "touch refreshed the expiring colour");
+            while (m.ActiveTick < refreshedAt + SkillTuning.UnityFadeTicks)
+            {
+                Stage.Park(m, FT.V(0, 0), FT.V(80, 0));
+                m.Step();
+            }
+            Assert.That(chorus.IsLit(ChorusRule.Pink), Is.False);
+        }
+
         [Test] public void ChorusReleasesUnityByHand()
         {
             var m = Make(new ChorusRule());

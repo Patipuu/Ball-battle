@@ -1,0 +1,133 @@
+diff --git a/BallBattleUnity/Assets/Tests/EditMode/Bb03AudioTests.cs b/BallBattleUnity/Assets/Tests/EditMode/Bb03AudioTests.cs
+index 1020b0f..708de81 100644
+--- a/BallBattleUnity/Assets/Tests/EditMode/Bb03AudioTests.cs
++++ b/BallBattleUnity/Assets/Tests/EditMode/Bb03AudioTests.cs
+@@ -294,12 +294,15 @@ namespace BallBattle.Tests
+             Assert.That(changed, Is.EqualTo(new[] { 3, 0 }));
+         }
+ 
+-        // ---- boss cues arrived in BB-04: only the seven named ids, and no clip for them exists yet ----
++        // BB-SFX3 linked the seven boss cues and eight signature skills into the real library.
+ 
+         [Test]
+-        public void OnlyTheBb04BossCuesAreReferenced()
++        public void AllFifteenBossAndSkillCuesHaveRealClips()
+         {
+-            foreach (var c in lib.Clips) Assert.That(c.name, Does.Not.StartWith("boss_"), c.name + ": no boss clip is in the library yet");
++            var cues = AudioIds.BossCues.Concat(AudioIds.SkillCues).ToArray();
++            Assert.That(cues.Length, Is.EqualTo(15));
++            var missing = cues.Where(id => lib.Get(id) == null).ToArray();
++            Assert.That(missing, Is.Empty, "Missing cue ids: " + string.Join(", ", missing));
+             var ids = typeof(AudioIds).GetFields(BindingFlags.Public | BindingFlags.Static)
+                 .Where(f => f.FieldType == typeof(string)).Select(f => (string)f.GetValue(null))
+                 .Concat(AudioIds.Cues).Concat(AudioIds.Music);
+diff --git a/BallBattleUnity/Assets/Tests/EditMode/Bb04BossTests.cs b/BallBattleUnity/Assets/Tests/EditMode/Bb04BossTests.cs
+index 38a32dc..84ea550 100644
+--- a/BallBattleUnity/Assets/Tests/EditMode/Bb04BossTests.cs
++++ b/BallBattleUnity/Assets/Tests/EditMode/Bb04BossTests.cs
+@@ -13,7 +13,7 @@ using UnityEngine;
+ namespace BallBattle.Tests
+ {
+     /// <summary>
+-    /// BB-04 boss pool v1, View side: boss audio cues (REAL SfxLibrary.asset, which has no boss clips yet), Prepare name + hint,
++    /// BB-04 boss pool v1, View side: boss audio cues (REAL SfxLibrary.asset), Prepare name + hint,
+     /// summary line, telegraphs, save v3 + migration, -bbForceBoss.
+     /// </summary>
+     public class Bb04BossTests
+@@ -73,20 +73,23 @@ namespace BallBattle.Tests
+         }
+ 
+         [Test]
+-        public void MissingBossClipPlaysNothingDoesNotThrowAndIsLogged()
++        public void RealLibraryHasAllFifteenBossAndSkillCuesAndBossEventsPlayTheirClips()
+         {
+             AudioLog.ForceOn = true;
+             var d = Director(lib);
+-            foreach (var id in AudioIds.BossCues) Assert.That(lib.Has(id), Is.False, id + " has no clip yet");
++            var cues = AudioIds.BossCues.Concat(AudioIds.SkillCues).ToArray();
++            Assert.That(cues.Length, Is.EqualTo(15));
++            var missing = cues.Where(id => lib.Get(id) == null).ToArray();
++            Assert.That(missing, Is.Empty, "Missing cue ids: " + string.Join(", ", missing));
+             var tick = 10;
+             foreach (BossEvent k in System.Enum.GetValues(typeof(BossEvent)))
+             {
+                 var result = AudioDirector.BossCueResult.None;
+                 Assert.DoesNotThrow(() => result = d.RequestBossCue(BossEv(k, tick++), Sim()));
+-                Assert.That(result, Is.EqualTo(AudioIds.BossCue(k) == null ? AudioDirector.BossCueResult.None : AudioDirector.BossCueResult.Missing));
++                Assert.That(result, Is.EqualTo(AudioIds.BossCue(k) == null ? AudioDirector.BossCueResult.None : AudioDirector.BossCueResult.Played));
+             }
+-            Assert.That(d.Played, Is.Empty, "nothing played, no fallback clip");
+-            Assert.That(d.LogLines.Count(l => l.Contains("result=missing")), Is.EqualTo(7));
++            Assert.That(d.Played.Select(p => p.Id), Is.EquivalentTo(AudioIds.BossCues));
++            Assert.That(d.LogLines.Count(l => l.Contains("result=played")), Is.EqualTo(7));
+             Assert.That(d.LogLines.Any(l => l.Contains("ShellOff") || l.Contains("MagnetEnd")), Is.False, "off/end have no cue");
+         }
+ 
+diff --git a/BallBattleUnity/Assets/Tests/EditMode/RunFlowTests.cs b/BallBattleUnity/Assets/Tests/EditMode/RunFlowTests.cs
+index 7bc36a9..ef0da43 100644
+--- a/BallBattleUnity/Assets/Tests/EditMode/RunFlowTests.cs
++++ b/BallBattleUnity/Assets/Tests/EditMode/RunFlowTests.cs
+@@ -77,15 +77,33 @@ namespace BallBattle.Tests
+             Assert.That(f.Run.History.Select(h => h.Retry), Is.EqualTo(new[] { false, true }));
+         }
+ 
+-        [Test]
+-        public void NewRunPickWeaponFightAndResume()
++        static uint FirstWinningSeed()
++        {
++            for (uint seed = 1; seed <= 200; seed++)
++            {
++                var progress = new ProgressData();
++                var choices = RunState.StartChoices(seed, UnlockRules.Weapons(progress));
++                var run = RunState.Start(seed, choices[1], progress);
++                run.Pick(0);
++                run.Pick(0);
++                var match = run.CreateMatch();
++                while (match.Outcome == MatchOutcome.Ongoing) match.Step();
++                if (match.WinnerIndex == 0) return seed;
++            }
++            Assert.Fail("No first-fight winning seed found in setup seeds 1..200");
++            return 0;
++        }
++
++        [TestCase(false)]
++        [TestCase(true)]
++        public void NewRunPickWeaponFightAndResume(bool needsWinningFight)
+         {
+             var store = new MemorySaveStore();
+             var f = Open(store);
+             Assert.That(f.Current, Is.EqualTo(RunFlow.State.Title));
+             Assert.That(f.HasSavedRun, Is.False);
+ 
+-            f.NewRun(42);
++            f.NewRun(needsWinningFight ? FirstWinningSeed() : 42);
+             Assert.That(f.Current, Is.EqualTo(RunFlow.State.PickWeapon));
+             Assert.That(f.StartChoices.Count, Is.EqualTo(3));
+             f.ChooseWeapon(f.StartChoices[1]);
+@@ -96,8 +114,13 @@ namespace BallBattle.Tests
+             f.Pick(0);
+             var buildAfterPick = f.Run.Build.WeaponId + string.Join(",", f.Run.Build.Traits.Select(t => t.Id + t.Level)) + f.Run.Build.MaxHp;
+             PlayFight(f);
+-            Assert.That(f.Current, Is.EqualTo(RunFlow.State.Prepare));
+-            Assert.That(f.Run.FightIndex, Is.EqualTo(1));
++            var won = f.Run.History[0].Won;
++            if (needsWinningFight) Assert.That(won, Is.True, "setup searched for the first winning seed");
++            var expectedScreen = won ? RunFlow.State.Prepare : RunFlow.State.StartPick;
++            var expectedFight = won ? 1 : 0;
++            Assert.That(f.Current, Is.EqualTo(expectedScreen), "win rewards the next fight; loss opens free retry pick");
++            Assert.That(f.Run.FightIndex, Is.EqualTo(expectedFight));
++            Assert.That(f.Run.IsRetry, Is.EqualTo(!won));
+             var hp = f.Run.Build.Hp;
+             var coins = f.Run.Coins;
+             var offer = Enumerable.Range(0, f.Run.OfferCount).Select(f.Run.OfferCard).ToArray();
+@@ -107,8 +130,8 @@ namespace BallBattle.Tests
+             var resumed = Open(store);
+             Assert.That(resumed.HasSavedRun, Is.True);
+             resumed.Continue();
+-            Assert.That(resumed.Current, Is.EqualTo(RunFlow.State.Prepare));
+-            Assert.That(resumed.Run.FightIndex, Is.EqualTo(1));
++            Assert.That(resumed.Current, Is.EqualTo(expectedScreen));
++            Assert.That(resumed.Run.FightIndex, Is.EqualTo(expectedFight));
+             Assert.That(resumed.Run.Build.Hp, Is.EqualTo(hp));
+             Assert.That(resumed.Run.Coins, Is.EqualTo(coins));
+             Assert.That(Enumerable.Range(0, resumed.Run.OfferCount).Select(resumed.Run.OfferCard), Is.EqualTo(offer));

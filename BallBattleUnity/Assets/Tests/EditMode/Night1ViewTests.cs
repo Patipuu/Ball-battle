@@ -96,7 +96,10 @@ namespace BallBattle.Tests
         public void RetryCopySaysFreePickAndOnePickStartsTheFight()
         {
             var flow = new RunFlow(new MemorySaveStore(), 0, 0); flow.Open(); flow.NewRun(42);
-            flow.ChooseWeapon(flow.StartChoices[0]); flow.PickStart(0); flow.Fight(); flow.Tick(.01f);
+            flow.ChooseWeapon(flow.StartChoices[0]);
+            // A start card that cannot save the ball from the forced KO below (SECOND WIND would; the offer pool grew with the new traits).
+            flow.PickStart(Enumerable.Range(0, flow.Run.OfferCards.Count).First(i => flow.Run.OfferCards[i].Id != "second-wind"));
+            flow.Fight(); flow.Tick(.01f);
             var m = flow.CurrentMatch; m.DealDamage(null, m.Balls[0], (Fix)30000, DamageKind.Hazard); m.Step();
             flow.OnMatchEnded(m); flow.Tick(.01f); flow.NextAfterResult();
             Assert.That(flow.Current, Is.EqualTo(RunFlow.State.StartPick));

@@ -24,6 +24,7 @@ namespace BallBattle.View
         float timer;
         uint pendingSeed;
         bool pendingTutorial;
+        int pendingChapter, pendingHeat;
         public bool PendingTutorial => pendingTutorial;
 
         public State Current { get; private set; } = State.Closed;
@@ -130,7 +131,7 @@ namespace BallBattle.View
         }
 
         /// <summary>Starts choosing a new run. A saved run is abandoned (counted as played) once a weapon is chosen.</summary>
-        public void NewRun(uint seed, bool tutorial = false)
+        public void NewRun(uint seed, bool tutorial = false, int chapter = 0, int heat = 0)
         {
             if (Current != State.Title && Current != State.Summary) return;
             Run = null;
@@ -138,6 +139,8 @@ namespace BallBattle.View
             if (pendingTutorial) seed = RunState.TutorialSeed;
             StartChoices = RunState.StartChoices(seed, UnlockRules.Weapons(save.Progress), pendingTutorial);
             pendingSeed = seed;
+            pendingChapter = pendingTutorial ? 0 : System.Math.Min(System.Math.Max(0, chapter), Chapters.Unlocked(save.Progress));
+            pendingHeat = pendingTutorial ? 0 : System.Math.Min(System.Math.Max(0, heat), HeatRules.Unlocked(save.Progress, pendingChapter));
             Go(State.PickWeapon);
         }
 
@@ -151,7 +154,7 @@ namespace BallBattle.View
                 LastChestAbandoned = true;
                 chestToShow = LastChest != null;
             }
-            Run = RunState.Start(pendingSeed, weaponId, save.Progress, ForceSkill, pendingTutorial);
+            Run = RunState.Start(pendingSeed, weaponId, save.Progress, ForceSkill, pendingTutorial, pendingChapter, pendingHeat);
             if (pendingTutorial) save.Progress.Onboarding.AdvanceTo(1);
             BossSelection.Remember(save.Progress, Run);   // BB-04: before any forced boss, so -bbForceBoss never enters the history
             if (ForceBossId != null) Run.ApplyForcedBoss(ForceBossId);
@@ -286,6 +289,7 @@ namespace BallBattle.View
             var before = FightReport.Snapshot.Of(Run);
             Run.ApplyResult(finished);
             UnlockRules.Record(save.Progress, Run);
+            DailyQuests.Record(save.Progress, Run, NextGoalBox.Today);   // daily quests: finished ones drop their chest into PendingChests
             if (Run.Over) save.Progress.Onboarding.AdvanceTo(2);
             if (Run.Over)
             {

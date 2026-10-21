@@ -55,7 +55,7 @@ namespace BallBattle.Tests
             Finish(v);
             Assert.That(v.RowsVisible, Is.EqualTo(Math.Min(r.Shards.Count, ChestView.MaxRows)));
             Assert.That(v.RowTexts[0], Does.StartWith("EMBER +"));
-            Assert.That(v.GoldText, Is.EqualTo("+" + r.TotalGold + " GOLD"));
+            Assert.That(v.GoldText, Is.EqualTo("+" + r.TotalGold + " ¤"));
             Assert.That(v.CollectButton.gameObject.activeSelf, Is.True);
         }
 
@@ -93,7 +93,7 @@ namespace BallBattle.Tests
         public void OddsPanelShowsTheRealTableAndFitsTheScreen()
         {
             var lines = ChestView.OddsLines(4);
-            Assert.That(lines, Does.Contain($"WOOD: {MetaTuning.PlayedShards[0]} + {MetaTuning.RandomShards[0]} SHARDS  {MetaTuning.ChestGold[0]} GOLD"));
+            Assert.That(lines, Does.Contain($"WOOD: {MetaTuning.PlayedShards[0]} + {MetaTuning.RandomShards[0]} SHARDS  {MetaTuning.ChestGold[0]} ¤"));
             Assert.That(lines.Any(l => l.Contains("1 IN 4")), Is.True);
             foreach (var l in lines) Assert.That(PixelFont.MeasureWidth(l), Is.LessThanOrEqualTo(240), l);
             var (v, _, _) = Open(ChestTier.Silver);

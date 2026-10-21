@@ -12,6 +12,9 @@ namespace BallBattle.View
         /// <summary>6 = TUT-2 onboarding state; older saves migrate without losing progress or a v3+ run.</summary>
         public const int CurrentVersion = 6;
         public int Version = CurrentVersion;
+        /// <summary>Player build 1 starts the next feel/tutorial playtest with fresh progress once.</summary>
+        public const int CurrentPlaytestEpoch = 1;
+        public int PlaytestEpoch;
         public ProgressData Progress = new ProgressData();
         public bool HasRun;
         /// <summary>The run in its save form (doubles, same JSON names as before 6a.6b/c); RunSave.ToRun() gives the Sim RunState.</summary>
@@ -114,10 +117,15 @@ namespace BallBattle.View
     public sealed class FileSaveStore : ISaveStore
     {
         public readonly string Path;
+        readonly bool playerBuild;
 
-        public FileSaveStore(string path) => Path = path;
+        public FileSaveStore(string path, bool playerBuild = false)
+        {
+            Path = path;
+            this.playerBuild = playerBuild;
+        }
 
-        public static FileSaveStore Default() => new FileSaveStore(System.IO.Path.Combine(Application.persistentDataPath, "save.json"));
+        public static FileSaveStore Default() => new FileSaveStore(System.IO.Path.Combine(Application.persistentDataPath, "save.json"), !Application.isEditor);
 
         public SaveData Load()
         {
@@ -127,6 +135,13 @@ namespace BallBattle.View
                 var data = JsonUtility.FromJson<SaveData>(File.ReadAllText(Path));
                 if (data == null || data.Version > SaveData.CurrentVersion) return Reset("unknown version");
                 SaveMigration.Upgrade(data);   // v3 keeps the run; incompatible v1/v2 keep progress with compensation + notice
+                if (playerBuild && data.PlaytestEpoch < SaveData.CurrentPlaytestEpoch)
+                {
+                    // Archive the previous playtest. The new save is stamped on its first write, so this runs only once.
+                    try { File.Copy(Path, Path + ".before-playtest-reset", true); }
+                    catch (Exception e) { Debug.LogWarning($"Could not back up old playtest save: {e.Message}"); }
+                    return new SaveData { musicVol = data.musicVol, sfxVol = data.sfxVol };
+                }
                 if (data.Progress == null) data.Progress = new ProgressData();
                 return data;
             }
@@ -144,11 +159,20 @@ namespace BallBattle.View
             return new SaveData();
         }
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+        [System.Runtime.InteropServices.DllImport("__Internal")] static extern void BB_SyncPersistentData();
+        /// <summary>WebGL: copy the in-memory file system to IndexedDB now (Plugins/WebGL/BallBattleSync.jslib).</summary>
+        static void SyncWebStorage() => BB_SyncPersistentData();
+#else
+        static void SyncWebStorage() { }
+#endif
+
         /// <summary>Never throws: a failed write (disk full, storage quirk) is logged and the previous file is kept.</summary>
         public void Save(SaveData data)
         {
             try
             {
+                if (playerBuild) data.PlaytestEpoch = SaveData.CurrentPlaytestEpoch;
                 var dir = System.IO.Path.GetDirectoryName(Path);
                 if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
                 var tmp = Path + ".tmp";
@@ -159,6 +183,7 @@ namespace BallBattle.View
                     File.Delete(tmp);
                 }
                 else File.Move(tmp, Path);
+                SyncWebStorage();
             }
             catch (Exception e)
             {

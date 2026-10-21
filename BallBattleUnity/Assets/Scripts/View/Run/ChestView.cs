@@ -19,7 +19,7 @@ namespace BallBattle.View
         public const int RowPitch = 20, MaxRows = 8;
         public const float RowsTop = 52f;
         public static readonly Rect CollectArea = new Rect(-80, -205, 160, 32);
-        public static readonly Rect OddsArea = new Rect(70, 204, 56, 22);
+        public static readonly Rect OddsArea = new Rect(70, 203, 56, 24);
         public static readonly Rect OddsBackArea = new Rect(-60, -222, 120, 30);
         const float BarLeft = 2f, BarRight = 72f;
 
@@ -78,13 +78,13 @@ namespace BallBattle.View
             foreach (var t in new[] { ChestTier.Wood, ChestTier.Silver, ChestTier.Gold })
             {
                 var i = (int)t;
-                l.Add($"{TierName(t)}: {MetaTuning.PlayedShards[i]} + {MetaTuning.RandomShards[i]} SHARDS  {MetaTuning.ChestGold[i]} GOLD");
+                l.Add($"{TierName(t)}: {MetaTuning.PlayedShards[i]} + {MetaTuning.RandomShards[i]} SHARDS  {MetaTuning.ChestGold[i]} ¤");
             }
             l.Add("");
             l.Add("FIRST NUMBER: YOUR BALL");
             l.Add(unlocked > 0 ? $"OTHERS: 1 IN {unlocked} PER UNLOCKED BALL" : "OTHERS: A RANDOM UNLOCKED BALL");
             l.Add("LOCKED BALLS GET NONE");
-            l.Add($"LV{MetaTuning.MaxLevel} BALL: 1 SHARD BECOMES {MetaTuning.MaxedShardGold} GOLD");
+            l.Add($"LV{MetaTuning.MaxLevel} BALL: 1 SHARD BECOMES {MetaTuning.MaxedShardGold} ¤");
             return l;
         }
 
@@ -179,8 +179,8 @@ namespace BallBattle.View
             subtitle.Set(caption ?? "", Palette.TextDim);
             DrawChest(result.Tier);
             BuildRows(result, after ?? new ProgressData());
-            goldLine.Set("+" + result.TotalGold + " GOLD", Palette.PrimaryFill);
-            goldTotal.Set((result.ConvertedGold > 0 ? $"{result.ConvertedGold} FROM LV{MetaTuning.MaxLevel} BALLS   " : "") + "GOLD " + (after?.Gold ?? 0), Palette.TextDim);
+            goldLine.Set("+" + result.TotalGold + " ¤", Palette.PrimaryFill);
+            goldTotal.Set((result.ConvertedGold > 0 ? $"{result.ConvertedGold} FROM LV{MetaTuning.MaxLevel} BALLS   " : "") + "¤ " + (after?.Gold ?? 0), Palette.TextDim);
             t = 0f;
             shown = 0;
             Revealed = false;

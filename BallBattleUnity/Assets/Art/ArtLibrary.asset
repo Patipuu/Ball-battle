@@ -100,6 +100,16 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: ba0e756249bbead428137e44285b307e, type: 3}
   - Id: poison-tip
     Icon: {fileID: 21300000, guid: 737f6205e2ba1b2458b60564dd67b913, type: 3}
+  - Id: berserker
+    Icon: {fileID: 21300000, guid: f9e030e4e6506b44486cb9351c896699, type: 3}
+  - Id: iron-skin
+    Icon: {fileID: 21300000, guid: 45b28ec9f2e15e344a278b113845de67, type: 3}
+  - Id: regen
+    Icon: {fileID: 21300000, guid: a4333e89a853bc242852d938ab18494b, type: 3}
+  - Id: executioner
+    Icon: {fileID: 21300000, guid: 1d6af17a19ca79e42b3d2a94d63f942d, type: 3}
+  - Id: bank-shot
+    Icon: {fileID: 21300000, guid: 990fcac077590124996188c21a42798b, type: 3}
   Skills:
   - Id: blade
     Icon: {fileID: 21300000, guid: babec471dd0749a7afd1e245c47ce68a, type: 3}

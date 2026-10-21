@@ -42,14 +42,14 @@ namespace BallBattle.View
             switch (c.Kind)
             {
                 case CardKind.Trait: return TraitLine1(c.Id, c.Level);
-                case CardKind.DamageUp: return $"MELEE BODY AND SHOT HITS +{Pct(RunTuning.DamageCardPct.ToFloat())}%";
-                case CardKind.SpeedUp: return $"TOP SPEED +{Pct(RunTuning.SpeedCardPct.ToFloat())}%. START SPEED SAME";
-                case CardKind.SwapWeapon: return "NEW WEAPON. KEEPS TRAITS AND STATS";
-                case CardKind.SkillUp: return c.Level == 2 ? "CHOOSE YOUR SKILL BRANCH" : "STRENGTHEN YOUR BRANCH TO LV 3";
-                case CardKind.Heal: return $"HEAL {Pct(RunTuning.HealCardPct.ToFloat())}% OF MAX HP NOW";
+                case CardKind.DamageUp: return "MELEE, SHOTS, POISON, REFLECT";
+                case CardKind.SpeedUp: return "START SPEED UNCHANGED";
+                case CardKind.SwapWeapon: return "KEEP TRAITS AND STATS";
+                case CardKind.SkillUp: return c.Level == 2 ? "CHOOSE A BRANCH" : "SKILL TO LV3";
+                case CardKind.Heal: return "HEALS NOW";
                 case CardKind.MaxHp:
                     var hp = FixMath.FloorToInt(RunTuning.MaxHpCardBonus);
-                    return $"+{hp} MAX HP AND +{hp} HP NOW";
+                    return $"HEAL +{hp} HP NOW";
                 default: return "";
             }
         }
@@ -60,11 +60,6 @@ namespace BallBattle.View
             switch (c.Kind)
             {
                 case CardKind.Trait: return TraitLine2(c.Id, c.Level);
-                case CardKind.DamageUp: return "ALSO SPORE POISON, MIRROR REFLECT";   // BB-BAL3 (was "NOT POISON SPIKES OR THORNS")
-                case CardKind.SpeedUp: return WeaponNames.Of(BrawlerRule.WeaponId) + ": MORE SPEED IS MORE DMG";
-                case CardKind.SwapWeapon: return "ONLY OFFERED IF ALL TRAITS STILL WORK";
-                case CardKind.SkillUp: return "ONE SKILL. AUTO TRIGGER";
-                case CardKind.Heal: return "HP CARRIES TO NEXT FIGHTS";
                 default: return "";
             }
         }
@@ -97,6 +92,16 @@ namespace BallBattle.View
                     return $"2ND BLADE BEHIND  {Pct(TraitTuning.TwinBladeScale[i].ToFloat())}% LONG";   // "blade" = the weapon's edge here, not the weapon id
                 case PoisonTipTrait.TraitId:
                     return $"HITS POISON {Num(TraitTuning.PoisonTipDps[i].ToFloat())}/S FOR {TraitTuning.PoisonTipSeconds[i]}S";
+                case BerserkerTrait.TraitId:
+                    return $"UP TO +{Pct(NewTraitTuning.BerserkerMaxBonus[i].ToFloat())}% DMG AS HP DROPS";
+                case IronSkinTrait.TraitId:
+                    return $"HITS AND SHOTS TAKEN -{Pct(NewTraitTuning.IronSkinReduction[i].ToFloat())}%";
+                case RegenTrait.TraitId:
+                    return $"HEAL {Num(NewTraitTuning.RegenPerSecond[i].ToFloat())} HP EVERY SECOND";
+                case ExecutionerTrait.TraitId:
+                    return $"+{Pct(NewTraitTuning.ExecutionerBonus[i].ToFloat())}% DMG TO FOES UNDER {Pct(NewTraitTuning.ExecutionerThreshold.ToFloat())}% HP";
+                case BankShotTrait.TraitId:
+                    return $"AFTER A WALL BOUNCE: NEXT HIT +{Pct(NewTraitTuning.BankShotBonus[i].ToFloat())}%";
                 default:
                     return level > 1 ? "UPGRADE: STRONGER" : TraitRegistry.Get(id).Blurb;
             }
@@ -117,6 +122,11 @@ namespace BallBattle.View
                 case BubbleTrait.TraitId: return "BLOCKS 1 HIT OR SHOT. NOT POISON";
                 case TwinBladeTrait.TraitId: return $"ALL MELEE HITS X{Num(TraitTuning.TwinBladeDamageMul[i].ToFloat())} DMG";
                 case PoisonTipTrait.TraitId: return $"SKIPS IF TARGET HAS {TraitTuning.PoisonTipMaxStacks[i]} POISON";
+                case BerserkerTrait.TraitId: return "MELEE AND SHOTS. FULL HP: NO BONUS";
+                case IronSkinTrait.TraitId: return "NOT POISON OR SPIKES";
+                case RegenTrait.TraitId: return "ALL FIGHT LONG";
+                case ExecutionerTrait.TraitId: return "MELEE AND SHOTS";
+                case BankShotTrait.TraitId: return "MELEE ONLY. WAITS FOR THE HIT";
                 default: return "";
             }
         }

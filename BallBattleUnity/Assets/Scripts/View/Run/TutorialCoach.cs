@@ -38,7 +38,7 @@ namespace BallBattle.View
             new Tip { Id = "cards", State = RunFlow.State.Prepare, Target = Union(PrepareView.CardArea(0), PrepareView.CardArea(2)),
                       Line1 = "1 FREE CARD BEFORE EVERY FIGHT", Line2 = "COINS BUY ONE MORE OR A REROLL" },
             new Tip { Id = "fight", State = RunFlow.State.Prepare, Target = PrepareView.FightArea,
-                      Line1 = "READY? PRESS FIGHT", Line2 = "IN THE FIGHT TAP TO STRIKE!" },
+                      Line1 = "READY? PRESS FIGHT", Line2 = "IN THE FIGHT, TAP TO USE YOUR SKILL" },
             new Tip { Id = "result", State = RunFlow.State.FightResult, Target = new Rect(-120, 49, 240, 111),
                       Line1 = "HP LEFT CARRIES TO THE NEXT FIGHT", Line2 = "LOSE ONCE: YOUR 1 RETRY IS USED" },
         };

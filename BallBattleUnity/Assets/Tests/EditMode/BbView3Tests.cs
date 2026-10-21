@@ -118,7 +118,7 @@ namespace BallBattle.Tests
             Assert.That(view.NextHeaderText, Is.EqualTo(r.NextHeader), "the screen shows it");
             Assert.That(view.NextHeaderText, Does.Not.Contain("GIANT BOSS"));
             Assert.That(r.BossId, Is.EqualTo(boss), "the fight just lost");
-            Assert.That(view.FightLineText, Does.StartWith($"FIGHT {fightIndex + 1}/{RunTuning.Fights}  {name}  VS "), "top line names the boss too");
+            Assert.That(view.FightLineText, Does.StartWith($"FIGHT {fightIndex + 1}/{RunTuning.Fights}  {name}"), "top line names the boss without overflowing");
         }
 
         // ---------------- TASK 1b: a saved boss retry wins over -bbForceBoss ----------------
@@ -255,30 +255,27 @@ namespace BallBattle.Tests
             menu.ShowHub();
             var run = RunWithBosses(BossIds.Magnet, BossIds.Warden);
             menu.SetRunInfo(Progress(1, BossIds.Magnet, BossIds.Warden), run);
-            Assert.That(menu.Goal.Info.GoalId, Is.EqualTo(UnlockRules.Boss1));
-            Assert.That(menu.Goal.TitleText.Text, Is.EqualTo("BEAT MAGNET"), "fight-4 goal of the saved run");
-            menu.SetRunInfo(Progress(1, BossIds.Magnet, BossIds.Warden, UnlockRules.Boss1), run);
-            Assert.That(menu.Goal.Info.GoalId, Is.EqualTo(UnlockRules.Win1));
-            Assert.That(menu.Goal.TitleText.Text, Is.EqualTo("BEAT WARDEN"), "fight-8 goal of the saved run");
+            // Daily-quest update: the box shows the day's quests; the boss prediction stays available as data.
+            Assert.That(menu.Goal.TitleText.Text, Is.EqualTo("DAILY QUESTS"));
+            Assert.That(NextGoalBox.GoalBoss(UnlockRules.Boss1, Progress(1, BossIds.Magnet, BossIds.Warden), run), Is.EqualTo(BossIds.Magnet), "fight 4 of the saved run");
+            Assert.That(NextGoalBox.GoalBoss(UnlockRules.Win1, Progress(1, BossIds.Magnet, BossIds.Warden), run), Is.EqualTo(BossIds.Warden), "fight 8 of the saved run");
         }
 
         [Test]
         public void GoalTitleForTheNextRunUsesTheBossItWillGet()
         {
-            var box = NextGoalBox.Create(root.transform, art, 8, 244, 10);
-            box.Show(new ProgressData());
-            Assert.That(box.TitleText.Text, Is.EqualTo("BEAT SHELL KING"), "first run on a save: SHELL KING");
-            box.Show(Progress(1, BossIds.ShellKing, BossIds.Mimic));
-            Assert.That(box.TitleText.Text, Is.EqualTo("BEAT MAGNET"), "never the last run's boss: MAGNET");
-            box.Show(Progress(1, BossIds.ShellKing, BossIds.Mimic, UnlockRules.Boss1));
-            Assert.That(box.TitleText.Text, Is.EqualTo("BEAT WARDEN"));
-            box.Show(Progress(2, BossIds.Magnet, BossIds.Warden, UnlockRules.Boss1));
-            Assert.That(box.TitleText.Text, Is.EqualTo("BEAT MIMIC"));
-            box.Show(Progress(3));   // played before bosses were remembered: the seed decides, so no name
-            Assert.That(box.TitleText.Text, Is.EqualTo("BEAT THE BOSS"));
+            Assert.That(NextGoalBox.GoalBoss(UnlockRules.Boss1, new ProgressData(), null), Is.EqualTo(BossIds.ShellKing), "first run on a save: SHELL KING");
+            Assert.That(NextGoalBox.GoalBoss(UnlockRules.Boss1, Progress(1, BossIds.ShellKing, BossIds.Mimic), null), Is.Null, "the next seed may pick any of three other bosses");
+            Assert.That(NextGoalBox.GoalBoss(UnlockRules.Boss1, Progress(3), null), Is.Null, "played before bosses were remembered: the seed decides");
             // The predicted boss is what the next run really rolls.
             foreach (uint seed in new uint[] { 1, 2, 3, 99 })
-                Assert.That(BossSelection.Choose(seed, Progress(1, BossIds.ShellKing, BossIds.Mimic)), Is.EqualTo(new[] { BossIds.Magnet, BossIds.Warden }));
+            {
+                var picks = BossSelection.Choose(seed, Progress(1, BossIds.ShellKing, BossIds.Mimic));
+                Assert.That(BossIds.Slots[0], Does.Contain(picks[0]));
+                Assert.That(BossIds.Slots[1], Does.Contain(picks[1]));
+                Assert.That(picks[0], Is.Not.EqualTo(BossIds.ShellKing));
+                Assert.That(picks[1], Is.Not.EqualTo(BossIds.Mimic));
+            }
         }
 
         [Test]

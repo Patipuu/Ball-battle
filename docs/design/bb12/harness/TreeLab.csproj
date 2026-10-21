@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <Optimize>true</Optimize>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../../BallBattleUnity/Assets/Scripts/Sim/**/*.cs"
+             Exclude="../../../../BallBattleUnity/Assets/Scripts/Sim/MatchSim.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Run/CardOffer.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Weapons/BladeRule.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Weapons/FangRule.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Weapons/PikeRule.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Weapons/BrawlerRule.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Weapons/VolleyRule.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Weapons/VenomRule.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Weapons/AegisRule.cs;../../../../BallBattleUnity/Assets/Scripts/Sim/Weapons/RigRule.cs" />
+    <Compile Include="RunBot.cs" />
+    <Compile Include="CardOffer.cs" />
+    <Compile Include="*Rule.cs" />
+    <Compile Include="MatchSim.cs" />
+    <Compile Include="TreeLabParams.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

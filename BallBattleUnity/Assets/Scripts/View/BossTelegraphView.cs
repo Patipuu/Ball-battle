@@ -9,7 +9,7 @@ namespace BallBattle.View
     /// BB-04 boss telegraphs, drawn from the sim's boss rule state every frame (never from events, so a skipped frame never loses
     /// one). No boss art exists yet (E:\ball-battle-art-hold\boss\ is absent), so everything is a placeholder made of 2x2 pixel
     /// dots: SHELL KING = blinking ring while warning, the 120-degree shell arc outline while ON; MAGNET = pulsing ring while
-    /// warning, rings closing in while pulling; WARDEN = blinking outline of the next walls while warning. MIMIC has none.
+    /// warning, rings closing in while pulling; MIMIC = marked blast circle; WARDEN = closing walls and crossfire lanes.
     /// </summary>
     public sealed class BossTelegraphView : MonoBehaviour
     {
@@ -18,6 +18,11 @@ namespace BallBattle.View
         public static readonly Color32 ShellColor = new Color32(170, 220, 255, 255);
         public static readonly Color32 WarnColor = new Color32(255, 200, 60, 255);
         public static readonly Color32 MagnetColor = new Color32(220, 90, 255, 255);
+        public static readonly Color32 HunterColor = new Color32(255, 105, 85, 255);
+        public static readonly Color32 BellColor = new Color32(255, 224, 90, 255);
+        public static readonly Color32 EmberColor = new Color32(255, 110, 45, 255);
+        public static readonly Color32 PrismColor = new Color32(110, 220, 255, 255);
+        public static readonly Color32 MimicColor = new Color32(255, 130, 220, 255);
 
         Sprite pixel;
         readonly List<SpriteRenderer> dots = new List<SpriteRenderer>();
@@ -61,7 +66,13 @@ namespace BallBattle.View
                         else if (shell.Warning)
                         {
                             Shown = "shell-warn";
-                            if (blink) Arc(bossPos, r + 4f, 0f, 360f, WarnColor);
+                            if (blink)
+                            {
+                                var target = sim.Balls[0];
+                                var facing = Mathf.Atan2(target.Pos.Y.ToFloat() - bossPos.y, target.Pos.X.ToFloat() - bossPos.x) * Mathf.Rad2Deg;
+                                Arc(bossPos, 95f, facing - BossTuning.ShellArcDeg * .5f,
+                                    facing + BossTuning.ShellArcDeg * .5f, WarnColor);
+                            }
                         }
                         break;
                     case MagnetRule magnet:
@@ -71,6 +82,7 @@ namespace BallBattle.View
                             var k = (sim.ActiveTick * 2) % 24;
                             Arc(bossPos, r + 28f - k, 0f, 360f, MagnetColor);
                             Arc(bossPos, r + 16f - (k % 12), 0f, 360f, MagnetColor);
+                            Arc(bossPos, 92f, 0f, 360f, WarnColor);
                         }
                         else if (magnet.Warning)
                         {
@@ -78,10 +90,29 @@ namespace BallBattle.View
                             Arc(bossPos, r + 5f + 3f * Mathf.Abs(Mathf.Sin(sim.ActiveTick * 0.25f)), 0f, 360f, MagnetColor);
                         }
                         break;
+                    case MimicRule mimic:
+                        if (mimic.EchoWarning)
+                        {
+                            Shown = "mimic-echo";
+                            var mark = new Vector2(mimic.EchoMark.X.ToFloat(), mimic.EchoMark.Y.ToFloat());
+                            Arc(mark, BossTuning.MimicEchoRadius.ToFloat(), 0, 360, MimicColor);
+                        }
+                        break;
                     case WardenRule warden:
+                        if (warden.CrossWarning)
+                        {
+                            Shown = "warden-cross";
+                            var x = warden.CrossMark.X.ToFloat();
+                            var y = warden.CrossMark.Y.ToFloat();
+                            var half = BossTuning.WardenCrossHalfWidth.ToFloat();
+                            Line(new Vector2(x - half, sim.Arena.Bottom.ToFloat()), new Vector2(x - half, sim.Arena.Top.ToFloat()), WarnColor);
+                            Line(new Vector2(x + half, sim.Arena.Bottom.ToFloat()), new Vector2(x + half, sim.Arena.Top.ToFloat()), WarnColor);
+                            Line(new Vector2(sim.Arena.Left.ToFloat(), y - half), new Vector2(sim.Arena.Right.ToFloat(), y - half), WarnColor);
+                            Line(new Vector2(sim.Arena.Left.ToFloat(), y + half), new Vector2(sim.Arena.Right.ToFloat(), y + half), WarnColor);
+                        }
                         if (warden.Warning)
                         {
-                            Shown = "warden-warn";
+                            if (!warden.CrossWarning) Shown = "warden-warn";
                             if (blink)
                             {
                                 var w = WardenRule.SizeAfter(sim.Config.ArenaWidth, warden.Steps + 1).ToFloat();
@@ -89,6 +120,56 @@ namespace BallBattle.View
                                 w = Mathf.Min(w, sim.Arena.Width.ToFloat());
                                 h = Mathf.Min(h, sim.Arena.Height.ToFloat());
                                 Outline(-w * 0.5f, -h * 0.5f, w * 0.5f, h * 0.5f, WarnColor);
+                            }
+                        }
+                        break;
+                    case HunterRule hunter:
+                        if (hunter.Warning || hunter.Charging)
+                        {
+                            Shown = hunter.Warning ? "hunter-mark" : "hunter-charge";
+                            var mark = new Vector2(hunter.Mark.X.ToFloat(), hunter.Mark.Y.ToFloat());
+                            Arc(mark, 38, 0, 360, HunterColor);
+                            Line(bossPos, mark, HunterColor);
+                        }
+                        break;
+                    case BellRule bell:
+                        if (bell.Warning || bell.Waving)
+                        {
+                            Shown = bell.Warning ? "bell-warn" : "bell-wave";
+                            Arc(bossPos, bell.Warning ? 88 : bell.WaveRadius.ToFloat(), 0, 360, BellColor);
+                        }
+                        break;
+                    case EmberRule ember:
+                        if (ember.Warning || ember.Burning)
+                        {
+                            Shown = ember.Warning ? "ember-mark" : "ember-fire";
+                            var mark = new Vector2(ember.Mark.X.ToFloat(), ember.Mark.Y.ToFloat());
+                            Arc(mark, 42, 0, 360, EmberColor);
+                            if (ember.Burning) Arc(mark, 27, 0, 360, EmberColor);
+                        }
+                        break;
+                    case PrismRule prism:
+                        if (prism.Warning || prism.Firing)
+                        {
+                            Shown = prism.Warning ? "prism-warn" : "prism-beam";
+                            var lane = prism.Lane.ToFloat();
+                            if (prism.Horizontal)
+                            {
+                                Line(new Vector2(sim.Arena.Left.ToFloat(), lane - 16),
+                                    new Vector2(sim.Arena.Right.ToFloat(), lane - 16), PrismColor);
+                                Line(new Vector2(sim.Arena.Left.ToFloat(), lane + 16),
+                                    new Vector2(sim.Arena.Right.ToFloat(), lane + 16), PrismColor);
+                                if (prism.Firing) Line(new Vector2(sim.Arena.Left.ToFloat(), lane),
+                                    new Vector2(sim.Arena.Right.ToFloat(), lane), PrismColor);
+                            }
+                            else
+                            {
+                                Line(new Vector2(lane - 16, sim.Arena.Bottom.ToFloat()),
+                                    new Vector2(lane - 16, sim.Arena.Top.ToFloat()), PrismColor);
+                                Line(new Vector2(lane + 16, sim.Arena.Bottom.ToFloat()),
+                                    new Vector2(lane + 16, sim.Arena.Top.ToFloat()), PrismColor);
+                                if (prism.Firing) Line(new Vector2(lane, sim.Arena.Bottom.ToFloat()),
+                                    new Vector2(lane, sim.Arena.Top.ToFloat()), PrismColor);
                             }
                         }
                         break;
@@ -114,6 +195,13 @@ namespace BallBattle.View
         {
             for (var x = l; x <= r; x += 4f) { Put(new Vector2(x, b), color); Put(new Vector2(x, t), color); }
             for (var y = b; y <= t; y += 4f) { Put(new Vector2(l, y), color); Put(new Vector2(r, y), color); }
+        }
+
+        void Line(Vector2 a, Vector2 b, Color32 color)
+        {
+            var length = Vector2.Distance(a, b);
+            var steps = Mathf.Max(1, Mathf.CeilToInt(length / 4f));
+            for (var i = 0; i <= steps; i++) Put(Vector2.Lerp(a, b, i / (float)steps), color);
         }
 
         void Put(Vector2 p, Color32 color)

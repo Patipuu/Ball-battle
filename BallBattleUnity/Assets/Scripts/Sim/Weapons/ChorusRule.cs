@@ -2,7 +2,7 @@ namespace BallBattle.Sim.Weapons
 {
     /// <summary>
     /// BB-14 BGLGXLQ, reworked in BB-18 (Phu, 16/10): five colour orbs circle the ball - PINK, GREEN, BLUE, YELLOW, RED.
-    /// An unlit orb that touches an enemy lights its colour (any order; a lit orb touching again does nothing), nicks the
+    /// An unlit orb that touches an enemy lights its colour (any order; touching a lit orb refreshes its timer), nicks the
     /// enemy and turns on that colour's gift: PINK heals on each melee hit, GREEN raises top speed, BLUE gives one shield
     /// charge, YELLOW adds melee damage, RED burns the enemy it touched. When all five are lit, UNITY fires: every enemy within
     /// the radius takes base + per-ring damage, then the ring goes dark and starts again; each completed ring adds melee
@@ -190,8 +190,31 @@ namespace BallBattle.Sim.Weapons
                 pendingSecondUnity = -1;
                 Burst(pendingSecondDamage);
             }
-            if (ManualUnity) Fade();
+            if (ManualUnity)
+            {
+                RefreshLitTouches();
+                Fade();
+            }
             Touch();
+        }
+
+        /// <summary>Contact keeps an existing colour lit without reapplying its gift or bypassing the unlit-orb cooldown.</summary>
+        void RefreshLitTouches()
+        {
+            if (!Self.Alive) return;
+            var reach = TributeTuning.ChorusOrbRadius;
+            for (var c = Pink; c <= Red; c++)
+            {
+                if (!IsLit(c)) continue;
+                var at = Orb(c);
+                foreach (var other in Sim.Balls)
+                {
+                    if (other == Self || !other.Alive || other.Hp <= Fix.Zero) continue;
+                    if ((other.Pos - at).LengthSq > FixMath.Sq(reach + other.Radius)) continue;
+                    litAt[c - 1] = Sim.ActiveTick;
+                    break;
+                }
+            }
         }
 
         /// <summary>An unlit orb touching an enemy body lights its colour (at most one colour per ChorusLightGapTicks).</summary>
