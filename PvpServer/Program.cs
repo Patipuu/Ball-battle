@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -68,6 +68,10 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("accounts", http =>
         RateLimitPartition.GetFixedWindowLimiter(Ip(http), _ => new FixedWindowRateLimiterOptions
         { PermitLimit = 20, Window = TimeSpan.FromHours(1), QueueLimit = 0 }));   // phones behind one carrier NAT share an IP
+    // Sign-in and sign-up: enough for typos, too few to guess passwords.
+    options.AddPolicy("auth", http =>
+        RateLimitPartition.GetFixedWindowLimiter(Ip(http), _ => new FixedWindowRateLimiterOptions
+        { PermitLimit = 30, Window = TimeSpan.FromMinutes(10), QueueLimit = 0 }));
 });
 
 var app = builder.Build();
@@ -79,6 +83,13 @@ app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", protocol = 1 }));
 app.MapPost("/v1/accounts", (PvpStore store) => Safe(store.Register)).RequireRateLimiting("accounts");
 
+app.MapPost("/v1/auth/register", (HttpRequest request, PvpStore store, AuthRequest body) =>
+    // An anonymous account signed in on this device (old PvP token) is upgraded instead of a new one being made.
+    Safe(() => store.RegisterNamed(body, store.Authenticate(request.Headers.Authorization)))).RequireRateLimiting("auth");
+app.MapPost("/v1/auth/login", (PvpStore store, AuthRequest body) => Safe(() => store.Login(body))).RequireRateLimiting("auth");
+app.MapPost("/v1/auth/logout", (HttpRequest request, PvpStore store) => Authorized(request, store, id => store.Logout(id, request.Headers.Authorization)));
+app.MapGet("/v1/me/save", (HttpRequest request, PvpStore store) => Authorized(request, store, store.GetSave));
+app.MapPut("/v1/me/save", (HttpRequest request, PvpStore store, SaveRequest body) => Authorized(request, store, id => store.PutSave(id, body)));
 app.MapGet("/v1/me", (HttpRequest request, PvpStore store) => Authorized(request, store, store.Me));
 app.MapPut("/v1/me/name", (HttpRequest request, PvpStore store, NameRequest body) => Authorized(request, store, id => store.Rename(id, body)));
 app.MapPut("/v1/me/defense", (HttpRequest request, PvpStore store, PublishRequest body) => Authorized(request, store, id => store.Publish(id, body)));

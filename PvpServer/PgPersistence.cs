@@ -20,6 +20,27 @@ namespace BallBattle.PvpServer
             using var cmd = new NpgsqlCommand(
                 "CREATE TABLE IF NOT EXISTS pvp_state (id int PRIMARY KEY, data text NOT NULL, updated_utc timestamptz NOT NULL DEFAULT now())", conn);
             cmd.ExecuteNonQuery();
+            using var blobs = new NpgsqlCommand(
+                "CREATE TABLE IF NOT EXISTS pvp_blob (key text PRIMARY KEY, data text NOT NULL, updated_utc timestamptz NOT NULL DEFAULT now())", conn);
+            blobs.ExecuteNonQuery();
+        }
+
+        public string LoadBlob(string key)
+        {
+            using var conn = Open();
+            using var cmd = new NpgsqlCommand("SELECT data FROM pvp_blob WHERE key = @k", conn);
+            cmd.Parameters.AddWithValue("k", key);
+            return cmd.ExecuteScalar() as string;
+        }
+
+        public void SaveBlob(string key, string data)
+        {
+            using var conn = Open();
+            using var cmd = new NpgsqlCommand(
+                "INSERT INTO pvp_blob (key, data, updated_utc) VALUES (@k, @d, now()) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_utc = now()", conn);
+            cmd.Parameters.AddWithValue("k", key);
+            cmd.Parameters.AddWithValue("d", data);
+            cmd.ExecuteNonQuery();
         }
 
         NpgsqlConnection Open()

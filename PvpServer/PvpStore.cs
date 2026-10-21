@@ -81,7 +81,153 @@ namespace BallBattle.PvpServer
             var token = header.Substring(7);
             if (token.Length != 64) return null;
             var hash = Hash(token);
-            lock (gate) return data.Accounts.FirstOrDefault(a => a.TokenHash == hash)?.Id;
+            lock (gate) return data.Accounts.FirstOrDefault(a => !a.IsBot && (a.TokenHash == hash || (a.TokenHashes != null && a.TokenHashes.Contains(hash))))?.Id;
+        }
+
+        // ---- Name + password accounts (Phu 21/10: the player names the account and sets a password on first launch) ----
+
+        /// <summary>Devices signed in at once per account; the oldest token is dropped beyond this.</summary>
+        public const int MaxTokens = 5;
+        public const int MinLogin = 3, MaxLogin = 12, MinPassword = 6, MaxPassword = 64;
+        public const int Pbkdf2Iterations = 100_000;
+        /// <summary>Largest cloud save accepted (characters of JSON).</summary>
+        public const int MaxSaveChars = 512 * 1024;
+
+        /// <summary>Upper-case A-Z and 0-9, 3..12 characters (the game font draws them; names never start with BOT).</summary>
+        public static string NormalizeLogin(string name)
+        {
+            var n = (name ?? "").Trim().ToUpperInvariant();
+            if (n.Length < MinLogin || n.Length > MaxLogin || !n.All(c => (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')))
+                throw new ArgumentException("Name: 3-12 letters A-Z or digits.");
+            if (n.StartsWith("BOT")) throw new ArgumentException("That name is kept for bots.");
+            return n;
+        }
+
+        static void CheckPassword(string password)
+        {
+            if (password == null || password.Length < MinPassword || password.Length > MaxPassword || password.Any(char.IsControl))
+                throw new ArgumentException("Password: 6-64 characters.");
+        }
+
+        /// <summary>
+        /// New account with a name and password. <paramref name="claimId"/> (an anonymous account signed in on this device) is
+        /// upgraded in place instead, so its MMR, defense and history stay.
+        /// </summary>
+        public object RegisterNamed(AuthRequest request, string claimId = null)
+        {
+            var login = NormalizeLogin(request?.Name);
+            CheckPassword(request?.Password);
+            var (salt, hash) = HashPassword(request.Password, Pbkdf2Iterations);
+            lock (gate)
+            {
+                if (data.Accounts.Any(a => string.Equals(a.Login, login, StringComparison.Ordinal))) throw new ArgumentException("That name is taken.");
+                var account = claimId == null ? null : data.Accounts.FirstOrDefault(a => a.Id == claimId && !a.IsBot && a.Login == null);
+                if (account == null)
+                {
+                    account = new Account { Id = Guid.NewGuid().ToString("N") };
+                    data.Accounts.Add(account);
+                }
+                account.Login = login;
+                account.Name = login;
+                account.PasswordSalt = salt;
+                account.PasswordHash = hash;
+                account.PasswordIterations = Pbkdf2Iterations;
+                var token = NewToken(account);
+                Save();
+                return new { token, account = Self(account) };
+            }
+        }
+
+        public object Login(AuthRequest request)
+        {
+            string login;
+            try { login = NormalizeLogin(request?.Name); }
+            catch (ArgumentException) { throw new ArgumentException("Wrong name or password."); }
+            Account account;
+            lock (gate) account = data.Accounts.FirstOrDefault(a => a.Login == login && !a.IsBot);
+            // Hash even for an unknown name, so the reply time does not tell which names exist.
+            var ok = account != null && VerifyPassword(request?.Password ?? "", account.PasswordSalt, account.PasswordHash, account.PasswordIterations);
+            if (account == null) HashPassword(request?.Password ?? "", Pbkdf2Iterations);
+            if (!ok) throw new ArgumentException("Wrong name or password.");
+            lock (gate)
+            {
+                var token = NewToken(account);
+                Save();
+                return new { token, account = Self(account) };
+            }
+        }
+
+        /// <summary>Signs this device out (its token stops working).</summary>
+        public object Logout(string id, string header)
+        {
+            lock (gate)
+            {
+                var account = Get(id);
+                var hash = Hash(header.Substring(7));
+                account.TokenHashes?.Remove(hash);
+                if (account.TokenHash == hash) account.TokenHash = null;
+                Save();
+                return new { ok = true };
+            }
+        }
+
+        string NewToken(Account account)
+        {
+            var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            if (account.TokenHashes == null) account.TokenHashes = new List<string>();
+            account.TokenHashes.Add(Hash(token));
+            while (account.TokenHashes.Count > MaxTokens) account.TokenHashes.RemoveAt(0);
+            return token;
+        }
+
+        static (string salt, string hash) HashPassword(string password, int iterations)
+        {
+            var salt = RandomNumberGenerator.GetBytes(16);
+            var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, HashAlgorithmName.SHA256, 32);
+            return (Convert.ToBase64String(salt), Convert.ToBase64String(hash));
+        }
+
+        static bool VerifyPassword(string password, string salt, string expected, int iterations)
+        {
+            if (string.IsNullOrEmpty(salt) || string.IsNullOrEmpty(expected) || iterations <= 0) return false;
+            var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), Convert.FromBase64String(salt), iterations, HashAlgorithmName.SHA256, 32);
+            return CryptographicOperations.FixedTimeEquals(hash, Convert.FromBase64String(expected));
+        }
+
+        // ---- Cloud save: the game's save file, so a name + password brings progress to another device ----
+
+        public object GetSave(string id)
+        {
+            lock (gate)
+            {
+                var account = Get(id);
+                var blob = account.SaveUtc == default ? null : persistence.LoadBlob("save:" + id);
+                return new { data = blob ?? "", version = blob == null ? 0 : account.SaveVersion, savedUtc = blob == null ? "" : account.SaveUtc.ToString("o") };
+            }
+        }
+
+        /// <summary>
+        /// Stores the save. <c>BaseVersion</c> must be the version this device last read or wrote (optimistic check), so two
+        /// devices cannot silently overwrite each other; a mismatch answers "conflict" with the stored version.
+        /// </summary>
+        public object PutSave(string id, SaveRequest request)
+        {
+            var text = request?.Data;
+            if (string.IsNullOrEmpty(text) || text.Length > MaxSaveChars) throw new ArgumentException("Save is empty or too large.");
+            try { using var _ = JsonDocument.Parse(text); }
+            catch (JsonException) { throw new ArgumentException("Save is not valid JSON."); }
+            lock (gate)
+            {
+                var account = Get(id);
+                if (account.Login == null) throw new ArgumentException("Set a name and password first.");
+                var current = account.SaveUtc == default ? 0 : account.SaveVersion;
+                if (request.BaseVersion != current) return new { ok = false, conflict = true, version = current };
+                persistence.SaveBlob("save:" + id, text);
+                account.SaveVersion = current + 1;
+                account.SaveUtc = Clock();
+                Save();
+                return new { ok = true, conflict = false, version = account.SaveVersion };
+            }
         }
 
         public object Me(string id)
@@ -322,7 +468,7 @@ namespace BallBattle.PvpServer
             wins = a.Wins, losses = a.Losses, defenseWins = a.DefenseWins, defenseLosses = a.DefenseLosses,
             ready = Ready(a) };
 
-        object Self(Account a) => new { id = a.Id, name = a.Name, mmr = a.Mmr, matches = a.Matches,
+        object Self(Account a) => new { id = a.Id, name = a.Name, login = a.Login ?? "", saveVersion = a.SaveUtc == default ? 0 : a.SaveVersion, mmr = a.Mmr, matches = a.Matches,
             wins = a.Wins, losses = a.Losses, defenseWins = a.DefenseWins, defenseLosses = a.DefenseLosses,
             ready = Ready(a), roster = a.Roster, banBall = a.BanBall, banArena = a.BanArena,
             activeChallengeId = data.Challenges.Where(c => c.ChallengerId == a.Id && Open(c)).OrderByDescending(c => c.CreatedUtc).Select(c => c.Id).FirstOrDefault() };
@@ -374,6 +520,9 @@ namespace BallBattle.PvpServer
         /// <summary>The saved JSON, or null / empty when nothing was saved yet.</summary>
         string Load();
         void Save(string json);
+        /// <summary>Large per-account data kept outside the main document (cloud saves). Null when missing.</summary>
+        string LoadBlob(string key);
+        void SaveBlob(string key, string data);
     }
 
     /// <summary>JSON file with an atomic temp-file rename (the Oracle VM / local setup).</summary>
@@ -382,6 +531,15 @@ namespace BallBattle.PvpServer
         readonly string path;
         public FilePersistence(string path) { this.path = Path.GetFullPath(path); }
         public string Load() => File.Exists(path) ? File.ReadAllText(path) : null;
+        string BlobPath(string key) => Path.Combine(Path.GetDirectoryName(path), "blobs", key.Replace(':', '_') + ".json");
+        public string LoadBlob(string key) { var p = BlobPath(key); return File.Exists(p) ? File.ReadAllText(p) : null; }
+        public void SaveBlob(string key, string data)
+        {
+            var p = BlobPath(key);
+            Directory.CreateDirectory(Path.GetDirectoryName(p));
+            File.WriteAllText(p + ".tmp", data);
+            File.Move(p + ".tmp", p, true);
+        }
         public void Save(string json)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));

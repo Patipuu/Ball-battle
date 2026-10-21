@@ -267,7 +267,7 @@ namespace BallBattle.View
         {
             if (Sim == null) return;
             var dt = Mathf.Min(frameSeconds, MaxFrameSeconds);
-            if (Paused)
+            if (Paused || GuideView.Blocking)   // BI is talking: the fight waits
             {
                 accumulator = 0f;
                 Draw(0f, dt);

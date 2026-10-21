@@ -1,0 +1,105 @@
+using System;
+using System.Runtime.InteropServices;
+using UnityEngine;
+
+namespace BallBattle.View
+{
+    /// <summary>
+    /// Typing a short text (account name, password) on every platform the game ships on:
+    /// - WebGL (itch.io): an HTML input box over the canvas (BallBattleSync.jslib), so phones get their own keyboard;
+    /// - Android / iOS: the system keyboard (TouchScreenKeyboard), secure for passwords;
+    /// - Editor / desktop: keys typed while the field is open (Enter = OK, Esc = cancel), shown live through <see cref="Typing"/>.
+    /// One request at a time; the callback gets the text, or null when cancelled.
+    /// </summary>
+    public sealed class TextEntry : MonoBehaviour
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        [DllImport("__Internal")] static extern void BB_OpenTextInput(string objectName, string title, string value, int password, int maxLength);
+#endif
+        public const string ObjectName = "BallBattleTextEntry";
+
+        static TextEntry instance;
+        Action<string> done;
+        TouchScreenKeyboard keyboard;
+        bool desktop;
+        int maxLength;
+        string typed = "";
+
+        /// <summary>Test hook: answers every request at once (null = cancel).</summary>
+        public static Func<string, string> TestAnswer;
+        /// <summary>Desktop typing in progress (the field shows it); null when no desktop entry is open.</summary>
+        public static string Typing => instance != null && instance.desktop ? instance.typed : null;
+        public static bool Open => instance != null && instance.done != null;
+
+        static TextEntry Instance
+        {
+            get
+            {
+                if (instance != null) return instance;
+                var go = new GameObject(ObjectName);
+                DontDestroyOnLoad(go);
+                return instance = go.AddComponent<TextEntry>();
+            }
+        }
+
+        public static void Request(string title, string current, bool password, int maxLength, Action<string> onDone)
+        {
+            if (TestAnswer != null) { onDone?.Invoke(TestAnswer(title)); return; }
+            var e = Instance;
+            e.Finish(null);   // a request left open is cancelled
+            e.done = onDone;
+            e.maxLength = maxLength;
+            e.typed = current ?? "";
+            e.desktop = false;
+#if UNITY_WEBGL && !UNITY_EDITOR
+            WebGLInput.captureAllKeyboardInput = false;   // let the HTML box get the keys
+            BB_OpenTextInput(ObjectName, UiVietnamese.Translate(title), current ?? "", password ? 1 : 0, maxLength);
+#else
+            if (TouchScreenKeyboard.isSupported && Application.isMobilePlatform)
+                e.keyboard = TouchScreenKeyboard.Open(current ?? "", TouchScreenKeyboardType.Default, false, false, password, false, UiVietnamese.Translate(title), maxLength);
+            else e.desktop = true;
+#endif
+        }
+
+        public static void Cancel() { if (instance != null) instance.Finish(null); }
+
+        // Called from the WebGL plugin (SendMessage).
+        void OnTextEntry(string value) => Finish(value ?? "");
+        void OnTextEntryCancel(string _) => Finish(null);
+
+        void Finish(string value)
+        {
+            var callback = done;
+            done = null;
+#if UNITY_WEBGL && !UNITY_EDITOR
+            WebGLInput.captureAllKeyboardInput = true;
+#endif
+            keyboard = null;
+            desktop = false;
+            callback?.Invoke(value);
+        }
+
+        void Update()
+        {
+            if (done == null) return;
+            if (keyboard != null)
+            {
+                switch (keyboard.status)
+                {
+                    case TouchScreenKeyboard.Status.Done: Finish(keyboard.text ?? ""); break;
+                    case TouchScreenKeyboard.Status.Canceled:
+                    case TouchScreenKeyboard.Status.LostFocus: Finish(null); break;
+                }
+                return;
+            }
+            if (!desktop) return;
+            foreach (var c in Input.inputString)
+            {
+                if (c == '\b') { if (typed.Length > 0) typed = typed.Substring(0, typed.Length - 1); }
+                else if (c == '\n' || c == '\r') { Finish(typed); return; }
+                else if (!char.IsControl(c) && typed.Length < maxLength) typed += c;
+            }
+            if (Input.GetKeyDown(KeyCode.Escape)) Finish(null);
+        }
+    }
+}

@@ -20,13 +20,27 @@ namespace BallBattle.View
         public static readonly Rect EnArea = ScreenRect(35, 280, 40, 28);
         public static readonly Rect ViArea = ScreenRect(85, 280, 40, 28);
         public static readonly Rect HintsArea = ScreenRect(35, 310, 200, 24);
-        public static readonly Rect BackArea = ScreenRect(75, 340, 120, 32);
+        /// <summary>21/10: ACCOUNT (who is signed in, log out, save choice) and REPLAY GUIDE (BI explains everything again).</summary>
+        public static readonly Rect AccountArea = ScreenRect(35, 342, 200, 24);
+        public static readonly Rect GuideArea = ScreenRect(35, 372, 200, 24);
+        public static readonly Rect BackArea = ScreenRect(75, 410, 120, 32);
 
         /// <summary>Live value changes while tapping/dragging (volume changes at once; nothing is saved here).</summary>
         public event Action<int> MusicChanged, SfxChanged;
         public event Action BackRequested;
         public event Action<Lang> LanguageChanged;
         public event Action<bool> HintsChanged;
+        public event Action AccountRequested, GuideReplayRequested;
+        PixelButton accountButton, guideButton;
+        public PixelButton AccountButton => accountButton;
+        public PixelButton GuideButton => guideButton;
+
+        /// <summary>"ACCOUNT: NAME" when signed in, "ACCOUNT: SIGN IN" otherwise (call when Settings opens).</summary>
+        public void RefreshAccount()
+        {
+            accountButton.SetText(AccountSession.HasAccount ? "ACCOUNT: " + AccountSession.Name : "ACCOUNT: SIGN IN", Palette.WallWarning);
+            guideButton.SetText("REPLAY GUIDE", Palette.WallWarning);
+        }
         /// <summary>The pointer was released after pressing a slider: the moment to save (SettingsAudio).</summary>
         public event Action Released;
 
@@ -67,6 +81,11 @@ namespace BallBattle.View
             hintsButton = PixelButton.Create(transform, "Hints", art, HintsArea, "HINTS: ON", 1,
                 Palette.Floor, Palette.WallWarning, Palette.WallWarning, order + 2);
             hintsButton.Clicked += () => { SetHintsOff(!hintsOff); HintsChanged?.Invoke(hintsOff); };
+
+            accountButton = PixelButton.Create(transform, "Account", art, AccountArea, "ACCOUNT: SIGN IN", 1, Palette.Floor, Palette.WallWarning, Palette.WallWarning, order + 2);
+            accountButton.Clicked += () => AccountRequested?.Invoke();
+            guideButton = PixelButton.Create(transform, "ReplayGuide", art, GuideArea, "REPLAY GUIDE", 1, Palette.Floor, Palette.WallWarning, Palette.WallWarning, order + 2);
+            guideButton.Clicked += () => GuideReplayRequested?.Invoke();
 
             // Primary button: #F4C542 fill, dark text, the shared BACK text size.
             var back = PixelButton.Create(transform, "Back", art, BackArea, RunStrings.Back, RunUi.BackTextScale, Palette.PrimaryFill, Palette.PrimaryFill, Palette.PrimaryText, order + 2);

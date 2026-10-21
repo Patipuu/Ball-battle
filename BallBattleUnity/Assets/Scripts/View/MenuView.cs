@@ -471,10 +471,12 @@ namespace BallBattle.View
             hub.gameObject.SetActive(false);
             versusPage.gameObject.SetActive(false);
             settings.gameObject.SetActive(true);
+            settings.RefreshAccount();
             PixelButton.NoteShownAll(settings.transform);
         }
 
         public bool SettingsOpen => settings.gameObject.activeSelf;
+        public bool CodexOpen => codex != null && codex.gameObject.activeSelf;
 
         void CloseSettings()
         {

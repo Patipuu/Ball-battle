@@ -19,6 +19,10 @@ namespace BallBattle.View
         public RunController Run { get; private set; }
         public PvpView Pvp { get; private set; }
         public AudioDirector Audio { get; private set; }
+        /// <summary>21/10: name + password account screen and BI, the guide ball.</summary>
+        public AccountView Account { get; private set; }
+        public GuideView Guide { get; private set; }
+        bool guideHintsOff;
 
         ISaveStore store;
 
@@ -44,6 +48,13 @@ namespace BallBattle.View
             Pvp = PvpView.Create(transform, Arena.Art, store, Arena);
             Pvp.Closed += () => Menu.Show(true);
             Menu.PvpRequested += () => { Menu.Show(false); Pvp.Open(); };
+            Account = AccountView.Create(transform, Arena.Art, store);
+            Guide = GuideView.Create(transform, Arena.Art);
+            // PvP needs a named account: sign in first, then straight back into PvP.
+            Pvp.AccountNeeded += () => OpenAccount(AccountView.Mode.Required, () => { if (AccountSession.HasAccount) { Menu.Show(false); Pvp.Open(); } });
+            Menu.Settings.AccountRequested += () => OpenAccount(AccountView.Mode.Manage, () => Menu.ShowSettings());
+            Menu.Settings.GuideReplayRequested += () => { GuideView.ResetSeen(); guideHintsOff = false; Menu.ShowHub(); };
+            Menu.SettingsClosed += ReadGuideSetting;
             menuChest = ChestView.Create(transform, Arena.Art);   // BB-12b: welcome chests opened from the menu
             menuChest.Collected += RefreshMenuInfo;
             Menu.Store = store;   // BB-12c: BALLS reads and saves progress
@@ -67,6 +78,8 @@ namespace BallBattle.View
                 var (progress, resumable) = Run.Flow.PeekSave();
                 Menu.SetRunInfo(progress, resumable);
                 Menu.Show(true);
+                guideHintsOff = progress?.Onboarding?.HintsOff == true;
+                StartCoroutine(AccountSession.Upload(store));   // cloud copy of the save (at most every 30 s)
                 if (OldRunNotice.Pending(store)) Menu.ShowOldRunNotice(() => OldRunNotice.Dismiss(store));   // once: OK clears the flag
             };
 
@@ -173,7 +186,88 @@ namespace BallBattle.View
             return VersusScreen(Flow.Current, Menu.SettingsOpen, Menu.VersusOpen);
         }
 
-        void Start() { if (!HeadlessRoundRobin.Active) Flow.ToMenu(); }
+        void Start()
+        {
+            if (HeadlessRoundRobin.Active) return;
+            Flow.ToMenu();
+            // First launch (or signed out): pick a name and a password before anything else; BI explains why.
+            if (AccountView.ShowOnLaunch && !AccountSession.HasAccount && !AccountSession.SkippedThisSession)
+                OpenAccount(AccountView.Mode.FirstLaunch, null);
+        }
+
+        /// <summary>Show the ACCOUNT screen over the menu; <paramref name="after"/> runs once it closes (the hub is back by then).</summary>
+        public void OpenAccount(AccountView.Mode mode, System.Action after)
+        {
+            Menu.Show(false);
+            Account.Open(mode, () =>
+            {
+                if (Flow.Current == MatchFlow.State.Menu) { Menu.Show(true); RefreshMenuInfo(); }
+                after?.Invoke();
+            });
+        }
+
+        void ReadGuideSetting()
+        {
+            var (progress, _) = Run.Flow.PeekSave();
+            guideHintsOff = progress?.Onboarding?.HintsOff == true;
+        }
+
+        /// <summary>
+        /// BI's next scene for what is on screen now (the first one not seen yet), or null. Order matters inside a screen:
+        /// e.g. the Run title explains chapters and heat before the HEAT 2 scene, PvP introduces itself before its first screen.
+        /// </summary>
+        public GuideScene GuideSceneNow()
+        {
+            if (Account.IsOpen) return Account.CurrentMode == AccountView.Mode.Manage ? null : First(GuideScripts.Welcome);
+            if (guideHintsOff || TextEntry.Open) return null;
+            if ((menuChest != null && menuChest.IsOpen) || Run.Chest.IsOpen) return null;
+            if (Run.IsOpen)
+            {
+                if (Run.Overlay.PauseOpen) return null;
+                var run = Run.Flow.Run;
+                switch (Run.Flow.Current)
+                {
+                    case RunFlow.State.Title:
+                        var heatOpen = false;
+                        for (var c = 0; c < BallBattle.Sim.Run.Chapters.Count; c++)
+                            if (BallBattle.Sim.Run.HeatRules.Unlocked(Run.Flow.Progress, c) > 0) heatOpen = true;
+                        return First(GuideScripts.RunTitle, heatOpen ? GuideScripts.Heat : null);
+                    case RunFlow.State.PickWeapon: return First(GuideScripts.Pick);
+                    case RunFlow.State.StartPick: return First(GuideScripts.StartPick);
+                    case RunFlow.State.Prepare: return run != null && run.IsBossFight ? First(GuideScripts.Prepare, GuideScripts.Boss) : First(GuideScripts.Prepare);
+                    case RunFlow.State.Countdown: return First(GuideScripts.Fight);
+                    case RunFlow.State.FightResult: return First(GuideScripts.Result);
+                    case RunFlow.State.Summary: return First(GuideScripts.Summary);
+                    default: return null;
+                }
+            }
+            if (Pvp.IsOpen)
+            {
+                switch (Pvp.GuidePhase)
+                {
+                    case "Setup": return First(GuideScripts.PvpIntro, GuideScripts.PvpSetup);
+                    case "Offers": return First(GuideScripts.PvpIntro, GuideScripts.PvpOffers);
+                    case "Ban": return First(GuideScripts.PvpBan);
+                    case "Pick": return First(GuideScripts.PvpPick);
+                    case "Result": return First(GuideScripts.PvpResult);
+                    default: return null;
+                }
+            }
+            if (Flow.Current != MatchFlow.State.Menu || Menu.NoticeOpen) return null;
+            if (Menu.SettingsOpen) return First(GuideScripts.Settings);
+            if (Menu.Balls != null && Menu.Balls.IsOpen) return Menu.Balls.Tree != null && Menu.Balls.Tree.IsOpen ? First(GuideScripts.Tree) : First(GuideScripts.Balls);
+            if (Menu.CodexOpen) return First(GuideScripts.Codex);
+            if (!Menu.HubVisible || Menu.NewRunDialog.IsOpen) return null;
+            var stage = Menu.MenuStage;
+            if (stage == 0) return First(GuideScripts.MenuStart);
+            return First(GuideScripts.MenuStart, GuideScripts.MenuMore, stage >= 2 ? GuideScripts.MenuPvp : null);
+        }
+
+        static GuideScene First(params GuideScene[] scenes)
+        {
+            foreach (var s in scenes) if (s != null && !GuideView.Seen(s.Id)) return s;
+            return null;
+        }
 
         ChestView menuChest;
         public ChestView MenuChest => menuChest;
@@ -215,8 +309,12 @@ namespace BallBattle.View
 
         void Update()
         {
+            if (!Guide.Showing) { var scene = GuideSceneNow(); if (scene != null) Guide.Offer(scene); }
+
             // Esc on desktop = Back on Android: leave the match (or Run mode, which is saved) for the menu.
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape) && Guide.Showing) Guide.PressSkip();
+            else if (Input.GetKeyDown(KeyCode.Escape) && Account.IsOpen) { if (Account.CurrentMode != AccountView.Mode.FirstLaunch) Account.Close(); }
+            else if (Input.GetKeyDown(KeyCode.Escape) && !TextEntry.Open)
             {
                 var back = true;
                 if (Run.IsOpen) Run.Flow.Close();

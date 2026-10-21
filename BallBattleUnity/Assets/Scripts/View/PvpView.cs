@@ -61,6 +61,10 @@ namespace BallBattle.View
         bool busy, offline;
         long lastStatus;
         public event Action Closed;
+        /// <summary>21/10: PvP needs a named account. Raised (and the page closes) when there is none or the server forgot it.</summary>
+        public event Action AccountNeeded;
+        /// <summary>Screen the guide explains: "Setup", "Offers", "Ban", "Pick", "Result", "History"; "" while loading or replaying.</summary>
+        public string GuidePhase => !IsOpen || IsReplaying || busy || phase == Phase.Loading ? "" : phase.ToString();
         public bool IsOpen => gameObject.activeSelf;
         public bool IsReplaying => IsOpen && !panel.gameObject.activeSelf;
         public bool IsResult => IsOpen && phase == Phase.Result && !IsReplaying;
@@ -140,6 +144,7 @@ namespace BallBattle.View
 
         public void Open()
         {
+            if (!AccountSession.HasAccount) { AccountNeeded?.Invoke(); return; }
             gameObject.SetActive(true);
             panel.gameObject.SetActive(true);
             token = PlayerPrefs.GetString("pvp_token", "");
@@ -174,21 +179,17 @@ namespace BallBattle.View
                 yield return Request("GET", "/v1/me", null, response => profile = JsonUtility.FromJson<Profile>(response));
                 if (profile == null && lastStatus == 401)
                 {
-                    // The server no longer knows this token (data reset, new server): start a fresh PvP account.
+                    // The server no longer knows this token (signed out elsewhere, data reset): sign in again.
                     token = "";
-                    PlayerPrefs.DeleteKey("pvp_token");
+                    AccountSession.SignOutLocal();
                 }
             }
             if (string.IsNullOrEmpty(token))
             {
-                yield return Request("POST", "/v1/accounts", "{}", response =>
-                {
-                    var reply = JsonUtility.FromJson<AccountReply>(response);
-                    token = reply.token;
-                    PlayerPrefs.SetString("pvp_token", token);
-                    PlayerPrefs.Save();
-                    profile = reply.account;
-                });
+                busy = false;
+                Close();
+                AccountNeeded?.Invoke();
+                yield break;
             }
             busy = false;
             if (profile == null) yield break;

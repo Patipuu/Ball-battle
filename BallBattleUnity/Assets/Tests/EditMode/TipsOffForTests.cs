@@ -1,4 +1,4 @@
-﻿using BallBattle.View;
+using BallBattle.View;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -7,6 +7,7 @@ namespace BallBattle.Tests
     /// <summary>
     /// UI-TUT1: first-run tips block the screen's buttons until OK. The older flow tests start from fresh saves and tap
     /// through the run, so tips are off for the whole assembly; BbTut1Tests switch them on for themselves.
+    /// 21/10: the same goes for BI the guide (GuideView) and the first-launch ACCOUNT screen; AccountAndGuideTests switch them on.
     /// </summary>
     [SetUpFixture]
     public class TipsOffForTests
@@ -19,6 +20,8 @@ namespace BallBattle.Tests
         public void Off()
         {
             TutorialCoach.Enabled = false;
+            GuideView.Enabled = false;
+            AccountView.ShowOnLaunch = false;
             previousLanguage = StringTable.Current;
             hadSavedLanguage = PlayerPrefs.HasKey("language_vi");
             savedLanguage = PlayerPrefs.GetInt("language_vi", 1);
@@ -30,6 +33,8 @@ namespace BallBattle.Tests
         public void Restore()
         {
             TutorialCoach.Enabled = !DebugOptions.NoTips;
+            GuideView.Enabled = !DebugOptions.NoTips;
+            AccountView.ShowOnLaunch = !DebugOptions.NoTips;
             StringTable.Current = previousLanguage;
             if (hadSavedLanguage) PlayerPrefs.SetInt("language_vi", savedLanguage);
             else PlayerPrefs.DeleteKey("language_vi");

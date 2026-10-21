@@ -22,6 +22,17 @@ namespace BallBattle.PvpServer
         public DateTime PublishedUtc { get; set; }
         /// <summary>House bot (PvpBots): a defense only, no token, MMR fixed.</summary>
         public bool IsBot { get; set; }
+        /// <summary>Sign-in name (upper case, unique; null = an anonymous account from before 21/10).</summary>
+        public string Login { get; set; }
+        /// <summary>PBKDF2-SHA256 of the password: base64 salt and hash, iteration count.</summary>
+        public string PasswordSalt { get; set; }
+        public string PasswordHash { get; set; }
+        public int PasswordIterations { get; set; }
+        /// <summary>Signed-in devices: SHA-256 of each token, newest last (at most PvpStore.MaxTokens).</summary>
+        public List<string> TokenHashes { get; set; } = new List<string>();
+        /// <summary>When the cloud save (blob "save:{Id}") was last written; default = none.</summary>
+        public DateTime SaveUtc { get; set; }
+        public int SaveVersion { get; set; }
     }
 
     public sealed class OfferSet
@@ -83,4 +94,6 @@ namespace BallBattle.PvpServer
     public sealed class BanRequest { public string BallId { get; set; } public string ArenaId { get; set; } }
     public sealed class PickRequest { public string BallId { get; set; } }
     public sealed class NameRequest { public string Name { get; set; } }
+    public sealed class AuthRequest { public string Name { get; set; } public string Password { get; set; } }
+    public sealed class SaveRequest { public string Data { get; set; } public int BaseVersion { get; set; } }
 }
